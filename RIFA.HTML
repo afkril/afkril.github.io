@@ -1,0 +1,150 @@
+<!DOCTYPE html><html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Súper Rifa de Apoyo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      background: linear-gradient(to bottom right, #a18cd1, #fbc2eb);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 150px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    h1 {
+      font-size: 40px;
+      color: #6a1b9a;
+    }
+    .prize {
+      font-size: 25px;
+      margin-bottom: 25px;
+      color: #333;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .cell {
+      background-color: #e0f7fa;
+      border: 1px solid #0097a7;
+      padding: 12px;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      transition: transform 0.1s ease;
+    }
+    .cell:hover {
+      transform: scale(1.05);
+    }
+    .cell.sold {
+      background-color: #e57373;
+      color: #fff;
+    }
+    .footer {
+      font-size: 20px;
+      color: #444;
+      margin-top: 25px;
+    }
+    .highlight {
+      color: #00796b;
+      font-weight: bold;
+    }
+    .export-button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #8e24aa;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .export-button:hover {
+      background-color: #6a1b9a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Súper Rifa de Apoyo</h1>
+    <div class="prize">
+      Premio: <strong>$250.000</strong><br>
+      <span class="highlight">$15.000 EL NUMERO</span><br><br>
+    </div>
+    
+    <div class="grid" id="rifaGrid"></div>
+    <div class="footer">
+      Juega el día <span class="highlight">26 DE AGOSTO</span> con las dos últimas cifras de la <span class="highlight">LOTERIA DEL HUILA</span><br><br>
+      <strong>NEQUI:</strong>315 0506939<br>
+      <strong>DAVIPLATA:</strong>321 2529413<br>
+
+    </div>
+<button class="export-button" onclick="exportCSV()">Exportar listado a CSV</button>
+  </div>  <script>
+    const grid = document.getElementById('rifaGrid');
+    const storedData = JSON.parse(localStorage.getItem('rifaData')) || {};
+
+    for (let i = 0; i < 100; i++) {
+      const number = i.toString().padStart(2, '0');
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.innerText = number;
+
+      if (storedData[number]) {
+        cell.classList.add('sold');
+      }
+
+      cell.addEventListener('click', () => {
+        if (cell.classList.contains('sold')) {
+          const name = storedData[number].name;
+          const paid = storedData[number].paid ? 'Sí' : 'No';
+          const action = confirm(`Número ${number}\nVendido a: ${name}\n¿Pagó?: ${paid}\n\n¿Deseas liberar este número?`);
+          if (action) {
+            cell.classList.remove('sold');
+            delete storedData[number];
+          }
+        } else {
+          const name = prompt(`Ingresa el nombre del responsable para el número ${number}:`);
+          if (!name) return;
+
+          const paidResponse = confirm("¿Este número ya fue pagado?");
+
+          cell.classList.add('sold');
+          storedData[number] = { name: name, paid: paidResponse };
+        }
+        localStorage.setItem('rifaData', JSON.stringify(storedData));
+      });
+
+      grid.appendChild(cell);
+    }
+
+    function exportCSV() {
+      let csv = 'Número,Nombre,¿Pagó?\n';
+      Object.entries(storedData).forEach(([num, data]) => {
+        csv += `${num},${data.name},${data.paid ? 'Sí' : 'No'}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', 'rifa_numeros_vendidos.csv');
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script></body>
+</html>
