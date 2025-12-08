@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Novedades de Beneficiarios UDS</title>
+    <title>Reporte de Novedades</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -18,7 +18,7 @@
                         'secondary': '#1F2937', // Gray 800
                         'accent': '#3B82F6', // Blue 500
 
-                        // Nuevos colores para Contratos (Amarillo, Azul, Verde)
+                        // Colores para Contratos (Amarillo, Azul, Verde)
                         'c665-primary': '#F59E0B', // Amber 500 (Amarillo)
                         'c665-shadow': '#FDE68A', // Amber 200
                         'c667-primary': '#3B82F6', // Blue 500 (Azul)
@@ -45,7 +45,8 @@
             align-items: center;
             justify-content: center;
             padding: 2rem;
-            position: relative; /* Necesario para la capa de superposición */
+            position: relative; 
+            flex-direction: column; /* Para centrar verticalmente el contenido y el footer */
         }
 
         /* Estilos específicos para el hover y el foco del botón */
@@ -60,18 +61,21 @@
         .contract-bg-665 { background-color: #F59E0B; }
         .contract-bg-hover-665:hover { background-color: #D97706; }
         .contract-ring-665:focus { ring-color: #F59E0B; }
+        .contract-color-665 { color: #F59E0B; } /* Color de texto para el footer */
         
         .contract-border-667 { border-top-color: #3B82F6; }
         .contract-shadow-667:hover { box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.4); }
         .contract-bg-667 { background-color: #3B82F6; }
         .contract-bg-hover-667:hover { background-color: #2563EB; }
         .contract-ring-667:focus { ring-color: #3B82F6; }
+        .contract-color-667 { color: #3B82F6; }
         
         .contract-border-676 { border-top-color: #10B981; }
         .contract-shadow-676:hover { box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.4); }
         .contract-bg-676 { background-color: #10B981; }
         .contract-bg-hover-676:hover { background-color: #059669; }
         .contract-ring-676:focus { ring-color: #10B981; }
+        .contract-color-676 { color: #10B981; }
 
         /* Clase para la superposición oscura sobre la imagen de fondo */
         .bg-overlay {
@@ -88,16 +92,19 @@
         .form-content-wrapper {
             position: relative;
             z-index: 10;
-            /* Usar ancho fijo (80%) y un máximo para evitar que sea demasiado grande en pantallas gigantes */
-            width: 80%;
-            max-width: 1100px; /* Limite superior para evitar que se estire demasiado */
-            min-width: 700px; /* Limite inferior para móviles */
+            width: 70%;
+            max-width: 1000px;
+            min-width: 500px;
+            margin-top: 2rem;
+            margin-bottom: 0.5rem;
         }
-        
-        /* Ajustar el ancho del 80% en pantallas pequeñas */
+
+        /* Ajustar el ancho del 60% en pantallas pequeñas */
         @media (max-width: 768px) {
             .form-content-wrapper {
                 width: 90%;
+                min-width: unset;
+                margin-top: 1rem;
             }
         }
     </style>
@@ -109,12 +116,13 @@
     <div id="formContainer" class="form-content-wrapper mx-auto bg-white shadow-2xl rounded-3xl p-4 sm:p-6 border-t-8 border-primary transform hover:shadow-primary/30 transition duration-300">
         <header class="mb-8 text-center">
             <h1 class="text-4xl sm:text-5xl font-extrabold text-secondary mb-2">
-                Registro de Novedades <span class="text-primary">UDS</span>
+                Registro de Novedades <span class="text-primary">UDS (JER)</span>
             </h1>
             <p class="text-gray-600 font-medium text-base">Diligencie la información requerida en orden: Contrato, UDS y Novedad.</p>
         </header>
 
-        <form id="noveltyForm" class="space-y-8"> <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-300 shadow-md">
+        <form id="noveltyForm" class="space-y-8"> 
+            <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-300 shadow-md">
                 <h2 class="text-xl font-bold text-indigo-800 mb-3 flex items-center">
                     <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0v-2a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     1. Selección de Contrato
@@ -186,6 +194,7 @@
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div><label for="ingresoDocNumber" class="block text-base font-medium text-gray-700">NÚMERO DOCUMENTO *</label><input type="text" id="ingresoDocNumber" name="ingresoDocNumber" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
                     <div><label for="ingresoFullName" class="block text-base font-medium text-gray-700">NOMBRES Y APELLIDOS *</label><input type="text" id="ingresoFullName" name="ingresoFullName" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
+                    
                     <div class="sm:col-span-2">
                         <label class="block text-base font-medium text-gray-700 mb-2">GÉNERO *</label>
                         <div class="flex space-x-4" id="ingresoGenderGroup">
@@ -194,9 +203,17 @@
                         </div>
                     </div>
                     
-                    <div><label for="ingresoDOB" class="block text-base font-medium text-gray-700">FECHA NACIMIENTO *</label><input type="date" id="ingresoDOB" name="ingresoDOB" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
-                    <div><label for="ingresoDate" class="block text-base font-medium text-gray-700">FECHA DE INGRESO *</label><input type="date" id="ingresoDate" name="ingresoDate" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
+                    <div><label for="ingresoDOB" class="block text-base font-medium text-gray-700">FECHA NACIMIENTO *</label><input type="date" id="ingresoDOB" name="ingresoDOB" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base" onchange="calculateAge()"></div>
+                    <div><label for="ingresoDate" class="block text-base font-medium text-gray-700">FECHA DE INGRESO *</label><input type="date" id="ingresoDate" name="ingresoDate" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base" onchange="calculateAge()"></div>
                     
+                    <div class="sm:col-span-2 bg-green-100 p-3 rounded-lg border border-green-400">
+                        <div class="text-lg font-extrabold text-green-800">
+                            EDAD DEL BENEFICIARIO: 
+                            <span id="beneficiaryAge" class="font-bold text-xl ml-2 text-green-700">
+                                -- Edad no calculada --
+                            </span>
+                        </div>
+                    </div>
                     <div><label for="ingresoAddress" class="block text-base font-medium text-gray-700">DIRECCIÓN *</label><input type="text" id="ingresoAddress" name="ingresoAddress" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
                     <div><label for="ingresoBarrio" class="block text-base font-medium text-gray-700">BARRIO *</label><input type="text" id="ingresoBarrio" name="ingresoBarrio" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
                     <div><label for="ingresoPhone" class="block text-base font-medium text-gray-700">TELÉFONO *</label><input type="tel" id="ingresoPhone" name="ingresoPhone" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
@@ -215,7 +232,7 @@
             <div class="pt-6">
                 <button type="submit" id="submitButton" class="w-full px-4 py-4 text-white text-lg font-extrabold rounded-xl shadow-lg btn-hover-primary transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-opacity-70 flex items-center justify-center">
                     <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    <span id="buttonText">Enviar Novedad por API</span>
+                    <span id="buttonText">Enviar Novedad por CORREO</span>
                 </button>
             </div>
         </form>
@@ -224,6 +241,14 @@
             </div>
     </div>
     
+    <div id="associationWatermark" class="text-center mt-3 mb-1 text-xs font-semibold transition-colors duration-300 text-gray-400">
+        <p class="font-bold">ASOCIACION DE USUARIOS DEL PROGRAMA HOGARES COMUNITARIOS DE BIENESTAR</p>
+        <p>DEL BARRIO JOSE EUSTACIO RIVERA</p>
+        <p id="currentDate"></p>
+    </div>
+    <footer id="mainFooter" class="text-center mb-4 text-sm font-medium transition-colors duration-300 text-gray-500">
+        © 2026 J.E.R By Zan
+    </footer>
     <script>
         // --- CONSTANTES Y DATOS ---
         const RECIPIENT_EMAIL = 'cuentamejoseeustaciorivera@gmail.com';
@@ -298,12 +323,9 @@
         // URLs de las imágenes de fondo para cada contrato
         const BACKGROUND_IMAGES = {
             'default': 'url("https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
-
             '665': 'url("https://previews.123rf.com/images/azzzya/azzzya1708/azzzya170800068/83879206-seamless-pattern-with-cute-baby-toys-in-yellow-monochrome-colors-on-yellow-background-the-good.jpg")',
-
-            '667': 'url("https://img.freepik.com/vector-gratis/fondo-estilo-comico-diseno-plano_23-2148812941.jpg?semt=ais_hybrid&w=740&q=80")',
-
-            '676': 'url("https://img.freepik.com/vector-gratis/fondo-color-brillante-gradiente_23-2149365044.jpg")',
+            '667': 'url("https://img.freepik.com/vector-free/flat-design-comic-style-background_23-2148812941.jpg?semt=ais_hybrid&w=740&q=80")',
+            '676': 'url("https://img.freepik.com/vector-free/bright-color-gradient-background_23-2149365044.jpg")',
         };
 
         // --- ELEMENTOS DEL DOM ---
@@ -319,13 +341,35 @@
         const submitButton = document.getElementById('submitButton');
         const buttonText = document.getElementById('buttonText');
         const sectionUDS = document.getElementById('sectionUDS');
-        const mainUdsDropdown = document.getElementById('mainUdsDropdown'); 
+        const mainUdsDropdown = document.getElementById('mainUdsDropdown');
+        
+        // Referencias a los campos de fecha
+        const retiroDateInput = document.getElementById('retiroDate');
+        const ingresoDateInput = document.getElementById('ingresoDate');
+        const ingresoDOBInput = document.getElementById('ingresoDOB');
+        
+        // Referencia al nuevo campo de edad
+        const beneficiaryAgeSpan = document.getElementById('beneficiaryAge');
+        
+        // Referencias a los nuevos elementos de marca de agua
+        const associationWatermarkDiv = document.getElementById('associationWatermark');
+        const currentDateSpan = document.getElementById('currentDate');
+        const mainFooter = document.getElementById('mainFooter');
 
         // Clases de Tailwind que se deben gestionar dinámicamente (para limpiarlas)
-        const colorClasses = ['contract-border-665', 'contract-shadow-665', 'contract-bg-665', 'contract-bg-hover-665', 'contract-ring-665', 
-                              'contract-border-667', 'contract-shadow-667', 'contract-bg-667', 'contract-bg-hover-667', 'contract-ring-667', 
-                              'contract-border-676', 'contract-shadow-676', 'contract-bg-676', 'contract-bg-hover-676', 'contract-ring-676', 
-                              'border-primary', 'hover:shadow-primary/30', 'bg-primary', 'hover:bg-emerald-700', 'focus:ring-primary'];
+        const colorClasses = ['contract-border-665', 'contract-shadow-665', 'contract-bg-665', 'contract-bg-hover-665', 'contract-ring-665', 'contract-color-665',
+                                'contract-border-667', 'contract-shadow-667', 'contract-bg-667', 'contract-bg-hover-667', 'contract-ring-667', 'contract-color-667',
+                                'contract-border-676', 'contract-shadow-676', 'contract-bg-676', 'contract-bg-hover-676', 'contract-ring-676', 'contract-color-676',
+                                'border-primary', 'hover:shadow-primary/30', 'bg-primary', 'hover:bg-emerald-700', 'focus:ring-primary', 'text-primary', 'text-gray-400', 'text-gray-500'];
+
+        /**
+         * Inicializa la fecha actual en la marca de agua.
+         */
+        function initializeDateWatermark() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            currentDateSpan.textContent = `FECHA: ${now.toLocaleDateString('es-CO', options).toUpperCase()}`;
+        }
 
         /**
          * Alterna la visibilidad de las secciones del formulario.
@@ -336,6 +380,11 @@
                 sectionRetiro.classList.toggle('hidden', !checkRetiro.checked);
             } else if (sectionName === 'ingreso') {
                 sectionIngreso.classList.toggle('hidden', !checkIngreso.checked);
+                if (checkIngreso.checked) {
+                    calculateAge(); // Calcular la edad al mostrar la sección de ingreso
+                } else {
+                    beneficiaryAgeSpan.textContent = '-- Edad no calculada --'; // Limpiar si se oculta
+                }
             }
         }
         
@@ -353,10 +402,10 @@
             
             // Lógica para habilitar/deshabilitar y cambiar la opacidad de la sección UDS
             if (contractNumber) {
-                 initialOption.textContent = '-- Seleccione una Unidad de Servicio --';
-                 mainUdsDropdown.disabled = false;
-                 sectionUDS.style.opacity = 1;
-                 
+                initialOption.textContent = '-- Seleccione una Unidad de Servicio --';
+                mainUdsDropdown.disabled = false;
+                sectionUDS.style.opacity = 1;
+                
             } else {
                 initialOption.textContent = '-- Primero seleccione un Contrato --';
                 mainUdsDropdown.disabled = true;
@@ -383,29 +432,39 @@
             // 1. Gestionar la Imagen de Fondo
             body.style.backgroundImage = BACKGROUND_IMAGES[contractNumber] || BACKGROUND_IMAGES['default'];
             
-            // 2. Limpiar clases anteriores del Contenedor y Botón
+            // 2. Limpiar clases anteriores del Contenedor, Botón, Asociación y Footer
             formContainer.classList.remove(...colorClasses);
             submitButton.classList.remove(...colorClasses);
+            associationWatermarkDiv.classList.remove(...colorClasses);
+            mainFooter.classList.remove(...colorClasses);
             
-            // 3. Aplicar estilos específicos al formulario
+            // 3. Aplicar estilos específicos al formulario y marcas de agua
             if (contractNumber === '665') {
-                // Contenedor y Botón: Amarillo
+                // Amarillo
                 formContainer.classList.add('contract-border-665', 'hover:shadow-primary/30');
                 submitButton.classList.add('contract-bg-665', 'contract-bg-hover-665', 'contract-ring-665');
+                associationWatermarkDiv.classList.add('contract-color-665');
+                mainFooter.classList.add('contract-color-665');
 
             } else if (contractNumber === '667') {
-                // Contenedor y Botón: Azul
+                // Azul
                 formContainer.classList.add('contract-border-667', 'hover:shadow-primary/30');
                 submitButton.classList.add('contract-bg-667', 'contract-bg-hover-667', 'contract-ring-667');
+                associationWatermarkDiv.classList.add('contract-color-667');
+                mainFooter.classList.add('contract-color-667');
 
             } else if (contractNumber === '676') {
-                // Contenedor y Botón: Verde
+                // Verde
                 formContainer.classList.add('contract-border-676', 'hover:shadow-primary/30');
                 submitButton.classList.add('contract-bg-676', 'contract-bg-hover-676', 'contract-ring-676');
+                associationWatermarkDiv.classList.add('contract-color-676');
+                mainFooter.classList.add('contract-color-676');
             } else {
-                // Estado inicial (estilo primario por defecto)
-                 formContainer.classList.add('border-primary', 'hover:shadow-primary/30');
-                 submitButton.classList.add('bg-primary', 'hover:bg-emerald-700', 'focus:ring-primary');
+                // Estado inicial (gris y verde primario por defecto)
+                formContainer.classList.add('border-primary', 'hover:shadow-primary/30');
+                submitButton.classList.add('bg-primary', 'hover:bg-emerald-700', 'focus:ring-primary');
+                associationWatermarkDiv.classList.add('text-gray-400');
+                mainFooter.classList.add('text-gray-500');
             }
 
             // 4. Cargar la lista desplegable de UDS
@@ -426,8 +485,9 @@
             } else if (type === 'success') {
                 validationMessage.classList.add('bg-green-100', 'text-green-800');
             } else {
-                 validationMessage.classList.add('bg-yellow-100', 'text-yellow-800');
+                validationMessage.classList.add('bg-yellow-100', 'text-yellow-800');
             }
+            validationMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
         
         /**
@@ -450,8 +510,8 @@
                 
                 // Validación de Radio Button de Género de Retiro
                 if (!document.querySelector('input[name="retiroGender"]:checked')) {
-                     showFeedback(`ERROR: Debe seleccionar el Género del Beneficiario en la sección de ${sectionName} (*).`, 'error');
-                     return false;
+                    showFeedback(`ERROR: Debe seleccionar el Género del Beneficiario en la sección de ${sectionName} (*).`, 'error');
+                    return false;
                 }
             } else if (prefix === 'ingreso') {
                 if (!checkIngreso.checked) return true;
@@ -465,8 +525,8 @@
                 
                 // Validación de Radio Button de Género de Ingreso
                 if (!document.querySelector('input[name="ingresoGender"]:checked')) {
-                     showFeedback(`ERROR: Debe seleccionar el Género del Beneficiario en la sección de ${sectionName} (*).`, 'error');
-                     return false;
+                    showFeedback(`ERROR: Debe seleccionar el Género del Beneficiario en la sección de ${sectionName} (*).`, 'error');
+                    return false;
                 }
             }
 
@@ -488,159 +548,302 @@
             return isValid;
         }
 
+        // --- FUNCIONES DE CÁLCULO DE EDAD Y VALIDACIÓN DE FECHAS CRUZADAS ---
+        
+        /**
+         * Calcula la edad en años y meses entre la fecha de nacimiento y la fecha de referencia (ingreso).
+         */
+        function calculateAge() {
+            const dobString = ingresoDOBInput.value;
+            const entryDateString = ingresoDateInput.value;
+
+            if (!dobString || !entryDateString) {
+                beneficiaryAgeSpan.textContent = '-- Edad no calculada --';
+                return;
+            }
+
+            // Se utiliza T00:00:00 para forzar la comparación de fechas al inicio del día y evitar problemas de zona horaria
+            const dob = new Date(dobString + 'T00:00:00');
+            const entryDate = new Date(entryDateString + 'T00:00:00');
+
+            // 1. Validar que la fecha de ingreso no sea anterior a la de nacimiento
+            if (entryDate < dob) {
+                beneficiaryAgeSpan.textContent = 'ERROR: Fecha de Ingreso anterior a la de Nacimiento.';
+                beneficiaryAgeSpan.classList.add('text-red-700');
+                return;
+            }
+            beneficiaryAgeSpan.classList.remove('text-red-700');
+
+            let years = entryDate.getFullYear() - dob.getFullYear();
+            let months = entryDate.getMonth() - dob.getMonth();
+            let days = entryDate.getDate() - dob.getDate();
+
+            // Ajuste si los meses o días son negativos
+            if (days < 0) {
+                months--; // Tomar un mes prestado
+                
+                // Obtener el número de días del mes anterior al día de ingreso
+                // (entryDate.getMonth(), 0) da el último día del mes anterior
+                const prevMonth = new Date(entryDate.getFullYear(), entryDate.getMonth(), 0);
+                days += prevMonth.getDate(); // Sumar los días del mes anterior
+            }
+
+            if (months < 0) {
+                years--; // Tomar un año prestado
+                months += 12; // Sumar 12 meses
+            }
+            
+            // 2. Formatear y mostrar la edad
+            let ageText = '';
+            if (years > 0) {
+                ageText += `${years} año${years !== 1 ? 's' : ''}`;
+            }
+            
+            // Añadir coma si hay años y meses
+            if (years > 0 && months > 0) {
+                ageText += ' y ';
+            }
+            
+            if (months > 0 || (years === 0 && months === 0 && days === 0)) {
+                 // Mostrar meses si es más de 0, o si tiene 0 años y 0 meses (recién nacido)
+                ageText += `${months} mes${months !== 1 ? 'es' : ''}`;
+            }
+            
+            if (years === 0 && months === 0 && days > 0) {
+                 // Manejar el caso de menos de un mes (solo días)
+                 ageText = `${days} día${days !== 1 ? 's' : ''}`;
+            } else if (years === 0 && months === 0 && days === 0) {
+                ageText = 'Recién Nacido';
+            }
+
+            beneficiaryAgeSpan.textContent = ageText.trim();
+        }
+
+
+        /**
+         * Resalta visualmente el campo de fecha con error y limpia el otro.
+         * @param {HTMLElement} errorField - El campo que contiene el error.
+         * @param {HTMLElement} cleanField - El campo a limpiar (si existe).
+         */
+        function highlightDateError(errorField, cleanField = null) {
+            errorField.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+            if (cleanField) {
+                cleanField.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            }
+        }
+
+        /**
+         * Valida la lógica entre la Fecha de Retiro y la Fecha de Ingreso.
+         * SOLO se ejecuta si AMBAS novedades están seleccionadas.
+         * @returns {boolean} - true si la validación pasa, false si falla.
+         */
+        function validateDates() {
+            const retiro = checkRetiro.checked;
+            const ingreso = checkIngreso.checked;
+
+            // Solo se valida si ambas novedades (retiro E ingreso) están marcadas
+            if (!retiro || !ingreso) {
+                // Limpiar resaltado si no es necesario validar
+                retiroDateInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+                ingresoDateInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+                return true;
+            }
+
+            const retiroDateStr = retiroDateInput.value;
+            const ingresoDateStr = ingresoDateInput.value;
+
+            // Si alguna de las fechas está vacía, la validación falla (la función validateSection lo manejará)
+            if (!retiroDateStr || !ingresoDateStr) {
+                return true; // Permitir que validateSection maneje el error de campo vacío
+            }
+
+            // Convertir las fechas a objetos Date (se recomienda usar Date en JS para comparar)
+            // Se usa el formato 'YYYY-MM-DDT00:00:00' para asegurar que la zona horaria no afecte la comparación del día
+            const dRetiro = new Date(retiroDateStr + 'T00:00:00');
+            const dIngreso = new Date(ingresoDateStr + 'T00:00:00');
+
+            // 1. Validar que la fecha de Ingreso no sea ANTERIOR o IGUAL a la de Retiro
+            
+            // a) Ingreso ANTERIOR a Retiro (dIngreso < dRetiro)
+            if (dIngreso.getTime() < dRetiro.getTime()) {
+                showFeedback('La fecha de Ingreso debe ser posterior a la fecha de Retiro.', 'error');
+                highlightDateError(ingresoDateInput, retiroDateInput);
+                return false;
+            }
+            
+            // b) Ingreso IGUAL a Retiro (dIngreso === dRetiro)
+            if (dIngreso.getTime() === dRetiro.getTime()) {
+                showFeedback('¡ATENCIÓN! La fecha de retiro NO puede ser Igual a la fecha de Ingreso, Debe ser al siguiente Dia según marcación del RAM.', 'error');
+                highlightDateError(retiroDateInput);
+                highlightDateError(ingresoDateInput);
+                return false;
+            }
+
+            // Si ambas validaciones pasan, limpiar resaltado y retornar true
+            retiroDateInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            ingresoDateInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+            return true;
+        }
+
+        // --- MANEJO DE DATOS Y ENVÍO ---
+
         /**
          * Recolecta los datos del formulario en un formato estructurado (texto).
          */
         function getSectionData(prefix, sectionTitle) {
             let data = `\n--- ${sectionTitle} ---\n`;
             
-            if (prefix === 'retiro') {
-                data += `NUMERO DOCUMENTO: ${document.getElementById('retiroDocNumber').value || 'N/A'}\n`;
-                data += `NOMBRES Y APELLIDOS: ${document.getElementById('retiroFullName').value || 'N/A'}\n`;
-                data += `GENERO: ${document.querySelector('input[name="retiroGender"]:checked')?.value || 'N/A'}\n`;
-                data += `FECHA NACIMIENTO: ${document.getElementById('retiroDOB').value || 'N/A'}\n`;
-                data += `FECHA DE RETIRO: ${document.getElementById('retiroDate').value || 'N/A'}\n`;
-            } else if (prefix === 'ingreso') {
-                data += `\nDATOS DEL BENEFICIARIO DE INGRESO:\n`;
-                data += `NUMERO DOCUMENTO: ${document.getElementById('ingresoDocNumber').value || 'N/A'}\n`;
-                data += `NOMBRES Y APELLIDOS: ${document.getElementById('ingresoFullName').value || 'N/A'}\n`;
-                data += `GENERO: ${document.querySelector('input[name="ingresoGender"]:checked')?.value || 'N/A'}\n`;
-                data += `FECHA NACIMIENTO: ${document.getElementById('ingresoDOB').value || 'N/A'}\n`;
-                data += `FECHA DE INGRESO: ${document.getElementById('ingresoDate').value || 'N/A'}\n`;
-                data += `DIRECCIÓN: ${document.getElementById('ingresoAddress').value || 'N/A'}\n`;
-                data += `BARRIO: ${document.getElementById('ingresoBarrio').value || 'N/A'}\n`;
-                data += `TELÉFONO: ${document.getElementById('ingresoPhone').value || 'N/A'}\n`;
+            // Recolección de datos
+            const inputs = document.querySelectorAll(`#section${sectionTitle.split(' ')[0]} input, #section${sectionTitle.split(' ')[0]} select`);
+            inputs.forEach(input => {
+                if (input.type === 'radio' && !input.checked) return;
+                
+                const labelElement = document.querySelector(`label[for="${input.id}"], label:has(input[id="${input.id}"])`);
+                let label = labelElement ? labelElement.textContent.replace('*', '').trim() : input.name.toUpperCase().replace(prefix.toUpperCase(), '').replace(/([A-Z])/g, ' $1').trim();
 
-                data += `\nDATOS DE LA MADRE:\n`;
-                data += `CEDULA DE LA MADRE: ${document.getElementById('motherId').value || 'N/A'}\n`;
-                data += `NOMBRES Y APELLIDOS: ${document.getElementById('motherFullName').value || 'N/A'}\n`;
-                data += `FECHA NACIMIENTO: ${document.getElementById('motherDOB').value || 'N/A'}\n`;
+                let value = input.value.trim();
+                
+                if (input.type === 'radio') {
+                    label = "GÉNERO";
+                    value = input.value;
+                }
+
+                if (value && input.id !== 'beneficiaryAge') { // Excluir el campo informativo de la edad
+                    data += `${label}: ${value}\n`;
+                }
+            });
+
+            // Recoger Género (solo para el caso del radio button group si no fue capturado arriba)
+            const genderChecked = document.querySelector(`input[name="${prefix}Gender"]:checked`);
+            if (genderChecked && !data.includes("GÉNERO")) {
+                data += `GÉNERO: ${genderChecked.value}\n`;
             }
             
+            // Incluir el campo de edad calculado al final de la sección Ingreso
+            if (prefix === 'ingreso' && beneficiaryAgeSpan.textContent !== '-- Edad no calculada --') {
+                data += `EDAD DEL BENEFICIARIO (Calculada): ${beneficiaryAgeSpan.textContent}\n`;
+            }
+
             return data;
         }
 
-        // Listener para la sumisión del formulario
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
+        /**
+         * Recolecta y formatea todos los datos para el envío.
+         */
+        function formatData() {
             const contractNumber = contractNumberSelect.value;
-            const udsValue = mainUdsDropdown.value;
-            const isRetiro = checkRetiro.checked;
-            const isIngreso = checkIngreso.checked;
+            const udsSelection = mainUdsDropdown.value;
+            const utsName = udsSelection.split(' - ')[1] || 'No Seleccionado';
+            const utsCode = udsSelection.split(' - ')[0] || 'No Seleccionado';
             
-            // 1. Validación de Contrato
-            if (!contractNumber) {
-                showFeedback('ERROR: Debe seleccionar el Número de Contrato antes de continuar.', 'error');
-                return;
+            let formData = `**NOVEDAD DE BENEFICIARIOS UDS**\n`;
+            formData += `==================================\n`;
+            formData += `CONTRATO: ${contractNumber}\n`;
+            formData += `UDS (NOMBRE): ${utsName}\n`;
+            formData += `UDS (CÓDIGO): ${utsCode}\n`;
+            formData += `==================================\n`;
+
+            if (checkRetiro.checked) {
+                formData += getSectionData('retiro', 'Retiro');
             }
 
-            // 2. Validación de UDS
-            if (!udsValue) {
-                showFeedback('ERROR: Debe seleccionar la Unidad de Servicio (UDS) antes de continuar.', 'error');
-                return;
-            }
-
-            // 3. Validación de Tipo de Novedad
-            if (!isRetiro && !isIngreso) {
-                showFeedback('ERROR: Debe seleccionar al menos una novedad (Retiro o Ingreso) para enviar el formulario.', 'error');
-                return;
+            if (checkIngreso.checked) {
+                formData += getSectionData('ingreso', 'Ingreso');
             }
             
-            // 4. Validación de Campos Obligatorios
-            if (isRetiro && !validateSection('retiro', 'Retiro')) {
-                return;
-            }
-            if (isIngreso && !validateSection('ingreso', 'Ingreso')) {
-                return;
-            }
+            return formData;
+        }
 
-            // Iniciar proceso de envío
+        /**
+         * Función para simular o realizar el envío a Formspree (o API)
+         */
+        async function submitForm(e) {
             submitButton.disabled = true;
             buttonText.textContent = 'Enviando...';
             submitButton.classList.add('opacity-70');
-            showFeedback('Procesando envío, espere por favor...', 'info');
 
-            // 5. Generación del contenido del Email
-            const [udsCode, udsName] = udsValue.split(' - ');
-            let subject = `Novedad UDS - Contrato ${contractNumber} - `;
-            let bodyContent = `Estimado(a) destinatario,\n\nSe presenta la siguiente novedad para el contrato UDS especificado a continuación:\n\n`;
+            const formattedData = formatData();
             
-            bodyContent += `--- DATOS GENERALES ---\n`;
-            bodyContent += `Número de Contrato: ${contractNumber}\n`;
-            bodyContent += `UNIDAD DE SERVICIO: ${udsName || 'N/A'}\n`;
-            bodyContent += `CÓDIGO UDS: ${udsCode || 'N/A'}\n`;
-
-            if (isRetiro) {
-                bodyContent += getSectionData('retiro', 'BENEFICIARIO QUE SE RETIRA (SALE)');
-                subject += "Retiro ";
-            }
-            
-            if (isIngreso) {
-                bodyContent += getSectionData('ingreso', 'BENEFICIARIO QUE INGRESA (ENTRA)');
-                if(isRetiro) subject += "e Ingreso"; else subject += "Ingreso";
-            }
-            
-            bodyContent += `\n\nPor favor, confirme la recepción y la aplicación de esta novedad.\n\nAtentamente.`;
-
             try {
-                // 6. Envío a Formspree 
-                const submissionData = {
-                    _subject: subject.trim(),
-                    _replyto: 'noreply@udsform.com',
-                    'Cuerpo del Mensaje (Novedad UDS)': bodyContent,
-                    _cc: RECIPIENT_EMAIL,
-                    'Número de Contrato': contractNumber,
-                    'UDS (código y nombre)': udsValue 
-                };
-
+                // Simulación de envío de datos (o usar fetch para Formspree/API)
+                // Usando un campo oculto especial para Formspree si se usara el endpoint real
                 const response = await fetch(FORMSPREE_ENDPOINT, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(submissionData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        'Contrato': contractNumberSelect.value,
+                        'UDS Seleccionada': mainUdsDropdown.value,
+                        'Mensaje Detallado': formattedData, // Enviar el cuerpo formateado
+                        'Novedad_Retiro': checkRetiro.checked ? 'Sí' : 'No',
+                        'Novedad_Ingreso': checkIngreso.checked ? 'Sí' : 'No',
+                        // Puedes incluir aquí otros campos específicos si Formspree los necesita por separado
+                    })
                 });
 
-                // 7. Manejo de la respuesta
                 if (response.ok) {
-                    showFeedback('✅ ¡Novedad enviada con éxito! La novedad ha sido procesada por la API.', 'success');
-                    // Limpiar el formulario y estilos
-                    form.reset();
-                    checkRetiro.checked = false;
-                    checkIngreso.checked = false;
+                    showFeedback('✅ ¡Éxito! La novedad ha sido enviada correctamente.', 'success');
+                    form.reset(); // Limpiar el formulario
+                    updateFormStyle(); // Restaurar estilos y dropdown
                     sectionRetiro.classList.add('hidden');
                     sectionIngreso.classList.add('hidden');
-                    updateFormStyle(); // Volver al estilo inicial
-
+                    beneficiaryAgeSpan.textContent = '-- Edad no calculada --';
                 } else {
-                    const errorData = await response.json();
-                    let errorMessage = 'ERROR de API: No se pudo enviar el mensaje. Intente de nuevo o revise la consola.';
-                    if (errorData.errors && errorData.errors.length > 0) {
-                         errorMessage += ` Detalle: ${errorData.errors.map(err => err.message).join(', ')}`;
-                    } else if (errorData.error) {
-                         errorMessage = `ERROR: ${errorData.error}. Asegúrese de que el endpoint de Formspree sea correcto y esté verificado.`;
-                    }
-                    throw new Error(errorMessage);
+                    showFeedback('❌ Error al enviar el formulario. Inténtelo de nuevo o contacte a soporte.', 'error');
                 }
-
             } catch (error) {
-                console.error('Error durante el envío de la API:', error);
-                showFeedback(`❌ ${error.message}`, 'error');
+                console.error('Error de red/Formspree:', error);
+                showFeedback('❌ Error de conexión. Verifique su red e inténtelo de nuevo.', 'error');
             } finally {
-                // Finalizar proceso
                 submitButton.disabled = false;
                 buttonText.textContent = 'Enviar Novedad por API';
                 submitButton.classList.remove('opacity-70');
             }
-        });
-        
-        // Inicializar el estilo al cargar la página (fondo por defecto)
-        document.addEventListener('DOMContentLoaded', updateFormStyle);
-    </script>
+        }
 
+        // --- EVENT LISTENER PRINCIPAL DEL FORMULARIO ---
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            validationMessage.classList.add('hidden'); // Ocultar mensaje al inicio
+
+            // 1. Validaciones iniciales
+            if (!contractNumberSelect.value) {
+                showFeedback('ERROR: Debe seleccionar un **Contrato**.', 'error');
+                return;
+            }
+            if (!mainUdsDropdown.value) {
+                showFeedback('ERROR: Debe seleccionar una **Unidad de Servicio (UDS)**.', 'error');
+                return;
+            }
+            if (!checkRetiro.checked && !checkIngreso.checked) {
+                showFeedback('ERROR: Debe seleccionar al menos una novedad (**Retiro** o **Ingreso**).', 'error');
+                return;
+            }
+            
+            // 2. Validar campos requeridos de las secciones activas
+            let isRetiroValid = validateSection('retiro', 'Retiro');
+            let isIngresoValid = validateSection('ingreso', 'Ingreso');
+
+            if (!isRetiroValid || !isIngresoValid) {
+                return; // Detener envío si faltan campos en alguna sección activa
+            }
+            
+            // 3. VALIDACIÓN DE FECHAS CRUZADAS (solo si ambas están activas)
+            if (checkRetiro.checked && checkIngreso.checked) {
+                let isDateCrossValid = validateDates();
+                if (!isDateCrossValid) {
+                    // El mensaje de error específico ya fue mostrado por validateDates()
+                    showFeedback('Por favor, corrige el error de las fechas antes de enviar.', 'error');
+                    return; // Detener envío
+                }
+            }
+            
+            // 4. Si todo es válido, proceder al envío
+            await submitForm(e); 
+        });
+
+        // Inicializar estilos, dropdown y marca de agua al cargar
+        updateFormStyle();
+        initializeDateWatermark();
+    </script>
 </body>
 </html>
-
-
