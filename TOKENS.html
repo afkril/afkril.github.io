@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token_Tracker_MOONBOX_By_Zan</title>
+    <style>
+        :root {
+            --bg: #0b0915;
+            --card: rgba(255, 255, 255, 0.04);
+            --cyan: #00e5ff;
+            --purple: #8a4fff;
+            --green: #2ecc71;
+            --gold: #c5a059;
+            --danger: #ff4444;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            background-image: radial-gradient(circle at 50% 0%, #1a1635, #0b0915);
+            color: var(--text);
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center;
+        }
+
+        .container { width: 100%; max-width: 1000px; padding-bottom: 50px; }
+
+        /* Dashboard de Estadísticas */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.02);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #222;
+            text-align: center;
+        }
+
+        .stat-val { display: block; font-size: 1.5rem; font-weight: bold; color: var(--cyan); }
+        .stat-label { font-size: 0.7rem; color: #777; text-transform: uppercase; }
+
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center; margin: 30px 0 15px;
+        }
+
+        .section-title {
+            font-size: 0.75rem; color: #777; text-transform: uppercase;
+            letter-spacing: 2px; display: flex; align-items: center; gap: 10px; flex-grow: 1;
+        }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: #333; margin-left: 10px; }
+
+        /* Grid Superior */
+        .grid-session {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Efecto Glow dinámico */
+        .card.has-tokens { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 229, 255, 0.15); }
+        .card.empty { filter: grayscale(1); opacity: 0.5; }
+
+        .token-img-big {
+            width: 90px; height: 90px;
+            margin: 0 auto 15px;
+            display: block;
+            object-fit: contain;
+            transition: transform 0.3s;
+        }
+        .card:hover .token-img-big { transform: scale(1.1) rotate(5deg); }
+
+        .token-name { font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; }
+
+        /* Metas visuales */
+        .goal-track { width: 100%; height: 4px; background: #222; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .goal-progress { height: 100%; background: var(--green); width: 0%; transition: 0.5s; }
+
+        .controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .btn-count {
+            width: 32px; height: 32px; border-radius: 50%; border: 1px solid #444;
+            background: none; color: white; cursor: pointer; font-size: 1.2rem;
+        }
+        .btn-count.plus { border-color: var(--cyan); color: var(--cyan); }
+        .val { font-size: 1.6rem; font-weight: bold; min-width: 35px; }
+
+        /* Acciones */
+        .main-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin: 30px 0; }
+        .btn {
+            padding: 18px; border-radius: 12px; border: none;
+            font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem;
+            transition: 0.3s;
+        }
+        .btn-save { background: var(--green); color: #000; }
+        .btn-claim { background: var(--purple); color: #fff; position: relative; }
+        .btn-claim span { position: absolute; top: -10px; right: -5px; background: var(--gold); color: black; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; }
+        .btn:disabled { opacity: 0.2; filter: grayscale(1); }
+
+        /* Inventario 2x3 */
+        .grid-inventory { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .inv-card { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; border-left: 4px solid var(--gold); }
+        .inv-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .inv-img-small { width: 35px; height: 35px; object-fit: contain; }
+        .inv-val { color: var(--gold); font-size: 1.1rem; font-weight: bold; }
+
+        /* Utilidades */
+        .utility-btns { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .u-btn { background: #222; color: #888; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.7rem; }
+        .u-btn:hover { color: white; border-color: #555; }
+
+        .history { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; font-size: 0.8rem; max-height: 200px; overflow-y: auto; }
+        .log-entry { margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 8px; display: flex; gap: 10px; }
+        
+        @media (max-width: 600px) {
+            .grid-inventory, .main-actions { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="stats-bar">
+        <div class="stat-card">
+            <span class="stat-val" id="possibleClaims">0</span>
+            <span class="stat-label">Moonboxes Disponibles</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-val" id="totalCollected">0</span>
+            <span class="stat-label">Total Recolectado</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-val" id="rareToken">-</span>
+            <span class="stat-label">Token más escaso</span>
+        </div>
+    </div>
+
+    <div class="utility-btns">
+        <button class="u-btn" onclick="exportData()">💾 Exportar Backup</button>
+        <button class="u-btn" onclick="importData()">📂 Importar Backup</button>
+        <button class="u-btn" onclick="setGoal()">🎯 Definir Meta</button>
+    </div>
+
+    <div class="section-title">Sesión Activa</div>
+    <div class="grid-session" id="sessionGrid"></div>
+
+    <div class="main-actions">
+        <button class="btn btn-save" onclick="moveToInventory()">Guardar en Inventario</button>
+        <button class="btn btn-claim" id="claimBtn" onclick="claim()">
+            Reclamar Moonbox <span id="sessionClaimCount">0</span>
+        </button>
+    </div>
+
+    <div class="section-header">
+        <div class="section-title">Inventario Acumulado</div>
+        <button class="u-btn" onclick="withdrawAll()" style="border-color: var(--gold); color: var(--gold);">Retirar Todo</button>
+    </div>
+    <div class="grid-inventory" id="inventoryGrid"></div>
+
+    <div class="section-header">
+        <div class="section-title">Historial de Farmeo</div>
+        <button class="u-btn" onclick="clearHistory()" style="border-color: var(--danger);">Limpiar</button>
+    </div>
+    <div class="history" id="historyLog"></div>
+</div>
+
+<script>
+    const TOKENS = [
+        { id: "CALMED", img: "calmed.png" },
+        { id: "DISTURBED", img: "disturbed.png" },
+        { id: "PROSPEROUS", img: "prosperous.png" },
+        { id: "DESERTED", img: "deserted.png" },
+        { id: "CHAOS", img: "chaos.png" },
+        { id: "PEACE", img: "peace.png" }
+    ];
+
+    let session = JSON.parse(localStorage.getItem('session_v6')) || { CALMED:0, DISTURBED:0, PROSPEROUS:0, DESERTED:0, CHAOS:0, PEACE:0 };
+    let vault = JSON.parse(localStorage.getItem('vault_v6')) || { CALMED:0, DISTURBED:0, PROSPEROUS:0, DESERTED:0, CHAOS:0, PEACE:0 };
+    let logs = JSON.parse(localStorage.getItem('logs_v6')) || [];
+    let goal = localStorage.getItem('goal_v6') || 10;
+
+    function save() {
+        localStorage.setItem('session_v6', JSON.stringify(session));
+        localStorage.setItem('vault_v6', JSON.stringify(vault));
+        localStorage.setItem('logs_v6', JSON.stringify(logs));
+        render();
+    }
+
+    function render() {
+        // Stats
+        const total = Object.values(vault).reduce((a,b) => a+b, 0);
+        document.getElementById('totalCollected').innerText = total;
+        
+        const possible = Math.min(...Object.values(vault));
+        document.getElementById('possibleClaims').innerText = possible;
+
+        const counts = Object.entries(vault);
+        const rarest = counts.sort((a,b) => a[1] - b[1])[0];
+        document.getElementById('rareToken').innerText = rarest[1] > 0 ? rarest[0] : "-";
+
+        // Render Sesión
+        document.getElementById('sessionGrid').innerHTML = TOKENS.map(t => {
+            const count = session[t.id];
+            const prog = Math.min((count / goal) * 100, 100);
+            return `
+            <div class="card ${count > 0 ? 'has-tokens' : 'empty'}">
+                <img src="${t.img}" class="token-img-big" onerror="this.src='https://via.placeholder.com/90/333/00e5ff?text=${t.id[0]}'">
+                <div class="token-name">${t.id}</div>
+                <div class="controls">
+                    <button class="btn-count" onclick="change('${t.id}', -1)">-</button>
+                    <span class="val">${count}</span>
+                    <button class="btn-count plus" onclick="change('${t.id}', 1)">+</button>
+                </div>
+                <div class="goal-track"><div class="goal-progress" style="width: ${prog}%"></div></div>
+            </div>
+        `}).join('');
+
+        // Render Inventario
+        document.getElementById('inventoryGrid').innerHTML = TOKENS.map(t => `
+            <div class="inv-card">
+                <div class="inv-header">
+                    <img src="${t.img}" class="inv-img-small" onerror="this.style.opacity='0.2'">
+                    <div class="inv-info">
+                        <span class="inv-label">${t.id}</span>
+                        <span class="inv-val">${vault[t.id]}</span>
+                    </div>
+                    <button class="u-btn" onclick="withdrawOne('${t.id}')">↑ 1</button>
+                </div>
+            </div>
+        `).join('');
+
+        // Logs
+        document.getElementById('historyLog').innerHTML = logs.map(l => `
+            <div class="log-entry"><span style="color:var(--cyan)">[${l.time}]</span> <strong>${l.type}</strong>: ${l.details}</div>
+        `).join('');
+
+        // Botón Moonbox
+        const sessionClaims = Math.min(...Object.values(session));
+        document.getElementById('sessionClaimCount').innerText = sessionClaims;
+        document.getElementById('claimBtn').disabled = sessionClaims <= 0;
+    }
+
+    function change(id, v) { if(session[id]+v >= 0) { session[id]+=v; save(); } }
+
+    function moveToInventory() {
+        let det = [];
+        TOKENS.forEach(t => {
+            if(session[t.id]>0) {
+                det.push(`${session[t.id]} ${t.id}`);
+                vault[t.id] += session[t.id];
+                session[t.id] = 0;
+            }
+        });
+        if(det.length) { addLog("GUARDADO", det.join(', ')); save(); }
+    }
+
+    function withdrawOne(id) {
+        if(vault[id] > 0) { vault[id]--; session[id]++; save(); }
+    }
+
+    function withdrawAll() {
+        TOKENS.forEach(t => { session[t.id] += vault[t.id]; vault[t.id] = 0; });
+        addLog("RETIRO TOTAL", "Todo el inventario subido a sesión");
+        save();
+    }
+
+    function claim() {
+        TOKENS.forEach(t => session[t.id]--);
+        addLog("MOONBOX", "Reclamada con éxito");
+        save();
+    }
+
+    function setGoal() {
+        const n = prompt("¿Cuál es tu meta de tokens por sesión?", goal);
+        if(n > 0) { goal = n; localStorage.setItem('goal_v6', n); render(); }
+    }
+
+    function addLog(type, details) {
+        const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        logs.unshift({time, type, details});
+        if(logs.length > 30) logs.pop();
+    }
+
+    function clearHistory() { if(confirm("¿Borrar historial?")) { logs=[]; save(); } }
+
+    function exportData() {
+        const data = JSON.stringify({session, vault, logs, goal});
+        const blob = new Blob([data], {type: 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `backup_tokens_${new Date().toLocaleDateString()}.json`;
+        a.click();
+    }
+
+    function importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = e => {
+            const reader = new FileReader();
+            reader.onload = event => {
+                const d = JSON.parse(event.target.result);
+                session = d.session; vault = d.vault; logs = d.logs; goal = d.goal;
+                save();
+            };
+            reader.readAsText(e.target.files[0]);
+        };
+        input.click();
+    }
+
+    render();
+</script>
+
+</body>
+</html>
