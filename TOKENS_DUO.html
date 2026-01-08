@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokens_DUO_By_Zan</title>
+    <style>
+        :root {
+            --bg: #0b0915;
+            --card: rgba(255, 255, 255, 0.04);
+            --cyan: #00e5ff;
+            --purple: #8a4fff;
+            --green: #2ecc71;
+            --gold: #c5a059;
+            --danger: #ff4444;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--bg);
+            background-image: radial-gradient(circle at 50% 0%, #1a1635, #0b0915);
+            color: var(--text);
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center;
+        }
+
+        .container { width: 100%; max-width: 1000px; padding-bottom: 50px; display: none; }
+
+        /* Login Interface */
+        #loginScreen {
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: var(--bg); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 2000;
+        }
+        .login-box { 
+            background: var(--card); padding: 40px; border-radius: 20px; 
+            border: 1px solid var(--cyan); text-align: center; width: 320px;
+        }
+        .login-box input { 
+            display: block; width: 100%; margin: 10px 0; padding: 12px; 
+            background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; 
+            border-radius: 8px; box-sizing: border-box;
+        }
+
+        /* Stats Bar */
+        .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid #222; text-align: center; }
+        .stat-val { display: block; font-size: 1.5rem; font-weight: bold; color: var(--cyan); }
+        .stat-label { font-size: 0.7rem; color: #777; text-transform: uppercase; }
+
+        /* Selector de Estilo */
+        .style-selector {
+            display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.2); 
+            padding: 10px; border-radius: 12px; border: 1px solid #333; justify-content: center;
+        }
+        .style-btn {
+            background: #1a1a1a; color: #666; border: 1px solid #333; padding: 8px 15px;
+            border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: bold; transition: 0.3s;
+        }
+        .style-btn.active { background: var(--purple); color: white; border-color: var(--purple); box-shadow: 0 0 10px rgba(138, 79, 255, 0.4); }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin: 30px 0 15px; }
+        .section-title { font-size: 0.75rem; color: #777; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; flex-grow: 1; }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: #333; margin-left: 10px; }
+
+        /* Grid Session */
+        .grid-session { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+        .card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; text-align: center; transition: 0.4s; }
+        .card.has-tokens { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 229, 255, 0.15); }
+        .card.empty { filter: grayscale(1); opacity: 0.5; }
+
+        .token-img-big { width: 90px; height: 90px; margin: 0 auto 15px; display: block; object-fit: contain; }
+        .token-name { font-size: 0.8rem; font-weight: bold; margin-bottom: 15px; }
+
+        .controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .btn-count { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #444; background: none; color: white; cursor: pointer; font-size: 1.2rem; }
+        .btn-count.plus { border-color: var(--cyan); color: var(--cyan); }
+        .val { font-size: 1.6rem; font-weight: bold; min-width: 35px; }
+
+        .main-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin: 30px 0; }
+        .btn { padding: 18px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; transition: 0.3s; }
+        .btn-save { background: var(--green); color: #000; }
+        .btn-claim { background: var(--purple); color: #fff; position: relative; }
+        .btn-claim span { position: absolute; top: -10px; right: -5px; background: var(--gold); color: black; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; }
+        .btn:disabled { opacity: 0.2; filter: grayscale(1); }
+
+        /* Grid Inventory */
+        .grid-inventory { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .inv-card { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px; border-left: 4px solid var(--gold); }
+        .inv-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .inv-img-small { width: 35px; height: 35px; object-fit: contain; }
+        .inv-val { color: var(--gold); font-size: 1.1rem; font-weight: bold; }
+
+        .u-btn { background: #222; color: #888; border: 1px solid #333; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.7rem; }
+        .history { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; font-size: 0.8rem; max-height: 250px; overflow-y: auto; }
+        .log-entry { margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+        
+        #adminArea { display: none; background: rgba(255, 68, 68, 0.1); border: 1px solid var(--danger); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="loginScreen">
+    <div class="login-box">
+        <h2 style="color:var(--cyan); margin-bottom: 5px;">TOKEN TRACKER DUO</h2>
+        <p style="font-size:0.65rem; color:#777; margin-bottom: 20px;">SISTEMA DE ENLACE COMPARTIDO POR LLAVE UNICA</p>
+        <input type="text" id="userInput" placeholder="Nombre de Usuario">
+        <input type="text" id="syncKey" placeholder="Llave de Sincronización">
+        <button class="btn btn-save" style="width:100%; margin-top: 10px;" onclick="attemptLogin()">CONECTAR</button>
+    </div>
+</div>
+
+<div class="container" id="mainApp">
+    <div id="adminArea">
+        <div class="section-title" style="color:var(--danger)">Consola Maestra Administrador</div>
+        <div id="adminReport" style="font-size: 0.75rem; margin-top:10px;"></div>
+    </div>
+
+    <div class="header-app" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+        <div style="font-size:0.75rem">
+            <span id="syncDot" style="color:var(--green)">●</span> <span id="syncText">Sincronizado</span> | 
+            Llave: <b id="displayKey" style="color:var(--gold)">-</b> | 
+            Usuario: <b id="displayUser" style="color:var(--cyan)">-</b>
+        </div>
+        <button class="u-btn" onclick="location.reload()">Salir</button>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-card"><span class="stat-val" id="possibleClaims">0</span><span class="stat-label">Disponibles</span></div>
+        <div class="stat-card"><span class="stat-val" id="totalCollected">0</span><span class="stat-label">Total Vault</span></div>
+        <div class="stat-card"><span class="stat-val" id="rareToken">-</span><span class="stat-label">Token Escaso</span></div>
+    </div>
+
+    <div class="section-title">Visualización de Iconos</div>
+    <div class="style-selector">
+        <button class="style-btn active" onclick="changeIconStyle('TRADUCIDO', this)">TRADUCIDO</button>
+        <button class="style-btn" onclick="changeIconStyle('JAPONES', this)">ORIGINAL</button>
+        <button class="style-btn" onclick="changeIconStyle('TECLADO', this)">TECLADO</button>
+    </div>
+
+    <div class="section-title">Sesión Activa</div>
+    <div id="sessionGrid" class="grid-session"></div>
+
+    <div class="main-actions">
+        <button class="btn btn-save" onclick="moveToInventory()">Guardar en Inventario</button>
+        <button class="btn btn-claim" id="claimBtn" onclick="claim()">Reclamar Moonbox <span id="sessionClaimCount">0</span></button>
+    </div>
+
+    <div class="section-header">
+        <div class="section-title">Inventario Compartido</div>
+        <button class="u-btn" onclick="withdrawAll()" style="border-color: var(--gold); color: var(--gold);">Retirar Todo</button>
+    </div>
+    <div id="inventoryGrid" class="grid-inventory"></div>
+
+    <div class="section-header">
+        <div class="section-title">Historial de Farmeo</div>
+        <button class="u-btn" onclick="clearHistory()" style="border-color: var(--danger);">Limpiar</button>
+    </div>
+    <div class="history" id="historyLog"></div>
+</div>
+
+<script>
+    const TOKENS_LIST = ["CALMED", "DISTURBED", "PROSPEROUS", "DESERTED", "CHAOS", "PEACE"];
+    
+    // DEFINICIÓN DE IMÁGENES POR ESTILO
+    const STYLES = {
+        TRADUCIDO: {
+            CALMED: "calmed.png", DISTURBED: "disturbed.png", PROSPEROUS: "prosperous.png",
+            DESERTED: "deserted.png", CHAOS: "chaos.png", PEACE: "peace.png"
+        },
+        JAPONES: {
+            CALMED: "jp_calmed.png", DISTURBED: "jp_disturbed.png", PROSPEROUS: "jp_prosperous.png",
+            DESERTED: "jp_deserted.png", CHAOS: "jp_chaos.png", PEACE: "jp_peace.png"
+        },
+        TECLADO: {
+            CALMED: "kb_calmed.png", DISTURBED: "kb_disturbed.png", PROSPEROUS: "kb_prosperous.png",
+            DESERTED: "kb_deserted.png", CHAOS: "kb_chaos.png", PEACE: "kb_peace.png"
+        }
+    };
+
+    let currentStyle = "TRADUCIDO";
+    let currentUser = "";
+    let currentKey = "";
+    let lastKnownUpdate = 0;
+    let userIP = "IP-" + Math.floor(Math.random()*99);
+    let isAdmin = false;
+
+    let db = {
+        session: { CALMED:0, DISTURBED:0, PROSPEROUS:0, DESERTED:0, CHAOS:0, PEACE:0 },
+        vault: { CALMED:0, DISTURBED:0, PROSPEROUS:0, DESERTED:0, CHAOS:0, PEACE:0 },
+        logs: [], users: []
+    };
+
+    function attemptLogin() {
+        const u = document.getElementById('userInput').value.trim().toUpperCase();
+        const k = document.getElementById('syncKey').value.trim().toUpperCase();
+        if(u === "ADM") { isAdmin = true; currentUser = "ADM"; document.getElementById('adminArea').style.display='block'; }
+        else {
+            if(!u || !k) return alert("Ingresa datos");
+            currentUser = u; currentKey = k;
+            let saved = JSON.parse(localStorage.getItem('db_' + k));
+            if(saved) {
+                if(!saved.users.includes(u) && saved.users.length >= 2) return alert("Llave llena");
+                if(!saved.users.includes(u)) saved.users.push(u);
+                db = saved;
+            } else { db.users.push(u); }
+            lastKnownUpdate = localStorage.getItem('upd_' + k) || Date.now();
+            localStorage.setItem('db_' + k, JSON.stringify(db));
+        }
+        document.getElementById('loginScreen').style.display='none';
+        document.getElementById('mainApp').style.display='block';
+        if(!isAdmin) { document.getElementById('displayUser').innerText = currentUser; document.getElementById('displayKey').innerText = currentKey; startAutoSync(); }
+        render();
+    }
+
+    function changeIconStyle(style, btn) {
+        currentStyle = style;
+        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    }
+
+    function startAutoSync() {
+        setInterval(() => {
+            if(isAdmin) return;
+            const serverUpdate = localStorage.getItem('upd_' + currentKey) || 0;
+            if(serverUpdate > lastKnownUpdate) {
+                document.getElementById('syncDot').style.color = 'var(--gold)';
+                setTimeout(() => {
+                    const fresh = JSON.parse(localStorage.getItem('db_' + currentKey));
+                    if(fresh) { db = fresh; lastKnownUpdate = serverUpdate; render(); }
+                    document.getElementById('syncDot').style.color = 'var(--green)';
+                }, 600);
+            }
+        }, 5000);
+    }
+
+    function save() {
+        if(isAdmin) return;
+        const now = Date.now();
+        lastKnownUpdate = now;
+        localStorage.setItem('db_' + currentKey, JSON.stringify(db));
+        localStorage.setItem('upd_' + currentKey, now);
+        render();
+    }
+
+    function render() {
+        // Stats
+        document.getElementById('totalCollected').innerText = Object.values(db.vault).reduce((a,b)=>a+b,0);
+        document.getElementById('possibleClaims').innerText = Math.min(...Object.values(db.vault));
+        const counts = Object.entries(db.vault).sort((a,b)=>a[1]-b[1]);
+        document.getElementById('rareToken').innerText = counts[0][1] > 0 ? counts[0][0] : "-";
+
+        // Render Session
+        document.getElementById('sessionGrid').innerHTML = TOKENS_LIST.map(id => `
+            <div class="card ${db.session[id] > 0 ? 'has-tokens' : 'empty'}">
+                <img src="${STYLES[currentStyle][id]}" class="token-img-big" onerror="this.src='https://via.placeholder.com/90/333/00e5ff?text=${id[0]}'">
+                <div class="token-name">${id}</div>
+                <div class="controls">
+                    <button class="btn-count" onclick="change('${id}', -1)">-</button>
+                    <span class="val">${db.session[id]}</span>
+                    <button class="btn-count plus" onclick="change('${id}', 1)">+</button>
+                </div>
+            </div>`).join('');
+
+        // Render Inventory
+        document.getElementById('inventoryGrid').innerHTML = TOKENS_LIST.map(id => `
+            <div class="inv-card">
+                <div class="inv-header">
+                    <img src="${STYLES[currentStyle][id]}" class="inv-img-small" onerror="this.style.opacity='0.2'">
+                    <div class="inv-info">
+                        <span style="font-size:0.65rem; color:#666">${id}</span><br>
+                        <span class="inv-val">${db.vault[id]}</span>
+                    </div>
+                    <button class="u-btn" onclick="withdrawOne('${id}')" style="margin-left:auto">Extraer</button>
+                </div>
+            </div>`).join('');
+
+        // Logs
+        document.getElementById('historyLog').innerHTML = db.logs.map(l => `
+            <div class="log-entry"><span style="color:#555; font-size:0.7rem">[${l.ip}]</span> <span style="color:var(--cyan)">[${l.time}]</span> <b style="color:var(--purple)">${l.user}</b>: ${l.details}</div>
+        `).join('');
+
+        document.getElementById('sessionClaimCount').innerText = Math.min(...Object.values(db.session));
+        document.getElementById('claimBtn').disabled = Math.min(...Object.values(db.session)) <= 0;
+        if(isAdmin) renderAdmin();
+    }
+
+    function change(id, v) { if(db.session[id]+v >= 0) { db.session[id]+=v; addLog("MOD", `${v>0?'+1':'-1'} ${id}`); save(); } }
+    
+    function moveToInventory() {
+        let moved = false;
+        TOKENS_LIST.forEach(id => { if(db.session[id]>0) { db.vault[id]+=db.session[id]; db.session[id]=0; moved=true; } });
+        if(moved) { addLog("VAULT", "Tokens guardados"); save(); }
+    }
+
+    function withdrawOne(id) { if(db.vault[id]>0) { db.vault[id]--; db.session[id]++; addLog("VAULT", "Retiró 1 "+id); save(); } }
+
+    function withdrawAll() { TOKENS_LIST.forEach(id => { db.session[id]+=db.vault[id]; db.vault[id]=0; }); addLog("VAULT", "Retiro total"); save(); }
+
+    function claim() { TOKENS_LIST.forEach(id => db.session[id]--); addLog("CLAIM", "Moonbox reclamada"); save(); }
+
+    function addLog(type, details) {
+        const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+        db.logs.unshift({time, type, details, user: currentUser, ip: userIP});
+        if(db.logs.length > 50) db.logs.pop();
+    }
+
+    function renderAdmin() {
+        let keys = Object.keys(localStorage).filter(k => k.startsWith('db_'));
+        document.getElementById('adminReport').innerHTML = keys.map(k => {
+            let d = JSON.parse(localStorage.getItem(k));
+            return `🔑 ${k.replace('db_','')} | Usuarios: ${d.users.join(' & ')} | Vault: ${Object.values(d.vault).reduce((a,b)=>a+b,0)}<br>`;
+        }).join('');
+    }
+
+    function clearHistory() { if(confirm("¿Limpiar historial?")) { db.logs=[]; save(); } }
+</script>
+
+</body>
+</html>
