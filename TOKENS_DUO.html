@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Token_MOONBOX</title>
+    <title>MOONBOX NOTE</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
@@ -17,6 +17,20 @@
             --gold: #c5a059;
             --danger: #ff4444;
             --text: #ffffff;
+            --admin-bg: #050508;
+        }
+
+        /* OPTIMIZACIÓN DE HEADERS */
+        .section-header { 
+            font-size: 0.7rem; 
+            color: #555; 
+            text-transform: uppercase; 
+            margin: 25px 0 10px; 
+            border-bottom: 1px solid #222; 
+            padding-bottom: 5px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
         }
 
         body {
@@ -36,21 +50,46 @@
         .login-box { background: var(--card); padding: 40px; border-radius: 20px; border: 1px solid var(--cyan); text-align: center; width: 320px; }
         .login-box input { display: block; width: 100%; margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none;}
 
+        /* ADMIN PANEL STYLES */
+        #adminPanel { width: 100%; max-width: 1200px; display: none; animation: fadeIn 0.5s; }
+        .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; margin-top: 20px; }
+        .key-card { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 15px; padding: 20px; position: relative; overflow: hidden; transition: 0.3s; }
+        .key-card.inactive { opacity: 0.5; filter: grayscale(0.8); }
+        .key-card::before { content: ""; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--purple); }
+        .key-title { color: var(--gold); font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .key-stats { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .mini-badge { background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #222; }
+        
         /* STATS */
-        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .stat-card { background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid #222; text-align: center; }
+        .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid #222; text-align: center; position: relative; overflow: hidden;}
         .stat-val { display: block; font-size: 1.2rem; font-weight: bold; color: var(--cyan); }
         .stat-label { font-size: 0.55rem; color: #555; text-transform: uppercase; }
 
-        .balance-container { background: #111; height: 10px; border-radius: 5px; margin: 10px 0 20px; display: flex; overflow: hidden; border: 1px solid #222; }
-        .balance-segment { height: 100%; transition: width 0.4s ease; }
+        /* BARRA DINÁMICA */
+        .balance-container { background: #111; height: 10px; border-radius: 5px; margin: 10px 0 20px; display: flex; overflow: hidden; border: 1px solid #222; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .balance-segment { height: 100%; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+        .balance-segment::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shine 2s infinite; }
 
-        /* GRIDS */
-        .section-header { font-size: 0.7rem; color: #555; text-transform: uppercase; margin: 25px 0 10px; border-bottom: 1px solid #222; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+        /* CARDS */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-        .card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; text-align: center; transition: 0.3s; opacity: 0.4; filter: grayscale(1); position: relative; }
+        .card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; text-align: center; transition: 0.3s; opacity: 0.4; filter: grayscale(1); }
         .card.has-tokens { opacity: 1; filter: grayscale(0); border-color: var(--cyan); }
+        .card.is-needed { border: 1px solid var(--gold); box-shadow: inset 0 0 10px rgba(197, 160, 89, 0.2); animation: pulse-gold 2s infinite; opacity: 1; filter: grayscale(0); }
         
+        @keyframes pulse-gold { 
+			0% { border-color: #333; } 
+			50% { 
+				/* CAMBIA ESTE COLOR */
+				border-color: #ff4444; 
+				/* CAMBIA EL COLOR DEL RESPALNDOR (GLOW) AQUÍ */
+				box-shadow: 0 0 15px rgba(255, 68, 68, 0.6); 
+			} 
+			100% { border-color: #333; } 
+		}
+
         .token-img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 8px; transition: transform 0.3s; }
         .card:hover .token-img { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--cyan)); }
 
@@ -58,32 +97,40 @@
         .comm-box { background: rgba(0,0,0,0.3); border: 1px solid #222; border-radius: 12px; height: 250px; display: flex; flex-direction: column; }
         .comm-content { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.7rem; font-family: monospace; }
         
-        /* BOTONES */
-        .u-btn { background: #222; color: #777; border: 1px solid #333; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.65rem; }
+        /* BOTONES UI/UX */
+        .u-btn { background: #222; color: #777; border: 1px solid #333; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.65rem; transition: 0.2s; }
         .u-btn:hover { color: #fff; border-color: var(--cyan); }
-        .u-btn-mini { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; cursor: pointer; }
-        .btn-main { padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; width: 100%; }
+        .u-btn:active { transform: scale(0.9); }
+        .u-btn-mini { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; cursor: pointer; transition: 0.2s; }
+        .u-btn-mini:active { transform: scale(0.9); }
+        .btn-main { padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; width: 100%; transition: 0.3s; }
+        .btn-main:active { transform: scale(0.98); filter: brightness(1.2); }
 
-        /* MODO COMPACTO - IMPLEMENTACIÓN LIMPIA */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         body.compact .container { max-width: 450px; }
         body.compact .grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        body.compact .card { padding: 8px; border-radius: 8px; }
-        body.compact .token-img { width: 30px; height: 30px; margin-bottom: 4px; }
-        body.compact .stat-val { font-size: 0.9rem; }
-        body.compact .comm-grid { grid-template-columns: 1fr; }
-        body.compact .stats-bar { gap: 5px; }
+        body.compact .stats-bar { grid-template-columns: repeat(2, 1fr); }
     </style>
 </head>
 <body>
 
 <div id="loginScreen">
     <div class="login-box">
-        <h2 style="color:var(--cyan); margin-bottom: 5px;">MOONBOX NOTE</h2>
-        <p style="font-size:0.6rem; color:#777; margin-bottom: 20px;">SISTEMA DE ENLACE COMPARTIDO POR LLAVE UNICA</p>
+        <h2 style="color:var(--cyan); margin-bottom: 1px;">MOONBOX NOTE</h2>
+        <p style="font-size:0.6rem; color:#777; margin-bottom: 10px;">APP DE NOTA COMPARTIDA POR LLAVE WEB</p>
         <input type="text" id="userInput" placeholder="USUARIO">
         <input type="text" id="syncKey" placeholder="LLAVE DE RED">
         <button class="btn-main" style="background:var(--cyan); color:#000;" onclick="attemptLogin()">CONECTAR</button>
     </div>
+</div>
+
+<div id="adminPanel">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1 style="color:var(--cyan); font-size: 1rem;">CENTRAL ADM - DATABASE LIVE</h1>
+        <button class="u-btn" style="border-color:var(--danger); color:var(--danger)" onclick="location.reload()">SALIR PANEL</button>
+    </div>
+    <div id="adminContainer" class="admin-grid"></div>
 </div>
 
 <div class="container" id="mainApp">
@@ -99,18 +146,18 @@
 
     <div class="stats-bar">
         <div class="stat-card"><span class="stat-val" id="statCanClaim">0</span><span class="stat-label">Reclamables</span></div>
-        <div class="stat-card"><span class="stat-val" id="statTotalTokens">0</span><span class="stat-label">Total Red</span></div>
-        <div class="stat-card"><span class="stat-val" id="statEscaso" style="color:var(--gold)">-</span><span class="stat-label">Escaso</span></div>
+        <div class="stat-card"><span class="stat-val" id="statTotalTokens">0</span><span class="stat-label">Total Tokens</span></div>
+        <div class="stat-card"><span class="stat-val" id="statEscaso" style="color:var(--gold)">-</span><span class="stat-label">Token mas Escaso</span></div>
+        <div class="stat-card" style="border-color:var(--purple)"><span class="stat-val" id="statGlobalClaims" style="color:var(--purple)">0</span><span class="stat-label">Cajas Totales Reclamadas en esta Key</span></div>
     </div>
-    
     <div id="balanceBar" class="balance-container"></div>
 
     <div class="section-header">
-        Sesión Activa
+        <span>Sesión Activa</span>
         <div style="display:flex; gap:5px">
-             <button class="u-btn-mini" onclick="setStyle('JAPONES')">Original</button>
-			<button class="u-btn-mini" onclick="setStyle('TRADUCIDO')">Traducido</button>
+            <button class="u-btn-mini" onclick="setStyle('ORIGINAL')">Original</button>
             <button class="u-btn-mini" onclick="setStyle('TECLADO')">Teclado</button>
+            <button class="u-btn-mini" onclick="setStyle('TRADUCIDO')">Traducido</button>
         </div>
     </div>
     <div id="sessionGrid" class="grid"></div>
@@ -157,70 +204,113 @@
     const TOKENS = ["CALMED", "DISTURBED", "PROSPEROUS", "DESERTED", "CHAOS", "PEACE"];
     const COLORS = ["#00e5ff", "#8a4fff", "#2ecc71", "#c5a059", "#ff4444", "#ffffff"];
     const STYLES = {
+        ORIGINAL: { CALMED: "jp_calmed.png", DISTURBED: "jp_disturbed.png", PROSPEROUS: "jp_prosperous.png", DESERTED: "jp_deserted.png", CHAOS: "jp_chaos.png", PEACE: "jp_peace.png" },
+        TECLADO: { CALMED: "kb_calmed.png", DISTURBED: "kb_disturbed.png", PROSPEROUS: "kb_prosperous.png", DESERTED: "kb_deserted.png", CHAOS: "kb_chaos.png", PEACE: "kb_peace.png" },
         TRADUCIDO: { CALMED: "calmed.png", DISTURBED: "disturbed.png", PROSPEROUS: "prosperous.png", DESERTED: "deserted.png", CHAOS: "chaos.png", PEACE: "peace.png" },
-        JAPONES: { CALMED: "jp_calmed.png", DISTURBED: "jp_disturbed.png", PROSPEROUS: "jp_prosperous.png", DESERTED: "jp_deserted.png", CHAOS: "jp_chaos.png", PEACE: "jp_peace.png" },
-        TECLADO: { CALMED: "kb_calmed.png", DISTURBED: "kb_disturbed.png", PROSPEROUS: "kb_prosperous.png", DESERTED: "kb_deserted.png", CHAOS: "kb_chaos.png", PEACE: "kb_peace.png" }
     };
 
-    let currentUser = "", currentKey = "", currentStyle = "JAPONES";
-    let db = { session:{}, vault:{}, chat:[], logs:[] };
+    let currentUser = "", currentKey = "", currentStyle = "ORIGINAL";
+    let db = { session:{}, vault:{}, chat:[], logs:[], totalClaims: 0 };
 
     function attemptLogin() {
         const userIn = document.getElementById('userInput').value.trim().toUpperCase();
         const keyIn = document.getElementById('syncKey').value.trim().toUpperCase();
         if(!userIn || !keyIn) return;
-
         currentUser = userIn;
         currentKey = keyIn;
+        if(currentKey === "ADM") { runAdminPanel(); return; }
 
-        // Primero escuchamos para no sobreescribir
         database.ref('keys/' + currentKey).on('value', (s) => {
             const data = s.val();
-            if(data) {
-                db = data;
-                // Asegurar que existan los objetos internos
-                if(!db.session) db.session = {};
-                if(!db.vault) db.vault = {};
-                if(!db.logs) db.logs = [];
-                if(!db.chat) db.chat = [];
-            } else {
-                // Si la llave es nueva, inicializar objeto base
-                db = { session:{}, vault:{}, chat:[], logs:[] };
-            }
+            if(data) db = data;
             render();
         });
-
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
         document.getElementById('displayUser').innerText = currentUser;
         document.getElementById('displayKey').innerText = currentKey;
-        
-        // Log de entrada solo se dispara una vez al logear
-        setTimeout(() => addLog("INGRESÓ"), 1000);
+        setTimeout(() => addLog("INGRESÓ", "login"), 1000);
     }
+
+    function runAdminPanel() {
+		document.getElementById('loginScreen').style.display = 'none';
+		document.getElementById('adminPanel').style.display = 'block';
+		
+		database.ref('keys').on('value', (snap) => {
+			const allKeys = snap.val() || {};
+			const container = document.getElementById('adminContainer');
+			container.innerHTML = "";
+
+			Object.keys(allKeys).forEach(keyID => {
+				const data = allKeys[keyID];
+				const logs = data.logs || [];
+				
+				// --- NUEVA LÓGICA PARA USUARIOS ---
+				// Extraemos todos los usuarios del historial y eliminamos duplicados
+				const todosLosUsuarios = [...new Set(logs.map(l => l.u))].filter(u => u); 
+				// ----------------------------------
+
+				const card = document.createElement('div');
+				card.className = 'key-card';
+				card.innerHTML = `
+					<div class="key-title">
+						<span>🔑 ${keyID}</span> 
+						<span style="color:var(--purple)">${data.totalClaims || 0} 📦</span>
+					</div>
+					
+					<div class="key-stats" style="margin-bottom: 10px;">
+						<span class="mini-badge" style="color:var(--cyan); border-color:var(--cyan)">
+							👥 PARTICIPANTES: ${todosLosUsuarios.length > 0 ? todosLosUsuarios.join(', ') : 'Ninguno'}
+						</span>
+					</div>
+
+					<div class="key-stats">
+						<span class="mini-badge">🕒 ÚLTIMO MOV: ${logs[0]?.d || '--'}</span>
+						<span class="mini-badge">👤 POR: ${logs[0]?.u || '--'}</span>
+					</div>
+
+					<div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; background:rgba(0,0,0,0.2); padding:8px; border-radius:8px; margin-top:5px;">
+						${TOKENS.map(t => `
+							<div style="font-size:0.6rem; color:${(data.vault?.[t]||0)>0 ? 'var(--cyan)' : '#444'}">
+								${t}: ${data.vault?.[t]||0}
+							</div>
+						`).join('')}
+					</div>
+
+					<button class="u-btn-mini" style="width:100%; margin-top:10px" onclick="impersonate('${keyID}')">ESPIAR RED</button>
+				`;
+				container.appendChild(card);
+			});
+		});
+	}
 
     function render() {
         const s = db.session || {};
         const v = db.vault || {};
-
         let totalT = 0;
-        let counts = TOKENS.map(t => v[t] || 0);
-        counts.forEach(c => totalT += c);
+        TOKENS.forEach(t => totalT += (v[t] || 0));
+        
+        const counts = TOKENS.map(t => v[t] || 0);
         const canClaim = Math.min(...counts);
         const escasoIdx = counts.indexOf(Math.min(...counts));
+        const tokenEscaso = TOKENS[escasoIdx];
 
         document.getElementById('statCanClaim').innerText = canClaim;
         document.getElementById('statTotalTokens').innerText = totalT;
-        document.getElementById('statEscaso').innerText = totalT > 0 ? TOKENS[escasoIdx] : "-";
+        document.getElementById('statEscaso').innerText = totalT > 0 ? tokenEscaso : "-";
+        document.getElementById('statGlobalClaims').innerText = db.totalClaims || 0;
 
+        // BARRA DINÁMICA
         document.getElementById('balanceBar').innerHTML = TOKENS.map((t, i) => {
             const pct = totalT > 0 ? ((v[t] || 0) / totalT) * 100 : 16.6;
             return `<div class="balance-segment" style="width:${pct}%; background:${COLORS[i]}"></div>`;
         }).join('');
 
+        // GRID CON ALERTA DE ESCASO
         document.getElementById('sessionGrid').innerHTML = TOKENS.map(t => {
             const val = s[t] || 0;
-            return `<div class="card ${val > 0 ? 'has-tokens' : ''}">
+            const isNeeded = (t === tokenEscaso && totalT > 0);
+            return `<div class="card ${val > 0 ? 'has-tokens' : ''} ${isNeeded ? 'is-needed' : ''}">
                 <img src="${STYLES[currentStyle][t]}" class="token-img" onerror="this.src='https://via.placeholder.com/40?text=${t[0]}'">
                 <div style="font-size:0.5rem; font-weight:bold">${t}</div>
                 <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:5px">
@@ -238,30 +328,87 @@
                 <button class="u-btn" style="width:100%; margin-top:5px; padding:2px" onclick="withdrawOne('${t}')">↑</button>
             </div>`).join('');
 
-        document.getElementById('logBox').innerHTML = (db.logs || []).map(l => `<div><span style="color:#555">[${l.d}]</span> <b style="color:var(--cyan)">${l.u}</b> ${l.m}</div>`).join('');
+        // COLORES EN HISTORIAL
+        document.getElementById('logBox').innerHTML = (db.logs || []).map(l => {
+            let color = "#fff";
+			if(l.m.includes("RECLAMÓ")) color = "var(--gold)";
+			if(l.m.includes("INGRESÓ")) color = "var(--green)";
+			if(l.m.includes("INVENTARIO") || l.m.includes("TODO")) color = "#5dade2";
+            return `<div style="color:${color}"><span style="color:#555">[${l.d}]</span> <b>${l.u}</b> ${l.m}</div>`;
+        }).join('');
+        
         document.getElementById('chatBox').innerHTML = (db.chat || []).map(m => `<div><b style="color:var(--cyan)">${m.u}:</b> ${m.t}</div>`).join('');
         document.getElementById('claimText').innerText = Math.min(...TOKENS.map(t => s[t] || 0));
     }
 
     function change(t, v) {
         if(!db.session) db.session = {};
-        db.session[t] = Math.max(0, (db.session[t] || 0) + v);
+        if (v < 0 && (db.session[t] || 0) <= 0) return;
+        db.session[t] = (db.session[t] || 0) + v;
         addLog(`${v > 0 ? '+1' : '-1'} ${t}`);
         save();
     }
 
-    function moveToVault() {
-        TOKENS.forEach(t => {
-            if(db.session[t] > 0) {
-                if(!db.vault) db.vault = {};
-                db.vault[t] = (db.vault[t] || 0) + db.session[t];
-                db.session[t] = 0;
-            }
-        });
-        addLog("SUBIÓ INVENTARIO");
-        save();
+    function doClaim() {
+        const minAvailable = Math.min(...TOKENS.map(t => db.session[t] || 0));
+        if (minAvailable > 0) {
+            const detalle = TOKENS.map(t => `-1 ${t}`).join(', ');
+            TOKENS.forEach(t => db.session[t]--);
+            db.totalClaims = (db.totalClaims || 0) + 1; // CONTADOR DE CAJAS
+            addLog(`!!! RECLAMÓ CAJA (${detalle}) !!!`);
+            save();
+        }
     }
 
+    function addLog(m, type) {
+        if(!db.logs) db.logs = [];
+        const now = new Date();
+        const d = `${now.getDate()}/${now.getMonth()+1} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+        db.logs.unshift({ d, u: currentUser, m });
+        if(db.logs.length > 40) db.logs.pop();
+    }
+
+    function impersonate(targetKey) {
+        currentKey = targetKey;
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        database.ref('keys/' + currentKey).on('value', (s) => {
+            db = s.val() || { session:{}, vault:{}, chat:[], logs:[], totalClaims: 0 };
+            render();
+        });
+        document.getElementById('displayKey').innerText = currentKey;
+        document.getElementById('displayUser').innerText = currentUser + " (ADM)";
+    }
+
+    // Funciones restantes se mantienen igual...
+    function moveToVault() {
+		let totalAMover = 0;
+		let resumen = []; // Aquí guardaremos los nombres y cantidades
+
+		// 1. Analizar qué hay para mover
+		TOKENS.forEach(t => {
+			const cantidad = db.session[t] || 0;
+			if (cantidad > 0) {
+				totalAMover += cantidad;
+				resumen.push(`${cantidad} ${t}`); // Ejemplo: "5 CALMED"
+			}
+		});
+		
+		if (totalAMover === 0) return; 
+
+		// 2. Ejecutar movimiento real
+		TOKENS.forEach(t => {
+			if(db.session[t] > 0) {
+				if(!db.vault) db.vault = {};
+				db.vault[t] = (db.vault[t] || 0) + db.session[t];
+				db.session[t] = 0;
+			}
+		});
+		
+		// 3. Registrar con el detalle (Ejemplo: "SUBIÓ INVENTARIO: 5 CALMED, 2 CHAOS")
+		addLog(`SUBIÓ INVENTARIO: ${resumen.join(', ')}`);
+		save();
+	}
     function withdrawOne(t) {
         if(db.vault[t] > 0) {
             db.vault[t]--;
@@ -270,30 +417,31 @@
             save();
         }
     }
-
     function withdrawAll() {
-        TOKENS.forEach(t => {
-            db.session[t] = (db.session[t] || 0) + (db.vault[t] || 0);
-            db.vault[t] = 0;
-        });
-        addLog("RETIRÓ TODO");
-        save();
-    }
+		let totalEnVault = 0;
+		let resumen = [];
 
-    function doClaim() {
-        TOKENS.forEach(t => db.session[t]--);
-        addLog("!!! RECLAMÓ !!!");
-        save();
-    }
+		// 1. Analizar qué hay en el baúl antes de vaciarlo
+		TOKENS.forEach(t => {
+			const cantidad = db.vault[t] || 0;
+			if (cantidad > 0) {
+				totalEnVault += cantidad;
+				resumen.push(`${cantidad} ${t}`);
+			}
+		});
 
-    function addLog(m) {
-        if(!db.logs) db.logs = [];
-        const now = new Date();
-        const d = `${now.getDate()}/${now.getMonth()+1} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
-        db.logs.unshift({ d, u: currentUser, m });
-        if(db.logs.length > 40) db.logs.pop();
-    }
+		if (totalEnVault === 0) return; 
 
+		// 2. Ejecutar retiro
+		TOKENS.forEach(t => {
+			db.session[t] = (db.session[t] || 0) + (db.vault[t] || 0);
+			db.vault[t] = 0;
+		});
+
+		// 3. Registrar con el detalle (Ejemplo: "RETIRÓ TODO: 10 PEACE, 1 DISTURBED")
+		addLog(`RETIRÓ TODO: ${resumen.join(', ')}`);
+		save();
+	}
     function clearLogs() { db.logs = []; save(); }
     function setStyle(s) { currentStyle = s; render(); }
     function toggleCompact() { document.body.classList.toggle('compact'); }
@@ -307,7 +455,7 @@
         save();
     }
     function save() { 
-        if(currentKey) database.ref('keys/' + currentKey).update(db); 
+        if(currentKey && currentKey !== "ADM") database.ref('keys/' + currentKey).update(db); 
     }
 </script>
 </body>
