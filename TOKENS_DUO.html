@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Token_Tracker_MOONBOX_Online</title>
+    <title>Token_MOONBOX</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
@@ -26,139 +26,121 @@
             color: var(--text);
             margin: 0; padding: 20px;
             display: flex; justify-content: center;
+            min-height: 100vh;
         }
 
-        .container { width: 100%; max-width: 1000px; padding-bottom: 50px; display: none; }
-
-        /* Login */
-        #loginScreen {
-            position: fixed; top:0; left:0; width:100%; height:100%; 
-            background: var(--bg); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 2000;
-        }
-        .login-box { 
-            background: var(--card); padding: 40px; border-radius: 20px; 
-            border: 1px solid var(--cyan); text-align: center; width: 320px;
-        }
-        .login-box input { 
-            display: block; width: 100%; margin: 10px 0; padding: 12px; 
-            background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; 
-            border-radius: 8px; box-sizing: border-box; outline: none;
-        }
-
-        /* Stats */
-        .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid #222; text-align: center; }
-        .stat-val { display: block; font-size: 1.5rem; font-weight: bold; color: var(--cyan); }
-        .stat-label { font-size: 0.7rem; color: #777; text-transform: uppercase; }
-
-        /* Selector de Estilo */
-        .style-selector {
-            display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.2); 
-            padding: 10px; border-radius: 12px; border: 1px solid #333; justify-content: center;
-        }
-        .style-btn {
-            background: #1a1a1a; color: #666; border: 1px solid #333; padding: 8px 15px;
-            border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: bold; transition: 0.3s;
-        }
-        .style-btn.active { background: var(--purple); color: white; border-color: var(--purple); }
-
-        /* Estructura de Secciones con Botón a la derecha */
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin: 30px 0 15px; }
-        .section-title { font-size: 0.75rem; color: #777; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; flex-grow: 1; }
-        .section-title::after { content: ""; flex: 1; height: 1px; background: #333; margin-left: 10px; }
-
-        /* Grids */
-        .grid-session { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
-        .card { 
-            background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; 
-            padding: 20px; text-align: center; transition: all 0.4s ease; filter: grayscale(1); opacity: 0.4;
-        }
-        .card.has-tokens { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 229, 255, 0.15); filter: grayscale(0); opacity: 1; }
+        .container { width: 100%; max-width: 900px; display: none; }
         
-        .token-img-big { width: 80px; height: 80px; margin: 0 auto 10px; display: block; object-fit: contain; }
-        .controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .btn-count { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #444; background: none; color: white; cursor: pointer; }
-        .val { font-size: 1.4rem; font-weight: bold; min-width: 30px; }
+        /* LOGIN */
+        #loginScreen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
+        .login-box { background: var(--card); padding: 40px; border-radius: 20px; border: 1px solid var(--cyan); text-align: center; width: 320px; }
+        .login-box input { display: block; width: 100%; margin: 10px 0; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; outline: none;}
 
-        .main-actions { display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin: 25px 0; }
-        .btn { padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; }
-        .btn-save { background: var(--green); color: #000; }
-        .btn-claim { background: var(--purple); color: #fff; }
+        /* STATS */
+        .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid #222; text-align: center; }
+        .stat-val { display: block; font-size: 1.2rem; font-weight: bold; color: var(--cyan); }
+        .stat-label { font-size: 0.55rem; color: #555; text-transform: uppercase; }
 
-        .grid-inventory { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .inv-card { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; border-left: 3px solid var(--gold); display: flex; align-items: center; gap: 10px; transition: 0.3s; }
-        .inv-card.empty-inv { filter: grayscale(1); opacity: 0.4; }
+        .balance-container { background: #111; height: 10px; border-radius: 5px; margin: 10px 0 20px; display: flex; overflow: hidden; border: 1px solid #222; }
+        .balance-segment { height: 100%; transition: width 0.4s ease; }
+
+        /* GRIDS */
+        .section-header { font-size: 0.7rem; color: #555; text-transform: uppercase; margin: 25px 0 10px; border-bottom: 1px solid #222; padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+        .card { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; text-align: center; transition: 0.3s; opacity: 0.4; filter: grayscale(1); position: relative; }
+        .card.has-tokens { opacity: 1; filter: grayscale(0); border-color: var(--cyan); }
         
-        .inv-img-small { width: 30px; height: 30px; object-fit: contain; }
-        .inv-val { color: var(--gold); font-weight: bold; font-size: 1.1rem; }
+        .token-img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 8px; transition: transform 0.3s; }
+        .card:hover .token-img { transform: scale(1.15); filter: drop-shadow(0 0 8px var(--cyan)); }
 
-        .u-btn { background: #222; color: #888; border: 1px solid #333; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.65rem; transition: 0.2s; }
-        .u-btn:hover { border-color: #666; color: #fff; }
+        .comm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        .comm-box { background: rgba(0,0,0,0.3); border: 1px solid #222; border-radius: 12px; height: 250px; display: flex; flex-direction: column; }
+        .comm-content { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.7rem; font-family: monospace; }
+        
+        /* BOTONES */
+        .u-btn { background: #222; color: #777; border: 1px solid #333; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.65rem; }
+        .u-btn:hover { color: #fff; border-color: var(--cyan); }
+        .u-btn-mini { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; cursor: pointer; }
+        .btn-main { padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; width: 100%; }
 
-        .history { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; font-size: 0.75rem; max-height: 250px; overflow-y: auto; border: 1px solid #222; }
-        .log-entry { padding: 6px 0; border-bottom: 1px solid #222; line-height: 1.4; }
-        .log-time { color: #555; font-size: 0.65rem; margin-right: 5px; }
+        /* MODO COMPACTO - IMPLEMENTACIÓN LIMPIA */
+        body.compact .container { max-width: 450px; }
+        body.compact .grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        body.compact .card { padding: 8px; border-radius: 8px; }
+        body.compact .token-img { width: 30px; height: 30px; margin-bottom: 4px; }
+        body.compact .stat-val { font-size: 0.9rem; }
+        body.compact .comm-grid { grid-template-columns: 1fr; }
+        body.compact .stats-bar { gap: 5px; }
     </style>
 </head>
 <body>
 
 <div id="loginScreen">
     <div class="login-box">
-        <h2 style="color:var(--cyan); margin-bottom: 5px;">MOONBOX TRACKER</h2>
+        <h2 style="color:var(--cyan); margin-bottom: 5px;">MOONBOX NOTE</h2>
         <p style="font-size:0.6rem; color:#777; margin-bottom: 20px;">SISTEMA DE ENLACE COMPARTIDO POR LLAVE UNICA</p>
-        <input type="text" id="userInput" placeholder="Usuario">
-        <input type="text" id="syncKey" placeholder="Llave de Sincronización">
-        <button class="btn btn-save" style="width:100%; margin-top: 10px;" onclick="attemptLogin()">CONECTAR</button>
+        <input type="text" id="userInput" placeholder="USUARIO">
+        <input type="text" id="syncKey" placeholder="LLAVE DE RED">
+        <button class="btn-main" style="background:var(--cyan); color:#000;" onclick="attemptLogin()">CONECTAR</button>
     </div>
 </div>
 
 <div class="container" id="mainApp">
-    <div class="header-app" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
         <div style="font-size:0.7rem">
-            <span id="syncDot" style="color:var(--green)">●</span> <span id="syncText">Online</span> | 
-            Key: <b id="displayKey" style="color:var(--gold)">-</b> | 
-            User: <b id="displayUser" style="color:var(--cyan)">-</b>
+            <span id="syncDot" style="color:var(--green)">●</span> <b id="displayKey" style="color:var(--gold)">-</b> | <b id="displayUser" style="color:var(--cyan)">-</b>
         </div>
-        <button class="u-btn" onclick="location.reload()">Cerrar Sesión</button>
+        <div style="display:flex; gap:5px;">
+            <button class="u-btn" onclick="toggleCompact()">🌓 COMPACTO</button>
+            <button class="u-btn" style="border-color:var(--danger); color:var(--danger)" onclick="location.reload()">CERRAR SESIÓN</button>
+        </div>
     </div>
 
     <div class="stats-bar">
-        <div class="stat-card"><span class="stat-val" id="possibleClaims">0</span><span class="stat-label">Moonboxes</span></div>
-        <div class="stat-card"><span class="stat-val" id="totalCollected">0</span><span class="stat-label">Total Vault</span></div>
-        <div class="stat-card"><span class="stat-val" id="rareToken">-</span><span class="stat-label">Más Escaso</span></div>
+        <div class="stat-card"><span class="stat-val" id="statCanClaim">0</span><span class="stat-label">Reclamables</span></div>
+        <div class="stat-card"><span class="stat-val" id="statTotalTokens">0</span><span class="stat-label">Total Red</span></div>
+        <div class="stat-card"><span class="stat-val" id="statEscaso" style="color:var(--gold)">-</span><span class="stat-label">Escaso</span></div>
+    </div>
+    
+    <div id="balanceBar" class="balance-container"></div>
+
+    <div class="section-header">
+        Sesión Activa
+        <div style="display:flex; gap:5px">
+             <button class="u-btn-mini" onclick="setStyle('JAPONES')">Original</button>
+			<button class="u-btn-mini" onclick="setStyle('TRADUCIDO')">Traducido</button>
+            <button class="u-btn-mini" onclick="setStyle('TECLADO')">Teclado</button>
+        </div>
+    </div>
+    <div id="sessionGrid" class="grid"></div>
+
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 8px; margin: 15px 0;">
+        <button class="btn-main" style="background:var(--green); color:#000" onclick="moveToVault()">SUBIR A INVENTARIO</button>
+        <button class="btn-main" id="claimBtn" style="background:var(--purple); color:#fff" onclick="doClaim()">RECLAMAR (<span id="claimText">0</span>)</button>
     </div>
 
     <div class="section-header">
-        <div class="section-title">Estilo Visual</div>
+        <span>Inventario Compartido</span>
+        <button class="u-btn-mini" onclick="withdrawAll()">RETIRAR TODO</button>
     </div>
-    <div class="style-selector">
-        <button class="style-btn active" onclick="changeIconStyle('TRADUCIDO', this)">TRADUCIDO</button>
-        <button class="style-btn" onclick="changeIconStyle('JAPONES', this)">JAPONÉS</button>
-        <button class="style-btn" onclick="changeIconStyle('TECLADO', this)">TECLADO</button>
-    </div>
+    <div id="vaultGrid" class="grid" style="grid-template-columns: repeat(3, 1fr);"></div>
 
-    <div class="section-header">
-        <div class="section-title">Sesión Activa</div>
+    <div class="comm-grid">
+        <div class="comm-box">
+            <div style="padding:6px; font-size:0.6rem; color:#555; border-bottom:1px solid #222; display:flex; justify-content:space-between">
+                HISTORIAL <button class="u-btn-mini" style="color:var(--danger)" onclick="clearLogs()">LIMPIAR</button>
+            </div>
+            <div class="comm-content" id="logBox"></div>
+        </div>
+        <div class="comm-box">
+            <div style="padding:6px; font-size:0.6rem; color:#555; border-bottom:1px solid #222">CHAT</div>
+            <div class="comm-content" id="chatBox"></div>
+            <div style="display:flex; padding:5px; border-top:1px solid #222">
+                <input type="text" id="chatInput" placeholder="..." style="flex:1; background:transparent; border:none; color:white; outline:none; font-size:0.8rem" onkeypress="if(event.key==='Enter') sendChat()">
+            </div>
+        </div>
     </div>
-    <div id="sessionGrid" class="grid-session"></div>
-
-    <div class="main-actions">
-        <button class="btn btn-save" onclick="moveToInventory()">Guardar en Inventario</button>
-        <button class="btn btn-claim" id="claimBtn" onclick="claim()">Reclamar (<span id="sessionClaimCount">0</span>)</button>
-    </div>
-
-    <div class="section-header">
-        <div class="section-title">Inventario Compartido</div>
-        <button class="u-btn" onclick="withdrawAll()" style="border-color: var(--gold); color: var(--gold);">Retirar Todo</button>
-    </div>
-    <div id="inventoryGrid" class="grid-inventory" style="margin-bottom: 20px;"></div>
-
-    <div class="section-header">
-        <div class="section-title">Historial de Red</div>
-        <button class="u-btn" onclick="clearHistory()" style="border-color: var(--danger); color: var(--danger);">Limpiar Historial</button>
-    </div>
-    <div class="history" id="historyLog"></div>
 </div>
 
 <script>
@@ -167,183 +149,165 @@
         authDomain: "moonbox-b997c.firebaseapp.com",
         projectId: "moonbox-b997c",
         databaseURL: "https://moonbox-b997c-default-rtdb.firebaseio.com",
-        storageBucket: "moonbox-b997c.firebasestorage.app",
-        messagingSenderId: "507195516792",
-        appId: "1:507195516792:web:a4ed4d8715e137d6e48a8d"
     };
 
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
-
-    const TOKENS_LIST = ["CALMED", "DISTURBED", "PROSPEROUS", "DESERTED", "CHAOS", "PEACE"];
+    
+    const TOKENS = ["CALMED", "DISTURBED", "PROSPEROUS", "DESERTED", "CHAOS", "PEACE"];
+    const COLORS = ["#00e5ff", "#8a4fff", "#2ecc71", "#c5a059", "#ff4444", "#ffffff"];
     const STYLES = {
         TRADUCIDO: { CALMED: "calmed.png", DISTURBED: "disturbed.png", PROSPEROUS: "prosperous.png", DESERTED: "deserted.png", CHAOS: "chaos.png", PEACE: "peace.png" },
         JAPONES: { CALMED: "jp_calmed.png", DISTURBED: "jp_disturbed.png", PROSPEROUS: "jp_prosperous.png", DESERTED: "jp_deserted.png", CHAOS: "jp_chaos.png", PEACE: "jp_peace.png" },
         TECLADO: { CALMED: "kb_calmed.png", DISTURBED: "kb_disturbed.png", PROSPEROUS: "kb_prosperous.png", DESERTED: "kb_deserted.png", CHAOS: "kb_chaos.png", PEACE: "kb_peace.png" }
     };
 
-    let currentStyle = "TRADUCIDO";
-    let currentUser = "";
-    let currentKey = "";
-    let db = { session: {}, vault: {}, logs: [], users: [] };
-
-    TOKENS_LIST.forEach(t => { db.session[t] = 0; db.vault[t] = 0; });
+    let currentUser = "", currentKey = "", currentStyle = "JAPONES";
+    let db = { session:{}, vault:{}, chat:[], logs:[] };
 
     function attemptLogin() {
-        const u = document.getElementById('userInput').value.trim().toUpperCase();
-        const k = document.getElementById('syncKey').value.trim().toUpperCase();
-        if(!u || !k) return alert("Completa los campos");
-        currentUser = u; currentKey = k;
+        const userIn = document.getElementById('userInput').value.trim().toUpperCase();
+        const keyIn = document.getElementById('syncKey').value.trim().toUpperCase();
+        if(!userIn || !keyIn) return;
 
-        database.ref('keys/' + k).on('value', (snapshot) => {
-            const data = snapshot.val();
+        currentUser = userIn;
+        currentKey = keyIn;
+
+        // Primero escuchamos para no sobreescribir
+        database.ref('keys/' + currentKey).on('value', (s) => {
+            const data = s.val();
             if(data) {
-                if(!data.users) data.users = [];
-                if(!data.users.includes(u) && data.users.length >= 2) {
-                    alert("Esta llave ya tiene 2 usuarios.");
-                    location.reload(); return;
-                }
                 db = data;
-                if(!db.users.includes(u)) { db.users.push(u); saveToCloud(); }
+                // Asegurar que existan los objetos internos
+                if(!db.session) db.session = {};
+                if(!db.vault) db.vault = {};
+                if(!db.logs) db.logs = [];
+                if(!db.chat) db.chat = [];
             } else {
-                db.users = [u]; saveToCloud();
+                // Si la llave es nueva, inicializar objeto base
+                db = { session:{}, vault:{}, chat:[], logs:[] };
             }
             render();
-            syncVisualEffect();
         });
 
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
         document.getElementById('displayUser').innerText = currentUser;
         document.getElementById('displayKey').innerText = currentKey;
-    }
-
-    function saveToCloud() {
-        if(!currentKey) return;
-        database.ref('keys/' + currentKey).set(db);
-    }
-
-    function syncVisualEffect() {
-        const dot = document.getElementById('syncDot');
-        dot.style.color = 'var(--gold)';
-        setTimeout(() => dot.style.color = 'var(--green)', 500);
+        
+        // Log de entrada solo se dispara una vez al logear
+        setTimeout(() => addLog("INGRESÓ"), 1000);
     }
 
     function render() {
-        const vaultVals = Object.values(db.vault || {});
-        document.getElementById('totalCollected').innerText = vaultVals.reduce((a,b)=>a+b, 0);
-        document.getElementById('possibleClaims').innerText = Math.min(...vaultVals);
-        const counts = Object.entries(db.vault || {}).sort((a,b)=>a[1]-b[1]);
-        document.getElementById('rareToken').innerText = counts[0][1] > 0 ? counts[0][0] : "-";
+        const s = db.session || {};
+        const v = db.vault || {};
 
-        document.getElementById('sessionGrid').innerHTML = TOKENS_LIST.map(id => {
-            const hasAmount = (db.session[id] || 0) > 0;
-            return `
-            <div class="card ${hasAmount ? 'has-tokens' : ''}">
-                <img src="${STYLES[currentStyle][id]}" class="token-img-big" onerror="this.src='https://via.placeholder.com/80/222/00e5ff?text=${id[0]}'">
-                <div style="font-size:0.7rem; font-weight:bold; margin-bottom:10px;">${id}</div>
-                <div class="controls">
-                    <button class="btn-count" onclick="change('${id}', -1)">-</button>
-                    <span class="val">${db.session[id] || 0}</span>
-                    <button class="btn-count" onclick="change('${id}', 1)" style="border-color:var(--cyan); color:var(--cyan)">+</button>
+        let totalT = 0;
+        let counts = TOKENS.map(t => v[t] || 0);
+        counts.forEach(c => totalT += c);
+        const canClaim = Math.min(...counts);
+        const escasoIdx = counts.indexOf(Math.min(...counts));
+
+        document.getElementById('statCanClaim').innerText = canClaim;
+        document.getElementById('statTotalTokens').innerText = totalT;
+        document.getElementById('statEscaso').innerText = totalT > 0 ? TOKENS[escasoIdx] : "-";
+
+        document.getElementById('balanceBar').innerHTML = TOKENS.map((t, i) => {
+            const pct = totalT > 0 ? ((v[t] || 0) / totalT) * 100 : 16.6;
+            return `<div class="balance-segment" style="width:${pct}%; background:${COLORS[i]}"></div>`;
+        }).join('');
+
+        document.getElementById('sessionGrid').innerHTML = TOKENS.map(t => {
+            const val = s[t] || 0;
+            return `<div class="card ${val > 0 ? 'has-tokens' : ''}">
+                <img src="${STYLES[currentStyle][t]}" class="token-img" onerror="this.src='https://via.placeholder.com/40?text=${t[0]}'">
+                <div style="font-size:0.5rem; font-weight:bold">${t}</div>
+                <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:5px">
+                    <button class="u-btn" onclick="change('${t}',-1)">-</button>
+                    <b>${val}</b>
+                    <button class="u-btn" onclick="change('${t}',1)">+</button>
                 </div>
             </div>`;
         }).join('');
 
-        document.getElementById('inventoryGrid').innerHTML = TOKENS_LIST.map(id => {
-            const hasVault = (db.vault[id] || 0) > 0;
-            return `
-            <div class="inv-card ${hasVault ? '' : 'empty-inv'}">
-                <img src="${STYLES[currentStyle][id]}" class="inv-img-small" onerror="this.style.opacity='0.2'">
-                <div style="flex-grow:1">
-                    <div style="font-size:0.6rem; color:#666">${id}</div>
-                    <div class="inv-val">${db.vault[id] || 0}</div>
-                </div>
-                <button class="u-btn" onclick="withdrawOne('${id}')">↑</button>
-            </div>`;
-        }).join('');
-
-        document.getElementById('historyLog').innerHTML = (db.logs || []).map(l => `
-            <div class="log-entry">
-                <span class="log-time">[${l.fullTime}]</span> 
-                <b style="color:var(--purple)">${l.user}</b>: 
-                <span style="color:#eee">${l.details}</span>
+        document.getElementById('vaultGrid').innerHTML = TOKENS.map(t => `
+            <div class="card ${(v[t]||0) > 0 ? 'has-tokens' : ''}" style="padding:8px">
+                <div style="font-size:1.1rem; color:var(--gold); font-weight:bold">${v[t]||0}</div>
+                <div style="font-size:0.4rem">${t}</div>
+                <button class="u-btn" style="width:100%; margin-top:5px; padding:2px" onclick="withdrawOne('${t}')">↑</button>
             </div>`).join('');
 
-        const canClaim = Math.min(...TOKENS_LIST.map(id => db.session[id] || 0));
-        document.getElementById('sessionClaimCount').innerText = canClaim;
-        document.getElementById('claimBtn').disabled = canClaim <= 0;
-        document.getElementById('claimBtn').style.opacity = canClaim > 0 ? "1" : "0.3";
+        document.getElementById('logBox').innerHTML = (db.logs || []).map(l => `<div><span style="color:#555">[${l.d}]</span> <b style="color:var(--cyan)">${l.u}</b> ${l.m}</div>`).join('');
+        document.getElementById('chatBox').innerHTML = (db.chat || []).map(m => `<div><b style="color:var(--cyan)">${m.u}:</b> ${m.t}</div>`).join('');
+        document.getElementById('claimText').innerText = Math.min(...TOKENS.map(t => s[t] || 0));
     }
 
-    function addLog(details) {
-        if(!db.logs) db.logs = [];
-        const now = new Date();
-        const fullTime = now.toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'}) + " " + 
-                         now.toLocaleTimeString('es-ES', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-        
-        db.logs.unshift({ fullTime, user: currentUser, details });
-        if(db.logs.length > 50) db.logs.pop();
+    function change(t, v) {
+        if(!db.session) db.session = {};
+        db.session[t] = Math.max(0, (db.session[t] || 0) + v);
+        addLog(`${v > 0 ? '+1' : '-1'} ${t}`);
+        save();
     }
 
-    function change(id, v) {
-        if(!db.session[id]) db.session[id] = 0;
-        if(db.session[id] + v >= 0) {
-            db.session[id] += v;
-            addLog(`Ajustó ${id} (${v>0?'+1':'-1'})`);
-            saveToCloud();
-        }
-    }
-
-    function moveToInventory() {
-        let moved = false;
-        TOKENS_LIST.forEach(id => {
-            if(db.session[id] > 0) {
-                db.vault[id] = (db.vault[id] || 0) + db.session[id];
-                db.session[id] = 0;
-                moved = true;
+    function moveToVault() {
+        TOKENS.forEach(t => {
+            if(db.session[t] > 0) {
+                if(!db.vault) db.vault = {};
+                db.vault[t] = (db.vault[t] || 0) + db.session[t];
+                db.session[t] = 0;
             }
         });
-        if(moved) { addLog("Guardó sesión en vault"); saveToCloud(); }
+        addLog("SUBIÓ INVENTARIO");
+        save();
     }
 
-    function withdrawOne(id) {
-        if(db.vault[id] > 0) {
-            db.vault[id]--;
-            db.session[id] = (db.session[id] || 0) + 1;
-            addLog(`Retiró 1 ${id} del vault`);
-            saveToCloud();
+    function withdrawOne(t) {
+        if(db.vault[t] > 0) {
+            db.vault[t]--;
+            db.session[t] = (db.session[t] || 0) + 1;
+            addLog(`RETIRÓ 1 ${t}`);
+            save();
         }
     }
 
     function withdrawAll() {
-        TOKENS_LIST.forEach(id => {
-            db.session[id] = (db.session[id] || 0) + (db.vault[id] || 0);
-            db.vault[id] = 0;
+        TOKENS.forEach(t => {
+            db.session[t] = (db.session[t] || 0) + (db.vault[t] || 0);
+            db.vault[t] = 0;
         });
-        addLog("Vació todo el vault a la sesión");
-        saveToCloud();
+        addLog("RETIRÓ TODO");
+        save();
     }
 
-    function claim() {
-        TOKENS_LIST.forEach(id => db.session[id]--);
-        addLog("Reclamó Moonbox con éxito");
-        saveToCloud();
+    function doClaim() {
+        TOKENS.forEach(t => db.session[t]--);
+        addLog("!!! RECLAMÓ !!!");
+        save();
     }
 
-    function clearHistory() {
-        if(confirm("¿Estás seguro de eliminar todo el historial de esta llave?")) {
-            db.logs = [];
-            addLog("Limpió el historial");
-            saveToCloud();
-        }
+    function addLog(m) {
+        if(!db.logs) db.logs = [];
+        const now = new Date();
+        const d = `${now.getDate()}/${now.getMonth()+1} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+        db.logs.unshift({ d, u: currentUser, m });
+        if(db.logs.length > 40) db.logs.pop();
     }
 
-    function changeIconStyle(style, btn) {
-        currentStyle = style;
-        document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        render();
+    function clearLogs() { db.logs = []; save(); }
+    function setStyle(s) { currentStyle = s; render(); }
+    function toggleCompact() { document.body.classList.toggle('compact'); }
+    function sendChat() {
+        const i = document.getElementById('chatInput');
+        if(!i.value.trim()) return;
+        if(!db.chat) db.chat = [];
+        db.chat.push({ u: currentUser, t: i.value });
+        if(db.chat.length > 20) db.chat.shift();
+        i.value = "";
+        save();
+    }
+    function save() { 
+        if(currentKey) database.ref('keys/' + currentKey).update(db); 
     }
 </script>
 </body>
