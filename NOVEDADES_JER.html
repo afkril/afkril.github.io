@@ -764,6 +764,10 @@
 
             const formattedData = formatData();
             
+            // Extraer solo el nombre de la UDS para el asunto
+            const udsSelection = mainUdsDropdown.value;
+            const udsName = udsSelection.split(' - ')[1] || 'UDS Desconocida';
+            
             try {
                 // Simulación de envío de datos (o usar fetch para Formspree/API)
                 // Usando un campo oculto especial para Formspree si se usara el endpoint real
@@ -771,6 +775,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        '_subject': `Novedad UDS: ${udsName}`, // <--- ESTO CAMBIA EL ASUNTO
                         'Contrato': contractNumberSelect.value,
                         'UDS Seleccionada': mainUdsDropdown.value,
                         'Mensaje Detallado': formattedData, // Enviar el cuerpo formateado
@@ -847,5 +852,6 @@
     </script>
 </body>
 </html>
+
 
 
