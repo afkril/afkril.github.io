@@ -3,855 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Novedades</title>
+    <title>Reporte de Novedades | JER</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        // Colores de base
-                        'primary': '#059669', // Emerald 600
-                        'secondary': '#1F2937', // Gray 800
-                        'accent': '#3B82F6', // Blue 500
-
-                        // Colores para Contratos (Amarillo, Azul, Verde)
-                        'c665-primary': '#F59E0B', // Amber 500 (Amarillo)
-                        'c665-shadow': '#FDE68A', // Amber 200
-                        'c667-primary': '#3B82F6', // Blue 500 (Azul)
-                        'c667-shadow': '#BFDBFE', // Blue 200
-                        'c676-primary': '#10B981', // Emerald 500 (Verde)
-                        'c676-shadow': '#A7F3D0', // Emerald 200
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-
-        /* Clase base para el fondo del cuerpo con configuración de imagen */
-        body {
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            /* Transición suave para la imagen de fondo */
-            transition: background-image 0.7s ease-in-out, background-color 0.7s ease-in-out;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            position: relative; 
-            flex-direction: column; /* Para centrar verticalmente el contenido y el footer */
-        }
-
-        /* Estilos específicos para el hover y el foco del botón */
-        .btn-hover-primary {
-            transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-            transition-duration: 300ms;
-        }
-
-        /* Clases de utilidad para el botón y el marco del formulario */
-        .contract-border-665 { border-top-color: #F59E0B; }
-        .contract-shadow-665:hover { box-shadow: 0 25px 50px -12px rgba(245, 158, 11, 0.4); }
-        .contract-bg-665 { background-color: #F59E0B; }
-        .contract-bg-hover-665:hover { background-color: #D97706; }
-        .contract-ring-665:focus { ring-color: #F59E0B; }
-        .contract-color-665 { color: #F59E0B; } /* Color de texto para el footer */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { background-attachment: fixed; background-size: cover; background-position: center; transition: all 0.5s ease; font-family: 'Inter', sans-serif; }
+        .glass-container { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(8px); }
+        input, select { padding: 0.6rem 0.8rem !important; font-size: 0.9rem !important; border: 2px solid #e2e8f0 !important; outline: none !important; transition: all 0.2s; }
+        input:focus, select:focus { border-color: #94a3b8 !important; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
+        .step-badge { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.8rem; }
         
-        .contract-border-667 { border-top-color: #3B82F6; }
-        .contract-shadow-667:hover { box-shadow: 0 25px 50px -12px rgba(59, 130, 246, 0.4); }
-        .contract-bg-667 { background-color: #3B82F6; }
-        .contract-bg-hover-667:hover { background-color: #2563EB; }
-        .contract-ring-667:focus { ring-color: #3B82F6; }
-        .contract-color-667 { color: #3B82F6; }
+        .contract-665 .dynamic-bg { background-color: #D97706; }
+        .contract-665 .dynamic-text { color: #D97706; }
+        .contract-665 .dynamic-border { border-top-color: #D97706; }
         
-        .contract-border-676 { border-top-color: #10B981; }
-        .contract-shadow-676:hover { box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.4); }
-        .contract-bg-676 { background-color: #10B981; }
-        .contract-bg-hover-676:hover { background-color: #059669; }
-        .contract-ring-676:focus { ring-color: #10B981; }
-        .contract-color-676 { color: #10B981; }
-
-        /* Clase para la superposición oscura sobre la imagen de fondo */
-        .bg-overlay {
-            background-color: rgba(0, 0, 0, 0.5); /* 50% de opacidad negra */
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        /* Estilo para el formulario que lo mantiene sobre el fondo */
-        .form-content-wrapper {
-            position: relative;
-            z-index: 10;
-            width: 70%;
-            max-width: 1000px;
-            min-width: 500px;
-            margin-top: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Ajustar el ancho del 60% en pantallas pequeñas */
-        @media (max-width: 768px) {
-            .form-content-wrapper {
-                width: 90%;
-                min-width: unset;
-                margin-top: 1rem;
-            }
-        }
+        .contract-667 .dynamic-bg { background-color: #2563EB; }
+        .contract-667 .dynamic-text { color: #2563EB; }
+        .contract-667 .dynamic-border { border-top-color: #2563EB; }
+        
+        .contract-676 .dynamic-bg { background-color: #059669; }
+        .contract-676 .dynamic-text { color: #059669; }
+        .contract-676 .dynamic-border { border-top-color: #059669; }
     </style>
 </head>
-<body class="font-sans">
-    
-    <div class="bg-overlay"></div>
+<body class="min-h-screen flex items-center justify-center p-4 bg-slate-100">
 
-    <div id="formContainer" class="form-content-wrapper mx-auto bg-white shadow-2xl rounded-3xl p-4 sm:p-6 border-t-8 border-primary transform hover:shadow-primary/30 transition duration-300">
-        <header class="mb-8 text-center">
-            <h1 class="text-4xl sm:text-5xl font-extrabold text-secondary mb-2">
-                Registro de Novedades <span class="text-primary">UDS (JER)</span>
-            </h1>
-            <p class="text-gray-600 font-medium text-base">Diligencie la información requerida en orden: Contrato, UDS y Novedad.</p>
+    <main id="mainCard" class="glass-container w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border-t-[12px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
+        
+        <header class="px-6 py-4 bg-white border-b border-slate-100 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-800 text-slate-800 tracking-tight">Reporte de <span class="dynamic-text text-slate-500">Novedades</span></h1>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Asociación J.E.R - Neiva</p>
+            </div>
+            <div id="contractIndicator" class="px-3 py-1 rounded-full text-[10px] font-black text-white bg-slate-400 uppercase">Sin Contrato</div>
         </header>
 
-        <form id="noveltyForm" class="space-y-8"> 
-            <div class="p-4 bg-indigo-50 rounded-xl border border-indigo-300 shadow-md">
-                <h2 class="text-xl font-bold text-indigo-800 mb-3 flex items-center">
-                    <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0v-2a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                    1. Selección de Contrato
-                </h2>
-                <div>
-                    <label for="contractNumber" class="block text-base font-medium text-gray-700">NÚMERO DE CONTRATO *</label>
-                    <select id="contractNumber" name="contractNumber" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-accent focus:ring-accent p-3 bg-white text-base transition duration-150" onchange="updateFormStyle()">
-                        <option value="">-- Seleccione un Contrato --</option>
-                        <option value="665">665</option>
-                        <option value="667">667</option>
-                        <option value="676">676</option>
-                    </select>
-                </div>
-            </div>
+        <form id="noveltyForm" action="https://formspree.io/f/mqardynz" method="POST" class="p-6 space-y-4">
             
-            <div id="sectionUDS" class="p-4 bg-yellow-50 rounded-xl border border-yellow-300 shadow-md transition-opacity duration-300" style="opacity: 0.5;">
-                <h2 class="text-xl font-bold text-yellow-800 mb-3 flex items-center">
-                    <svg class="w-6 h-6 mr-2 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
-                    2. Selección de Unidad de Servicio (UDS)
-                </h2>
-                <div>
-                    <label for="mainUdsDropdown" class="block text-base font-medium text-gray-700">ELIJA LA UNIDAD DE SERVICIO *</label>
-                    <select id="mainUdsDropdown" name="mainUdsDropdown" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 p-3 bg-white text-base transition duration-150" disabled>
-                        <option value="">-- Primero seleccione un Contrato --</option>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="flex items-center text-xs font-bold text-slate-600 uppercase">
+                        <span class="step-badge bg-slate-400 dynamic-bg mr-2">1</span> Contrato
+                    </label>
+                    <select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
+                        <option value="">Seleccione...</option>
+                        <option value="665">Contrato 665 (Amarillo)</option>
+                        <option value="667">Contrato 667 (Azul)</option>
+                        <option value="676">Contrato 676 (Verde)</option>
+                    </select>
+                </div>
+                <div id="sectionUDS" class="space-y-1 opacity-50">
+                    <label class="flex items-center text-xs font-bold text-slate-600 uppercase">
+                        <span class="step-badge bg-slate-400 dynamic-bg mr-2">2</span> UDS
+                    </label>
+                    <select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
+                        <option value="">-- Primero Contrato --</option>
                     </select>
                 </div>
             </div>
 
-            <div class="p-4 bg-blue-50 rounded-xl border border-blue-300 shadow-md">
-                <h2 class="text-xl font-bold text-blue-800 mb-3 flex items-center">
-                    <svg class="w-6 h-6 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.242a2.24 2.24 0 01.32-.444L14.457 3.32a2.24 2.24 0 01-.444-.32m.618 17.242A2.24 2.24 0 0119 19.998v-4.502a2.24 2.24 0 01-2-2v-4.502a2.24 2.24 0 01-2-2v-2a2 2 0 00-2-2H9a2 2 0 00-2 2v2a2 2 0 01-2 2v4.502a2.24 2.24 0 01-2 2v4.502c.004.887.68 1.602 1.554 1.748l.05.002h13.796l.05-.002a2.24 2.24 0 011.554-1.748z"></path></svg>
-                    3. Tipo de Novedad
-                </h2>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <label class="flex items-center cursor-pointer p-3 bg-white rounded-lg shadow-sm hover:bg-red-50 transition duration-150 border border-transparent has-[:checked]:border-red-400">
-                        <input type="checkbox" id="checkRetiro" class="h-5 w-5 text-red-600 rounded focus:ring-red-500" onchange="toggleSection('retiro')">
-                        <span class="ml-2 text-gray-700 font-medium text-base">Novedad de <span class="font-bold text-red-700">Retiro (Sale)</span></span>
+            <div class="pt-2">
+                <label class="flex items-center text-xs font-bold text-slate-600 uppercase mb-3">
+                    <span class="step-badge bg-slate-400 dynamic-bg mr-2">3</span> ¿Qué reportará?
+                </label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="flex items-center p-3 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                        <input type="checkbox" id="checkRetiro" class="hidden" onchange="toggleSection('retiro')">
+                        <span class="text-xs font-bold text-slate-600">RETIRO</span>
                     </label>
-                    <label class="flex items-center cursor-pointer p-3 bg-white rounded-lg shadow-sm hover:bg-green-50 transition duration-150 border border-transparent has-[:checked]:border-green-400">
-                        <input type="checkbox" id="checkIngreso" class="h-5 w-5 text-green-600 rounded focus:ring-green-500" onchange="toggleSection('ingreso')">
-                        <span class="ml-2 text-gray-700 font-medium text-base">Novedad de <span class="font-bold text-green-700">Ingreso (Entra)</span></span>
+                    <label class="flex items-center p-3 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                        <input type="checkbox" id="checkIngreso" class="hidden" onchange="toggleSection('ingreso')">
+                        <span class="text-xs font-bold text-slate-600">INGRESO</span>
                     </label>
                 </div>
             </div>
 
-            <div id="sectionRetiro" class="hidden p-6 bg-red-50 rounded-xl border border-red-300 transition-all duration-300 shadow-lg">
-                <h2 class="text-xl font-bold text-red-800 mb-4 border-b pb-2 border-red-300">Datos del Beneficiario que se Retira</h2>
-                <div class="grid sm:grid-cols-2 gap-4">
-                    <div><label for="retiroDocNumber" class="block text-base font-medium text-gray-700">NÚMERO DOCUMENTO *</label><input type="text" id="retiroDocNumber" name="retiroDocNumber" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-3 text-base">
+            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-4 rounded-2xl bg-red-50/50 border border-red-100 space-y-3">
+                <h3 class="text-xs font-black text-red-700 uppercase tracking-tighter flex items-center">
+                    <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input type="text" id="retiroDocNumber" placeholder="Número de Documento" class="w-full rounded-lg">
+                    <input type="text" id="retiroFullName" placeholder="Nombre Completo" class="w-full rounded-lg">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
+                        <input type="date" id="retiroDate" class="w-full rounded-lg">
                     </div>
-                    <div><label for="retiroFullName" class="block text-base font-medium text-gray-700">NOMBRES Y APELLIDOS *</label><input type="text" id="retiroFullName" name="retiroFullName" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-3 text-base">
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label class="block text-base font-medium text-gray-700 mb-2">GÉNERO *</label>
-                        <div class="flex space-x-4" id="retiroGenderGroup">
-                            <label class="inline-flex items-center"><input type="radio" name="retiroGender" value="Masculino" class="form-radio text-red-600 focus:ring-red-500 h-5 w-5"><span class="ml-2 text-gray-700 text-base">Masculino</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="retiroGender" value="Femenino" class="form-radio text-red-600 focus:ring-red-500 h-5 w-5"><span class="ml-2 text-gray-700 text-base">Femenino</span></label>
-                        </div>
-                    </div>
-                    <div><label for="retiroDOB" class="block text-base font-medium text-gray-700">FECHA NACIMIENTO *</label><input type="date" id="retiroDOB" name="retiroDOB" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-3 text-base">
-                    </div>
-                    <div><label for="retiroDate" class="block text-base font-medium text-gray-700">FECHA DE RETIRO *</label><input type="date" id="retiroDate" name="retiroDate" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 p-3 text-base">
+                    <div class="flex items-center justify-center space-x-4 bg-white px-3 py-1 rounded-lg border border-red-100">
+                        <span class="text-[10px] font-bold text-slate-400">GÉNERO:</span>
+                        <label class="text-xs font-bold"><input type="radio" name="retiroGender" value="M"> M</label>
+                        <label class="text-xs font-bold"><input type="radio" name="retiroGender" value="F"> F</label>
                     </div>
                 </div>
             </div>
 
-            <div id="sectionIngreso" class="hidden p-6 bg-green-50 rounded-xl border border-green-300 transition-all duration-300 shadow-lg">
-                <h2 class="text-xl font-bold text-green-800 mb-4 border-b pb-2 border-green-300">Datos del Beneficiario que Ingresa</h2>
-                <div class="grid sm:grid-cols-2 gap-4">
-                    <div><label for="ingresoDocNumber" class="block text-base font-medium text-gray-700">NÚMERO DOCUMENTO *</label><input type="text" id="ingresoDocNumber" name="ingresoDocNumber" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
-                    <div><label for="ingresoFullName" class="block text-base font-medium text-gray-700">NOMBRES Y APELLIDOS *</label><input type="text" id="ingresoFullName" name="ingresoFullName" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
-                    
-                    <div class="sm:col-span-2">
-                        <label class="block text-base font-medium text-gray-700 mb-2">GÉNERO *</label>
-                        <div class="flex space-x-4" id="ingresoGenderGroup">
-                            <label class="inline-flex items-center"><input type="radio" name="ingresoGender" value="Masculino" class="form-radio text-green-600 focus:ring-green-500 h-5 w-5"><span class="ml-2 text-gray-700 text-base">Masculino</span></label>
-                            <label class="inline-flex items-center"><input type="radio" name="ingresoGender" value="Femenino" class="form-radio text-green-600 focus:ring-green-500 h-5 w-5"><span class="ml-2 text-gray-700 text-base">Femenino</span></label>
+            <div id="sectionIngreso" class="hidden animate__animated animate__fadeIn space-y-4">
+                <div class="p-4 rounded-2xl bg-green-50/50 border border-green-100 space-y-3">
+                    <h3 class="text-xs font-black text-green-700 uppercase tracking-tighter flex items-center">
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span> Beneficiario Entrante
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input type="text" id="ingresoDocNumber" placeholder="Documento Niño" class="w-full rounded-lg">
+                        <input type="text" id="ingresoFullName" placeholder="Nombre Niño" class="w-full rounded-lg">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
+                            <input type="date" id="ingresoDOB" class="w-full rounded-lg" onchange="calculateAge()">
                         </div>
-                    </div>
-                    
-                    <div><label for="ingresoDOB" class="block text-base font-medium text-gray-700">FECHA NACIMIENTO *</label><input type="date" id="ingresoDOB" name="ingresoDOB" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base" onchange="calculateAge()"></div>
-                    <div><label for="ingresoDate" class="block text-base font-medium text-gray-700">FECHA DE INGRESO *</label><input type="date" id="ingresoDate" name="ingresoDate" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base" onchange="calculateAge()"></div>
-                    
-                    <div class="sm:col-span-2 bg-green-100 p-3 rounded-lg border border-green-400">
-                        <div class="text-lg font-extrabold text-green-800">
-                            EDAD DEL BENEFICIARIO: 
-                            <span id="beneficiaryAge" class="font-bold text-xl ml-2 text-green-700">
-                                -- Edad no calculada --
-                            </span>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
+                            <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="calculateAge()">
                         </div>
+                        <input type="text" id="ingresoAddress" placeholder="Dirección" class="w-full rounded-lg">
+                        <input type="tel" id="ingresoPhone" placeholder="Teléfono" class="w-full rounded-lg">
                     </div>
-                    <div><label for="ingresoAddress" class="block text-base font-medium text-gray-700">DIRECCIÓN *</label><input type="text" id="ingresoAddress" name="ingresoAddress" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
-                    <div><label for="ingresoBarrio" class="block text-base font-medium text-gray-700">BARRIO *</label><input type="text" id="ingresoBarrio" name="ingresoBarrio" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
-                    <div><label for="ingresoPhone" class="block text-base font-medium text-gray-700">TELÉFONO *</label><input type="tel" id="ingresoPhone" name="ingresoPhone" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
-
-                    <div class="sm:col-span-2 mt-6 pt-4 border-t border-green-300">
-                        <h3 class="text-lg font-bold text-green-700 mb-3">Datos de la Madre</h3>
-                        <div class="grid sm:grid-cols-3 gap-4">
-                            <div><label for="motherId" class="block text-base font-medium text-gray-700">CÉDULA DE LA MADRE *</label><input type="text" id="motherId" name="motherId" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
-                            <div class="sm:col-span-2"><label for="motherFullName" class="block text-base font-medium text-gray-700">NOMBRES Y APELLIDOS *</label><input type="text" id="motherFullName" name="motherFullName" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
-                            <div><label for="motherDOB" class="block text-base font-medium text-gray-700">FECHA NACIMIENTO *</label><input type="date" id="motherDOB" name="motherDOB" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-3 text-base"></div>
+                </div>
+                <div class="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-3">
+                    <h3 class="text-xs font-black text-blue-700 uppercase tracking-tighter flex items-center">
+                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input type="text" id="acudienteDoc" placeholder="Documento Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteName" placeholder="Nombre Acudiente" class="w-full rounded-lg">
+                        <div class="space-y-1 md:col-span-2">
+                            <label class="text-[10px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
+                            <input type="date" id="acudienteDOB" class="w-full rounded-lg">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="pt-6">
-                <button type="submit" id="submitButton" class="w-full px-4 py-4 text-white text-lg font-extrabold rounded-xl shadow-lg btn-hover-primary transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-opacity-70 flex items-center justify-center">
-                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    <span id="buttonText">Enviar Novedad por CORREO</span>
-                </button>
-            </div>
+            <input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
+			<input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
+            <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-3.5 rounded-2xl text-white font-black text-sm tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
+                Enviar Reporte
+            </button>
+            
+            <div id="feedbackContainer" class="hidden animate__animated p-4 rounded-2xl text-center text-xs font-bold mt-4"></div>
         </form>
+    </main>
 
-        <div id="validationMessage" class="hidden mt-6 p-4 text-center rounded-lg shadow-md font-medium text-base" role="alert">
-            </div>
-    </div>
-    
-    <div id="associationWatermark" class="text-center mt-3 mb-1 text-xs font-semibold transition-colors duration-300 text-gray-400">
-        <p class="font-bold">ASOCIACION DE USUARIOS DEL PROGRAMA HOGARES COMUNITARIOS DE BIENESTAR</p>
-        <p>DEL BARRIO JOSE EUSTACIO RIVERA</p>
-        <p id="currentDate"></p>
-    </div>
-    <footer id="mainFooter" class="text-center mb-4 text-sm font-medium transition-colors duration-300 text-gray-500">
-        © 2026 J.E.R By Zan
-    </footer>
     <script>
-        // --- CONSTANTES Y DATOS ---
-        const RECIPIENT_EMAIL = 'cuentamejoseeustaciorivera@gmail.com';
-        const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mqardynz';
-        
-        // Objeto con las listas de UDS (Código y Nombre) - ORDENADAS ALFABÉTICAMENTE
-        const UDS_DATA = {
-            '665': [
-                ['4100100115777', 'ALEGRIA DE VIVIR.'],
-                ['4100100043894', 'LOS CARIÑOSITOS'], 
-                ['4100100115770', 'LOS DUMIS.'], 
-                ['4100100115796', 'LOS JUGUETONES.'],
-                ['4100100041381', 'LOS ANGELITOS'], 
-                ['4100100038177', 'LOS CHUPETINES'], 
-                ['4100100041027', 'LOS PINGUINOS'],
-                ['4100100115757', 'MAFALDA'], 
-                ['4100100115793', 'MIS AMIGUITOS.'],
-                ['4100100115781', 'MIS ANGELITOS.'], 
-                ['410011123928', 'MIS ANGELITOS'],
-                ['4100100040968', 'MIS CAPULLOS'], 
-                ['4100100041374', 'MIS 15 ANGELITOS'], 
-                ['4100100040991', 'MIS PEQUEÑOS GIGANTES'],
-                ['4100100115788', 'MIS PEQUEÑOS PUPILOS'],
-                ['4100100041008', 'MIS PEQUEÑOS SALTARINES'], 
-                ['4100100047851', 'MIS PEQUEÑOS SALTARINES'],
-                ['4100100041394', 'NIÑOS FELICES'], 
-                ['4100100115774', 'PLUTO.']
-            ].sort((a, b) => a[1].localeCompare(b[1])),
-            '667': [
-                ['4100100078903', 'BLANCA NIEVES'],
-                ['4100100120110', 'CHIQUILLADAS'],
-                ['4100100023616', 'DIAS FELICES'],
-                ['4100100120291', 'LA RANA RENE'],
-                ['4100100127770', 'LOS PITUFOS'],
-                ['4100100024111', 'MIS CHIQUITINES'],
-                ['4100100112390', 'LOS CHIQUITINES'],
-                ['4100100023662', 'LOS EXPLORADORES'],
-                ['4100100023780', 'MI MUNDO FELIZ'],
-                ['4100100023816', 'MI PEQUEÑO MUNDO'],
-                ['4100100029904', 'MIS PEQUEÑOS ANGELITOS'],
-                ['4100100023682', 'MIS PASTORCITOS'],
-                ['4100100023459', 'MIS PATICOS'],
-                ['4100100044836', 'MIS PICARDIAS'],
-                ['4100100128106', 'MIS PIRUETAS'],
-                ['4100100045206', 'MI PRIMER PASO'],
-                ['4100100120109', 'PEQUEÑOS GIGANTES'],
-                ['4100100024235', 'SEMILLITAS']
-            ].sort((a, b) => a[1].localeCompare(b[1])),
-            '676': [
-                ['4100100085789', 'ALEGRIA'],
-                ['4100100091036', 'BAMBY'],
-                ['4100100083331', 'BAMBIS 2'],
-                ['4100100043041', 'BURBUJITAS'],
-                ['4100100085784', 'CASITA ENCANTADA'],
-                ['4100100085820', 'HOGAR FELIZ'],
-                ['4100100085805', 'POLLITOS'],
-                ['4100100043022', 'PICAPIEDRAS'],
-                ['4100100085779', 'SABIDURIA'],
-                ['4100100085809', 'LA PEQUEÑA LULU'],
-                ['4100100043056', 'LOS ANGELITOS'],
-                ['4100100091312', 'LOS CARIÑOSITOS'],
-                ['4100100041466', 'LOS SIMPSONS'],
-                ['4100100085803', 'LOS CHIQUILLOS'],
-                ['4100100085800', 'MI PEQUEÑA CASITA'],
-                ['4100100043065', 'MIS AMIGUITOS'],
-                ['4100100024142', 'MIS CORAZONSITOS'],
-                ['4100100107660', 'MIS OSITOS'],
-                ['4100100115738', 'MIS PEQUEÑOS ANGELITOS']
-            ].sort((a, b) => a[1].localeCompare(b[1]))
-        };
+        // Mismos datos UDS y BACKGROUNDS anteriores...
+        const UDS_DATA = { '665': [['ALEGRIA DE VIVIR.', '4100100115777'], ['LOS CARIÑOSITOS', '4100100043894'], ['LOS DUMIS.', '4100100115770'], ['LOS JUGUETONES.', '4100100115796'], ['LOS ANGELITOS', '4100100041381'], ['LOS CHUPETINES', '4100100038177'], ['LOS PINGUINOS', '4100100041027'], ['MAFALDA', '4100100115757'], ['MIS AMIGUITOS.', '4100100115793'], ['MIS ANGELITOS.', '4100100115781'], ['MIS ANGELITOS', '410011123928'], ['MIS CAPULLOS', '4100100040968'], ['MIS 15 ANGELITOS', '4100100041374'], ['MIS PEQUEÑOS GIGANTES', '4100100040991'], ['MIS PEQUEÑOS PUPILOS', '4100100115788'], ['MIS PEQUEÑOS SALTARINES', '4100100041008'], ['MIS PEQUEÑOS SALTARINES', '4100100047851'], ['NIÑOS FELICES', '4100100041394'], ['PLUTO.', '4100100115774']], '667': [['BLANCA NIEVES', '4100100078903'], ['CHIQUILLADAS', '4100100120110'], ['DIAS FELICES', '4100100023616'], ['LA RANA RENE', '4100100120291'], ['LOS PITUFOS', '4100100127770'], ['MIS CHIQUITINES', '4100100024111'], ['LOS CHIQUITINES', '4100100112390'], ['LOS EXPLORADORES', '4100100023662'], ['MI MUNDO FELIZ', '4100100023780'], ['MI PEQUEÑO MUNDO', '4100100023816'], ['MIS PEQUEÑOS ANGELITOS', '4100100029904'], ['MIS PASTORCITOS', '4100100023682'], ['MIS PATICOS', '4100100023459'], ['MIS PICARDIAS', '4100100044836'], ['MIS PIRUETAS', '4100100128106'], ['MI PRIMER PASO', '4100100045206'], ['PEQUEÑOS GIGANTES', '4100100120109'], ['SEMILLITAS', '4100100024235']], '676': [['ALEGRIA', '4100100085789'], ['BAMBY', '4100100091036'], ['BAMBIS 2', '4100100083331'], ['BURBUJITAS', '4100100043041'], ['CASITA ENCANTADA', '4100100085784'], ['HOGAR FELIZ', '4100100085820'], ['POLLITOS', '4100100085805'], ['PICAPIEDRAS', '4100100043022'], ['SABIDURIA', '4100100085779'], ['LA PEQUEÑA LULU', '4100100085809'], ['LOS ANGELITOS', '4100100043056'], ['LOS CARIÑOSITOS', '4100100091312'], ['LOS SIMPSONS', '4100100041466'], ['LOS CHIQUILLOS', '4100100085803'], ['MI PEQUEÑA CASITA', '4100100085800'], ['MIS AMIGUITOS', '4100100043065'], ['MIS CORAZONSITOS', '4100100024142'], ['MIS OSITOS', '4100100107660'], ['MIS PEQUEÑOS ANGELITOS', '4100100115738']] };
+        const BACKGROUNDS = { '665': 'linear-gradient(to bottom right, #fef3c7, #fbbf24)', '667': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', '676': 'linear-gradient(to bottom right, #d1fae5, #10b981)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
 
-        // URLs de las imágenes de fondo para cada contrato
-        const BACKGROUND_IMAGES = {
-            'default': 'url("https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")',
-            '665': 'url("https://previews.123rf.com/images/azzzya/azzzya1708/azzzya170800068/83879206-seamless-pattern-with-cute-baby-toys-in-yellow-monochrome-colors-on-yellow-background-the-good.jpg")',
-            '667': 'url("https://img.freepik.com/vector-free/flat-design-comic-style-background_23-2148812941.jpg?semt=ais_hybrid&w=740&q=80")',
-            '676': 'url("https://img.freepik.com/vector-free/bright-color-gradient-background_23-2149365044.jpg")',
-        };
-
-        // --- ELEMENTOS DEL DOM ---
-        const body = document.body;
-        const formContainer = document.getElementById('formContainer');
-        const form = document.getElementById('noveltyForm');
-        const checkRetiro = document.getElementById('checkRetiro');
-        const checkIngreso = document.getElementById('checkIngreso');
-        const sectionRetiro = document.getElementById('sectionRetiro');
-        const sectionIngreso = document.getElementById('sectionIngreso');
-        const validationMessage = document.getElementById('validationMessage');
-        const contractNumberSelect = document.getElementById('contractNumber');
-        const submitButton = document.getElementById('submitButton');
-        const buttonText = document.getElementById('buttonText');
-        const sectionUDS = document.getElementById('sectionUDS');
-        const mainUdsDropdown = document.getElementById('mainUdsDropdown');
-        
-        // Referencias a los campos de fecha
-        const retiroDateInput = document.getElementById('retiroDate');
-        const ingresoDateInput = document.getElementById('ingresoDate');
-        const ingresoDOBInput = document.getElementById('ingresoDOB');
-        
-        // Referencia al nuevo campo de edad
-        const beneficiaryAgeSpan = document.getElementById('beneficiaryAge');
-        
-        // Referencias a los nuevos elementos de marca de agua
-        const associationWatermarkDiv = document.getElementById('associationWatermark');
-        const currentDateSpan = document.getElementById('currentDate');
-        const mainFooter = document.getElementById('mainFooter');
-
-        // Clases de Tailwind que se deben gestionar dinámicamente (para limpiarlas)
-        const colorClasses = ['contract-border-665', 'contract-shadow-665', 'contract-bg-665', 'contract-bg-hover-665', 'contract-ring-665', 'contract-color-665',
-                                'contract-border-667', 'contract-shadow-667', 'contract-bg-667', 'contract-bg-hover-667', 'contract-ring-667', 'contract-color-667',
-                                'contract-border-676', 'contract-shadow-676', 'contract-bg-676', 'contract-bg-hover-676', 'contract-ring-676', 'contract-color-676',
-                                'border-primary', 'hover:shadow-primary/30', 'bg-primary', 'hover:bg-emerald-700', 'focus:ring-primary', 'text-primary', 'text-gray-400', 'text-gray-500'];
-
-        /**
-         * Inicializa la fecha actual en la marca de agua.
-         */
-        function initializeDateWatermark() {
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            currentDateSpan.textContent = `FECHA: ${now.toLocaleDateString('es-CO', options).toUpperCase()}`;
-        }
-
-        /**
-         * Alterna la visibilidad de las secciones del formulario.
-         * @param {string} sectionName - 'retiro' o 'ingreso'
-         */
-        function toggleSection(sectionName) {
-            if (sectionName === 'retiro') {
-                sectionRetiro.classList.toggle('hidden', !checkRetiro.checked);
-            } else if (sectionName === 'ingreso') {
-                sectionIngreso.classList.toggle('hidden', !checkIngreso.checked);
-                if (checkIngreso.checked) {
-                    calculateAge(); // Calcular la edad al mostrar la sección de ingreso
-                } else {
-                    beneficiaryAgeSpan.textContent = '-- Edad no calculada --'; // Limpiar si se oculta
-                }
-            }
-        }
-        
-        /**
-         * Carga dinámicamente la lista principal de UDS.
-         */
-        function populateUdsDropdowns() {
-            const contractNumber = contractNumberSelect.value;
-            const udsList = UDS_DATA[contractNumber];
-
-            mainUdsDropdown.innerHTML = ''; // Limpiar opciones anteriores
-            
-            let initialOption = document.createElement('option');
-            initialOption.value = '';
-            
-            // Lógica para habilitar/deshabilitar y cambiar la opacidad de la sección UDS
-            if (contractNumber) {
-                initialOption.textContent = '-- Seleccione una Unidad de Servicio --';
-                mainUdsDropdown.disabled = false;
-                sectionUDS.style.opacity = 1;
-                
+        function updateStyles() {
+            const contract = document.getElementById('contractNumber').value;
+            const mainCard = document.getElementById('mainCard');
+            const indicator = document.getElementById('contractIndicator');
+            const udsSelect = document.getElementById('mainUdsDropdown');
+            const sectionUDS = document.getElementById('sectionUDS');
+            mainCard.className = "glass-container w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border-t-[12px] dynamic-border animate__animated animate__fadeIn";
+            document.body.style.background = BACKGROUNDS[contract] || BACKGROUNDS['default'];
+            if (contract) {
+                mainCard.classList.add(`contract-${contract}`);
+                indicator.className = `px-3 py-1 rounded-full text-[10px] font-black text-white dynamic-bg uppercase`;
+                indicator.textContent = `Contrato ${contract}`;
+                udsSelect.disabled = false;
+                sectionUDS.style.opacity = "1";
+                populateUDS(contract);
             } else {
-                initialOption.textContent = '-- Primero seleccione un Contrato --';
-                mainUdsDropdown.disabled = true;
-                sectionUDS.style.opacity = 0.5;
-            }
-            mainUdsDropdown.appendChild(initialOption);
-
-            if (udsList) {
-                udsList.forEach(([code, name]) => {
-                    let option = document.createElement('option');
-                    option.value = `${code} - ${name}`; // Valor combinado (Código y Nombre)
-                    option.textContent = `${name} (${code})`;
-                    mainUdsDropdown.appendChild(option);
-                });
+                indicator.className = "px-3 py-1 rounded-full text-[10px] font-black text-white bg-slate-400 uppercase";
+                indicator.textContent = "Sin Contrato";
+                udsSelect.disabled = true;
+                udsSelect.innerHTML = '<option value="">-- Primero Contrato --</option>';
+                sectionUDS.style.opacity = "0.5";
             }
         }
 
-        /**
-         * Cambia el color del contenedor, el botón y el fondo (imagen) basado en el contrato seleccionado.
-         */
-        function updateFormStyle() {
-            const contractNumber = contractNumberSelect.value;
-            
-            // 1. Gestionar la Imagen de Fondo
-            body.style.backgroundImage = BACKGROUND_IMAGES[contractNumber] || BACKGROUND_IMAGES['default'];
-            
-            // 2. Limpiar clases anteriores del Contenedor, Botón, Asociación y Footer
-            formContainer.classList.remove(...colorClasses);
-            submitButton.classList.remove(...colorClasses);
-            associationWatermarkDiv.classList.remove(...colorClasses);
-            mainFooter.classList.remove(...colorClasses);
-            
-            // 3. Aplicar estilos específicos al formulario y marcas de agua
-            if (contractNumber === '665') {
-                // Amarillo
-                formContainer.classList.add('contract-border-665', 'hover:shadow-primary/30');
-                submitButton.classList.add('contract-bg-665', 'contract-bg-hover-665', 'contract-ring-665');
-                associationWatermarkDiv.classList.add('contract-color-665');
-                mainFooter.classList.add('contract-color-665');
-
-            } else if (contractNumber === '667') {
-                // Azul
-                formContainer.classList.add('contract-border-667', 'hover:shadow-primary/30');
-                submitButton.classList.add('contract-bg-667', 'contract-bg-hover-667', 'contract-ring-667');
-                associationWatermarkDiv.classList.add('contract-color-667');
-                mainFooter.classList.add('contract-color-667');
-
-            } else if (contractNumber === '676') {
-                // Verde
-                formContainer.classList.add('contract-border-676', 'hover:shadow-primary/30');
-                submitButton.classList.add('contract-bg-676', 'contract-bg-hover-676', 'contract-ring-676');
-                associationWatermarkDiv.classList.add('contract-color-676');
-                mainFooter.classList.add('contract-color-676');
-            } else {
-                // Estado inicial (gris y verde primario por defecto)
-                formContainer.classList.add('border-primary', 'hover:shadow-primary/30');
-                submitButton.classList.add('bg-primary', 'hover:bg-emerald-700', 'focus:ring-primary');
-                associationWatermarkDiv.classList.add('text-gray-400');
-                mainFooter.classList.add('text-gray-500');
-            }
-
-            // 4. Cargar la lista desplegable de UDS
-            populateUdsDropdowns();
-        }
-        
-        /**
-         * Muestra un mensaje de feedback en el div de validación.
-         * @param {string} message - El mensaje a mostrar.
-         * @param {string} type - 'success', 'error', o 'info'
-         */
-        function showFeedback(message, type) {
-            validationMessage.textContent = message;
-            validationMessage.classList.remove('hidden', 'bg-yellow-100', 'text-yellow-800', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800');
-            
-            if (type === 'error') {
-                validationMessage.classList.add('bg-red-100', 'text-red-800');
-            } else if (type === 'success') {
-                validationMessage.classList.add('bg-green-100', 'text-green-800');
-            } else {
-                validationMessage.classList.add('bg-yellow-100', 'text-yellow-800');
-            }
-            validationMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        
-        /**
-         * Valida *todos* los campos requeridos de una sección visible.
-         * @param {string} prefix - 'retiro' o 'ingreso'
-         * @param {string} sectionName - Nombre legible de la sección
-         * @returns {boolean} - true si es válido, false si no lo es
-         */
-        function validateSection(prefix, sectionName) {
-            let isValid = true;
-            let requiredFields = [];
-            
-            if (prefix === 'retiro') {
-                if (!checkRetiro.checked) return true;
-
-                // Lista de campos requeridos para Retiro
-                requiredFields = [
-                    'retiroDocNumber', 'retiroFullName', 'retiroDOB', 'retiroDate'
-                ];
-                
-                // Validación de Radio Button de Género de Retiro
-                if (!document.querySelector('input[name="retiroGender"]:checked')) {
-                    showFeedback(`ERROR: Debe seleccionar el Género del Beneficiario en la sección de ${sectionName} (*).`, 'error');
-                    return false;
-                }
-            } else if (prefix === 'ingreso') {
-                if (!checkIngreso.checked) return true;
-
-                // Lista de campos requeridos para Ingreso
-                requiredFields = [
-                    'ingresoDocNumber', 'ingresoFullName', 
-                    'ingresoDOB', 'ingresoDate', 'ingresoAddress', 'ingresoBarrio', 'ingresoPhone', 
-                    'motherId', 'motherFullName', 'motherDOB'
-                ];
-                
-                // Validación de Radio Button de Género de Ingreso
-                if (!document.querySelector('input[name="ingresoGender"]:checked')) {
-                    showFeedback(`ERROR: Debe seleccionar el Género del Beneficiario en la sección de ${sectionName} (*).`, 'error');
-                    return false;
-                }
-            }
-
-            // Recorrido de campos requeridos y resaltado
-            for (const fieldId of requiredFields) {
-                const field = document.getElementById(fieldId);
-                if (field && !field.value.trim()) {
-                    field.classList.add('border-red-500', 'ring-1', 'ring-red-500'); 
-                    isValid = false;
-                } else if (field) {
-                    field.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
-                }
-            }
-
-            if (!isValid) {
-                showFeedback(`ERROR: Por favor, complete *todos* los campos obligatorios (*) en la sección de ${sectionName}.`, 'error');
-            }
-            
-            return isValid;
-        }
-
-        // --- FUNCIONES DE CÁLCULO DE EDAD Y VALIDACIÓN DE FECHAS CRUZADAS ---
-        
-        /**
-         * Calcula la edad en años y meses entre la fecha de nacimiento y la fecha de referencia (ingreso).
-         */
-        function calculateAge() {
-            const dobString = ingresoDOBInput.value;
-            const entryDateString = ingresoDateInput.value;
-
-            if (!dobString || !entryDateString) {
-                beneficiaryAgeSpan.textContent = '-- Edad no calculada --';
-                return;
-            }
-
-            // Se utiliza T00:00:00 para forzar la comparación de fechas al inicio del día y evitar problemas de zona horaria
-            const dob = new Date(dobString + 'T00:00:00');
-            const entryDate = new Date(entryDateString + 'T00:00:00');
-
-            // 1. Validar que la fecha de ingreso no sea anterior a la de nacimiento
-            if (entryDate < dob) {
-                beneficiaryAgeSpan.textContent = 'ERROR: Fecha de Ingreso anterior a la de Nacimiento.';
-                beneficiaryAgeSpan.classList.add('text-red-700');
-                return;
-            }
-            beneficiaryAgeSpan.classList.remove('text-red-700');
-
-            let years = entryDate.getFullYear() - dob.getFullYear();
-            let months = entryDate.getMonth() - dob.getMonth();
-            let days = entryDate.getDate() - dob.getDate();
-
-            // Ajuste si los meses o días son negativos
-            if (days < 0) {
-                months--; // Tomar un mes prestado
-                
-                // Obtener el número de días del mes anterior al día de ingreso
-                // (entryDate.getMonth(), 0) da el último día del mes anterior
-                const prevMonth = new Date(entryDate.getFullYear(), entryDate.getMonth(), 0);
-                days += prevMonth.getDate(); // Sumar los días del mes anterior
-            }
-
-            if (months < 0) {
-                years--; // Tomar un año prestado
-                months += 12; // Sumar 12 meses
-            }
-            
-            // 2. Formatear y mostrar la edad
-            let ageText = '';
-            if (years > 0) {
-                ageText += `${years} año${years !== 1 ? 's' : ''}`;
-            }
-            
-            // Añadir coma si hay años y meses
-            if (years > 0 && months > 0) {
-                ageText += ' y ';
-            }
-            
-            if (months > 0 || (years === 0 && months === 0 && days === 0)) {
-                 // Mostrar meses si es más de 0, o si tiene 0 años y 0 meses (recién nacido)
-                ageText += `${months} mes${months !== 1 ? 'es' : ''}`;
-            }
-            
-            if (years === 0 && months === 0 && days > 0) {
-                 // Manejar el caso de menos de un mes (solo días)
-                 ageText = `${days} día${days !== 1 ? 's' : ''}`;
-            } else if (years === 0 && months === 0 && days === 0) {
-                ageText = 'Recién Nacido';
-            }
-
-            beneficiaryAgeSpan.textContent = ageText.trim();
-        }
-
-
-        /**
-         * Resalta visualmente el campo de fecha con error y limpia el otro.
-         * @param {HTMLElement} errorField - El campo que contiene el error.
-         * @param {HTMLElement} cleanField - El campo a limpiar (si existe).
-         */
-        function highlightDateError(errorField, cleanField = null) {
-            errorField.classList.add('border-red-500', 'ring-2', 'ring-red-500');
-            if (cleanField) {
-                cleanField.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
-            }
-        }
-
-        /**
-         * Valida la lógica entre la Fecha de Retiro y la Fecha de Ingreso.
-         * SOLO se ejecuta si AMBAS novedades están seleccionadas.
-         * @returns {boolean} - true si la validación pasa, false si falla.
-         */
-        function validateDates() {
-            const retiro = checkRetiro.checked;
-            const ingreso = checkIngreso.checked;
-
-            // Solo se valida si ambas novedades (retiro E ingreso) están marcadas
-            if (!retiro || !ingreso) {
-                // Limpiar resaltado si no es necesario validar
-                retiroDateInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
-                ingresoDateInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
-                return true;
-            }
-
-            const retiroDateStr = retiroDateInput.value;
-            const ingresoDateStr = ingresoDateInput.value;
-
-            // Si alguna de las fechas está vacía, la validación falla (la función validateSection lo manejará)
-            if (!retiroDateStr || !ingresoDateStr) {
-                return true; // Permitir que validateSection maneje el error de campo vacío
-            }
-
-            // Convertir las fechas a objetos Date (se recomienda usar Date en JS para comparar)
-            // Se usa el formato 'YYYY-MM-DDT00:00:00' para asegurar que la zona horaria no afecte la comparación del día
-            const dRetiro = new Date(retiroDateStr + 'T00:00:00');
-            const dIngreso = new Date(ingresoDateStr + 'T00:00:00');
-
-            // 1. Validar que la fecha de Ingreso no sea ANTERIOR o IGUAL a la de Retiro
-            
-            // a) Ingreso ANTERIOR a Retiro (dIngreso < dRetiro)
-            if (dIngreso.getTime() < dRetiro.getTime()) {
-                showFeedback('La fecha de Ingreso debe ser posterior a la fecha de Retiro.', 'error');
-                highlightDateError(ingresoDateInput, retiroDateInput);
-                return false;
-            }
-            
-            // b) Ingreso IGUAL a Retiro (dIngreso === dRetiro)
-            if (dIngreso.getTime() === dRetiro.getTime()) {
-                showFeedback('¡ATENCIÓN! La fecha de retiro NO puede ser Igual a la fecha de Ingreso, Debe ser al siguiente Dia según marcación del RAM.', 'error');
-                highlightDateError(retiroDateInput);
-                highlightDateError(ingresoDateInput);
-                return false;
-            }
-
-            // Si ambas validaciones pasan, limpiar resaltado y retornar true
-            retiroDateInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
-            ingresoDateInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
-            return true;
-        }
-
-        // --- MANEJO DE DATOS Y ENVÍO ---
-
-        /**
-         * Recolecta los datos del formulario en un formato estructurado (texto).
-         */
-        function getSectionData(prefix, sectionTitle) {
-            let data = `\n--- ${sectionTitle} ---\n`;
-            
-            // Recolección de datos
-            const inputs = document.querySelectorAll(`#section${sectionTitle.split(' ')[0]} input, #section${sectionTitle.split(' ')[0]} select`);
-            inputs.forEach(input => {
-                if (input.type === 'radio' && !input.checked) return;
-                
-                const labelElement = document.querySelector(`label[for="${input.id}"], label:has(input[id="${input.id}"])`);
-                let label = labelElement ? labelElement.textContent.replace('*', '').trim() : input.name.toUpperCase().replace(prefix.toUpperCase(), '').replace(/([A-Z])/g, ' $1').trim();
-
-                let value = input.value.trim();
-                
-                if (input.type === 'radio') {
-                    label = "GÉNERO";
-                    value = input.value;
-                }
-
-                if (value && input.id !== 'beneficiaryAge') { // Excluir el campo informativo de la edad
-                    data += `${label}: ${value}\n`;
-                }
+        function populateUDS(contract) {
+            const udsSelect = document.getElementById('mainUdsDropdown');
+            udsSelect.innerHTML = '<option value="">-- Seleccione UDS --</option>';
+            UDS_DATA[contract]?.forEach(([name, code]) => {
+                const opt = document.createElement('option');
+                opt.value = `${name} - ${code}`;
+                opt.textContent = `${name} - ${code}`;
+                udsSelect.appendChild(opt);
             });
-
-            // Recoger Género (solo para el caso del radio button group si no fue capturado arriba)
-            const genderChecked = document.querySelector(`input[name="${prefix}Gender"]:checked`);
-            if (genderChecked && !data.includes("GÉNERO")) {
-                data += `GÉNERO: ${genderChecked.value}\n`;
-            }
-            
-            // Incluir el campo de edad calculado al final de la sección Ingreso
-            if (prefix === 'ingreso' && beneficiaryAgeSpan.textContent !== '-- Edad no calculada --') {
-                data += `EDAD DEL BENEFICIARIO (Calculada): ${beneficiaryAgeSpan.textContent}\n`;
-            }
-
-            return data;
         }
 
-        /**
-         * Recolecta y formatea todos los datos para el envío.
-         */
+        function toggleSection(type) {
+            const section = document.getElementById(type === 'retiro' ? 'sectionRetiro' : 'sectionIngreso');
+            const check = document.getElementById(type === 'retiro' ? 'checkRetiro' : 'checkIngreso');
+            section.classList.toggle('hidden', !check.checked);
+        }
+
+        function calculateAge() {
+            const dob = document.getElementById('ingresoDOB').value;
+            const entry = document.getElementById('ingresoDate').value;
+            if (dob && entry) {
+                const d1 = new Date(dob);
+                const d2 = new Date(entry);
+                let years = d2.getFullYear() - d1.getFullYear();
+                let months = d2.getMonth() - d1.getMonth();
+                if (months < 0) { years--; months += 12; }
+                return `${years} años y ${months} meses`;
+            }
+            return '--';
+        }
+
+        function showFeedback(message, type) {
+            const container = document.getElementById('feedbackContainer');
+            container.textContent = message;
+            container.className = `p-4 rounded-2xl text-center text-xs font-bold animate__animated animate__fadeInUp mt-4 `;
+            if (type === 'success') container.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
+            else container.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200', 'animate__shakeX');
+            container.classList.remove('hidden');
+        }
+
+        // --- FUNCIÓN DE FORMATEO SOLICITADA ---
         function formatData() {
-            const contractNumber = contractNumberSelect.value;
-            const udsSelection = mainUdsDropdown.value;
-            const utsName = udsSelection.split(' - ')[1] || 'No Seleccionado';
-            const utsCode = udsSelection.split(' - ')[0] || 'No Seleccionado';
+            const contractNumber = document.getElementById('contractNumber').value;
+            const udsSelection = document.getElementById('mainUdsDropdown').value;
+            const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
+            const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
             
             let formData = `**NOVEDAD DE BENEFICIARIOS UDS**\n`;
             formData += `==================================\n`;
             formData += `CONTRATO: ${contractNumber}\n`;
             formData += `UDS (NOMBRE): ${utsName}\n`;
             formData += `UDS (CÓDIGO): ${utsCode}\n`;
-            formData += `==================================\n`;
+            formData += `==================================\n\n`;
 
-            if (checkRetiro.checked) {
-                formData += getSectionData('retiro', 'Retiro');
+            if (document.getElementById('checkRetiro').checked) {
+                formData += `--- DATOS DE RETIRO ---\n`;
+                formData += `Documento: ${document.getElementById('retiroDocNumber').value}\n`;
+                formData += `Nombre: ${document.getElementById('retiroFullName').value}\n`;
+                formData += `Fecha Retiro: ${document.getElementById('retiroDate').value}\n`;
+                formData += `Género: ${document.querySelector('input[name="retiroGender"]:checked')?.value || 'N/A'}\n\n`;
             }
 
-            if (checkIngreso.checked) {
-                formData += getSectionData('ingreso', 'Ingreso');
+            if (document.getElementById('checkIngreso').checked) {
+                formData += `--- DATOS DE INGRESO ---\n`;
+                formData += `Niño: ${document.getElementById('ingresoFullName').value}\n`;
+                formData += `Documento: ${document.getElementById('ingresoDocNumber').value}\n`;
+                formData += `Edad: ${calculateAge()}\n`;
+                formData += `Fecha Ingreso: ${document.getElementById('ingresoDate').value}\n`;
+                formData += `Dirección: ${document.getElementById('ingresoAddress').value}\n`;
+                formData += `Acudiente: ${document.getElementById('acudienteName').value}\n`;
+                formData += `Doc. Acudiente: ${document.getElementById('acudienteDoc').value}\n`;
             }
-            
             return formData;
         }
 
-        /**
-         * Función para simular o realizar el envío a Formspree (o API)
-         */
-        async function submitForm(e) {
-            submitButton.disabled = true;
-            buttonText.textContent = 'Enviando...';
-            submitButton.classList.add('opacity-70');
+        // --- ENVÍO ---
+		document.getElementById('noveltyForm').addEventListener('submit', async function(e) {
+			e.preventDefault();
+			const btn = document.getElementById('submitButton');
+			
+			// 1. Obtener nombre de la UDS para el asunto
+			const udsSelection = document.getElementById('mainUdsDropdown').value;
+			const utsName = udsSelection.split(' - ')[0] || 'Desconocida';
+			
+			// 2. Actualizar el Asunto dinámico antes de enviar
+			document.getElementById('emailSubject').value = `Novedad UDS: ${utsName}`;
 
-            const formattedData = formatData();
-            
-            // Extraer solo el nombre de la UDS para el asunto
-            const udsSelection = mainUdsDropdown.value;
-            const udsName = udsSelection.split(' - ')[1] || 'UDS Desconocida';
-            
-            try {
-                // Simulación de envío de datos (o usar fetch para Formspree/API)
-                // Usando un campo oculto especial para Formspree si se usara el endpoint real
-                const response = await fetch(FORMSPREE_ENDPOINT, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        '_subject': `Novedad UDS: ${udsName}`, // <--- ESTO CAMBIA EL ASUNTO
-                        'Contrato': contractNumberSelect.value,
-                        'UDS Seleccionada': mainUdsDropdown.value,
-                        'Mensaje Detallado': formattedData, // Enviar el cuerpo formateado
-                        'Novedad_Retiro': checkRetiro.checked ? 'Sí' : 'No',
-                        'Novedad_Ingreso': checkIngreso.checked ? 'Sí' : 'No',
-                        // Puedes incluir aquí otros campos específicos si Formspree los necesita por separado
-                    })
-                });
+			// 3. Validaciones de fechas (Retiro < Ingreso)
+			if (document.getElementById('checkRetiro').checked && document.getElementById('checkIngreso').checked) {
+				const fR = new Date(document.getElementById('retiroDate').value);
+				const fI = new Date(document.getElementById('ingresoDate').value);
+				if (fR >= fI) {
+					showFeedback("❌ La fecha de retiro debe ser anterior a la de ingreso.", "error");
+					return;
+				}
+			}
 
-                if (response.ok) {
-                    showFeedback('✅ ¡Éxito! La novedad ha sido enviada correctamente.', 'success');
-                    form.reset(); // Limpiar el formulario
-                    updateFormStyle(); // Restaurar estilos y dropdown
-                    sectionRetiro.classList.add('hidden');
-                    sectionIngreso.classList.add('hidden');
-                    beneficiaryAgeSpan.textContent = '-- Edad no calculada --';
-                } else {
-                    showFeedback('❌ Error al enviar el formulario. Inténtelo de nuevo o contacte a soporte.', 'error');
-                }
-            } catch (error) {
-                console.error('Error de red/Formspree:', error);
-                showFeedback('❌ Error de conexión. Verifique su red e inténtelo de nuevo.', 'error');
-            } finally {
-                submitButton.disabled = false;
-                buttonText.textContent = 'Enviar Novedad por API';
-                submitButton.classList.remove('opacity-70');
-            }
-        }
+			// 4. Inyectar formato en campo oculto de cuerpo del mensaje
+			document.getElementById('hiddenFormattedData').value = formatData();
 
-        // --- EVENT LISTENER PRINCIPAL DEL FORMULARIO ---
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            validationMessage.classList.add('hidden'); // Ocultar mensaje al inicio
+			btn.disabled = true;
+			btn.textContent = "ENVIANDO...";
 
-            // 1. Validaciones iniciales
-            if (!contractNumberSelect.value) {
-                showFeedback('ERROR: Debe seleccionar un **Contrato**.', 'error');
-                return;
-            }
-            if (!mainUdsDropdown.value) {
-                showFeedback('ERROR: Debe seleccionar una **Unidad de Servicio (UDS)**.', 'error');
-                return;
-            }
-            if (!checkRetiro.checked && !checkIngreso.checked) {
-                showFeedback('ERROR: Debe seleccionar al menos una novedad (**Retiro** o **Ingreso**).', 'error');
-                return;
-            }
-            
-            // 2. Validar campos requeridos de las secciones activas
-            let isRetiroValid = validateSection('retiro', 'Retiro');
-            let isIngresoValid = validateSection('ingreso', 'Ingreso');
-
-            if (!isRetiroValid || !isIngresoValid) {
-                return; // Detener envío si faltan campos en alguna sección activa
-            }
-            
-            // 3. VALIDACIÓN DE FECHAS CRUZADAS (solo si ambas están activas)
-            if (checkRetiro.checked && checkIngreso.checked) {
-                let isDateCrossValid = validateDates();
-                if (!isDateCrossValid) {
-                    // El mensaje de error específico ya fue mostrado por validateDates()
-                    showFeedback('Por favor, corrige el error de las fechas antes de enviar.', 'error');
-                    return; // Detener envío
-                }
-            }
-            
-            // 4. Si todo es válido, proceder al envío
-            await submitForm(e); 
-        });
-
-        // Inicializar estilos, dropdown y marca de agua al cargar
-        updateFormStyle();
-        initializeDateWatermark();
+			try {
+				const response = await fetch(this.action, {
+					method: 'POST',
+					body: new FormData(this),
+					headers: { 'Accept': 'application/json' }
+				});
+				if (response.ok) {
+					showFeedback('✅ ¡Éxito! La novedad ha sido enviada correctamente.', 'success');
+					this.reset();
+					updateStyles();
+					document.getElementById('sectionRetiro').classList.add('hidden');
+					document.getElementById('sectionIngreso').classList.add('hidden');
+				} else {
+					showFeedback("❌ Error en el servidor.", "error");
+				}
+			} catch {
+				showFeedback("❌ Error de conexión.", "error");
+			} finally {
+				btn.disabled = false;
+				btn.textContent = "ENVIAR REPORTE";
+			}
+		});
     </script>
 </body>
 </html>
-
-
-
