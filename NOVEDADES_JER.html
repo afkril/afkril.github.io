@@ -8,11 +8,44 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        body { background-attachment: fixed; background-size: cover; background-position: center; transition: all 0.5s ease; font-family: 'Inter', sans-serif; }
-        .glass-container { background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(8px); }
-        input, select { padding: 0.6rem 0.8rem !important; font-size: 0.9rem !important; border: 2px solid #e2e8f0 !important; outline: none !important; transition: all 0.2s; }
-        input:focus, select:focus { border-color: #94a3b8 !important; box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
-        .step-badge { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.8rem; }
+        
+        body { 
+            background-attachment: fixed; 
+            background-size: cover; 
+            background-position: center; 
+            transition: all 0.5s ease; 
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f1f5f9;
+        }
+
+        .glass-container { 
+            background: rgba(255, 255, 255, 0.98); 
+            backdrop-filter: blur(10px);
+            /* Reescalado solicitado para zoom 100% */
+            transform: scale(1.05);
+            transform-origin: center;
+        }
+
+        /* Ajuste de fuentes y campos */
+        input, select { 
+            padding: 0.8rem 1rem !important; 
+            font-size: 1rem !important; 
+            border: 2px solid #e2e8f0 !important; 
+            outline: none !important; 
+            transition: all 0.2s; 
+        }
+        
+        input:focus, select:focus { 
+            border-color: #94a3b8 !important; 
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05); 
+        }
+
+        .step-badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.9rem; }
         
         .contract-665 .dynamic-bg { background-color: #D97706; }
         .contract-665 .dynamic-text { color: #D97706; }
@@ -25,26 +58,30 @@
         .contract-676 .dynamic-bg { background-color: #059669; }
         .contract-676 .dynamic-text { color: #059669; }
         .contract-676 .dynamic-border { border-top-color: #059669; }
+
+        @media (max-width: 768px) {
+            .glass-container { transform: scale(1); margin: 1rem; }
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 bg-slate-100">
+<body>
 
-    <main id="mainCard" class="glass-container w-full max-w-1xl rounded-3xl shadow-2xl overflow-hidden border-t-[12px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
+    <main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
         
-        <header class="px-6 py-4 bg-white border-b border-slate-100 flex justify-between items-center">
+        <header class="px-8 py-6 bg-white border-b border-slate-100 flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-800 text-slate-800 tracking-tight">Reporte de <span class="dynamic-text text-slate-500">Novedades</span></h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Asociación J.E.R - Neiva</p>
+                <h1 class="text-2xl font-800 text-slate-800 tracking-tight">Reporte de <span class="dynamic-text text-slate-500">Novedades</span></h1>
+                <p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Asociación J.E.R - Neiva</p>
             </div>
-            <div id="contractIndicator" class="px-3 py-1 rounded-full text-[10px] font-black text-white bg-slate-400 uppercase">Sin Contrato</div>
+            <div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">Sin Contrato</div>
         </header>
 
-        <form id="noveltyForm" action="https://formspree.io/f/mqardynz" method="POST" class="p-6 space-y-4">
+        <form id="noveltyForm" action="https://formspree.io/f/mqardynz" method="POST" class="p-8 space-y-6">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-1">
-                    <label class="flex items-center text-xs font-bold text-slate-600 uppercase">
-                        <span class="step-badge bg-slate-400 dynamic-bg mr-2">1</span> Contrato
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
+                        <span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
                     </label>
                     <select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
                         <option value="">Seleccione...</option>
@@ -53,9 +90,9 @@
                         <option value="676">Contrato 676</option>
                     </select>
                 </div>
-                <div id="sectionUDS" class="space-y-1 opacity-50">
-                    <label class="flex items-center text-xs font-bold text-slate-600 uppercase">
-                        <span class="step-badge bg-slate-400 dynamic-bg mr-2">2</span> UDS
+                <div id="sectionUDS" class="space-y-2 opacity-50">
+                    <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
+                        <span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
                     </label>
                     <select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
                         <option value="">-- Primero Contrato --</option>
@@ -64,74 +101,79 @@
             </div>
 
             <div class="pt-2">
-                <label class="flex items-center text-xs font-bold text-slate-600 uppercase mb-3">
-                    <span class="step-badge bg-slate-400 dynamic-bg mr-2">3</span> ¿Qué reportará?
+                <label class="flex items-center text-sm font-bold text-slate-600 uppercase mb-4">
+                    <span class="step-badge bg-slate-400 dynamic-bg mr-3">3</span> ¿Qué reportará?
                 </label>
-                <div class="grid grid-cols-2 gap-3">
-                    <label class="flex items-center p-3 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
                         <input type="checkbox" id="checkRetiro" class="hidden" onchange="toggleSection('retiro')">
-                        <span class="text-xs font-bold text-slate-600">RETIRO</span>
+                        <span class="text-sm font-bold text-slate-600">RETIRO DE BENEFICIARIO</span>
                     </label>
-                    <label class="flex items-center p-3 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                    <label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
                         <input type="checkbox" id="checkIngreso" class="hidden" onchange="toggleSection('ingreso')">
-                        <span class="text-xs font-bold text-slate-600">INGRESO</span>
+                        <span class="text-sm font-bold text-slate-600">INGRESO DE BENEFICIARIO</span>
                     </label>
                 </div>
             </div>
 
-            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-4 rounded-2xl bg-red-50/50 border border-red-100 space-y-3">
-                <h3 class="text-xs font-black text-red-700 uppercase tracking-tighter flex items-center">
-                    <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
+            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-6 rounded-2xl bg-red-50/50 border border-red-100 space-y-4">
+                <h3 class="text-sm font-black text-red-700 uppercase flex items-center">
+                    <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input type="text" id="retiroDocNumber" placeholder="Número de Documento" class="w-full rounded-lg">
                     <input type="text" id="retiroFullName" placeholder="Nombre Completo" class="w-full rounded-lg">
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
+                        <label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
                         <input type="date" id="retiroDate" class="w-full rounded-lg">
                     </div>
-                    <div class="flex items-center justify-center space-x-4 bg-white px-3 py-1 rounded-lg border border-red-100">
-                        <span class="text-[10px] font-bold text-slate-400">GÉNERO:</span>
-                        <label class="text-xs font-bold"><input type="radio" name="retiroGender" value="M"> M</label>
-                        <label class="text-xs font-bold"><input type="radio" name="retiroGender" value="F"> F</label>
+                    <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
+                        <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+                        <label class="text-sm font-bold flex items-center"><input type="radio" name="retiroGender" value="M" class="mr-1"> M</label>
+                        <label class="text-sm font-bold flex items-center"><input type="radio" name="retiroGender" value="F" class="mr-1"> F</label>
                     </div>
                 </div>
             </div>
 
-            <div id="sectionIngreso" class="hidden animate__animated animate__fadeIn space-y-4">
-                <div class="p-4 rounded-2xl bg-green-50/50 border border-green-100 space-y-3">
-                    <h3 class="text-xs font-black text-green-700 uppercase tracking-tighter flex items-center">
-                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span> Beneficiario Entrante
+            <div id="sectionIngreso" class="hidden animate__animated animate__fadeIn space-y-6">
+                <div class="p-6 rounded-2xl bg-green-50/50 border border-green-100 space-y-4">
+                    <h3 class="text-sm font-black text-green-700 uppercase flex items-center">
+                        <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Beneficiario Entrante
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input type="text" id="ingresoDocNumber" placeholder="Documento Niño" class="w-full rounded-lg">
                         <input type="text" id="ingresoFullName" placeholder="Nombre Niño" class="w-full rounded-lg">
                         <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
-                            <input type="date" id="ingresoDOB" class="w-full rounded-lg" onchange="calculateAge()">
+                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
+                            <input type="date" id="ingresoDOB" class="w-full rounded-lg" onchange="updateAgeDisplay()">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
-                            <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="calculateAge()">
+                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
+                            <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="updateAgeDisplay()">
                         </div>
-						<div class="flex items-center justify-center space-x-4 bg-white px-3 py-1 rounded-lg border border-red-100">
-							<span class="text-[10px] font-bold text-slate-400">GÉNERO:</span>
-							<label class="text-xs font-bold"><input type="radio" name="IngresoGender" value="M"> M</label>
-							<label class="text-xs font-bold"><input type="radio" name="IngresoGender" value="F"> F</label>
-						</div>
-                        <input type="text" id="ingresoAddress" placeholder="Dirección" class="w-full rounded-lg">
-                        <input type="tel" id="ingresoPhone" placeholder="Teléfono" class="w-full rounded-lg">
+                        <div class="md:col-span-2 space-y-1">
+                            <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Edad Calculada al Ingreso</label>
+                            <input type="text" id="displayAge" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-blue-50 border-blue-200 text-blue-800 font-bold italic">
+                        </div>
+                        <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
+                            <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+                            <label class="text-sm font-bold flex items-center"><input type="radio" name="IngresoGender" value="M" class="mr-1"> M</label>
+                            <label class="text-sm font-bold flex items-center"><input type="radio" name="IngresoGender" value="F" class="mr-1"> F</label>
+                        </div>
+                        <input type="text" id="ingresoAddress" placeholder="Dirección de Residencia" class="w-full rounded-lg">
+                        <input type="tel" id="ingresoPhone" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
                     </div>
                 </div>
-                <div class="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-3">
-                    <h3 class="text-xs font-black text-blue-700 uppercase tracking-tighter flex items-center">
-                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
+
+                <div class="p-6 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-4">
+                    <h3 class="text-sm font-black text-blue-700 uppercase flex items-center">
+                        <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input type="text" id="acudienteDoc" placeholder="Documento Acudiente" class="w-full rounded-lg">
                         <input type="text" id="acudienteName" placeholder="Nombre Acudiente" class="w-full rounded-lg">
                         <div class="space-y-1 md:col-span-2">
-                            <label class="text-[10px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
+                            <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
                             <input type="date" id="acudienteDOB" class="w-full rounded-lg">
                         </div>
                     </div>
@@ -139,17 +181,21 @@
             </div>
 
             <input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
-			<input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
-            <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-3.5 rounded-2xl text-white font-black text-sm tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
+            <input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
+            
+            <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
                 Enviar Reporte Al Correo
             </button>
             
-            <div id="feedbackContainer" class="hidden animate__animated p-4 rounded-2xl text-center text-xs font-bold mt-4"></div>
+            <div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
+            
+            <footer class="mt-10 mb-2 text-[11px] font-black text-slate-400 tracking-[0.4em] text-center uppercase">
+                Asociación J.E.R • Neiva, Huila © 2026 J.E.R By Zan
+            </footer>
         </form>
     </main>
 
     <script>
-        // Mismos datos UDS y BACKGROUNDS anteriores...
         const UDS_DATA = { '665': [['ALEGRIA DE VIVIR.', '4100100115777'], ['LOS CARIÑOSITOS', '4100100043894'], ['LOS DUMIS.', '4100100115770'], ['LOS JUGUETONES.', '4100100115796'], ['LOS ANGELITOS', '4100100041381'], ['LOS CHUPETINES', '4100100038177'], ['LOS PINGUINOS', '4100100041027'], ['MAFALDA', '4100100115757'], ['MIS AMIGUITOS.', '4100100115793'], ['MIS ANGELITOS.', '4100100115781'], ['MIS ANGELITOS', '410011123928'], ['MIS CAPULLOS', '4100100040968'], ['MIS 15 ANGELITOS', '4100100041374'], ['MIS PEQUEÑOS GIGANTES', '4100100040991'], ['MIS PEQUEÑOS PUPILOS', '4100100115788'], ['MIS PEQUEÑOS SALTARINES', '4100100041008'], ['MIS PEQUEÑOS SALTARINES', '4100100047851'], ['NIÑOS FELICES', '4100100041394'], ['PLUTO.', '4100100115774']], '667': [['BLANCA NIEVES', '4100100078903'], ['CHIQUILLADAS', '4100100120110'], ['DIAS FELICES', '4100100023616'], ['LA RANA RENE', '4100100120291'], ['LOS PITUFOS', '4100100127770'], ['MIS CHIQUITINES', '4100100024111'], ['LOS CHIQUITINES', '4100100112390'], ['LOS EXPLORADORES', '4100100023662'], ['MI MUNDO FELIZ', '4100100023780'], ['MI PEQUEÑO MUNDO', '4100100023816'], ['MIS PEQUEÑOS ANGELITOS', '4100100029904'], ['MIS PASTORCITOS', '4100100023682'], ['MIS PATICOS', '4100100023459'], ['MIS PICARDIAS', '4100100044836'], ['MIS PIRUETAS', '4100100128106'], ['MI PRIMER PASO', '4100100045206'], ['PEQUEÑOS GIGANTES', '4100100120109'], ['SEMILLITAS', '4100100024235']], '676': [['ALEGRIA', '4100100085789'], ['BAMBY', '4100100091036'], ['BAMBIS 2', '4100100083331'], ['BURBUJITAS', '4100100043041'], ['CASITA ENCANTADA', '4100100085784'], ['HOGAR FELIZ', '4100100085820'], ['POLLITOS', '4100100085805'], ['PICAPIEDRAS', '4100100043022'], ['SABIDURIA', '4100100085779'], ['LA PEQUEÑA LULU', '4100100085809'], ['LOS ANGELITOS', '4100100043056'], ['LOS CARIÑOSITOS', '4100100091312'], ['LOS SIMPSONS', '4100100041466'], ['LOS CHIQUILLOS', '4100100085803'], ['MI PEQUEÑA CASITA', '4100100085800'], ['MIS AMIGUITOS', '4100100043065'], ['MIS CORAZONSITOS', '4100100024142'], ['MIS OSITOS', '4100100107660'], ['MIS PEQUEÑOS ANGELITOS', '4100100115738']] };
         const BACKGROUNDS = { '665': 'linear-gradient(to bottom right, #fef3c7, #fbbf24)', '667': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', '676': 'linear-gradient(to bottom right, #d1fae5, #10b981)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
 
@@ -159,17 +205,17 @@
             const indicator = document.getElementById('contractIndicator');
             const udsSelect = document.getElementById('mainUdsDropdown');
             const sectionUDS = document.getElementById('sectionUDS');
-            mainCard.className = "glass-container w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border-t-[12px] dynamic-border animate__animated animate__fadeIn";
+            mainCard.className = "glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] dynamic-border animate__animated animate__fadeIn";
             document.body.style.background = BACKGROUNDS[contract] || BACKGROUNDS['default'];
             if (contract) {
                 mainCard.classList.add(`contract-${contract}`);
-                indicator.className = `px-3 py-1 rounded-full text-[10px] font-black text-white dynamic-bg uppercase`;
+                indicator.className = `px-4 py-1.5 rounded-full text-xs font-black text-white dynamic-bg uppercase`;
                 indicator.textContent = `Contrato ${contract}`;
                 udsSelect.disabled = false;
                 sectionUDS.style.opacity = "1";
                 populateUDS(contract);
             } else {
-                indicator.className = "px-3 py-1 rounded-full text-[10px] font-black text-white bg-slate-400 uppercase";
+                indicator.className = "px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase";
                 indicator.textContent = "Sin Contrato";
                 udsSelect.disabled = true;
                 udsSelect.innerHTML = '<option value="">-- Primero Contrato --</option>';
@@ -194,30 +240,43 @@
             section.classList.toggle('hidden', !check.checked);
         }
 
-        function calculateAge() {
-            const dob = document.getElementById('ingresoDOB').value;
-            const entry = document.getElementById('ingresoDate').value;
-            if (dob && entry) {
-                const d1 = new Date(dob);
-                const d2 = new Date(entry);
-                let years = d2.getFullYear() - d1.getFullYear();
-                let months = d2.getMonth() - d1.getMonth();
-                if (months < 0) { years--; months += 12; }
-                return `${years} años y ${months} meses`;
+        function updateAgeDisplay() {
+            const dobValue = document.getElementById('ingresoDOB').value;
+            const entryValue = document.getElementById('ingresoDate').value;
+            const displayField = document.getElementById('displayAge');
+
+            if (dobValue && entryValue) {
+                const ageResult = calculateAge(dobValue, entryValue);
+                displayField.value = ageResult;
+            } else {
+                displayField.value = "Esperando fechas...";
             }
-            return '--';
+        }
+
+        function calculateAge(dob, entry) {
+            const d1 = new Date(dob);
+            const d2 = new Date(entry);
+            d1.setMinutes(d1.getMinutes() + d1.getTimezoneOffset());
+            d2.setMinutes(d2.getMinutes() + d2.getTimezoneOffset());
+
+            let years = d2.getFullYear() - d1.getFullYear();
+            let months = d2.getMonth() - d1.getMonth();
+            let days = d2.getDate() - d1.getDate();
+
+            if (days < 0) months--;
+            if (months < 0) { years--; months += 12; }
+            return `${years} años y ${months} meses`;
         }
 
         function showFeedback(message, type) {
             const container = document.getElementById('feedbackContainer');
             container.textContent = message;
-            container.className = `p-4 rounded-2xl text-center text-xs font-bold animate__animated animate__fadeInUp mt-4 `;
+            container.className = `p-5 rounded-2xl text-center text-sm font-bold animate__animated animate__fadeInUp mt-4 `;
             if (type === 'success') container.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
             else container.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200', 'animate__shakeX');
             container.classList.remove('hidden');
         }
 
-        // --- FUNCIÓN DE FORMATEO SOLICITADA ---
         function formatData() {
             const contractNumber = document.getElementById('contractNumber').value;
             const udsSelection = document.getElementById('mainUdsDropdown').value;
@@ -243,72 +302,83 @@
                 formData += `--- DATOS DE INGRESO ---\n`;
                 formData += `Niño: ${document.getElementById('ingresoFullName').value}\n`;
                 formData += `Documento: ${document.getElementById('ingresoDocNumber').value}\n`;
-                formData += `Edad: ${calculateAge()}\n`;
-				formData += `Fecha Nacimiento: ${document.getElementById('ingresoDOB').value}\n`;
+                formData += `Edad: ${document.getElementById('displayAge').value}\n`;
+                formData += `Fecha Nacimiento: ${document.getElementById('ingresoDOB').value}\n`;
                 formData += `Fecha Ingreso: ${document.getElementById('ingresoDate').value}\n`;
-				formData += `Género: ${document.querySelector('input[name="IngresoGender"]:checked')?.value || 'N/A'}\n\n`;
+                formData += `Género: ${document.querySelector('input[name="IngresoGender"]:checked')?.value || 'N/A'}\n`;
                 formData += `Dirección: ${document.getElementById('ingresoAddress').value}\n`;
-				formData += `--- DATOS DE ACUDIENTE ---\n`;
+                formData += `Teléfono: ${document.getElementById('ingresoPhone').value}\n\n`;
+                formData += `--- DATOS DE ACUDIENTE ---\n`;
                 formData += `Acudiente: ${document.getElementById('acudienteName').value}\n`;
                 formData += `Doc. Acudiente: ${document.getElementById('acudienteDoc').value}\n`;
-				formData += `F.N. Acudiente: ${document.getElementById('acudienteDOB').value}\n`;
+                formData += `F.N. Acudiente: ${document.getElementById('acudienteDOB').value}\n`;
             }
             return formData;
         }
 
-        // --- ENVÍO ---
-		document.getElementById('noveltyForm').addEventListener('submit', async function(e) {
-			e.preventDefault();
-			const btn = document.getElementById('submitButton');
-			
-			// 1. Obtener nombre de la UDS para el asunto
-			const udsSelection = document.getElementById('mainUdsDropdown').value;
-			const utsName = udsSelection.split(' - ')[0] || 'Desconocida';
-			
-			// 2. Actualizar el Asunto dinámico antes de enviar
-			document.getElementById('emailSubject').value = `Novedad UDS: ${utsName}`;
+        document.getElementById('noveltyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitButton');
+            
+            // Validaciones
+            const contract = document.getElementById('contractNumber').value;
+            const uds = document.getElementById('mainUdsDropdown').value;
+            const isRetiro = document.getElementById('checkRetiro').checked;
+            const isIngreso = document.getElementById('checkIngreso').checked;
 
-			// 3. Validaciones de fechas (Retiro < Ingreso)
-			if (document.getElementById('checkRetiro').checked && document.getElementById('checkIngreso').checked) {
-				const fR = new Date(document.getElementById('retiroDate').value);
-				const fI = new Date(document.getElementById('ingresoDate').value);
-				if (fR >= fI) {
-					showFeedback("❌ La fecha de retiro debe ser anterior a la de ingreso.", "error");
-					return;
-				}
-			}
+            if (!contract || !uds) {
+                showFeedback("❌ Seleccione Contrato y Unidad de Servicio (UDS).", "error");
+                return;
+            }
+            if (!isRetiro && !isIngreso) {
+                showFeedback("❌ Seleccione al menos una acción: RETIRO o INGRESO.", "error");
+                return;
+            }
 
-			// 4. Inyectar formato en campo oculto de cuerpo del mensaje
-			document.getElementById('hiddenFormattedData').value = formatData();
+            // Validar campos según sección
+            if (isRetiro) {
+                if (!document.getElementById('retiroDocNumber').value || !document.getElementById('retiroDate').value) {
+                    showFeedback("❌ Complete los datos de RETIRO.", "error"); return;
+                }
+            }
+            if (isIngreso) {
+                if (!document.getElementById('ingresoDocNumber').value || !document.getElementById('acudienteName').value) {
+                    showFeedback("❌ Complete los datos de INGRESO y ACUDIENTE.", "error"); return;
+                }
+            }
 
-			btn.disabled = true;
-			btn.textContent = "ENVIANDO...";
+            document.getElementById('emailSubject').value = `Novedad UDS: ${uds.split(' - ')[0]}`;
+            document.getElementById('hiddenFormattedData').value = formatData();
 
-			try {
-				const response = await fetch(this.action, {
-					method: 'POST',
-					body: new FormData(this),
-					headers: { 'Accept': 'application/json' }
-				});
-				if (response.ok) {
-					showFeedback('✅ ¡Éxito! La novedad ha sido enviada correctamente al correo.', 'success');
-					this.reset();
-					updateStyles();
-					document.getElementById('sectionRetiro').classList.add('hidden');
-					document.getElementById('sectionIngreso').classList.add('hidden');
-				} else {
-					showFeedback("❌ Error en el servidor.", "error");
-				}
-			} catch {
-				showFeedback("❌ Error de conexión.", "error");
-			} finally {
-				btn.disabled = false;
-				btn.textContent = "ENVIAR REPORTE AL CORREO";
-			}
-		});
+            btn.disabled = true;
+            btn.textContent = "ENVIANDO REPORTE...";
+
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (response.ok) {
+                    showFeedback('✅ ¡Éxito! La novedad ha sido enviada correctamente al correo.', 'success');
+                    this.reset();
+                    updateStyles();
+                    document.getElementById('sectionRetiro').classList.add('hidden');
+                    document.getElementById('sectionIngreso').classList.add('hidden');
+                } else {
+                    showFeedback("❌ Error al enviar. Intente nuevamente.", "error");
+                }
+            } catch {
+                showFeedback("❌ Error de conexión de red.", "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Enviar Reporte Al Correo";
+            }
+        });
     </script>
 </body>
 </html>
+
 
 
 
