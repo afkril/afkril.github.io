@@ -48,9 +48,9 @@
                     </label>
                     <select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
                         <option value="">Seleccione...</option>
-                        <option value="665">Contrato 665 (Amarillo)</option>
-                        <option value="667">Contrato 667 (Azul)</option>
-                        <option value="676">Contrato 676 (Verde)</option>
+                        <option value="665">Contrato 665</option>
+                        <option value="667">Contrato 667</option>
+                        <option value="676">Contrato 676</option>
                     </select>
                 </div>
                 <div id="sectionUDS" class="space-y-1 opacity-50">
@@ -114,6 +114,11 @@
                             <label class="text-[10px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
                             <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="calculateAge()">
                         </div>
+						<div class="flex items-center justify-center space-x-4 bg-white px-3 py-1 rounded-lg border border-red-100">
+							<span class="text-[10px] font-bold text-slate-400">GÉNERO:</span>
+							<label class="text-xs font-bold"><input type="radio" name="IngresoGender" value="M"> M</label>
+							<label class="text-xs font-bold"><input type="radio" name="IngresoGender" value="F"> F</label>
+						</div>
                         <input type="text" id="ingresoAddress" placeholder="Dirección" class="w-full rounded-lg">
                         <input type="tel" id="ingresoPhone" placeholder="Teléfono" class="w-full rounded-lg">
                     </div>
@@ -136,7 +141,7 @@
             <input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
 			<input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
             <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-3.5 rounded-2xl text-white font-black text-sm tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
-                Enviar Reporte
+                Enviar Reporte Al Correo
             </button>
             
             <div id="feedbackContainer" class="hidden animate__animated p-4 rounded-2xl text-center text-xs font-bold mt-4"></div>
@@ -239,10 +244,14 @@
                 formData += `Niño: ${document.getElementById('ingresoFullName').value}\n`;
                 formData += `Documento: ${document.getElementById('ingresoDocNumber').value}\n`;
                 formData += `Edad: ${calculateAge()}\n`;
+				formData += `Fecha Nacimiento: ${document.getElementById('ingresoDOB').value}\n`;
                 formData += `Fecha Ingreso: ${document.getElementById('ingresoDate').value}\n`;
+				formData += `Género: ${document.querySelector('input[name="IngresoGender"]:checked')?.value || 'N/A'}\n\n`;
                 formData += `Dirección: ${document.getElementById('ingresoAddress').value}\n`;
+				formData += `--- DATOS DE ACUDIENTE ---\n`;
                 formData += `Acudiente: ${document.getElementById('acudienteName').value}\n`;
                 formData += `Doc. Acudiente: ${document.getElementById('acudienteDoc').value}\n`;
+				formData += `F.N. Acudiente: ${document.getElementById('acudienteDOB').value}\n`;
             }
             return formData;
         }
@@ -282,7 +291,7 @@
 					headers: { 'Accept': 'application/json' }
 				});
 				if (response.ok) {
-					showFeedback('✅ ¡Éxito! La novedad ha sido enviada correctamente.', 'success');
+					showFeedback('✅ ¡Éxito! La novedad ha sido enviada correctamente al correo.', 'success');
 					this.reset();
 					updateStyles();
 					document.getElementById('sectionRetiro').classList.add('hidden');
@@ -300,3 +309,4 @@
     </script>
 </body>
 </html>
+
