@@ -73,7 +73,15 @@
                 <h1 class="text-2xl font-800 text-slate-800 tracking-tight">Reporte de <span class="dynamic-text text-slate-500">Novedades</span></h1>
                 <p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Asociación J.E.R - Neiva</p>
             </div>
-            <div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">Sin Contrato</div>
+            <div class="flex items-center space-x-4">
+				<div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono">
+					00/00/0000 00:00:00
+				</div>
+				<div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">
+					Sin Contrato
+				</div>
+			</div>
+			
         </header>
 
         <form id="noveltyForm" action="https://formspree.io/f/mqardynz" method="POST" class="p-8 space-y-6">
@@ -116,16 +124,26 @@
                 </div>
             </div>
 
-            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-6 rounded-2xl bg-red-50/50 border border-red-100 space-y-4">
+            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-6 rounded-2xl bg-red-100/100 border border-red-100 space-y-4">
                 <h3 class="text-sm font-black text-red-700 uppercase flex items-center">
                     <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <input type="text" id="retiroDocNumber" placeholder="Número de Documento" class="w-full rounded-lg">
-                    <input type="text" id="retiroFullName" placeholder="Nombre Completo" class="w-full rounded-lg">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<select id="retiroDocType" name="retiro_tipo_doc" class="w-full rounded-lg">
+						<option value="RC">RC - Registro Civil</option>
+						<option value="AN">AN - Acta Nacimiento</option>
+						<option value="PEP">PEP / PPT</option>
+						<option value="SD">SD - Sin Documento</option>
+					</select>
+					<input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de Documento" 
+						   class="w-full rounded-lg" minlength="7" maxlength="10" 
+						   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+					</div>
+                    <input type="text" id="retiroFullName" placeholder="Nombres y Aplellidos Completo" class="w-full rounded-lg">
                     <div class="space-y-1">
                         <label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
-                        <input type="date" id="retiroDate" class="w-full rounded-lg">
+						<input type="date" id="retiroDate" class="w-full rounded-lg" onchange="validateDatesRealTime()">
                     </div>
                     <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
                         <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
@@ -136,12 +154,22 @@
             </div>
 
             <div id="sectionIngreso" class="hidden animate__animated animate__fadeIn space-y-6">
-                <div class="p-6 rounded-2xl bg-green-50/50 border border-green-100 space-y-4">
+                <div class="p-6 rounded-2xl bg-green-100/100 border border-green-100 space-y-4">
                     <h3 class="text-sm font-black text-green-700 uppercase flex items-center">
                         <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Beneficiario Entrante
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="ingresoDocNumber" placeholder="Numero Documento" class="w-full rounded-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<select id="ingresoDocType" name="ingreso_tipo_doc" class="w-full rounded-lg">
+								<option value="RC">RC - Registro Civil</option>
+								<option value="AN">AN - Acta Nacimiento</option>
+								<option value="PEP">PEP / PPT</option>
+								<option value="SD">SD - Sin Documento</option>
+							</select>
+							<input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Numero Documento" 
+								   class="w-full rounded-lg" minlength="7" maxlength="10" 
+								   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+							</div>
                         <input type="text" id="ingresoFullName" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
@@ -165,7 +193,7 @@
                     </div>
                 </div>
 
-                <div class="p-6 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-4">
+                <div class="p-6 rounded-2xl bg-blue-100/100 border border-blue-100 space-y-4">
                     <h3 class="text-sm font-black text-blue-700 uppercase flex items-center">
                         <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
                     </h3>
@@ -198,6 +226,63 @@
     <script>
         const UDS_DATA = { '665': [['ALEGRIA DE VIVIR.', '4100100115777'], ['LOS CARIÑOSITOS', '4100100043894'], ['LOS DUMIS.', '4100100115770'], ['LOS JUGUETONES.', '4100100115796'], ['LOS ANGELITOS', '4100100041381'], ['LOS CHUPETINES', '4100100038177'], ['LOS PINGUINOS', '4100100041027'], ['MAFALDA', '4100100115757'], ['MIS AMIGUITOS.', '4100100115793'], ['MIS ANGELITOS.', '4100100115781'], ['MIS ANGELITOS', '410011123928'], ['MIS CAPULLOS', '4100100040968'], ['MIS 15 ANGELITOS', '4100100041374'], ['MIS PEQUEÑOS GIGANTES', '4100100040991'], ['MIS PEQUEÑOS PUPILOS', '4100100115788'], ['MIS PEQUEÑOS SALTARINES', '4100100041008'], ['MIS PEQUEÑOS SALTARINES', '4100100047851'], ['NIÑOS FELICES', '4100100041394'], ['PLUTO.', '4100100115774']], '667': [['BLANCA NIEVES', '4100100078903'], ['CHIQUILLADAS', '4100100120110'], ['DIAS FELICES', '4100100023616'], ['LA RANA RENE', '4100100120291'], ['LOS PITUFOS', '4100100127770'], ['MIS CHIQUITINES', '4100100024111'], ['LOS CHIQUITINES', '4100100112390'], ['LOS EXPLORADORES', '4100100023662'], ['MI MUNDO FELIZ', '4100100023780'], ['MI PEQUEÑO MUNDO', '4100100023816'], ['MIS PEQUEÑOS ANGELITOS', '4100100029904'], ['MIS PASTORCITOS', '4100100023682'], ['MIS PATICOS', '4100100023459'], ['MIS PICARDIAS', '4100100044836'], ['MIS PIRUETAS', '4100100128106'], ['MI PRIMER PASO', '4100100045206'], ['PEQUEÑOS GIGANTES', '4100100120109'], ['SEMILLITAS', '4100100024235']], '676': [['ALEGRIA', '4100100085789'], ['BAMBY', '4100100091036'], ['BAMBIS 2', '4100100083331'], ['BURBUJITAS', '4100100043041'], ['CASITA ENCANTADA', '4100100085784'], ['HOGAR FELIZ', '4100100085820'], ['POLLITOS', '4100100085805'], ['PICAPIEDRAS', '4100100043022'], ['SABIDURIA', '4100100085779'], ['LA PEQUEÑA LULU', '4100100085809'], ['LOS ANGELITOS', '4100100043056'], ['LOS CARIÑOSITOS', '4100100091312'], ['LOS SIMPSONS', '4100100041466'], ['LOS CHIQUILLOS', '4100100085803'], ['MI PEQUEÑA CASITA', '4100100085800'], ['MIS AMIGUITOS', '4100100043065'], ['MIS CORAZONSITOS', '4100100024142'], ['MIS OSITOS', '4100100107660'], ['MIS PEQUEÑOS ANGELITOS', '4100100115738']] };
         const BACKGROUNDS = { '665': 'linear-gradient(to bottom right, #fef3c7, #fbbf24)', '667': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', '676': 'linear-gradient(to bottom right, #d1fae5, #10b981)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
+
+		function updateClock() {
+			const now = new Date();
+			
+			// Formatear fecha: DD/MM/YYYY
+			const date = now.toLocaleDateString('es-CO', {
+				day: '2-digit',
+				month: '2-digit',
+				year: 'numeric'
+			});
+			
+			// Formatear hora: HH:MM:SS (24h)
+			const time = now.toLocaleTimeString('es-CO', {
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit',
+				hour12: false
+			});
+
+			document.getElementById('clockDisplay').textContent = `${date} | ${time}`;
+		}
+
+		// Iniciar el reloj inmediatamente y actualizar cada segundo
+		setInterval(updateClock, 1000);
+		updateClock();
+
+		function validateDatesRealTime() {
+			const isRetiro = document.getElementById('checkRetiro').checked;
+			const isIngreso = document.getElementById('checkIngreso').checked;
+			const fechaRetiroInput = document.getElementById('retiroDate');
+			const fechaIngresoInput = document.getElementById('ingresoDate');
+			const feedback = document.getElementById('feedbackContainer');
+
+			// Solo validar si ambos checks están marcados y ambos campos tienen fecha
+			if (isRetiro && isIngreso && fechaRetiroInput.value && fechaIngresoInput.value) {
+				const dRetiro = new Date(fechaRetiroInput.value);
+				const dIngreso = new Date(fechaIngresoInput.value);
+				
+				// Ajuste de zona horaria
+				dRetiro.setMinutes(dRetiro.getMinutes() + dRetiro.getTimezoneOffset());
+				dIngreso.setMinutes(dIngreso.getMinutes() + dIngreso.getTimezoneOffset());
+
+				if (dRetiro >= dIngreso) {
+					showFeedback("⚠️ Atención: La fecha de retiro no puede ser igual o posterior a la de ingreso.", "error");
+					fechaRetiroInput.classList.add('border-red-500', 'bg-red-50');
+					fechaIngresoInput.classList.add('border-red-500', 'bg-red-50');
+					return false;
+				} else {
+					// Limpiar error si la corrección es válida
+					feedback.classList.add('hidden');
+					fechaRetiroInput.classList.remove('border-red-500', 'bg-red-50');
+					fechaIngresoInput.classList.remove('border-red-500', 'bg-red-50');
+					return true;
+				}
+			}
+			return true;
+		}
 
         function updateStyles() {
             const contract = document.getElementById('contractNumber').value;
@@ -282,6 +367,12 @@
             const udsSelection = document.getElementById('mainUdsDropdown').value;
             const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
             const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
+			
+			const tipoDoc = document.getElementById('retiroDocType').value;
+			const numDoc = document.getElementById('retiroDocNumber').value;
+			const tipoDocIn = document.getElementById('ingresoDocType').value;
+			const numDocIn = document.getElementById('ingresoDocNumber').value;
+			
             
             let formData = `**NOVEDAD DE BENEFICIARIOS UDS**\n`;
             formData += `==================================\n`;
@@ -292,7 +383,7 @@
 
             if (document.getElementById('checkRetiro').checked) {
                 formData += `--- DATOS DE RETIRO ---\n`;
-                formData += `Documento: ${document.getElementById('retiroDocNumber').value}\n`;
+				formData += `Documento: ${tipoDoc} ${numDoc}\n`;
                 formData += `Nombre: ${document.getElementById('retiroFullName').value}\n`;
                 formData += `Fecha Retiro: ${document.getElementById('retiroDate').value}\n`;
                 formData += `Género: ${document.querySelector('input[name="retiroGender"]:checked')?.value || 'N/A'}\n\n`;
@@ -301,7 +392,7 @@
             if (document.getElementById('checkIngreso').checked) {
                 formData += `--- DATOS DE INGRESO ---\n`;
                 formData += `Niño: ${document.getElementById('ingresoFullName').value}\n`;
-                formData += `Documento: ${document.getElementById('ingresoDocNumber').value}\n`;
+				formData += `Documento: ${tipoDocIn} ${numDocIn}\n`;
                 formData += `Edad: ${document.getElementById('displayAge').value}\n`;
                 formData += `Fecha Nacimiento: ${document.getElementById('ingresoDOB').value}\n`;
                 formData += `Fecha Ingreso: ${document.getElementById('ingresoDate').value}\n`;
@@ -325,6 +416,42 @@
             const uds = document.getElementById('mainUdsDropdown').value;
             const isRetiro = document.getElementById('checkRetiro').checked;
             const isIngreso = document.getElementById('checkIngreso').checked;
+			
+			// ... (dentro del listener de submit, después de las validaciones de campos vacíos)
+			if (isRetiro) {
+				const docRetiro = document.getElementById('retiroDocNumber').value;
+				if (docRetiro.length < 7 || docRetiro.length > 10) {
+					showFeedback("❌ El documento de retiro debe tener entre 7 y 10 dígitos.", "error");
+					return;
+				}
+			}
+
+			if (isIngreso) {
+				const docIngreso = document.getElementById('ingresoDocNumber').value;
+				if (docIngreso.length < 7 || docIngreso.length > 10) {
+					showFeedback("❌ El documento de ingreso debe tener entre 7 y 10 dígitos.", "error");
+					return;
+				}
+			}
+
+			// ... (proceder con el envío si todo es correcto)
+
+			// ... (dentro del listener de 'submit', después de las validaciones de campos vacíos)
+			if (isRetiro && isIngreso) {
+				const fechaRetiro = new Date(document.getElementById('retiroDate').value);
+				const fechaIngreso = new Date(document.getElementById('ingresoDate').value);
+
+				// Ajustar desfase de zona horaria para comparación precisa
+				fechaRetiro.setMinutes(fechaRetiro.getMinutes() + fechaRetiro.getTimezoneOffset());
+				fechaIngreso.setMinutes(fechaIngreso.getMinutes() + fechaIngreso.getTimezoneOffset());
+
+				if (fechaRetiro >= fechaIngreso) {
+					showFeedback("❌ Error: La fecha de retiro debe ser anterior a la fecha de ingreso.", "error");
+					return; // Detiene el envío del formulario
+				}
+			}
+
+			// ... (continúa el proceso de envío del formulario)
 
             if (!contract || !uds) {
                 showFeedback("❌ Seleccione Contrato y Unidad de Servicio (UDS).", "error");
@@ -378,8 +505,6 @@
     </script>
 </body>
 </html>
-
-
 
 
 
