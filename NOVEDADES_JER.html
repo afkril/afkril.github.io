@@ -91,7 +91,7 @@
                     <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
                         <span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
                     </label>
-                    <select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
+                    <select id="contractNumber" id="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
                         <option value="">Seleccione...</option>
                         <option value="665">Contrato 665</option>
                         <option value="667">Contrato 667</option>
@@ -102,7 +102,7 @@
                     <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
                         <span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
                     </label>
-                    <select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
+                    <select id="mainUdsDropdown" id="UDS_Full" required disabled class="w-full rounded-xl">
                         <option value="">-- Primero Contrato --</option>
                     </select>
                 </div>
@@ -130,13 +130,13 @@
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<select id="retiroDocType" name="retiro_tipo_doc" class="w-full rounded-lg">
+					<select id="retiroDocType" id="retiro_tipo_doc" class="w-full rounded-lg">
 						<option value="RC">RC - Registro Civil</option>
 						<option value="AN">AN - Acta Nacimiento</option>
 						<option value="PEP">PEP / PPT</option>
 						<option value="SD">SD - Sin Documento</option>
 					</select>
-					<input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de Documento" 
+					<input type="text" id="retiroDocNumber" id="retiro_documento" placeholder="Número de Documento" 
 						   class="w-full rounded-lg" minlength="7" maxlength="10" 
 						   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
 					</div>
@@ -146,10 +146,14 @@
 						<input type="date" id="retiroDate" class="w-full rounded-lg" onchange="validateDatesRealTime()">
                     </div>
                     <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
-                        <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
-                        <label class="text-sm font-bold flex items-center"><input type="radio" name="retiroGender" value="M" class="mr-1"> M</label>
-                        <label class="text-sm font-bold flex items-center"><input type="radio" name="retiroGender" value="F" class="mr-1"> F</label>
-                    </div>
+						<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+						<label class="text-sm font-bold flex items-center">
+							<input type="radio" id="_retiroGender" value="M" class="mr-1"> M
+						</label>
+						<label class="text-sm font-bold flex items-center">
+							<input type="radio" id="_retiroGender" value="F" class="mr-1"> F
+						</label>
+					</div>
                 </div>
             </div>
 
@@ -160,13 +164,13 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<select id="ingresoDocType" name="ingreso_tipo_doc" class="w-full rounded-lg">
+							<select id="ingresoDocType" id="ingreso_tipo_doc" class="w-full rounded-lg">
 								<option value="RC">RC - Registro Civil</option>
 								<option value="AN">AN - Acta Nacimiento</option>
 								<option value="PEP">PEP / PPT</option>
 								<option value="SD">SD - Sin Documento</option>
 							</select>
-							<input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Numero Documento" 
+							<input type="text" id="ingresoDocNumber" id="ingreso_documento" placeholder="Numero Documento" 
 								   class="w-full rounded-lg" minlength="7" maxlength="10" 
 								   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
 							</div>
@@ -184,10 +188,14 @@
                             <input type="text" id="displayAge" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
                         </div>
                         <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
-                            <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
-                            <label class="text-sm font-bold flex items-center"><input type="radio" name="IngresoGender" value="M" class="mr-1"> M</label>
-                            <label class="text-sm font-bold flex items-center"><input type="radio" name="IngresoGender" value="F" class="mr-1"> F</label>
-                        </div>
+							<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+							<label class="text-sm font-bold flex items-center">
+								<input type="radio" id="_ingresoGender" value="M" class="mr-1"> M
+							</label>
+							<label class="text-sm font-bold flex items-center">
+								<input type="radio" id="_ingresoGender" value="F" class="mr-1"> F
+							</label>
+						</div>
                         <input type="text" id="ingresoAddress" placeholder="Dirección y Barrio" class="w-full rounded-lg">
                         <input type="tel" id="ingresoPhone" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
                     </div>
@@ -363,49 +371,52 @@
         }
 
         function formatData() {
-            const contractNumber = document.getElementById('contractNumber').value;
-            const udsSelection = document.getElementById('mainUdsDropdown').value;
-            const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
-            const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
+			const contractNumber = document.getElementById('contractNumber').value;
+			const udsSelection = document.getElementById('mainUdsDropdown').value;
+			const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
+			const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
 			
-			const tipoDoc = document.getElementById('retiroDocType').value;
-			const numDoc = document.getElementById('retiroDocNumber').value;
-			const tipoDocIn = document.getElementById('ingresoDocType').value;
-			const numDocIn = document.getElementById('ingresoDocNumber').value;
+			let formData = 	`╔═══════════════════════════════╗\n`;
+			formData += 	` REPORTE DE NOVEDADES - ASOCIACIÓN J.E.R\n`;
+			formData += 	`╚═══════════════════════════════╝\n\n`;
 			
-            
-            let formData = `**NOVEDAD DE BENEFICIARIOS UDS**\n`;
-            formData += `==================================\n`;
-            formData += `CONTRATO: ${contractNumber}\n`;
-            formData += `UDS (NOMBRE): ${utsName}\n`;
-            formData += `UDS (CÓDIGO): ${utsCode}\n`;
-            formData += `==================================\n\n`;
+			formData += `[ INFORMACIÓN GENERAL ]\n`;
+			formData += `> CONTRATO:      ${contractNumber}\n`;
+			formData += `> UDS NOMBRE:    ${utsName}\n`;
+			formData += `> UDS CÓDIGO:    ${utsCode}\n`;
+			formData += `──────────────────────────────────────────────────────────\n\n`;
 
-            if (document.getElementById('checkRetiro').checked) {
-                formData += `--- DATOS DE RETIRO ---\n`;
-				formData += `Documento: ${tipoDoc} ${numDoc}\n`;
-                formData += `Nombre: ${document.getElementById('retiroFullName').value}\n`;
-                formData += `Fecha Retiro: ${document.getElementById('retiroDate').value}\n`;
-                formData += `Género: ${document.querySelector('input[name="retiroGender"]:checked')?.value || 'N/A'}\n\n`;
-            }
+			if (document.getElementById('checkRetiro').checked) {
+				formData += `┹ ✴ DATOS DE RETIRO (RETIRO)\n`;
+				formData += `  ├─ 📄Documento:  ${document.getElementById('retiroDocType').value} ${document.getElementById('retiroDocNumber').value}\n`;
+				formData += `  ├─ ✍️Nombre:     ${document.getElementById('retiroFullName').value.toUpperCase()}\n`;
+				formData += `  ├─ 📆Fecha:      ${document.getElementById('retiroDate').value}\n`;
+				formData += `  └─ ♀️Género:     ${document.querySelector('input[name="_retiroGender"]:checked')?.value || 'N/A'}\n\n`;
+			}
 
-            if (document.getElementById('checkIngreso').checked) {
-                formData += `--- DATOS DE INGRESO ---\n`;
-                formData += `Niño: ${document.getElementById('ingresoFullName').value}\n`;
-				formData += `Documento: ${tipoDocIn} ${numDocIn}\n`;
-                formData += `Edad: ${document.getElementById('displayAge').value}\n`;
-                formData += `Fecha Nacimiento: ${document.getElementById('ingresoDOB').value}\n`;
-                formData += `Fecha Ingreso: ${document.getElementById('ingresoDate').value}\n`;
-                formData += `Género: ${document.querySelector('input[name="IngresoGender"]:checked')?.value || 'N/A'}\n`;
-                formData += `Dirección: ${document.getElementById('ingresoAddress').value}\n`;
-                formData += `Teléfono: ${document.getElementById('ingresoPhone').value}\n\n`;
-                formData += `--- DATOS DE ACUDIENTE ---\n`;
-                formData += `Acudiente: ${document.getElementById('acudienteName').value}\n`;
-                formData += `Doc. Acudiente: ${document.getElementById('acudienteDoc').value}\n`;
-                formData += `F.N. Acudiente: ${document.getElementById('acudienteDOB').value}\n`;
-            }
-            return formData;
-        }
+			if (document.getElementById('checkIngreso').checked) {
+				formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
+				formData += `  ├─ ✍️Niño:       ${document.getElementById('ingresoFullName').value.toUpperCase()}\n`;
+				formData += `  ├─ 📄Documento:  ${document.getElementById('ingresoDocType').value} ${document.getElementById('ingresoDocNumber').value}\n`;
+				formData += `  ├─ 👶Edad:       ${document.getElementById('displayAge').value}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${document.getElementById('ingresoDOB').value}\n`;
+				formData += `  ├─ 📆F. Ingreso: ${document.getElementById('ingresoDate').value}\n`;
+				formData += `  ├─ ♀️Género:     ${document.querySelector('input[name="_ingresoGender"]:checked')?.value || 'N/A'}\n`;
+				formData += `  ├─ 📌Direccion:  ${document.getElementById('ingresoAddress').value}\n`;
+				formData += `  └─ ☎Teléfono:   ${document.getElementById('ingresoPhone').value}\n\n`;
+				
+				
+				formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
+				formData += `  ├─ ✍️Nombre:     ${document.getElementById('acudienteName').value}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${document.getElementById('acudienteDOB').value}\n`;
+				formData += `  └─ 📄Documento:  ${document.getElementById('acudienteDoc').value}\n`;
+			}
+			
+			formData += `──────────────────────────────────────────────────────────\n`;
+			formData += `Generado el: ${new Date().toLocaleString()}\n`;
+			
+			return formData;
+		}
 
         document.getElementById('noveltyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -487,16 +498,16 @@
                     headers: { 'Accept': 'application/json' }
                 });
                 if (response.ok) {
-                    showFeedback('✅ ¡Éxito! La novedad ha sido enviada correctamente al correo.', 'success');
+                    showFeedback('✅¡Éxito! La novedad ha sido enviada correctamente al correo.✅', 'success');
                     this.reset();
                     updateStyles();
                     document.getElementById('sectionRetiro').classList.add('hidden');
                     document.getElementById('sectionIngreso').classList.add('hidden');
                 } else {
-                    showFeedback("❌ Error al enviar. Intente nuevamente.", "error");
+                    showFeedback("❌ Error al enviar. Intente nuevamente.❌", "error");
                 }
             } catch {
-                showFeedback("❌ Error de conexión de red.", "error");
+                showFeedback("❌ Error de conexión de red.❌", "error");
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Enviar Reporte Al Correo";
