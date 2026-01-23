@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Shower - Revelación Interactiva</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --blue: #4fc3f7; --pink: #ff80ab; --text-dark: #2d3436;
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: linear-gradient(135deg, #d1e9ff 0%, #ffd1e8 100%);
+            font-family: 'Nunito', sans-serif; overflow: hidden; padding: 20px 0;
+            position: relative;
+        }
+
+        /* --- SISTEMA DE BURBUJAS (FONDO) --- */
+        #bubble-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 0;
+        }
+
+        .bubble {
+            position: absolute; border-radius: 50%; bottom: -100px; opacity: 0;
+            filter: blur(0.5px); box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.5);
+            animation: bubble-float linear forwards;
+        }
+        .bubble-blue { background: radial-gradient(circle at 30% 30%, rgba(79, 195, 247, 0.5), rgba(41, 182, 246, 0.1)); }
+        .bubble-pink { background: radial-gradient(circle at 30% 30%, rgba(255, 128, 171, 0.5), rgba(240, 98, 146, 0.1)); }
+        
+        .size-0 { width: 35px; height: 35px; }
+        .size-1 { width: 60px; height: 60px; }
+        .size-2 { width: 90px; height: 90px; }
+
+        @keyframes bubble-float {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { transform: translateY(-110vh) scale(1.3); opacity: 0; }
+        }
+
+        /* --- TARJETA PRINCIPAL --- */
+        .main-card {
+            background: var(--glass); width: 92%; max-width: 420px; padding: 35px 25px;
+            border-radius: 50px; box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            text-align: center; border: 5px solid white; position: relative; z-index: 10;
+            margin-bottom: 25px;
+        }
+
+        .step { display: none; }
+        .active { display: flex; flex-direction: column; align-items: center; animation: pop 0.4s ease-out; }
+
+        h1 { font-family: 'Fredoka One'; color: var(--text-dark); margin: 0 0 10px 0; font-size: 2rem; }
+        input[type="text"] {
+            width: 100%; max-width: 300px; padding: 18px; border-radius: 20px; border: 2px solid #eee;
+            font-size: 1.1rem; text-align: center; margin-bottom: 20px; outline: none; font-family: 'Nunito';
+        }
+
+        .btn-group { display: flex; gap: 12px; width: 100%; max-width: 320px; }
+        .vote-btn {
+            flex: 1; border: none; padding: 20px 10px; border-radius: 25px; color: white;
+            font-family: 'Fredoka One'; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+        }
+        .btn-boy { background: var(--blue); }
+        .btn-girl { background: var(--pink); }
+        .vote-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* --- CLICKER --- */
+        .gift-emoji { font-size: 110px; cursor: pointer; user-select: none; transition: transform 0.05s; line-height: 1.2; margin: 10px 0; }
+        .plus-one {
+            position: absolute; color: var(--pink); font-family: 'Fredoka One';
+            font-size: 1.8rem; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 20;
+        }
+        .progress-wrapper { width: 100%; height: 18px; background: #eee; border-radius: 20px; margin: 15px 0; border: 2px solid #fff; overflow: hidden; }
+        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--blue), var(--pink)); transition: width 0.1s; }
+
+        /* --- BARRA INFERIOR --- */
+        .footer-stats {
+            width: 92%; max-width: 420px; background: var(--glass); padding: 20px;
+            border-radius: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 2px solid white; z-index: 10;
+        }
+        .stats-labels { display: flex; justify-content: space-between; font-weight: 900; font-size: 0.9rem; margin-bottom: 8px; }
+        .bar-container { height: 14px; background: #eaedf0; border-radius: 10px; display: flex; overflow: hidden; }
+
+        /* --- DASHBOARD NOMBRES --- */
+        .stats-trigger {
+            position: fixed; top: 20px; right: 20px; background: white; border: none;
+            width: 55px; height: 55px; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer; font-size: 1.8rem; z-index: 100; display: flex; align-items: center; justify-content: center;
+        }
+        .dashboard {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 200;
+        }
+        .dash-content {
+            background: white; width: 90%; max-width: 500px; max-height: 80vh;
+            border-radius: 40px; padding: 30px; position: relative; overflow-y: auto;
+        }
+        .name-tag {
+            background: #f8f9fa; padding: 8px 12px; border-radius: 12px; display: block;
+            margin-bottom: 6px; font-size: 0.85rem; font-weight: 700; color: #555; border-left: 4px solid;
+        }
+
+        .retry-btn {
+            margin-top: 20px; background: var(--text-dark); color: white; border: none;
+            padding: 15px 30px; border-radius: 20px; font-family: 'Fredoka One'; cursor: pointer;
+        }
+
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-100px); } }
+        @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div id="bubble-container"></div>
+
+    <button class="stats-trigger" onclick="toggleDash()">📊</button>
+
+    <div class="dashboard" id="dashBoard">
+        <div class="dash-content">
+            <span style="position:absolute; top:20px; right:25px; cursor:pointer; font-size:2.5rem; color:#ccc;" onclick="toggleDash()">×</span>
+            <h2 style="font-family: 'Fredoka One'; text-align: center; margin-bottom: 25px;">Team Niño vs Niña</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <span style="color:var(--blue); font-weight:900; font-size:0.9rem; display:block; margin-bottom:10px;">TEAM NIÑO 💙</span>
+                    <div id="listNamesBoy"></div>
+                </div>
+                <div>
+                    <span style="color:var(--pink); font-weight:900; font-size:0.9rem; display:block; margin-bottom:10px;">TEAM NIÑA 🎀</span>
+                    <div id="listNamesGirl"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-card">
+        <div id="step1" class="step active">
+            <h1>¡Hola! ✨</h1>
+            <p>Dinos tu nombre para empezar:</p>
+            <input type="text" id="nameInput" placeholder="Tu nombre aquí..." maxlength="20">
+            <p style="font-size: 0.9rem; margin-bottom:10px;">¿Qué crees que será el bebé?</p>
+            <div class="btn-group">
+                <button class="vote-btn btn-boy" onclick="startFlow('boy')">NIÑO 💙</button>
+                <button class="vote-btn btn-girl" onclick="startFlow('girl')">NIÑA 🎀</button>
+            </div>
+        </div>
+
+        <div id="step2" class="step">
+            <h1 id="userTitle">¡Dale!</h1>
+			<p>Toca el regalo para Revelar el Genero</p>
+            <div id="clickArea" style="position: relative; width: 100%;">
+                <div class="gift-emoji" id="gift" onclick="handleTap(event)">🎁</div>
+            </div>
+            <div class="progress-wrapper"><div class="progress-bar" id="pBar"></div></div>
+            <p id="tapsLeft" style="font-weight: 900; color: var(--pink); font-size: 0.9rem;"></p>
+        </div>
+
+        <div id="step3" class="step">
+            <h1 style="color: var(--pink);">¡Te Esperamos!</h1>
+            <div style="border: 4px dashed #ffd1e8; padding: 25px; border-radius: 40px; background: #fff; width: 100%;">
+                <span style="font-weight: 800; color: #b2bec3; font-size: 0.8rem;">REVELACIÓN DE GÉNERO</span>
+                <span style="font-family: 'Fredoka One'; font-size: 2.3rem; color: #ff4081; display: block; margin: 10px 0;">4 de Febrero</span>
+				<span style="font-family: 'Fredoka One'; font-size: 2.3rem; color: #ff4081; display: block; margin: 10px 0;">8:00 PM</span>
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 15px; font-weight: 800; color: #636e72;">📍 SAN DIEGO, Neiva</div>
+				<p style="margin-top: 15px; font-size: 0.9rem; font-weight: bold;">¡Tu presencia es nuestro mejor regalo!</p>
+            </div>
+            <button class="retry-btn" onclick="resetGame()">Realizar otro voto</button>
+        </div>
+    </div>
+
+    <div class="footer-stats">
+        <div class="stats-labels">
+            <span id="lbB" style="color: var(--blue)">Niño: 0</span>
+            <span id="lbG" style="color: var(--pink)">Niña: 0</span>
+        </div>
+        <div class="bar-container">
+            <div id="barB" style="background: var(--blue); width: 50%; transition: 1s;"></div>
+            <div id="barG" style="background: var(--pink); width: 50%; transition: 1s;"></div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqqyN4XvbSrZgr9j2nVlXKDbDk8z2RebM",
+            authDomain: "revelacion-82a04.firebaseapp.com",
+            projectId: "revelacion-82a04",
+            storageBucket: "revelacion-82a04.firebasestorage.app",
+            messagingSenderId: "954477353471",
+            appId: "1:954477353471:web:491061723260aca764efca"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let taps = 0;
+        const TARGET = 35;
+
+        // --- SISTEMA DE BURBUJAS ---
+        function createBubble() {
+            const container = document.getElementById('bubble-container');
+            if (!container) return;
+            const bubble = document.createElement('div');
+            const isLeft = Math.random() < 0.5;
+            const sizeIndex = Math.floor(Math.random() * 3);
+            bubble.className = `bubble size-${sizeIndex} ${isLeft ? 'bubble-blue' : 'bubble-pink'}`;
+            bubble.style.left = isLeft ? (Math.random() * 25) + "%" : (75 + Math.random() * 20) + "%";
+            const duration = Math.random() * 5 + 7;
+            bubble.style.animationDuration = duration + "s";
+            container.appendChild(bubble);
+            setTimeout(() => bubble.remove(), duration * 1000);
+        }
+        setInterval(createBubble, 700);
+
+        // --- FIREBASE SYNC ---
+        db.ref('votos').on('value', s => {
+            const v = s.val() || { boy: 0, girl: 0 };
+            const tot = (v.boy || 0) + (v.girl || 0);
+            document.getElementById('lbB').innerText = "Niño: " + (v.boy || 0);
+            document.getElementById('lbG').innerText = "Niña: " + (v.girl || 0);
+            if(tot > 0) {
+                document.getElementById('barB').style.width = ((v.boy||0)/tot*100) + "%";
+                document.getElementById('barG').style.width = ((v.girl||0)/tot*100) + "%";
+            }
+        });
+
+        db.ref('participantes').on('value', s => {
+            const data = s.val() || {};
+            const bDiv = document.getElementById('listNamesBoy');
+            const gDiv = document.getElementById('listNamesGirl');
+            bDiv.innerHTML = ""; gDiv.innerHTML = "";
+            Object.values(data).forEach(p => {
+                const tag = `<span class="name-tag" style="border-color:${p.voto==='boy'?'var(--blue)':'var(--pink)'}">${p.nombre}</span>`;
+                p.voto === 'boy' ? bDiv.innerHTML += tag : gDiv.innerHTML += tag;
+            });
+        });
+
+        // --- LOGICA DEL JUEGO ---
+        function startFlow(gender) {
+            const name = document.getElementById('nameInput').value.trim();
+            if(!name) { alert("¡Escribe tu nombre!"); return; }
+            db.ref('participantes').push({ nombre: name, voto: gender });
+            db.ref('votos/' + gender).transaction(c => (c || 0) + 1);
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('userTitle').innerText = `¡Dale ${name}!`;
+            document.getElementById('tapsLeft').innerText = `FALTAN ${TARGET} TOQUES`;
+        }
+
+        function handleTap(e) {
+            taps++;
+            const gift = document.getElementById('gift');
+            const pBar = document.getElementById('pBar');
+            pBar.style.width = (taps/TARGET*100) + "%";
+            document.getElementById('tapsLeft').innerText = `FALTAN ${TARGET - taps} TOQUES`;
+
+            const plus = document.createElement('div');
+            plus.innerText = "+1"; plus.className = "plus-one";
+            plus.style.left = (e.offsetX || 50) + "px"; plus.style.top = "0px";
+            document.getElementById('clickArea').appendChild(plus);
+            setTimeout(() => plus.remove(), 800);
+
+            if(taps > TARGET * 0.15) gift.innerText = "🍼";
+            if(taps > TARGET * 0.30) gift.innerText = "📦";
+            if(taps > TARGET * 0.45) gift.innerText = "✨";
+            if(taps > TARGET * 0.60) gift.innerText = "💙";
+            if(taps > TARGET * 0.75) gift.innerText = "🎀";
+            if(taps > TARGET * 0.90) gift.innerText = "🐣";
+
+            gift.style.transform = "scale(1.2) rotate(5deg)";
+            setTimeout(() => gift.style.transform = "scale(1)", 50);
+
+            if(taps >= TARGET) {
+                setTimeout(() => {
+                    document.getElementById('step2').classList.remove('active');
+                    document.getElementById('step3').classList.add('active');
+                    longCelebration();
+                }, 400);
+            }
+        }
+
+        function longCelebration() {
+            const end = Date.now() + 6000;
+            (function frame() {
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#4fc3f7', '#ff80ab'] });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#4fc3f7', '#ff80ab'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        function resetGame() {
+            taps = 0;
+            document.getElementById('pBar').style.width = "0%";
+            document.getElementById('gift').innerText = "🎁";
+            document.getElementById('nameInput').value = "";
+            document.getElementById('step3').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+        }
+
+        function toggleDash() {
+            const d = document.getElementById('dashBoard');
+            d.style.display = d.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // Crear burbujas iniciales
+        for(let i=0; i<8; i++) setTimeout(createBubble, i*500);
+    </script>
+</body>
+</html>
