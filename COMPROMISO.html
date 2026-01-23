@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PACTO DE MERCADO</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <style>
+        :root {
+            --cq3-gold: #e2c08d;
+            --cq3-border: #c5a059;
+            --cq3-dark-panel: #0d121a;
+            --cq3-gradient: linear-gradient(180deg, #1c2a3a 0%, #000000 100%);
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #050505;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Evita doble scroll */
+        }
+
+        /* --- Panel Principal --- */
+        .main-card {
+            width: 400px;
+            background: var(--cq3-gradient);
+            border: 1px solid var(--cq3-border);
+            border-radius: 4px;
+            padding: 25px;
+            box-shadow: 0 0 40px rgba(197, 160, 89, 0.15);
+            z-index: 10;
+        }
+
+        h1 {
+            color: var(--cq3-gold);
+            text-align: center;
+            font-size: 1.1em;
+            letter-spacing: 3px;
+            margin: 0 0 20px 0;
+            text-shadow: 0 0 8px rgba(226, 192, 141, 0.4);
+        }
+
+        /* --- Barra de Progreso --- */
+        .progress-container { margin-bottom: 20px; }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7em;
+            color: var(--cq3-gold);
+            margin-bottom: 6px;
+        }
+        .bar-bg {
+            height: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #8a6d3b, #f3cf7a, #8a6d3b);
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.5);
+            transition: width 1.5s ease;
+        }
+
+        /* --- Tabla Precios --- */
+        .price-grid { margin-bottom: 20px; border-top: 1px solid rgba(197, 160, 89, 0.2); }
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 5px;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.1);
+            font-size: 0.8em;
+        }
+        .val { color: #5ffb5f; font-weight: bold; }
+
+        /* --- Input y Botones --- */
+        .actions { display: flex; flex-direction: column; gap: 8px; }
+        input {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--cq3-border);
+            color: #fff;
+            padding: 12px;
+            text-align: center;
+            outline: none;
+        }
+        .btn {
+            background: var(--cq3-border);
+            color: #000;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.75em;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+        .btn:hover { background: #fff2ac; }
+        .btn-list { background: transparent; color: var(--cq3-gold); border: 1px solid var(--cq3-gold); }
+
+        /* --- MODAL CORREGIDO --- */
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; 
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            display: none; /* Se activa con JS */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 1000px;
+            height: 80vh;
+            background: var(--cq3-dark-panel);
+            border: 2px solid var(--cq3-border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 50px #000;
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            background: rgba(197, 160, 89, 0.1);
+            border-bottom: 1px solid var(--cq3-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1em;
+            color: var(--cq3-gold);
+            letter-spacing: 2px;
+        }
+
+        .close-x {
+            color: var(--cq3-gold);
+            font-size: 1.5em;
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* --- GRID DE VOTANTES (5-10 columnas) --- */
+        .voters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .v-tag {
+            font-size: 0.7em;
+            color: #ccc;
+            background: rgba(255,255,255,0.03);
+            padding: 6px;
+            border-left: 2px solid var(--cq3-border);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Scrollbar Estilo Conquista */
+        .modal-body::-webkit-scrollbar { width: 6px; }
+        .modal-body::-webkit-scrollbar-thumb { background: var(--cq3-border); }
+    </style>
+</head>
+<body>
+
+<div class="main-card">
+    <h1>MARKET COMPROMISO</h1>
+	<h1 style="text-align:center; color: var(--primary);">PACTO DE MERCADO CONQUER CLASSIC 2.0</h1>
+    
+    <div class="progress-container">
+        <div class="stats">
+            <span id="labelTotal">CONECTANDO...</span>
+            <span>META: 300</span>
+        </div>
+        <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+    </div>
+
+    <div class="price-grid">
+        <div class="price-item"><span>Cajas de Luna</span><span class="val">38-40 CP</span></div>
+        <div class="price-item"><span>Metbojotes</span><span class="val">6-8 CP</span></div>
+        <div class="price-item"><span>Aguanieve</span><span class="val">20-23 CP</span></div>
+        <div class="price-item"><span>Nirvana</span><span class="val">35-45 CP</span></div>
+        <div class="price-item"><span>Agualimpia</span><span class="val">30-35 CP</span></div>
+    </div>
+
+    <div class="actions">
+        <input type="text" id="nick" placeholder="NICK DEL PERSONAJE" maxlength="15">
+        <button class="btn" onclick="firmar()">FIRMAR COMPROMISO</button>
+        <button class="btn btn-list" onclick="toggleModal(true)">LISTA DE FIRMANTES</button>
+    </div>
+</div>
+
+<div id="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>JUGADORES COMPROMETIDOS</h2>
+            <div class="close-x" onclick="toggleModal(false)">×</div>
+        </div>
+        <div class="modal-body">
+            <div id="votersGrid" class="voters-grid">
+                </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBqqyN4XvbSrZgr9j2nVlXKDbDk8z2RebM",
+        authDomain: "revelacion-82a04.firebaseapp.com",
+        projectId: "revelacion-82a04",
+        storageBucket: "revelacion-82a04.firebasestorage.app",
+        messagingSenderId: "954477353471",
+        appId: "1:954477353471:web:491061723260aca764efca"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const META = 300;
+    const BASE_DISPLAY = 0;
+
+    db.ref('votantes').on('value', (snapshot) => {
+        const data = snapshot.val() || {};
+        actualizarInterfaz(Object.values(data));
+    });
+
+    function firmar() {
+        const input = document.getElementById('nick');
+        const nick = input.value.trim().toUpperCase();
+        if(nick.length < 3) return alert("Nick demasiado corto");
+
+        db.ref('votantes').once('value', (s) => {
+            const list = Object.values(s.val() || {});
+            if(list.includes(nick)) return alert("Ya has firmado.");
+            db.ref('votantes').push(nick).then(() => {
+                input.value = "";
+            });
+        });
+    }
+
+    function actualizarInterfaz(votos) {
+        const total = BASE_DISPLAY + votos.length;
+        document.getElementById('labelTotal').innerText = `${total} FIRMAS`;
+        document.getElementById('bar').style.width = Math.min((total/META)*100, 100) + "%";
+
+        const grid = document.getElementById('votersGrid');
+        grid.innerHTML = "";
+        votos.reverse().forEach(name => {
+            const d = document.createElement('div');
+            d.className = 'v-tag';
+            d.innerText = "» " + name;
+            grid.appendChild(d);
+        });
+    }
+
+    function toggleModal(show) {
+        const modal = document.getElementById('modal');
+        modal.style.display = show ? 'flex' : 'none';
+    }
+</script>
+
+</body>
+</html>
