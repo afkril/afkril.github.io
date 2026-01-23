@@ -165,17 +165,17 @@
     
     <div class="progress-container">
         <div class="stats">
-            <span id="labelTotal">300 FIRMAS</span>
-            <span>META: 300</span>
+            <span id="labelTotal">500 FIRMAS</span>
+            <span>META: 500</span>
         </div>
         <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
     </div>
 
     <div class="price-list">
         <div class="price-item"><span>Cajas de Luna</span><span class="val">38-40 CP</span></div>
-        <div class="price-item"><span>Metbojotes</span><span class="val">6-8 CP</span></div>
+        <div class="price-item"><span>Metbojotes</span><span class="val">7-8 CP</span></div>
         <div class="price-item"><span>Aguanieve</span><span class="val">20-23 CP</span></div>
-        <div class="price-item"><span>Nirvana</span><span class="val">45-55 CP</span></div>
+        <div class="price-item"><span>Nirvana</span><span class="val">50-55 CP</span></div>
         <div class="price-item"><span>Agualimpia</span><span class="val">35-40 CP</span></div>
     </div>
 
@@ -210,7 +210,7 @@
     
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const META = 300;
+    const META = 500;
     const BASE_DISPLAY = 0;
 
     db.ref('votantes').on('value', (snapshot) => {
@@ -252,3 +252,4 @@
 
 </body>
 </html>
+
