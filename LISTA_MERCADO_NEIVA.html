@@ -84,7 +84,7 @@
 		
 		
         .container { max-width: 950px; margin: auto; background: white; padding: 15px; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
-        h2 { text-align: center; margin-bottom: 15px; color: #333; }
+        h2 { text-align: center; margin-bottom: 2px; color: #333; }
         
         .config-section { display: flex; gap: 15px; flex-wrap: wrap; background: #fafafa; padding: 10px; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; align-items: center; }
         .dias-container { display: flex; gap: 5px; }
@@ -104,15 +104,16 @@
         
 		
 		.input-entrega {
-            width: 70%;
-            padding: 5px;
-            border: 1px solid #3498db; /* Borde azul suave inicial */
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-            outline: none; /* ESTO QUITA EL BORDE NEGRO AL HACER CLIC */
-            transition: border 0.3s;
-        }
+			width: 90%;
+			padding: 0px 1px; /* Sin padding vertical */
+			height: 10px;    /* Altura fija pequeña */
+			font-size: 11px;
+			border: 1px solid #3498db;
+			border-radius: 2px;
+			text-align: center;
+			font-weight: bold;
+			outline: none;
+		}
         .redondeo-badge { background: #e8f4fd; color: #2b5a83; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #d1e3f0; }
         .val-unitario { color: #666; font-style: italic; font-size: 11px; }
 
@@ -364,10 +365,7 @@ Object.entries(resumen).sort((a, b) => {
 			
             const idRef = name.replace(/\s/g, '');
             const valorPrevio = memoriaEntrega[idRef] || "";
-
 				
-				
-            
 				// 2. AÑADIR LA CLASE DE CATEGORÍA A LA FILA (Modificar esta línea)
 				html += `<tr class="row-cat-${data.c}">
 					<td><div class="color-tag cat-${data.c}"></div>${name}</td>
@@ -401,9 +399,9 @@ Object.entries(resumen).sort((a, b) => {
         const element = document.getElementById('printable-area');
         const opt = {
             margin: 5,
-            filename: 'lista-mercado-redondeada.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
+            filename: 'lista_Mercado_Neiva.pdf',
+            image: { type: 'jpeg', quality: 10 },
+            html2canvas: { scale: 1 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         html2pdf().set(opt).from(element).save();
