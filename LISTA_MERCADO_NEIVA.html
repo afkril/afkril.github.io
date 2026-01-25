@@ -83,8 +83,8 @@
 		}
 		
 		
-        .container { max-width: 950px; margin: auto; background: white; padding: 15px; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
-        h2 { text-align: center; margin-bottom: 2px; color: #333; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 2px; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
+        h2 { text-align: center; margin-bottom: 1px; color: #333; }
         
         .config-section { display: flex; gap: 15px; flex-wrap: wrap; background: #fafafa; padding: 10px; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; align-items: center; }
         .dias-container { display: flex; gap: 5px; }
@@ -109,15 +109,26 @@
 			height: 10px;    /* Altura fija pequeña */
 			font-size: 11px;
 			border: 1px solid #3498db;
-			border-radius: 2px;
+			border-radius: 4px;
 			text-align: center;
 			font-weight: bold;
 			outline: none;
 		}
+		/* Esto afecta solo al texto "libras/litros" cuando la casilla está vacía */
+		.input-entrega::placeholder {
+			color: #2c3e50;         /* Puedes elegir el color que prefieras */
+			opacity: 0.4;           /* Aquí controlas la transparencia (0.0 a 1.0) */
+			font-weight: normal;    /* Opcional: para que no se vea negrita como el texto real */
+		}
+
+		/* Nota: Algunos navegadores como Firefox requieren esto para aplicar opacidad */
+		.input-entrega::-moz-placeholder {
+			opacity: 0.4;
+		}	
         .redondeo-badge { background: #e8f4fd; color: #2b5a83; padding: 2px 5px; border-radius: 3px; font-weight: bold; border: 1px solid #d1e3f0; }
         .val-unitario { color: #666; font-style: italic; font-size: 11px; }
 
-        .btn { padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        .btn { padding: 4px 8px; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; }
         .btn-gen { background: #28a745; color: white; }
         .btn-pdf { background: #dc3545; color: white; margin-left: 5px; }
         
@@ -138,11 +149,11 @@
 				   min="1" 
 				   max="13" 
 				   oninput="if(parseInt(this.value) > 13) this.value = 13; if(parseInt(this.value) < 1) this.value = 1;"
-				   style="width: 50px; padding: 4px; outline: none; border: 1px solid #3498db; border-radius: 3px;">
+				   style="width: 50px; padding: 1px; outline: none; border: 1px solid #3498db; border-radius: 3px;">
 		</div>
         <div>
             Semana: 
-            <select id="sem" style="padding: 4px;">
+            <select id="sem" style="padding: 1px;">
                 <option value="1">1 (M1-5)</option>
                 <option value="2">2 (M6-10)</option>
                 <option value="3">3 (M11-15)</option>
@@ -170,6 +181,7 @@
 		<div class="actions no-export">
 			<button class="btn-export btn-excel" onclick="exportExcel()">📊 Exportar Excel</button>
 			<button class="btn-export btn-pdf" onclick="exportPDF()">📄 Descargar PDF</button>
+			<button class="btn" style="background:#666; color:white;" onclick="if(confirm('¿Limpiar Lista?')){localStorage.clear(); location.reload();}">🗑️ Limpiar Todo</button>
 		</div>
     </div>
 
@@ -181,8 +193,10 @@
 
 <script>
 
-// Memoria para que no se borre lo escrito al cambiar filtros
-    const memoriaEntrega = {};
+	// Memoria para que no se borre lo escrito al cambiar filtros
+    //const memoriaEntrega = {};
+	// Carga los datos guardados al iniciar o crea un objeto vacío si no hay nada
+	const memoriaEntrega = JSON.parse(localStorage.getItem('datosEntregaNeiva')) || {};
 
     // Prioridad de ordenamiento
     const ORDEN_CATEGORIAS = {
@@ -265,10 +279,6 @@
 	  { n: "Pera", c: "frutas", u: "gr", g: { m22: 70.6 } },
 	  { n: "Piña", c: "frutas", u: "gr", g: { m2: 109.09, m3: 109.09, m6: 109.09, m8: 72.73, m9: 109.09, m13: 72.73, m14: 109.09, m18: 109.09, m20: 109.91, m23: 72.73, m24: 109.09 } },
 	  { n: "Sandia", c: "frutas", u: "gr", g: { m7: 150, m12: 100, m13: 150, m20: 150, m23: 150 } }
-
-
-
-
 
 	];
 
@@ -359,7 +369,7 @@ Object.entries(resumen).sort((a, b) => {
     // Si son de la misma categoría, ordena los productos alfabéticamente (opcional, pero recomendado)
     return a[0].localeCompare(b[0]);
 
-}).forEach(([name, data]) => {
+			}).forEach(([name, data]) => {
 		
 			
 			
@@ -376,8 +386,9 @@ Object.entries(resumen).sort((a, b) => {
 						<input type="text" class="input-entrega" 
 							   value="${valorPrevio}" 
 							   oninput="memoriaEntrega['${idRef}'] = this.value" 
-							   placeholder="libras/litros">
+							   placeholder="Lbrs / Litros">
 					</td>
+					
 				</tr>`;		
         });
         
