@@ -7,9 +7,28 @@
     <title>Lista de Mercado Regionales</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
+	/* VARIABLES DE COLOR DINÁMICAS */
+    .reg-neiva { 
+        --reg-color-principal: #2980b9; 
+        --reg-color-oscuro: #1a5276;
+        --reg-bg-suave: #e3f2fd; 
+        --reg-glow: rgba(41, 128, 185, 0.3);
+    }
+    .reg-gaitana { 
+        --reg-color-principal: #27ae60; 
+        --reg-color-oscuro: #1e8449;
+        --reg-bg-suave: #e8f5e9; 
+        --reg-glow: rgba(39, 174, 96, 0.3);
+    }
+	
+	/* Cambio de fondo según regional */
+    body.reg-neiva { background-image: radial-gradient(#1a5276 10%, transparent 10%); background-size: 20px 20px; }
+    body.reg-gaitana { background-image: radial-gradient(#1e8449 10%, transparent 10%); background-size: 20px 20px; }
+	
+	
         /* (Se mantienen todos tus estilos originales) */
         .sidebar-filters { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
-        .filter-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; position: relative; }
+        .filter-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid white; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; position: relative; }
         .filter-btn:hover { transform: scale(1.1); }
         .filter-btn.off { background-color: #ccc !important; opacity: 0.5; filter: grayscale(1); }
         .filter-btn::after { content: attr(data-label); position: absolute; right: 50px; background: #333; color: white; padding: 1px 2px; border-radius: 4px; font-size: 10px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -17,15 +36,17 @@
         @media print { .sidebar-filters { display: none; } }
         :root { --color-granos: #e67e22; --color-proteinas: #e74c3c; --color-lacteos: #3498db; --color-panaderia: #8e44ad; --color-verduras: #27ae60; --color-frutas: #f1c40f; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 10px; background-color: #0b0e14; background-image: radial-gradient(#222 10%, transparent 10%); background-size: 15px 15px; background-attachment: fixed; font-size: 12px; color: #0b0e14; }
-        .container { max-width: 950px; margin: auto; background: white; padding: 2px; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
-        
+        <!-- .container { max-width: 950px; margin: auto; background: white; padding: 2px; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); } -->
+        .container { max-width: 950px; margin: auto; background: white; padding: 8px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+		
+		
 		h2 { text-align: center; margin-bottom: 20px; color: #333; }
 		
 		/* Estilo para la caja del título */
 		#titulo-regional {
-			padding: 2px;
+			padding: 1px;
 			border-radius: 8px;
-			margin-top: 20px;
+			margin-top: 2px;
 			text-align: center;
 			font-weight: 600;
 			letter-spacing: -0.5px;
@@ -33,13 +54,13 @@
 			
 			/* Fondo suave dinámico */
 			background: var(--reg-bg-soft);
-			border: 1px solid rgba(255, 255, 255, 0.2);
+			border: 2px solid rgba(255, 255, 255, 0.2);
 			color: var(--reg-color); /* El texto toma el color fuerte de la regional */
 			text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
-			box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+			box-shadow: 0 88px 15px rgba(0,0,0,0.05);
 		}
 
-		/* Definición de colores elegantes y suaves */
+		<!-- /* Definición de colores elegantes y suaves */
 		.reg-neiva { 
 			--reg-color: #2980b9; 
 			--reg-glow: rgba(41, 128, 185, 0.2); 
@@ -50,15 +71,20 @@
 			--reg-color: #27ae60; 
 			--reg-glow: rgba(39, 174, 96, 0.2); 
 			--reg-bg-soft: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); /* Verde pastel suave */
-		}
+		} -->
         
 		
-		.config-section { display: flex; gap: 15px; flex-wrap: wrap; background: #fafafa; padding: 5px; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; align-items: center; }
+		.config-section { display: flex; gap: 15px; flex-wrap: wrap; background: #fafafa; padding: 3px; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px; align-items: center; }
         .dias-container { display: flex; gap: 5px; }
         .dia-item { font-size: 11px; background: white; padding: 3px 4px; border: 1px solid #ddd; border-radius: 3px; cursor: pointer; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #333; color: white; padding: 4px; text-align: left; font-size: 11px; }
-        td { padding: 4px 5px; border-bottom: 1px solid #eee; position: relative; }
+        <!-- th { background: #333; color: white; padding: 4px; text-align: left; font-size: 11px; } -->
+        <!-- td { padding: 4px 5px; border-bottom: 1px solid #eee; position: relative; } -->
+		
+		/* TABLAS */
+			th { background: var(--reg-color-oscuro) !important; color: white; padding: 2px; }
+			tr:hover { background-color: var(--reg-bg-suave); }
+	
         .color-tag { width: 4px; height: 100%; position: absolute; left: 0; top: 0; }
         .cat-granos { background-color: var(--color-granos); }
         .cat-proteinas { background-color: var(--color-proteinas); }
@@ -66,10 +92,21 @@
         .cat-panaderia { background-color: var(--color-panaderia); }
         .cat-verduras { background-color: var(--color-verduras); }
         .cat-frutas { background-color: var(--color-frutas); }
-        .input-entrega { width: 90%; padding: 0px 1px; height: 18px; font-size: 11px; border: 1px solid #3498db; border-radius: 4px; text-align: center; font-weight: bold; outline: none; }
+        
+		
+		/* BOTONES ADAPTATIVOS */
+		
+		.input-entrega { 
+			border: 1 solid var(--reg-color-principal); 
+			border-radius: 4px; 
+			transition: all 0.3s;
+		}
+		
+		
+		<!-- .input-entrega { width: 90%; padding: 0px 1px; height: 18px; font-size: 11px; border: 1px solid #3498db; border-radius: 4px; text-align: center; font-weight: bold; outline: none; } -->
         .redondeo-badge { background: #e8f4fd; color: #2b5a83; padding: 2px 3px; border-radius: 3px; font-weight: bold; border: 1px solid #d1e3f0; }
         .val-unitario { color: #666; font-style: italic; font-size: 11px; }
-        .btn { padding: 4px 6px; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        .btn { padding: 2px 3px; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; }
         .btn-gen { background: #28a745; color: white; }
         .btn-pdf { background: #dc3545; color: white; margin-left: 5px; }
         .btn-export { padding: 4px 8px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; margin: 2px; }
@@ -77,25 +114,28 @@
         
 		
 		/* Contenedor con acabado de Cristal Elegante */
-.regional-selector {
-    --reg-color: #3498db; /* Color por defecto */
-    position: relative;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-left: 10px solid var(--reg-color); /* Acento lateral formal */
-    padding: 1px 2px;
-    border-radius: 4px; /* Bordes menos redondeados para mayor seriedad */
-    margin-bottom: 25px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3), 
-                0 0 20px var(--reg-glow); /* Resplandor difuso */
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
+	/* SELECTOR DE REGIONAL */
+    .regional-selector {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-left: 12px solid var(--reg-color-principal);
+        padding: 3px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        border-radius: 4px;
+    }
+
+    .select-styled {
+        background: var(--reg-color-principal);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: none;
+        font-weight: bold;
+    }
 
 /* Etiquetas de texto internas */
 .selector-label {
@@ -230,25 +270,21 @@
 			  { n: "Pasta Espaguetis", c: "granos", u: "gr", g: { m1: 0, m2: 0, m3: 0, m4: 0, m5: 0, m6: 0, m7: 0, m8: 23, m9: 0, m10: 0, m11: 0, m12: 0, m13: 0, m14: 23, m15: 0, m16: 0, m17: 0, m18: 0, m19: 0, m20: 0, m21: 0, m22: 0, m23: 0, m24: 23 } },
 			  { n: "Pasta Fideos", c: "granos", u: "gr", g: { m1: 0, m2: 4, m3: 0, m4: 0, m5: 0, m6: 0, m7: 0, m8: 0, m9: 4, m10: 5, m11: 0, m12: 0, m13: 0, m14: 0, m15: 1, m16: 0, m17: 1, m18: 10, m19: 0, m20: 0, m21: 0, m22: 0, m23: 0, m24: 5 } },
 			  { n: "Sal", c: "granos", u: "gr", g: { m1: 3, m2: 3, m3: 3, m4: 3, m5: 3, m6: 3, m7: 3, m8: 3, m9: 3, m10: 3, m11: 3, m12: 3, m13: 3, m14: 3, m15: 3, m16: 3, m17: 3, m18: 3, m19: 3, m20: 3, m21: 3, m22: 3, m23: 3, m24: 3 } },
-				
-			  { n: "Huevo", c: "proteinas", u: "un", g: { m1: 1.00, m2: 1.19, m3: 1.11, m4: 1.00, m5: 1.00, m6: 1.00, m7: 1.00, m8: 1.11, m9: 1.00, m10: 1.02, m11: 1.00, m12: 1.02, m13: 1.00, m14: 1.00, m15: 1.00, m16: 1.00, m17: 1.00, m18: 1.00, m19: 1.00, m20: 1.09, m21: 1.09, m22: 1.00, m23: 1.09, m24: 2.00 } },
+			  { n: "Huevo", c: "proteinas", u: "und", g: { m1: 1.00, m2: 1.19, m3: 1.11, m4: 1.00, m5: 1.00, m6: 1.00, m7: 1.00, m8: 1.11, m9: 1.00, m10: 1.02, m11: 1.00, m12: 1.02, m13: 1.00, m14: 1.00, m15: 1.00, m16: 1.00, m17: 1.00, m18: 1.00, m19: 1.00, m20: 1.09, m21: 1.09, m22: 1.00, m23: 1.09, m24: 2.00 } },
 			  { n: "Pechuga", c: "proteinas", u: "GRS", g: { m1: 0, m2: 43.01, m3: 0, m4: 0, m5: 43.01, m6: 0, m7: 0, m8: 43.01, m9: 0, m10: 0, m11: 0, m12: 43.01, m13: 0, m14: 0, m15: 0, m16: 0, m17: 43.01, m18: 0, m19: 43.01, m20: 0, m21: 0, m22: 43.01, m23: 0, m24: 0 } },
-			  { n: "Queso", c: "proteinas", u: "GRS", g: { m2: 10, m4: 10, m5: 10, m6: 10, m7: 0, m8: 0, m9: 0, m10: 10, m11: 0, m12: 10, m13: 0, m14: 0, m15: 20, m16: 0, m17: 10, m18: 10, m19: 10, m20: 20, m21: 0, m22: 0, m23: 30, m24: 30 } },
+			  { n: "Queso", c: "proteinas", u: "GRS", g: { m1: 0, m2: 10, m3: 0, m4: 10, m5: 10, m6: 10, m7: 0, m8: 0, m9: 0, m10: 10, m11: 0, m12: 10, m13: 0, m14: 0, m15: 20, m16: 0, m17: 10, m18: 10, m19: 10, m20: 20, m21: 0, m22: 0, m23: 30, m24: 30 } },
 			  { n: "Carne de cerdo", c: "proteinas", u: "GRS", g: { m1: 0, m2: 0, m3: 0, m4: 0, m5: 0, m6: 40, m7: 0, m8: 0, m9: 0, m10: 0, m11: 0, m12: 0, m13: 0, m14: 40, m15: 0, m16: 0, m17: 0, m18: 0, m19: 0, m20: 0, m21: 0, m22: 0, m23: 0, m24: 40 } },
-			  { n: "Carne de res", c: "proteinas", u: "GRS", g: { m4: 40,  m9: 40, m13: 40, m16: 40,  m18: 40, m20: 40, m21: 40, m23: 40, } },
-			  { n: "Carne de res molida", c: "proteinas", u: "GRS", g: { m1: 40, m7: 40, m15: 40, m24: 40 } },
-			  { n: "Tilapia ", c: "proteinas", u: "GRS", g: { m3: 64.52, m10: 64.52 } },
-			  { n: "Hígado ", c: "proteinas", u: "GRS", g: {  m11: 40 } },
-			  
-			  { n: "Leche de vaca ", c: "lacteos", u: "ml", g: { m1: 150, m2: 300, m3: 300, m4: 300, m5: 300, m6: 300, m7: 150, m8: 300, m9: 300, m10: 150, m11: 150, m12: 300, m13: 300, m14: 150, m15: 300, m16: 300, m17: 300, m18: 150, m19: 300, m20: 150, m21: 300, m22: 150, m23: 150, m24: 600 } },
+			  { n: "Carne de res", c: "proteinas", u: "GRS", g: { m1: 0, m2: 0, m3: 0, m4: 40, m5: 0, m6: 0, m7: 0, m8: 0, m9: 40, m10: 0, m11: 0, m12: 0, m13: 40, m14: 0, m15: 0, m16: 40, m17: 0, m18: 40, m19: 0, m20: 40, m21: 40, m22: 0, m23: 40, m24: 0 } },
+			  { n: "Carne de res molida", c: "proteinas", u: "GRS", g: { m1: 40, m2: 0, m3: 0, m4: 0, m5: 0, m6: 0, m7: 40, m8: 0, m9: 0, m10: 0, m11: 0, m12: 0, m13: 0, m14: 0, m15: 40, m16: 0, m17: 0, m18: 0, m19: 0, m20: 0, m21: 0, m22: 0, m23: 0, m24: 40 } },
+			  { n: "Tilapia ", c: "proteinas", u: "GRS", g: { m1: 0, m2: 0, m3: 64.52, m4: 10, m5: 0, m6: 0, m7: 0, m8: 0, m9: 0, m10: 64.52, m11: 0, m12: 0, m13: 0, m14: 0, m15: 0, m16: 0, m17: 0, m18: 0, m19: 0, m20: 0, m21: 0, m22: 0, m23: 0, m24: 0 } },
+			  { n: "Hígado ", c: "proteinas", u: "GRS", g: { m1: 0, m2: 0, m3: 0, m4: 0, m5: 0, m6: 0, m7: 0, m8: 0, m9: 0, m10: 0, m11: 40, m12: 0, m13: 0, m14: 0, m15: 0, m16: 0, m17: 0, m18: 0, m19: 0, m20: 0, m21: 0, m22: 0, m23: 0, m24: 0 } },
+			  { n: "Leche", c: "lacteos", u: "ml", g: { m1: 150, m2: 300, m3: 300, m4: 300, m5: 300, m6: 300, m7: 150, m8: 300, m9: 300, m10: 150, m11: 150, m12: 300, m13: 300, m14: 150, m15: 300, m16: 300, m17: 300, m18: 150, m19: 300, m20: 150, m21: 300, m22: 150, m23: 150, m24: 600 } },
 			  { n: "kumis", c: "lacteos", u: "und 150 cc", g: { m1: 0, m2: 0, m3: 0, m4: 0, m5: 0, m6: 0, m7: 0, m8: 0, m9: 0, m10: 0, m11: 1, m12: 0, m13: 0, m14: 0, m15: 0, m16: 0, m17: 0, m18: 0, m19: 0, m20: 1, m21: 0, m22: 1, m23: 0, m24: 0 } },
 			  { n: "yogurt", c: "lacteos", u: "und 150 cc", g: { m1: 1, m2: 0, m3: 0, m4: 0, m5: 0, m6: 0, m7: 1, m8: 0, m9: 0, m10: 1, m11: 0, m12: 0, m13: 0, m14: 1, m15: 0, m16: 0, m17: 0, m18: 1, m19: 0, m20: 0, m21: 0, m22: 0, m23: 1, m24: 0 } },
-			  
 			  { n: "Cucas ", c: "panaderia", u: "und", g: { m4: 1, m8: 1, m11: 1, m18: 1, m22: 1 } },
 			  { n: "Galletas dulces ", c: "panaderia", u: "und", g: { m6: 1, m13: 1, m16: 1 } },
 			  { n: "Mogolla", c: "panaderia", u: "und", g: { m1: 1, m7: 1, m9: 1, m12: 1, m13: 1, m16: 1  } },
 			  { n: "Pan de sal", c: "panaderia", u: "und", g: { m2: 1, m7: 1, m10: 1, m11: 1, m14: 1, m17: 1, m14: 1, m19: 1, m21: 1, m24: 1  } },
-			  
 			  { n: "aguacate", "c": "verduras", "u": "gr", "g": { "m13": 65.5, "m16": 19.48 } },
 			  { n: "ahuyama", "c": "verduras", "u": "gr", "g": { "m5": 116.67 } },
 			  { n: "ajo", "c": "verduras", "u": "gr", "g": { "m1": 2, "m2": 0.53, "m3": 0.53, "m4": 0.53, "m5": 1.53, "m6": 1, "m7": 0.53, "m8": 0.53, "m11": 1, "m12": 1.06, "m13": 0.53, "m14": 0.53, "m15": 1.05, "m16": 0.53, "m17": 0.53, "m18": 0.53, "m19": 0.53, "m20": 0.53, "m21": 0.53, "m22": 0.53, "m23": 1.06, "m24": 2.53 } },
@@ -289,58 +325,62 @@
         gaitana: {
             titulo: "Regional Gaitana",
             db: [
-                // AQUÍ AGREGARÁS LOS PRODUCTOS ESPECÍFICOS DE GAITANA
-               { "n": "Aceite", "c": "granos", "u": "gr", "g": { "m1": 14, "m2": 12, "m3": 14, "m4": 12, "m5": 8, "m6": 10, "m7": 9, "m8": 12, "m9": 10, "m10": 6 } },
-			   { "n": "Arroz", "c": "granos", "u": "gr", "g": { "m1": 23, "m2": 23, "m3": 23, "m4": 23, "m5": 23, "m6": 23, "m7": 23, "m8": 23,"m10": 23 } },
-			   { "n": "Ajonjoli", "c": "granos", "u": "gr", "g": { "m10": 23} },
-			   { "n": "Avena", "c": "granos", "u": "gr", "g": { "m2": 10, "m6": 10} },
-			   { "n": "Azúcar", "c": "granos", "u": "gr", "g": { "m2": 6, "m4": 6, "m6": 3, "m8": 8, "m9": 3, "m10": 3 } },
-			   { "n": "Cocoa", "c": "granos", "u": "gr", "g": { "m3": 4} },
-			   { "n": "Cebada", "c": "granos", "u": "gr", "g": { "m8": 8} },
-			   { "n": "Frijol", "c": "granos", "u": "gr", "g": { "m3": 10} },
-			   { "n": "Harina de maíz", "c": "granos", "u": "gr", "g": { "m2": 25, "m4": 25, "m6": 25, "m8": 25} },
-			   { "n": "Harina de trigo", "c": "granos", "u": "gr", "g": { "m3": 20, "m5": 10, "m9": 25} },
-			   { "n": "Lenteja", "c": "granos", "u": "gr", "g": { "m8": 7} },
-			   { "n": "Maíz trillado", "c": "granos", "u": "gr", "g": { "m1": 10, "m7": 10,} },
-			   { "n": "Panela", "c": "granos", "u": "gr", "g": { "m1": 4, "m2": 4, "m4": 4, "m5": 4, "m7": 4, "m8": 4, "m10": 4 } },
-			   { "n": "Pasta Fideos", "c": "granos", "u": "gr", "g": { "m2": 3, "m8": 3} },
-			   { "n": "Pasta Spaquetis", "c": "granos", "u": "gr", "g": { "m9": 18} },
-			   { "n": "Pasta Sopa de Letras", "c": "granos", "u": "gr", "g": { "m10": 10} },
-			   {  "n": "Sal", "c": "granos", "u": "gr", "g": { "m1": 3, "m2": 3, "m3": 3, "m4": 3, "m5": 3, "m6": 3, "m7": 3, "m8": 3, "m9": 3, "m10": 3 } },
+              { "n": "Aceite", "c": "granos", "u": "ml", "g": { "m1": 14, "m2": 12, "m3": 14, "m4": 12, "m5": 8, "m6": 10, "m7": 9, "m8": 12, "m9": 10, "m10": 6 } },
+			  { "n": "Arroz", "c": "granos", "u": "gr", "g": { "m1": 23, "m2": 23, "m3": 23, "m4": 23, "m5": 23, "m6": 23, "m7": 23, "m8": 23,"m10": 23 } },
+			  { "n": "Ajonjoli", "c": "granos", "u": "gr", "g": { "m10": 23} },
+			  { "n": "Avena", "c": "granos", "u": "gr", "g": { "m2": 10, "m6": 10} },
+			  { "n": "Azúcar", "c": "granos", "u": "gr", "g": { "m2": 6, "m4": 6, "m6": 3, "m8": 8, "m9": 3, "m10": 3 } },
+			  { "n": "Cocoa", "c": "granos", "u": "gr", "g": { "m3": 4} },
+			  { "n": "Cebada", "c": "granos", "u": "gr", "g": { "m8": 8} },
+			  { "n": "Frijol", "c": "granos", "u": "gr", "g": { "m3": 10} },
+			  { "n": "Harina de maíz", "c": "granos", "u": "gr", "g": { "m2": 25, "m4": 25, "m6": 25, "m8": 25} },
+			  { "n": "Harina de trigo", "c": "granos", "u": "gr", "g": { "m3": 20, "m5": 10, "m9": 25} },
+			  { "n": "Lenteja", "c": "granos", "u": "gr", "g": { "m8": 7} },
+			  { "n": "Maíz trillado", "c": "granos", "u": "gr", "g": { "m1": 10, "m7": 10,} },
+			  { "n": "Panela", "c": "granos", "u": "gr", "g": { "m1": 4, "m2": 4, "m4": 4, "m5": 4, "m7": 4, "m8": 4, "m10": 4 } },
+			  { "n": "Pasta Fideos", "c": "granos", "u": "gr", "g": { "m2": 3, "m8": 3} },
+			  { "n": "Pasta Spaquetis", "c": "granos", "u": "gr", "g": { "m9": 18} },
+			  { "n": "Pasta Sopa de Letras", "c": "granos", "u": "gr", "g": { "m10": 10} },
+			  { "n": "Sal", "c": "granos", "u": "gr", "g": { "m1": 3, "m2": 3, "m3": 3, "m4": 3, "m5": 3, "m6": 3, "m7": 3, "m8": 3, "m9": 3, "m10": 3 } },
 			  
-			   { "n": "Aguacate", "c": "verduras", "u": "gr", "g": { "m3": 38.96, "m10": 19.48} },
-			   { "n": "ahuyama", "c": "verduras", "u": "gr", "g": { "m5": 35.29} },
-			   { "n": "Ajo", "c": "verduras", "u": "gr", "g": { "m5": 1.05, "m6": 1.05, "m7": 1.05, "m9": 1.05, "m10": 1.05} },
-			   { "n": "Arveja Cascara", "c": "verduras", "u": "gr", "g": { "m2": 12.5, "m4": 5, "m6": 12.5, "m7": 7.5} },
-			   { "n": "Cebolla cabezona", "c": "verduras", "u": "gr", "g": { "m1": 11.25, "m2": 6.25, "m3": 11.25, "m4": 10, "m5": 3.75, "m6": 5, "m7": 6.25, "m8": 11.25, "m9": 10, "m10": 10 } },
-			   { "n": "Cebolla larga", "c": "verduras", "u": "gr", "g": { "m3": 13.33, "m6": 11.11, "m7": 6.67, "m8": 6.67, "m10": 6.67} },
+			  { "n": "Aguacate", "c": "verduras", "u": "gr", "g": { "m3": 38.96, "m10": 19.48} },
+			  { "n": "ahuyama", "c": "verduras", "u": "gr", "g": { "m5": 35.29} },
+			  { "n": "Ajo", "c": "verduras", "u": "gr", "g": { "m5": 1.05, "m6": 1.05, "m7": 1.05, "m9": 1.05, "m10": 1.05} },
+			  { "n": "Arveja Cascara", "c": "verduras", "u": "gr", "g": { "m2": 12.5, "m4": 5, "m6": 12.5, "m7": 7.5} },
+			  { "n": "Cebolla cabezona", "c": "verduras", "u": "gr", "g": { "m1": 31.58, "m2": 21.05, "m3": 7.37, "m4": 10.53, "m5": 10.53, "m6": 10.53, "m7": 26.32, "m8": 15.79, "m9": 21.05, "m10": 10.53 } },
+			  { "n": "Cebolla larga", "c": "verduras", "u": "gr", "g": { "m3": 13.33, "m6": 11.11, "m7": 6.67, "m8": 6.67, "m10": 6.67} },
+			  { "n": "Cilantro", "c": "verduras", "u": "gr", "g": { "m3": 2.22,"m7": 2.22,"m8": 2.22,"m9": 2.22,  } },
+			  { "n": "Habichuela", "c": "verduras", "u": "gr", "g": { "m6": 11.11 } },
+			  { "n": "Lechuga", "c": "verduras", "u": "gr", "g": { "m2": 36.36, "m7": 18.18} },
+			  { "n": "Papa criolla", "c": "verduras", "u": "gr", "g": { "m2": 25} },
+			  { "n": "Papa Pastusa", "c": "verduras", "u": "gr", "g": { "m1": 27.78, "m3": 33.33,"m7": 27.78,} },
+			  { "n": "Pepino", "c": "verduras", "u": "gr", "g": { "m1": 26.67} },
+			  { "n": "plátano maduro", "c": "verduras", "u": "gr", "g": { "m3": 27.78, "m5": 41.67, "m7": 34.72, "m10": 27.78, } },
+			  { "n": "Plátano verde", "c": "verduras", "u": "gr", "g": { "m4": 44.12, "m6": 36.76, "m9": 36.76} },
+			  { "n": "Remolacha", "c": "verduras", "u": "gr", "g": { "m9": 18.75} },
+			  { "n": "Repollo", "c": "verduras", "u": "gr", "g": { "m4": 21.43} },
+			  { "n": "Tomate", "c": "verduras", "u": "gr", "g": { "m1": 37.5, "m2": 18.75, "m3": 20, "m4": 12.5, "m6": 12.5, "m7": 25, "m8": 48.75, "m9": 12.5, "m10": 12.5 } },
+			  { "n": "Yuca", "c": "verduras", "u": "gr", "g": { "m1": 37.5, "m7": 25, "m10": 31.25 } },
+			  { "n": "Zanahoria", "c": "verduras", "u": "gr", "g": { "m2": 17.65,"m6": 11.76, "m7": 5.88, "m8": 4.71, "m9": 17.65} },
 			  
-			  { "n": "Cilantro", "c": "verduras", "u": "gr", "g": { "m1": 1, "m2": 1, "m3": 1, "m4": 1, "m5": 1, "m6": 1, "m7": 1, "m8": 1, "m9": 1, "m10": 1 } },
-			  { "n": "Habichuela", "c": "verduras", "u": "gr", "g": { "m1": 0, "m2": 26.67, "m3": 11.67, "m4": 0, "m5": 11.67, "m6": 11.67, "m7": 13.33, "m8": 0, "m9": 0, "m10": 0 } },
-			  { "n": "Lechuga", "c": "verduras", "u": "gr", "g": { "m1": 0, "m2": 36.36, "m3": 0, "m4": 0, "m5": 0, "m6": 0, "m7": 18.18, "m8": 0, "m9": 0, "m10": 0 } },
-			  { "n": "Papa criolla", "c": "verduras", "u": "gr", "g": { "m1": 0, "m2": 25, "m3": 0, "m4": 0, "m5": 0, "m6": 0, "m7": 0, "m8": 0, "m9": 0, "m10": 0 } },
-			  { "n": "Papa Pastusa", "c": "verduras", "u": "gr", "g": { "m1": 27.78, "m2": 0, "m3": 33.33, "m4": 0, "m5": 0, "m6": 0, "m7": 27.78, "m8": 0, "m9": 0, "m10": 0 } },
-			  { "n": "Pepino", "c": "verduras", "u": "gr", "g": { "m1": 26.67, "m2": 0, "m3": 0, "m4": 0, "m5": 0, "m6": 0, "m7": 0, "m8": 0, "m9": 0, "m10": 0 } },
-			  { "n": "plátano maduro", "c": "verduras", "u": "gr", "g": { "m1": 0, "m2": 0, "m3": 27.78, "m4": 0, "m5": 41.67, "m6": 0, "m7": 34.72, "m8": 0, "m9": 0, "m10": 27.78 } },
-			  { "n": "Plátano verde", "c": "verduras", "u": "gr", "g": { "m1": 0, "m2": 0, "m3": 0, "m4": 44.12, "m5": 0, "m6": 36.76, "m7": 0, "m8": 0, "m9": 36.76, "m10": 0 } },
-			  { "n": "Remolacha", "c": "verduras", "u": "gr", "g": { "m1": 0, "m2": 0, "m3": 0, "m4": 0, "m5": 0, "m6": 0, "m7": 0, "m8": 0, "m9": 18.75, "m10": 0 } },
-			  { "n": "Repollo", "c": "verduras", "u": "gr", "g": { "m1": 0, "m2": 0, "m3": 0, "m4": 21.43, "m5": 0, "m6": 0, "m7": 0, "m8": 0, "m9": 0, "m10": 0 } },
-			  { "n": "Tomate", "c": "verduras", "u": "gr", "g": { "m1": 37.5, "m2": 18.75, "m3": 20, "m4": 12.5, "m5": 0, "m6": 12.5, "m7": 25, "m8": 48.75, "m9": 12.5, "m10": 12.5 } },
-			  { "n": "Yuca", "c": "verduras", "u": "gr", "g": { "m1": 37.5, "m2": 0, "m3": 0, "m4": 0, "m5": 0, "m6": 0, "m7": 25, "m8": 0, "m9": 0, "m10": 31.25 } },
-			  { "n": "Zanahoria", "c": "verduras", "u": "gr", "g": { "m1": 0, "m2": 17.65, "m3": 0, "m4": 0, "m5": 0, "m6": 11.76, "m7": 5.88, "m8": 4.71, "m9": 17.65, "m10": 0 } },
-			  
-			  { "n": "Banano", "c": "frutas", "u": "gr", "g": { "m1": 80, "m2": 0, "m3": 0, "m4": 0, "m5": 0, "m6": 0, "m7": 80, "m8": 0, "m9": 0, "m10": 0 } },
-			  { "n": "Guayaba", "c": "frutas", "u": "gr", "g": { "m1": 0, "m2": 0, "m3": 0, "m4": 0, "m5": 100, "m6": 0, "m7": 0, "m8": 0, "m9": 0, "m10": 0 } },
-			  { "n": "Lulo", "c": "frutas", "u": "gr", "g": { "m1": 0, "m2": 0, "m3": 0, "m4": 66.67, "m5": 0, "m6": 0, "m7": 0, "m8": 0, "m9": 0, "m10": 66.67 } },
-			  { "n": "Mango", "c": "frutas", "u": "gr", "g": { "m1": 0, "m2": 66.67, "m3": 0, "m4": 0, "m5": 0, "m6": 0, "m7": 0, "m8": 0, "m9": 0, "m10": 0 } },
-			  { "n": "Mora", "c": "frutas", "u": "gr", "g": { "m1": 0, "m2": 0, "m3": 0, "m4": 0, "m5": 0, "m6": 50, "m7": 0, "m8": 0, "m9": 50, "m10": 0 } },
-			  { "n": "Naranja", "c": "frutas", "u": "gr", "g": { "m1": 125, "m2": 0, "m3": 0, "m4": 125, "m5": 0, "m6": 0, "m7": 125, "m8": 0, "m9": 0, "m10": 125 } },
-			  { "n": "Piña", "c": "frutas", "u": "gr", "g": { "m1": 0, "m2": 0, "m3": 111.11, "m4": 0, "m5": 0, "m6": 0, "m7": 0, "m8": 111.11, "m9": 0, "m10": 0 } },
-			  { "n": "Papaya", "c": "frutas", "u": "gr", "g": { "m1": 0, "m2": 0, "m3": 0, "m4": 0, "m5": 0, "m6": 125, "m7": 0, "m8": 0, "m9": 125, "m10": 0 } },
-			  { "n": "Tomate de árbol", "c": "frutas", "u": "gr", "g": { "m1": 50, "m2": 50, "m3": 50, "m4": 0, "m5": 0, "m6": 0, "m7": 50, "m8": 50, "m9": 0, "m10": 0 } },
+			  { "n": "Banano", "c": "frutas", "u": "gr", "g": { "m1": 85.71, "m5": 85.71, "m7": 71.43, "m10": 42.86 } },
+			  { "n": "Fresa", "c": "frutas", "u": "gr", "g": { "m4": 10.53, "m10": 21.05} },
+			  { "n": "Limon", "c": "frutas", "u": "gr", "g": { "m10": 2} },
+			  { "n": "Mandarina", "c": "frutas", "u": "gr", "g": { "m1": 85.71, "m9": 85.71, } },
+			  { "n": "Mango", "c": "frutas", "u": "gr", "g": { "m2": 120, "m4": 120, "m8": 120, "m9": 120 } },
+			  { "n": "Manzana", "c": "frutas", "u": "gr", "g": { "m3": 70.59} },
+			  { "n": "Maracuya", "c": "frutas", "u": "gr", "g": { "m4": 187.5, "m4": 187.5} },
+			  { "n": "Melon", "c": "frutas", "u": "gr", "g": { "m3": 120, "m6": 120, "m9": 120} },
+			  { "n": "Mora", "c": "frutas", "u": "gr", "g": { "m2": 66.67} },
+			  { "n": "Naranja", "c": "frutas", "u": "gr", "g": { "m3": 100, "m6": 86.33} },
+			  { "n": "Papaya", "c": "frutas", "u": "gr", "g": { "m2": 85.71, "m4": 85.71, "m5": 85.71, "m6": 85.71, "m8": 85.71, "m10": 85.71} },
+			  { "n": "Pera", "c": "frutas", "u": "gr", "g": { "m5": 70.59} },
+			  { "n": "Piña", "c": "frutas", "u": "gr", "g": { "m4": 27.27, "m7": 90.91} },
+			  { "n": "Sandia", "c": "frutas", "u": "gr", "g": { "m1": 150, "m7": 150} },
+			  { "n": "Tomate de árbol", "c": "frutas", "u": "gr", "g": { "m8": 58.14} },
 			  
 			  
-			  { "n": "Huevo", "c": "proteinas", "u": "un", "g": { "m1": 60,	"m3": 60,"m4": 60,"m5": 60,"m6": 60,"m7": 60,"m9": 60,"m10": 60,} },
+			  { "n": "Huevo", "c": "proteinas", "u": "und", "g": { "m1": 60,	"m3": 60,"m4": 60,"m5": 60,"m6": 60,"m7": 60,"m9": 60,"m10": 60,} },
 			  { "n": "Molleja", "c": "proteinas", "u": "GRS", "g": { "m6": 40,} },
 			  { "n": "Pechuga", "c": "proteinas", "u": "GRS", "g": { "m1": 43.01,"m2": 26.88,"m5": 43.01,"m7": 43.01,"m8": 26.88,} },
               { "n": "Carne de Cerdo", "c": "proteinas", "u": "GRS", "g": { "m3": 40, "m8": 40} },
@@ -350,8 +390,16 @@
 			  
 			  { "n": "kumis", "c": "lacteos", "u": "und 150 cc", "g": { "m1": 1,"m5": 1,"m10": 1,} },
 			  { "n": "yogurt", "c": "lacteos", "u": "und 150 cc", "g": { "m3": 1,"m6": 1,"m9": 1,} },
-			  { "n": "Leche", "c": "lacteos", "u": "ml", "g": { "m1": 170,"m2": 300,"m3": 150,"m4": 300,"m5": 150,"m6": 150,"m7": 300,"m8": 300,"m9": 150,"m10": 150,} }
-            ]
+			  { "n": "Leche", "c": "lacteos", "u": "ml", "g": { "m1": 170,"m2": 300,"m3": 150,"m4": 300,"m5": 150,"m6": 150,"m7": 300,"m8": 300,"m9": 150,"m10": 150} },
+			  
+			  { n: "Cucas", c: "panaderia", u: "und", g: { m5: 1} },
+			  { n: "Pan Blanco", c: "panaderia", u: "und", g: { m5: 1, m6: 1, m7: 1 } },
+			  { n: "Pan dulce", c: "panaderia", u: "und", g: { m1: 1, m10: 1} },
+			  { n: "Pan de yuca", c: "panaderia", u: "und", g: { m8: 1} },
+			  { n: "Pandebono", c: "panaderia", u: "und", g: { m4: 1,m9: 1} },
+			  { n: "Pan de yuca", c: "panaderia", u: "und", g: { m8: 1} },
+			  { n: "Ponque", c: "panaderia", u: "und", g: { m2: 1} }
+			]
         }
     };
 
@@ -419,32 +467,33 @@
     }
 
 	function cambiarRegional() {
-		// Obtenemos el contenedor o el body para aplicar las variables
+		const choice = document.getElementById('regional-choice').value;
 		const barra = document.getElementById('barra-regional');
 		const tituloElemento = document.getElementById('titulo-regional');
-		const choice = document.getElementById('regional-choice').value;
+		const cuerpo = document.body;
 		
-		// 1. Actualizar el texto del título según la base de datos
-		tituloElemento.innerText = "📋Lista de Mercado " + regionales[choice].titulo;
+		// 1. Actualizar el texto del título
+		tituloElemento.innerText = "📋 Lista de Mercado " + regionales[choice].titulo;
 		
 		// 2. Limpiar la tabla de resultados
 		document.getElementById('resultado').innerHTML = ""; 
 
-		// 3. Intercambiar clases para los colores dinámicos
+		// 3. Aplicar clases dinámicas al body y elementos principales
 		if (choice === 'neiva') {
-			// Quitamos gaitana, ponemos neiva en ambos elementos
-			barra.classList.remove('reg-gaitana');
-			barra.classList.add('reg-neiva');
-			tituloElemento.classList.remove('reg-gaitana');
-			tituloElemento.classList.add('reg-neiva');
+			// Modo Azul
+			cuerpo.className = 'reg-neiva';
+			barra.className = 'regional-selector no-pdf reg-neiva';
+			tituloElemento.className = 'reg-neiva';
 		} else {
-			// Quitamos neiva, ponemos gaitana en ambos elementos
-			barra.classList.remove('reg-neiva');
-			barra.classList.add('reg-gaitana');
-			tituloElemento.classList.remove('reg-neiva');
-			tituloElemento.classList.add('reg-gaitana');
+			// Modo Verde
+			cuerpo.className = 'reg-gaitana';
+			barra.className = 'regional-selector no-pdf reg-gaitana';
+			tituloElemento.className = 'reg-gaitana';
 		}
-	}	
+	}
+
+// Ejecutar una vez al cargar para aplicar el estilo inicial
+window.onload = cambiarRegional;	
 
     function exportPDF() {
         const element = document.getElementById('printable-area');
@@ -490,6 +539,5 @@
 </script>
 </body>
 </html>
-
 
 
