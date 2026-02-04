@@ -83,7 +83,7 @@
 			</div>
 			
         </header>
-		<form id="noveltyForm" action="https://formsubmit.co/e8bbc574e5d77c9c1e4f36e7c145cfb2" method="POST" class="p-8 space-y-6">
+		<form id="noveltyForm" action="https://formspree.io/f/mqardynz" method="POST" class="p-8 space-y-6">
        
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -91,7 +91,7 @@
                     <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
                         <span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
                     </label>
-                    <select id="contractNumber" name"Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
+                    <select id="contractNumber" id="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
                         <option value="">Seleccione...</option>
                         <option value="665">Contrato 665</option>
                         <option value="667">Contrato 667</option>
@@ -102,7 +102,7 @@
                     <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
                         <span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
                     </label>
-                    <select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
+                    <select id="mainUdsDropdown" id="UDS_Full" required disabled class="w-full rounded-xl">
                         <option value="">-- Primero Contrato --</option>
                     </select>
                 </div>
@@ -130,28 +130,28 @@
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<select id="retiroDocType" name="retiro_tipo_doc" class="w-full rounded-lg">
+					<select id="retiroDocType" id="retiro_tipo_doc" class="w-full rounded-lg">
 						<option value="RC">RC - Registro Civil</option>
 						<option value="AN">AN - Acta Nacimiento</option>
 						<option value="PEP">PEP / PPT</option>
 						<option value="SD">SD - Sin Documento</option>
 					</select>
-					<input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de Documento" 
+					<input type="text" id="retiroDocNumber" id="retiro_documento" placeholder="Número de Documento" 
 						   class="w-full rounded-lg" minlength="7" maxlength="10" 
 						   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
 					</div>
-                    <input type="text" name="retiroFullName" placeholder="Nombres y Aplellidos Completo" class="w-full rounded-lg">
+                    <input type="text" id="retiroFullName" placeholder="Nombres y Aplellidos Completo" class="w-full rounded-lg">
                     <div class="space-y-1">
                         <label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
-						<input type="date" name="retiroDate" class="w-full rounded-lg" onchange="validateDatesRealTime()">
+						<input type="date" id="retiroDate" class="w-full rounded-lg" onchange="validateDatesRealTime()">
                     </div>
                     <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
 						<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
 						<label class="text-sm font-bold flex items-center">
-							<input type="radio" name="_retiroGender" value="M" class="mr-1"> M
+							<input type="radio" id="_retiroGender" value="M" class="mr-1"> M
 						</label>
 						<label class="text-sm font-bold flex items-center">
-							<input type="radio" name="_retiroGender" value="F" class="mr-1"> F
+							<input type="radio" id="_retiroGender" value="F" class="mr-1"> F
 						</label>
 					</div>
                 </div>
@@ -164,40 +164,40 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<select id="ingresoDocType" name="ingreso_tipo_doc" class="w-full rounded-lg">
+							<select id="ingresoDocType" id="ingreso_tipo_doc" class="w-full rounded-lg">
 								<option value="RC">RC - Registro Civil</option>
 								<option value="AN">AN - Acta Nacimiento</option>
 								<option value="PEP">PEP / PPT</option>
 								<option value="SD">SD - Sin Documento</option>
 							</select>
-							<input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Numero Documento" 
+							<input type="text" id="ingresoDocNumber" id="ingreso_documento" placeholder="Numero Documento" 
 								   class="w-full rounded-lg" minlength="7" maxlength="10" 
 								   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
 							</div>
-                        <input type="text" name="ingresoFullName" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
+                        <input type="text" id="ingresoFullName" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
-                            <input type="date" name="ingresoDOB" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+                            <input type="date" id="ingresoDOB" class="w-full rounded-lg" onchange="updateAgeDisplay()">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
-                            <input type="date" name="ingresoDate" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+                            <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="updateAgeDisplay()">
                         </div>
                         <div class="md:col-span-2 space-y-1">
                             <label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
-                            <input type="text" name="displayAge" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
+                            <input type="text" id="displayAge" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
                         </div>
                         <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
 							<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
 							<label class="text-sm font-bold flex items-center">
-								<input type="radio" name="_ingresoGender" value="M" class="mr-1"> M
+								<input type="radio" id="_ingresoGender" value="M" class="mr-1"> M
 							</label>
 							<label class="text-sm font-bold flex items-center">
-								<input type="radio" name="_ingresoGender" value="F" class="mr-1"> F
+								<input type="radio" id="_ingresoGender" value="F" class="mr-1"> F
 							</label>
 						</div>
-                        <input type="text" name="ingresoAddress" placeholder="Dirección y Barrio" class="w-full rounded-lg">
-                        <input type="tel" name="ingresoPhone" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
+                        <input type="text" id="ingresoAddress" placeholder="Dirección y Barrio" class="w-full rounded-lg">
+                        <input type="tel" id="ingresoPhone" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
                     </div>
                 </div>
 
@@ -206,20 +206,20 @@
                         <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" name="acudienteDoc" placeholder="Documento Acudiente" class="w-full rounded-lg">
-                        <input type="text" name="acudienteName" placeholder="Nombre Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteDoc" placeholder="Documento Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteName" placeholder="Nombre Acudiente" class="w-full rounded-lg">
                         <div class="space-y-1 md:col-span-2">
                             <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
-                            <input type="date" name="acudienteDOB" class="w-full rounded-lg">
+                            <input type="date" id="acudienteDOB" class="w-full rounded-lg">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <input type="hidden" name="REPORTE_DETALLADO" name="hiddenFormattedData">
-            <input type="hidden" name="_subject" name="emailSubject" value="Novedad UDS">
+            <input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
+            <input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
             
-            <button type="submit" name="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
+            <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
                 Enviar Reporte Al Correo
             </button>
             
@@ -516,9 +516,6 @@
     </script>
 </body>
 </html>
-
-
-
 
 
 
