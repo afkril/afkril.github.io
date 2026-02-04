@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte_Novedades | JER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        body { 
+            background-attachment: fixed; 
+            background-size: cover; 
+            background-position: center; 
+            transition: all 0.5s ease; 
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f1f5f9;
+        }
+
+        .glass-container { 
+            background: rgba(255, 255, 255, 0.98); 
+            backdrop-filter: blur(10px);
+            /* Reescalado solicitado para zoom 100% */
+            transform: scale(1.05);
+            transform-origin: center;
+        }
+
+        /* Ajuste de fuentes y campos */
+        input, select { 
+            padding: 0.8rem 1rem !important; 
+            font-size: 1rem !important; 
+            border: 2px solid #e2e8f0 !important; 
+            outline: none !important; 
+            transition: all 0.2s; 
+        }
+        
+        input:focus, select:focus { 
+            border-color: #94a3b8 !important; 
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05); 
+        }
+
+        .step-badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.9rem; }
+        
+        .contract-665 .dynamic-bg { background-color: #D97706; }
+        .contract-665 .dynamic-text { color: #D97706; }
+        .contract-665 .dynamic-border { border-top-color: #D97706; }
+        
+        .contract-667 .dynamic-bg { background-color: #2563EB; }
+        .contract-667 .dynamic-text { color: #2563EB; }
+        .contract-667 .dynamic-border { border-top-color: #2563EB; }
+        
+        .contract-676 .dynamic-bg { background-color: #059669; }
+        .contract-676 .dynamic-text { color: #059669; }
+        .contract-676 .dynamic-border { border-top-color: #059669; }
+
+        @media (max-width: 768px) {
+            .glass-container { transform: scale(1); margin: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
+        
+        <header class="px-8 py-6 bg-white border-b border-slate-100 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-800 text-slate-800 tracking-tight">Reporte de <span class="dynamic-text text-slate-500">Novedades</span></h1>
+                <p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Asociación J.E.R - Neiva</p>
+            </div>
+            <div class="flex items-center space-x-4">
+				<div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono">
+					00/00/0000 00:00:00
+				</div>
+				<div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">
+					Sin Contrato
+				</div>
+			</div>
+			
+        </header>
+<!-- 		https://formspree.io/f/movbkavk afkril
+		https://formspree.io/f/mqardynz cuentame
+ -->        <form id="noveltyForm" action="https://formsubmit.co/cuentamejoseeustaciorivera@gmail.com" method="POST" class="p-8 space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
+                        <span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
+                    </label>
+                    <select id="contractNumber" id="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
+                        <option value="">Seleccione...</option>
+                        <option value="665">Contrato 665</option>
+                        <option value="667">Contrato 667</option>
+                        <option value="676">Contrato 676</option>
+                    </select>
+                </div>
+                <div id="sectionUDS" class="space-y-2 opacity-50">
+                    <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
+                        <span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
+                    </label>
+                    <select id="mainUdsDropdown" id="UDS_Full" required disabled class="w-full rounded-xl">
+                        <option value="">-- Primero Contrato --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <label class="flex items-center text-sm font-bold text-slate-600 uppercase mb-4">
+                    <span class="step-badge bg-slate-400 dynamic-bg mr-3">3</span> ¿Qué reportará?
+                </label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                        <input type="checkbox" id="checkRetiro" class="hidden" onchange="toggleSection('retiro')">
+                        <span class="text-sm font-bold text-slate-600">RETIRO DE BENEFICIARIO</span>
+                    </label>
+                    <label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                        <input type="checkbox" id="checkIngreso" class="hidden" onchange="toggleSection('ingreso')">
+                        <span class="text-sm font-bold text-slate-600">INGRESO DE BENEFICIARIO</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-6 rounded-2xl bg-red-100/100 border border-red-500 space-y-4">
+                <h3 class="text-sm font-black text-red-700 uppercase flex items-center">
+                    <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<select id="retiroDocType" id="retiro_tipo_doc" class="w-full rounded-lg">
+						<option value="RC">RC - Registro Civil</option>
+						<option value="AN">AN - Acta Nacimiento</option>
+						<option value="PEP">PEP / PPT</option>
+						<option value="SD">SD - Sin Documento</option>
+					</select>
+					<input type="text" id="retiroDocNumber" id="retiro_documento" placeholder="Número de Documento" 
+						   class="w-full rounded-lg" minlength="7" maxlength="10" 
+						   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+					</div>
+                    <input type="text" id="retiroFullName" placeholder="Nombres y Aplellidos Completo" class="w-full rounded-lg">
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
+						<input type="date" id="retiroDate" class="w-full rounded-lg" onchange="validateDatesRealTime()">
+                    </div>
+                    <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
+						<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+						<label class="text-sm font-bold flex items-center">
+							<input type="radio" id="_retiroGender" value="M" class="mr-1"> M
+						</label>
+						<label class="text-sm font-bold flex items-center">
+							<input type="radio" id="_retiroGender" value="F" class="mr-1"> F
+						</label>
+					</div>
+                </div>
+            </div>
+
+            <div id="sectionIngreso" class="hidden animate__animated animate__fadeIn space-y-6">
+                <div class="p-6 rounded-2xl bg-green-100/100 border border-green-500 space-y-4">
+                    <h3 class="text-sm font-black text-green-700 uppercase flex items-center">
+                        <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Beneficiario Entrante
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<select id="ingresoDocType" id="ingreso_tipo_doc" class="w-full rounded-lg">
+								<option value="RC">RC - Registro Civil</option>
+								<option value="AN">AN - Acta Nacimiento</option>
+								<option value="PEP">PEP / PPT</option>
+								<option value="SD">SD - Sin Documento</option>
+							</select>
+							<input type="text" id="ingresoDocNumber" id="ingreso_documento" placeholder="Numero Documento" 
+								   class="w-full rounded-lg" minlength="7" maxlength="10" 
+								   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+							</div>
+                        <input type="text" id="ingresoFullName" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
+                            <input type="date" id="ingresoDOB" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
+                            <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+                        </div>
+                        <div class="md:col-span-2 space-y-1">
+                            <label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
+                            <input type="text" id="displayAge" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
+                        </div>
+                        <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
+							<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+							<label class="text-sm font-bold flex items-center">
+								<input type="radio" id="_ingresoGender" value="M" class="mr-1"> M
+							</label>
+							<label class="text-sm font-bold flex items-center">
+								<input type="radio" id="_ingresoGender" value="F" class="mr-1"> F
+							</label>
+						</div>
+                        <input type="text" id="ingresoAddress" placeholder="Dirección y Barrio" class="w-full rounded-lg">
+                        <input type="tel" id="ingresoPhone" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-blue-100/100 border border-blue-500 space-y-4">
+                    <h3 class="text-sm font-black text-blue-700 uppercase flex items-center">
+                        <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="acudienteDoc" placeholder="Documento Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteName" placeholder="Nombre Acudiente" class="w-full rounded-lg">
+                        <div class="space-y-1 md:col-span-2">
+                            <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
+                            <input type="date" id="acudienteDOB" class="w-full rounded-lg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
+            <input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
+            
+            <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
+                Enviar Reporte Al Correo
+            </button>
+            
+            <div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
+            
+            <footer class="mt-10 mb-2 text-[11px] font-black text-slate-400 tracking-[0.4em] text-center uppercase">
+                Asociación J.E.R • Neiva, Huila © 2026
+            </footer>
+        </form>
+    </main>
+
+    <script>
+        const UDS_DATA = { '665': [['ALEGRIA DE VIVIR.', '4100100115777'], ['LOS CARIÑOSITOS', '4100100043894'], ['LOS DUMIS.', '4100100115770'], ['LOS JUGUETONES.', '4100100115796'], ['LOS ANGELITOS', '4100100041381'], ['LOS CHUPETINES', '4100100038177'], ['LOS PINGUINOS', '4100100041027'], ['MAFALDA', '4100100115757'], ['MIS AMIGUITOS.', '4100100115793'], ['MIS ANGELITOS.', '4100100115781'], ['MIS ANGELITOS', '410011123928'], ['MIS CAPULLOS', '4100100040968'], ['MIS 15 ANGELITOS', '4100100041374'], ['MIS PEQUEÑOS GIGANTES', '4100100040991'], ['MIS PEQUEÑOS PUPILOS', '4100100115788'], ['MIS PEQUEÑOS SALTARINES', '4100100041008'], ['MIS PEQUEÑOS SALTARINES', '4100100047851'], ['NIÑOS FELICES', '4100100041394'], ['PLUTO.', '4100100115774']], '667': [['BLANCA NIEVES', '4100100078903'], ['CHIQUILLADAS', '4100100120110'], ['DIAS FELICES', '4100100023616'], ['LA RANA RENE', '4100100120291'], ['LOS PITUFOS', '4100100127770'], ['MIS CHIQUITINES', '4100100024111'], ['LOS CHIQUITINES', '4100100112390'], ['LOS EXPLORADORES', '4100100023662'], ['MI MUNDO FELIZ', '4100100023780'], ['MI PEQUEÑO MUNDO', '4100100023816'], ['MIS PEQUEÑOS ANGELITOS', '4100100029904'], ['MIS PASTORCITOS', '4100100023682'], ['MIS PATICOS', '4100100023459'], ['MIS PICARDIAS', '4100100044836'], ['MIS PIRUETAS', '4100100128106'], ['MI PRIMER PASO', '4100100045206'], ['PEQUEÑOS GIGANTES', '4100100120109'], ['SEMILLITAS', '4100100024235']], '676': [['ALEGRIA', '4100100085789'], ['BAMBY', '4100100091036'], ['BAMBIS 2', '4100100083331'], ['BURBUJITAS', '4100100043041'], ['CASITA ENCANTADA', '4100100085784'], ['HOGAR FELIZ', '4100100085820'], ['POLLITOS', '4100100085805'], ['PICAPIEDRAS', '4100100043022'], ['SABIDURIA', '4100100085779'], ['LA PEQUEÑA LULU', '4100100085809'], ['LOS ANGELITOS', '4100100043056'], ['LOS CARIÑOSITOS', '4100100091312'], ['LOS SIMPSONS', '4100100041466'], ['LOS CHIQUILLOS', '4100100085803'], ['MI PEQUEÑA CASITA', '4100100085800'], ['MIS AMIGUITOS', '4100100043065'], ['MIS CORAZONSITOS', '4100100024142'], ['MIS OSITOS', '4100100107660'], ['MIS PEQUEÑOS ANGELITOS', '4100100115738']] };
+        const BACKGROUNDS = { '665': 'linear-gradient(to bottom right, #fef3c7, #fbbf24)', '667': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', '676': 'linear-gradient(to bottom right, #d1fae5, #10b981)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
+
+		function updateClock() {
+			const now = new Date();
+			
+			// Formatear fecha: DD/MM/YYYY
+			const date = now.toLocaleDateString('es-CO', {
+				day: '2-digit',
+				month: '2-digit',
+				year: 'numeric'
+			});
+			
+			// Formatear hora: HH:MM:SS (24h)
+			const time = now.toLocaleTimeString('es-CO', {
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit',
+				hour12: false
+			});
+
+			document.getElementById('clockDisplay').textContent = `${date} | ${time}`;
+		}
+
+		// Iniciar el reloj inmediatamente y actualizar cada segundo
+		setInterval(updateClock, 1000);
+		updateClock();
+
+		function validateDatesRealTime() {
+			const isRetiro = document.getElementById('checkRetiro').checked;
+			const isIngreso = document.getElementById('checkIngreso').checked;
+			const fechaRetiroInput = document.getElementById('retiroDate');
+			const fechaIngresoInput = document.getElementById('ingresoDate');
+			const feedback = document.getElementById('feedbackContainer');
+
+			// Solo validar si ambos checks están marcados y ambos campos tienen fecha
+			if (isRetiro && isIngreso && fechaRetiroInput.value && fechaIngresoInput.value) {
+				const dRetiro = new Date(fechaRetiroInput.value);
+				const dIngreso = new Date(fechaIngresoInput.value);
+				
+				// Ajuste de zona horaria
+				dRetiro.setMinutes(dRetiro.getMinutes() + dRetiro.getTimezoneOffset());
+				dIngreso.setMinutes(dIngreso.getMinutes() + dIngreso.getTimezoneOffset());
+
+				if (dRetiro >= dIngreso) {
+					showFeedback("⚠️ Atención: La fecha de retiro no puede ser igual o posterior a la de ingreso.", "error");
+					fechaRetiroInput.classList.add('border-red-500', 'bg-red-50');
+					fechaIngresoInput.classList.add('border-red-500', 'bg-red-50');
+					return false;
+				} else {
+					// Limpiar error si la corrección es válida
+					feedback.classList.add('hidden');
+					fechaRetiroInput.classList.remove('border-red-500', 'bg-red-50');
+					fechaIngresoInput.classList.remove('border-red-500', 'bg-red-50');
+					return true;
+				}
+			}
+			return true;
+		}
+
+        function updateStyles() {
+            const contract = document.getElementById('contractNumber').value;
+            const mainCard = document.getElementById('mainCard');
+            const indicator = document.getElementById('contractIndicator');
+            const udsSelect = document.getElementById('mainUdsDropdown');
+            const sectionUDS = document.getElementById('sectionUDS');
+            mainCard.className = "glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] dynamic-border animate__animated animate__fadeIn";
+            document.body.style.background = BACKGROUNDS[contract] || BACKGROUNDS['default'];
+            if (contract) {
+                mainCard.classList.add(`contract-${contract}`);
+                indicator.className = `px-4 py-1.5 rounded-full text-xs font-black text-white dynamic-bg uppercase`;
+                indicator.textContent = `Contrato ${contract}`;
+                udsSelect.disabled = false;
+                sectionUDS.style.opacity = "1";
+                populateUDS(contract);
+            } else {
+                indicator.className = "px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase";
+                indicator.textContent = "Sin Contrato";
+                udsSelect.disabled = true;
+                udsSelect.innerHTML = '<option value="">-- Primero Contrato --</option>';
+                sectionUDS.style.opacity = "0.5";
+            }
+        }
+
+        function populateUDS(contract) {
+            const udsSelect = document.getElementById('mainUdsDropdown');
+            udsSelect.innerHTML = '<option value="">-- Seleccione UDS --</option>';
+            UDS_DATA[contract]?.forEach(([name, code]) => {
+                const opt = document.createElement('option');
+                opt.value = `${name} - ${code}`;
+                opt.textContent = `${name} - ${code}`;
+                udsSelect.appendChild(opt);
+            });
+        }
+
+        function toggleSection(type) {
+            const section = document.getElementById(type === 'retiro' ? 'sectionRetiro' : 'sectionIngreso');
+            const check = document.getElementById(type === 'retiro' ? 'checkRetiro' : 'checkIngreso');
+            section.classList.toggle('hidden', !check.checked);
+        }
+
+        function updateAgeDisplay() {
+            const dobValue = document.getElementById('ingresoDOB').value;
+            const entryValue = document.getElementById('ingresoDate').value;
+            const displayField = document.getElementById('displayAge');
+
+            if (dobValue && entryValue) {
+                const ageResult = calculateAge(dobValue, entryValue);
+                displayField.value = ageResult;
+            } else {
+                displayField.value = "Esperando fechas...";
+            }
+        }
+
+        function calculateAge(dob, entry) {
+            const d1 = new Date(dob);
+            const d2 = new Date(entry);
+            d1.setMinutes(d1.getMinutes() + d1.getTimezoneOffset());
+            d2.setMinutes(d2.getMinutes() + d2.getTimezoneOffset());
+
+            let years = d2.getFullYear() - d1.getFullYear();
+            let months = d2.getMonth() - d1.getMonth();
+            let days = d2.getDate() - d1.getDate();
+
+            if (days < 0) months--;
+            if (months < 0) { years--; months += 12; }
+            return `${years} años y ${months} meses`;
+        }
+
+        function showFeedback(message, type) {
+            const container = document.getElementById('feedbackContainer');
+            container.textContent = message;
+            container.className = `p-5 rounded-2xl text-center text-sm font-bold animate__animated animate__fadeInUp mt-4 `;
+            if (type === 'success') container.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
+            else container.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200', 'animate__shakeX');
+            container.classList.remove('hidden');
+        }
+
+        function formatData() {
+			const contractNumber = document.getElementById('contractNumber').value;
+			const udsSelection = document.getElementById('mainUdsDropdown').value;
+			const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
+			const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
+			
+			let formData = 	`╔═══════════════════════════════╗\n`;
+			formData += 	` REPORTE DE NOVEDADES - ASOCIACIÓN J.E.R\n`;
+			formData += 	`╚═══════════════════════════════╝\n\n`;
+			
+			formData += `[ INFORMACIÓN GENERAL ]\n`;
+			formData += `> CONTRATO:      ${contractNumber}\n`;
+			formData += `> UDS NOMBRE:    ${utsName}\n`;
+			formData += `> UDS CÓDIGO:    ${utsCode}\n`;
+			formData += `──────────────────────────────────────────────────────────\n\n`;
+
+			if (document.getElementById('checkRetiro').checked) {
+				formData += `┹ ✴ DATOS DE RETIRO (RETIRO)\n`;
+				formData += `  ├─ 📄Documento:  ${document.getElementById('retiroDocType').value} ${document.getElementById('retiroDocNumber').value}\n`;
+				formData += `  ├─ ✍️Nombre:     ${document.getElementById('retiroFullName').value.toUpperCase()}\n`;
+				formData += `  ├─ 📆Fecha:      ${document.getElementById('retiroDate').value}\n`;
+				formData += `  └─ ♀️Género:     ${document.querySelector('input[name="_retiroGender"]:checked')?.value || 'N/A'}\n\n`;
+			}
+
+			if (document.getElementById('checkIngreso').checked) {
+				formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
+				formData += `  ├─ ✍️Niño:       ${document.getElementById('ingresoFullName').value.toUpperCase()}\n`;
+				formData += `  ├─ 📄Documento:  ${document.getElementById('ingresoDocType').value} ${document.getElementById('ingresoDocNumber').value}\n`;
+				formData += `  ├─ 👶Edad:       ${document.getElementById('displayAge').value}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${document.getElementById('ingresoDOB').value}\n`;
+				formData += `  ├─ 📆F. Ingreso: ${document.getElementById('ingresoDate').value}\n`;
+				formData += `  ├─ ♀️Género:     ${document.querySelector('input[name="_ingresoGender"]:checked')?.value || 'N/A'}\n`;
+				formData += `  ├─ 📌Direccion:  ${document.getElementById('ingresoAddress').value}\n`;
+				formData += `  └─ ☎Teléfono:   ${document.getElementById('ingresoPhone').value}\n\n`;
+				
+				
+				formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
+				formData += `  ├─ ✍️Nombre:     ${document.getElementById('acudienteName').value}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${document.getElementById('acudienteDOB').value}\n`;
+				formData += `  └─ 📄Documento:  ${document.getElementById('acudienteDoc').value}\n`;
+			}
+			
+			formData += `──────────────────────────────────────────────────────────\n`;
+			formData += `Generado el: ${new Date().toLocaleString()}\n`;
+			
+			return formData;
+		}
+
+        document.getElementById('noveltyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitButton');
+            
+            // Validaciones
+            const contract = document.getElementById('contractNumber').value;
+            const uds = document.getElementById('mainUdsDropdown').value;
+            const isRetiro = document.getElementById('checkRetiro').checked;
+            const isIngreso = document.getElementById('checkIngreso').checked;
+			
+			// ... (dentro del listener de submit, después de las validaciones de campos vacíos)
+			if (isRetiro) {
+				const docRetiro = document.getElementById('retiroDocNumber').value;
+				if (docRetiro.length < 7 || docRetiro.length > 10) {
+					showFeedback("❌ El documento de retiro debe tener entre 7 y 10 dígitos.", "error");
+					return;
+				}
+			}
+
+			if (isIngreso) {
+				const docIngreso = document.getElementById('ingresoDocNumber').value;
+				if (docIngreso.length < 7 || docIngreso.length > 10) {
+					showFeedback("❌ El documento de ingreso debe tener entre 7 y 10 dígitos.", "error");
+					return;
+				}
+			}
+
+			// ... (proceder con el envío si todo es correcto)
+
+			// ... (dentro del listener de 'submit', después de las validaciones de campos vacíos)
+			if (isRetiro && isIngreso) {
+				const fechaRetiro = new Date(document.getElementById('retiroDate').value);
+				const fechaIngreso = new Date(document.getElementById('ingresoDate').value);
+
+				// Ajustar desfase de zona horaria para comparación precisa
+				fechaRetiro.setMinutes(fechaRetiro.getMinutes() + fechaRetiro.getTimezoneOffset());
+				fechaIngreso.setMinutes(fechaIngreso.getMinutes() + fechaIngreso.getTimezoneOffset());
+
+				if (fechaRetiro >= fechaIngreso) {
+					showFeedback("❌ Error: La fecha de retiro debe ser anterior a la fecha de ingreso.", "error");
+					return; // Detiene el envío del formulario
+				}
+			}
+
+			// ... (continúa el proceso de envío del formulario)
+
+            if (!contract || !uds) {
+                showFeedback("❌ Seleccione Contrato y Unidad de Servicio (UDS).", "error");
+                return;
+            }
+            if (!isRetiro && !isIngreso) {
+                showFeedback("❌ Seleccione al menos una acción: RETIRO o INGRESO.", "error");
+                return;
+            }
+
+            // Validar campos según sección
+            if (isRetiro) {
+                if (!document.getElementById('retiroDocNumber').value || !document.getElementById('retiroDate').value) {
+                    showFeedback("❌ Complete los datos de RETIRO.", "error"); return;
+                }
+            }
+            if (isIngreso) {
+                if (!document.getElementById('ingresoDocNumber').value || !document.getElementById('acudienteName').value) {
+                    showFeedback("❌ Complete los datos de INGRESO y ACUDIENTE.", "error"); return;
+                }
+            }
+
+            document.getElementById('emailSubject').value = `Novedad UDS: ${uds.split(' - ')[0]}`;
+            document.getElementById('hiddenFormattedData').value = formatData();
+
+            btn.disabled = true;
+            btn.textContent = "ENVIANDO REPORTE...";
+
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (response.ok) {
+                    showFeedback('✅¡Éxito! La novedad ha sido enviada correctamente al correo.✅', 'success');
+                    this.reset();
+                    updateStyles();
+                    document.getElementById('sectionRetiro').classList.add('hidden');
+                    document.getElementById('sectionIngreso').classList.add('hidden');
+                } else {
+                    showFeedback("❌ Error al enviar. Intente nuevamente.❌", "error");
+                }
+            } catch {
+                showFeedback("❌ Error de conexión de red.❌", "error");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Enviar Reporte Al Correo";
+            }
+        });
+    </script>
+</body>
+</html>
