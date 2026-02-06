@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Control Tabla Valores</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -25,35 +26,48 @@
             margin: 0; padding: 0; color: var(--text-main); font-size: 11px; min-height: 100vh;
         }
 
-        /* --- Auth --- */
+        /* --- Auth Responsivo --- */
         #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 5000; display: flex; align-items: center; justify-content: center; }
-        .auth-box { background: var(--bg-card); padding: 40px; border-radius: 20px; border: 1px solid var(--primary-gold); width: 320px; text-align: center; }
+        .auth-box { background: var(--bg-card); padding: 30px; border-radius: 20px; border: 1px solid var(--primary-gold); width: 90%; max-width: 340px; text-align: center; }
         
-        /* --- App --- */
-        #app-content { display: none; padding: 20px; }
-        .top-bar { background: var(--bg-card); padding: 15px 25px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        /* --- Layout --- */
+        #app-content { display: none; padding: 10px; }
+        .top-bar { background: var(--bg-card); padding: 10px 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
 
-        /* --- Drawers --- */
-        .drawer { position: fixed; top: 0; width: 340px; height: 100%; background: var(--bg-card); z-index: 2000; transition: 0.4s; padding: 20px; overflow-y: auto; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-        #drawer-archivo { left: -360px; border-right: 1px solid var(--primary-gold); }
-        #drawer-archivo.open { left: 0; }
-        #drawer-resumen { right: -360px; border-left: 1px solid var(--accent-cyan); }
-        #drawer-resumen.open { right: 0; }
+        /* --- Indicador LED y Usuario --- */
+        .user-info { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 20px; border: 1px solid #333; }
+        .led-indicator { width: 10px; height: 10px; border-radius: 50%; transition: 0.3s; }
+        .led-red { background-color: var(--danger); box-shadow: 0 0 10px var(--danger); }
+        .led-green { background-color: var(--success); box-shadow: 0 0 10px var(--success); }
+        .username-display { font-weight: bold; color: var(--primary-gold); text-transform: uppercase; font-size: 10px; }
 
-        .drawer-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: none; z-index: 1999; }
+        /* --- Grid Responsivo --- */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
+        .semana-card { background: var(--bg-card); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); }
         
-        #modal-ajustes { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; }
-        .ajustes-container { background:#151518; width:450px; max-height: 80vh; overflow-y: auto; padding:25px; border-radius:15px; border:1px solid var(--primary-gold); }
-
-        /* --- UI Elements --- */
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 20px; }
-        .semana-card { background: var(--bg-card); padding: 10px 15px; border-radius: 12px; border: 1px solid var(--border-color); }
+        /* --- Tablas Compactas --- */
         table { width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 10px; }
-        td, th { padding: 2px 4px; background: rgba(255,255,255,0.02); border-radius: 4px; text-align: left; }
-        input, select { background: rgba(0,0,0,0.4); border: 1px solid #444; color: white; padding: 4px 6px; border-radius: 4px; width: 100%; box-sizing: border-box; font-size: 11px; }
+        td, th { padding: 3px 5px; background: rgba(255,255,255,0.02); border-radius: 4px; }
+        input, select { background: rgba(0,0,0,0.4); border: 1px solid #444; color: white; padding: 4px; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        
+        /* Ampliación Casilla Cantidad */
+        th:nth-child(3), td:nth-child(3) { width: 85px !important; }
+        td:nth-child(3) input { text-align: center; color: var(--accent-cyan); font-weight: bold; }
+
         .price-display { color: var(--primary-gold); font-family: monospace; font-weight: bold; text-align: right; border: none; background: transparent; }
 
-        .btn { padding: 8px 12px; border-radius: 6px; font-weight: 800; cursor: pointer; border: 1px solid transparent; text-transform: uppercase; font-size: 10px; transition: 0.3s; }
+        /* --- Drawers --- */
+        .drawer { position: fixed; top: 0; width: 85%; max-width: 320px; height: 100%; background: var(--bg-card); z-index: 2000; transition: 0.4s; padding: 20px; overflow-y: auto; }
+        #drawer-archivo { left: -350px; border-right: 1px solid var(--primary-gold); }
+        #drawer-archivo.open { left: 0; }
+        #drawer-resumen { right: -350px; border-left: 1px solid var(--accent-cyan); }
+        #drawer-resumen.open { right: 0; }
+        .drawer-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display: none; z-index: 1999; }
+
+        #modal-ajustes { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; }
+        .ajustes-container { background:#151518; width: 95%; max-width: 450px; padding: 20px; border-radius: 15px; border: 1px solid var(--primary-gold); }
+
+        .btn { padding: 8px 12px; border-radius: 6px; font-weight: 800; cursor: pointer; border: 1px solid transparent; text-transform: uppercase; font-size: 9px; transition: 0.3s; }
         .btn-gold { background: var(--primary-gold); color: black; }
         .btn-cyan { background: var(--accent-cyan); color: black; }
         .btn-danger { background: var(--danger); color: white; border: none; }
@@ -69,75 +83,76 @@
 
     <div id="auth-screen">
         <div class="auth-box" id="login-form">
-            <h1 style="color:var(--primary-gold)">LOGIN</h1>
-            <input type="text" id="user-login" placeholder="Usuario" style="margin-bottom: 10px;">
-            <input type="password" id="pass-login" placeholder="Contraseña" style="margin-bottom: 20px;">
+            <h2 style="color:var(--primary-gold)">INGRESAR</h2>
+            <input type="text" id="user-login" placeholder="Usuario">
+            <input type="password" id="pass-login" placeholder="Contraseña" style="margin: 10px 0 20px 0">
             <button class="btn btn-gold" style="width:100%" onclick="handleAuth('login')">ENTRAR</button>
-            <div style="margin-top:15px; cursor:pointer; font-size:1.3em; color:var(--accent-cyan)" onclick="toggleAuth(true)">Registrar nueva cuenta</div>
+            <p onclick="toggleAuth(true)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--accent-cyan)">REGISTRAR CUENTA</p>
         </div>
         <div class="auth-box" id="reg-form" style="display:none">
-            <h1 style="color:var(--accent-cyan)">REGISTRO</h1>
-            <input type="text" id="user-reg" placeholder="Nuevo Usuario" style="margin-bottom: 10px;">
-            <input type="password" id="pass-reg" placeholder="Contraseña" style="margin-bottom: 20px;">
-            <button class="btn btn-cyan" style="width:100%" onclick="handleAuth('register')">CREAR CUENTA</button>
-            <div style="margin-top:15px; cursor:pointer; font-size:1.3em; color:var(--primary-gold)" onclick="toggleAuth(false)">Volver al Login</div>
+            <h2 style="color:var(--accent-cyan)">NUEVO REGISTRO</h2>
+            <input type="text" id="user-reg" placeholder="Usuario">
+            <input type="password" id="pass-reg" placeholder="Contraseña" style="margin: 10px 0 20px 0">
+            <button class="btn btn-cyan" style="width:100%" onclick="handleAuth('register')">CREAR USUARIO</button>
+            <p onclick="toggleAuth(false)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--primary-gold)">VOLVER AL LOGIN</p>
         </div>
     </div>
 
     <div id="app-content">
         <div class="drawer-overlay" id="overlay" onclick="closeAllDrawers()"></div>
         
-        <div class="drawer" id="drawer-archivo">
-            <h3 style="color: var(--primary-gold)">📂 ARCHIVOS GUARDADOS</h3>
-            <div id="lista-guardados"></div>
-        </div>
-
-        <div class="drawer" id="drawer-resumen">
-            <h3 style="color: var(--accent-cyan)">📊 BALANCE MENSUAL</h3>
-            <div id="summary-content"></div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-cyan" onclick="exportExcel()">📥 EXCEL</button>
-                <button class="btn btn-gold" onclick="window.print()">🖨️ PDF</button>
-            </div>
-        </div>
-
         <header class="top-bar">
-            <div style="display:flex; gap:10px;">
+            <div style="display:flex; gap:8px;">
                 <button class="btn" style="border:1px solid var(--primary-gold); color:var(--primary-gold)" onclick="toggleDrawer('archivo', true)">📂 ARCHIVO</button>
                 <button class="btn btn-cyan" onclick="toggleDrawer('resumen', true)">📊 RESUMEN</button>
-                <button class="btn" style="background:#222; color:var(--primary-gold); border:1px solid #444" onclick="toggleAjustes(true)">⚙️ AJUSTES</button>
+                <button class="btn" style="background:#9C9492; border: 1px solid #4444;" onclick="toggleAjustes(true)">⚙️ AJUSTES</button>
             </div>
-            <div style="display:flex; gap:8px; align-items:center">
-                <select id="main-mes" onchange="autoGuardado()" style="width:100px"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select>
-                
-                <div style="display:flex; align-items:center; gap:5px; background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:5px">
-                    <small style="color:var(--primary-gold); font-size:9px">Semanas:</small>
-                    <select id="num-semanas" onchange="cambiarSemanas()" style="width:45px">
-                        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option>
-                    </select>
-                </div>
 
-                <input type="text" id="main-contrato" placeholder="ID Contrato..." oninput="autoGuardado()" style="width:100px">
-                <button class="btn btn-gold" onclick="guardarEnFirebase()">☁️ GUARDAR</button>
-                <button class="btn" style="background:#333; color:white" onclick="cerrarSesion()">SALIR</button>
+            <div class="user-info">
+                <div id="sync-led" class="led-indicator led-green"></div>
+                <span id="display-user" class="username-display">USUARIO</span>
+            </div>
+
+            <div style="display:flex; gap:5px; align-items:center">
+                <small>SEM:</small>
+                <select id="num-semanas" onchange="cambiarSemanas()" style="width:45px">
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option>
+                </select>
+                <select id="main-mes" onchange="marcarCambio()"><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select>
+                <input type="text" id="main-contrato" placeholder="ID Contrato" style="width:90px" oninput="marcarCambio()">
+                <button class="btn btn-gold" onclick="guardarFirebase()">☁️ GUARDAR</button>
+                <button class="btn btn-danger" style="padding: 5px;" onclick="cerrarSesion()">❌</button>
             </div>
         </header>
 
         <div id="main-grid" class="grid-container"></div>
     </div>
 
+    <div class="drawer" id="drawer-archivo">
+        <h3 style="color: var(--primary-gold)">📂 REGISTROS EN NUBE</h3>
+        <div id="lista-archivos"></div>
+    </div>
+
+    <div class="drawer" id="drawer-resumen">
+        <h3 style="color: var(--accent-cyan)">📊 RESUMEN</h3>
+        <div id="summary-content"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+            <button class="btn btn-cyan" onclick="exportExcel()">📥 EXCEL</button>
+            <button class="btn btn-gold" onclick="window.print()">🖨️ IMPRIMIR</button>
+        </div>
+    </div>
+
     <div id="modal-ajustes">
         <div class="ajustes-container">
-            <h3 style="color:var(--primary-gold); margin-top:0">⚙️ GESTIÓN DE PRODUCTOS</h3>
-            <div id="lista-precios-config"></div>
-            <button class="btn btn-cyan" style="width:100%; margin-top:15px" onclick="agregarProductoNuevo()">+ AGREGAR PRODUCTO</button>
-            <button class="btn btn-gold" style="width:100%; margin-top:10px" onclick="aplicarAjustes()">APLICAR Y REGENERAR</button>
-            <button class="btn" style="width:100%; margin-top:10px; background:#333; color:white" onclick="toggleAjustes(false)">CANCELAR</button>
+            <h3 style="color:var(--primary-gold)">⚙️ CONFIGURACIÓN DE PRODUCTOS</h3>
+            <div id="lista-config-prod" style="max-height: 350px; overflow-y: auto; margin-bottom:15px"></div>
+            <button class="btn btn-cyan" style="width:100%; margin-bottom:10px" onclick="agregarProd()">+ AGREGAR NUEVO PRODUCTO</button>
+            <button class="btn btn-gold" style="width:100%" onclick="aplicarAjustes()">APLICAR Y REGENERAR TABLAS</button>
+            <button class="btn" style="width:100%; margin-top:10px; background:#333" onclick="toggleAjustes(false)">CERRAR</button>
         </div>
     </div>
 
 <script>
-    // Config Firebase (Se asume la misma del usuario)
     const firebaseConfig = {
         apiKey: "AIzaSyBlbJPanxmKNq0NK3R6mzhMpBxOzA_qP7E",
         authDomain: "tabla-valores.firebaseapp.com",
@@ -156,315 +171,337 @@
 		{ nombre: "Huevo Und", precio: 450 },
         { nombre: "Molleja Libra", precio: 7000 },
 		{ nombre: "Queso Libra", precio: 13000 },
-        { nombre: "Carne Cerdo Kilo", precio: 21000 },
-		{ nombre: "Carne res Kilo", precio: 26000 },
-        { nombre: "Higado Kilo", precio: 18000 },
+		{ nombre: "Carne Cerdo Kilo", precio: 13000 },
+		{ nombre: "Carne Res Kilo", precio: 26000 },
+		{ nombre: "Higado Kilo", precio: 18000 },
 		{ nombre: "Tilapia Kilo", precio: 24000 },
-        { nombre: "Leche Litro", precio: 3792 },
-		{ nombre: "Yogurt Litro", precio: 5900 },
+		{ nombre: "Leche Litro", precio: 3792 },
+		{ nombre: "Yogurt Litro", precio: 5900.02 },
 		{ nombre: "Pan Und", precio: 600 }
+		
     ];
 
     const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-    function limpiarNumero(t) { return parseFloat(t.toString().replace(/\./g, '').replace(/[^0-9.-]+/g, "")) || 0; }
+    function limpiarNum(t) { return parseFloat(t.toString().replace(/\./g, '').replace(/[^0-9.-]+/g, "")) || 0; }
 
-    // --- Auth & Init ---
-    async function handleAuth(type) {
-        const u = document.getElementById(type === 'login' ? 'user-login' : 'user-reg').value.trim().toLowerCase();
-        const p = document.getElementById(type === 'login' ? 'pass-login' : 'pass-reg').value;
-        if(!u || !p) return alert("Llenar campos");
-        if(type === 'register') { await db.ref('users/'+u).set({password: p}); alert("Cuenta Creada"); toggleAuth(false); }
-        else {
-            const snap = await db.ref('users/'+u).once('value');
-            if(snap.exists() && snap.val().password === p) { localStorage.setItem('elite_user', u); iniciarApp(u); }
-            else alert("Acceso denegado");
-        }
+    function marcarCambio() {
+        const led = document.getElementById('sync-led');
+        led.className = 'led-indicator led-red';
+        guardarLocal();
     }
 
+    function marcarGuardado() {
+        document.getElementById('sync-led').className = 'led-indicator led-green';
+    }
+
+    // --- Auth ---
     function toggleAuth(toReg) {
         document.getElementById('login-form').style.display = toReg ? 'none' : 'block';
         document.getElementById('reg-form').style.display = toReg ? 'block' : 'none';
     }
 
-    function iniciarApp(user) {
-        currentUser = user;
+    async function handleAuth(type) {
+        const u = document.getElementById(type === 'login' ? 'user-login' : 'user-reg').value.trim().toLowerCase();
+        const p = document.getElementById(type === 'login' ? 'pass-login' : 'pass-reg').value;
+        if(!u || !p) return alert("Campos incompletos");
+
+        if(type === 'register') {
+            await db.ref('users/'+u).set({password: p});
+            alert("Usuario creado"); toggleAuth(false);
+        } else {
+            const snap = await db.ref('users/'+u).once('value');
+            if(snap.exists() && snap.val().password === p) {
+                localStorage.setItem('elite_user', u);
+                iniciarApp(u);
+            } else alert("Error de acceso");
+        }
+    }
+
+    function iniciarApp(u) {
+        currentUser = u;
+        document.getElementById('display-user').innerText = u;
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app-content').style.display = 'block';
-        cargarBorrador();
+        cargarLocal();
     }
 
     function cerrarSesion() { localStorage.removeItem('elite_user'); location.reload(); }
     window.onload = () => { if(localStorage.getItem('elite_user')) iniciarApp(localStorage.getItem('elite_user')); };
 
-    // --- Core Tables ---
+    // --- Tablas ---
     function initGrid() {
-        const grid = document.getElementById('main-grid');
-        const numSemanas = parseInt(document.getElementById('num-semanas').value);
-        grid.innerHTML = '';
-        for (let s = 1; s <= numSemanas; s++) {
-            grid.innerHTML += `
-                <div class="semana-card" id="card-${s}">
-                    <h2 style="color:var(--primary-gold); margin:0 0 10px 0; font-size:1.2em">SEMANA ${s}</h2>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px">
-                        <div><label style="font-size:9px">DÍAS:</label><input type="number" id="dias-${s}" oninput="calcular(${s}); autoGuardado()"></div>
-                        <div><label style="font-size:9px">CUPOS:</label><input type="number" id="cupos-${s}" oninput="calcular(${s}); autoGuardado()"></div>
-                        <div style="grid-column:span 2"><input type="text" id="pres-${s}" class="price-display" style="text-align:center; color:var(--success); font-size:1.3em; width:100%" readonly></div>
-                    </div>
-                    <table id="tabla-${s}">
-                        <thead><tr><th>FAC</th><th>PRODUCTO</th><th style="width:40px">CANT</th><th>TOTAL</th></tr></thead>
-                        <tbody>
-                            ${productosBase.map((p, i) => `
-                                <tr>
-                                    <td><input type="text" id="fac-${s}-${i}" oninput="autoGuardado()" style="padding:2px"></td>
-                                    <td style="color:var(--text-dim); max-width:80px; overflow:hidden">${p.nombre}</td>
-                                    <td><input type="number" id="cant-${s}-${i}" oninput="calcular(${s}); autoGuardado()" style="padding:2px"></td>
-                                    <td><input type="text" id="val-${s}-${i}" class="price-display" oninput="calcular(${s}); autoGuardado()" ${p.precio > 0 ? 'readonly' : ''} style="width:100%; font-size:10px"></td>
-                                </tr>`).join('')}
-                            <tr style="background:rgba(212,175,55,0.1)">
-                                <td colspan="3" style="font-weight:bold">DISTRIBUIDORA</td>
-                                <td><input type="text" id="dist-${s}" readonly class="price-display" style="width:100%"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>`;
-        }
-    }
+		const grid = document.getElementById('main-grid');
+		const semanas = parseInt(document.getElementById('num-semanas').value);
+		
+		// --- PASO 1: Capturar datos actuales antes de borrar ---
+		const datosTemporales = {};
+		for (let s = 1; s <= 5; s++) {
+			if (document.getElementById(`dias-${s}`)) {
+				datosTemporales[s] = {
+					dias: document.getElementById(`dias-${s}`).value,
+					cupos: document.getElementById(`cupos-${s}`).value,
+					facturas: {},
+					cantidades: {}
+				};
+				// Guardamos fac y cant por NOMBRE de producto para que coincidan tras el cambio
+				productosBase.forEach((p, i) => {
+					const f = document.getElementById(`fac-${s}-${i}`);
+					const c = document.getElementById(`cant-${s}-${i}`);
+					if (f) datosTemporales[s].facturas[p.nombre] = f.value;
+					if (c) datosTemporales[s].cantidades[p.nombre] = c.value;
+				});
+			}
+		}
 
-    function cambiarSemanas() {
-        if(confirm("Al cambiar la cantidad de semanas se regenerará la tabla. Asegúrate de haber guardado tus cambios.")) {
-            initGrid();
-            autoGuardado();
-        }
-    }
+		// --- PASO 2: Regenerar el HTML ---
+		grid.innerHTML = '';
+		for(let s=1; s<=semanas; s++) {
+			grid.innerHTML += `
+				<div class="semana-card">
+					<h3 style="color:var(--primary-gold); margin-bottom:8px">SEMANA ${s}</h3>
+					<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px">
+						<input type="number" id="dias-${s}" placeholder="Días" oninput="calcular(${s}); marcarCambio()">
+						<input type="number" id="cupos-${s}" placeholder="Cupos" oninput="calcular(${s}); marcarCambio()">
+						<input type="text" id="pres-${s}" class="price-display" style="grid-column:span 2; font-size:1.3em; text-align:center; color:var(--success)" readonly>
+					</div>
+					<table>
+						<thead><tr><th>FAC</th><th>PROD</th><th style="width:85px">CANT</th><th>TOTAL</th></tr></thead>
+						<tbody>
+							${productosBase.map((p, i) => `
+								<tr>
+									<td><input type="text" id="fac-${s}-${i}" oninput="marcarCambio()"></td>
+									<td style="color:var(--text-dim); font-size:9px">${p.nombre}</td>
+									<td><input type="number" id="cant-${s}-${i}" oninput="calcular(${s}); marcarCambio()"></td>
+									<td><input type="text" id="val-${s}-${i}" class="price-display" ${p.precio > 0 ? 'readonly' : ''} oninput="calcular(${s}); marcarCambio()"></td>
+								</tr>`).join('')}
+							<tr style="background:rgba(212,175,55,0.1)">
+								<td colspan="3"><b>DISTRIBUIDORA</b></td>
+								<td><input type="text" id="dist-${s}" class="price-display" readonly></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>`;
+		}
+
+		// --- PASO 3: Restaurar los datos en las nuevas filas ---
+		for (let s = 1; s <= semanas; s++) {
+			if (datosTemporales[s]) {
+				document.getElementById(`dias-${s}`).value = datosTemporales[s].dias;
+				document.getElementById(`cupos-${s}`).value = datosTemporales[s].cupos;
+				
+				productosBase.forEach((p, i) => {
+					if (datosTemporales[s].facturas[p.nombre]) {
+						document.getElementById(`fac-${s}-${i}`).value = datosTemporales[s].facturas[p.nombre];
+					}
+					if (datosTemporales[s].cantidades[p.nombre]) {
+						document.getElementById(`cant-${s}-${i}`).value = datosTemporales[s].cantidades[p.nombre];
+					}
+				});
+				calcular(s); // Recalcular totales con los datos restaurados
+			}
+		}
+		actualizarResumen();
+	}
+
+    function cambiarSemanas() { initGrid(); marcarCambio(); }
 
     function calcular(s) {
         const d = parseFloat(document.getElementById(`dias-${s}`).value) || 0;
         const c = parseFloat(document.getElementById(`cupos-${s}`).value) || 0;
         const pres = d * c * 8094;
         document.getElementById(`pres-${s}`).value = formatter.format(pres);
-        
-        let gastoProductos = 0;
+
+        let sumaProd = 0;
         productosBase.forEach((p, i) => {
             const cant = parseFloat(document.getElementById(`cant-${s}-${i}`).value) || 0;
-            const inputVal = document.getElementById(`val-${s}-${i}`);
+            const valInput = document.getElementById(`val-${s}-${i}`);
             if(p.precio > 0) {
-                const sub = cant * p.precio;
-                inputVal.value = formatter.format(sub);
-                gastoProductos += sub;
+                const total = cant * p.precio;
+                valInput.value = formatter.format(total);
+                sumaProd += total;
             } else {
-                gastoProductos += limpiarNumero(inputVal.value);
+                sumaProd += limpiarNum(valInput.value);
             }
         });
 
-        let dist = Math.max(0, pres - gastoProductos); 
+        const dist = Math.max(0, pres - sumaProd);
         document.getElementById(`dist-${s}`).value = formatter.format(dist);
-        actualizarResumenData();
+        actualizarResumen();
     }
 
-    function actualizarResumenData() {
-        const numSemanas = parseInt(document.getElementById('num-semanas').value);
-        let sumProd = 0, sumDist = 0, sumPres = 0;
-        let resumen = productosBase.map(p => ({ nombre: p.nombre, cant: 0, total: 0 }));
+    function actualizarResumen() {
+        const semanas = parseInt(document.getElementById('num-semanas').value);
+        let tPres = 0, tProd = 0, tDist = 0;
+        let rProd = productosBase.map(p => ({ n: p.nombre, c: 0, t: 0 }));
 
-        for(let s=1; s<=numSemanas; s++) {
-            const presVal = document.getElementById(`pres-${s}`);
-            if(!presVal) continue;
-
-            sumPres += limpiarNumero(presVal.value);
-            sumDist += limpiarNumero(document.getElementById(`dist-${s}`).value);
+        for(let s=1; s<=semanas; s++) {
+            const pVal = document.getElementById(`pres-${s}`);
+            if(!pVal) continue;
+            tPres += limpiarNum(pVal.value);
+            tDist += limpiarNum(document.getElementById(`dist-${s}`).value);
             productosBase.forEach((p, i) => {
                 const c = parseFloat(document.getElementById(`cant-${s}-${i}`).value) || 0;
-                const v = limpiarNumero(document.getElementById(`val-${s}-${i}`).value);
-                resumen[i].cant += c; resumen[i].total += v; sumProd += v;
+                const t = limpiarNum(document.getElementById(`val-${s}-${i}`).value);
+                rProd[i].c += c; rProd[i].t += t; tProd += t;
             });
         }
 
         document.getElementById('summary-content').innerHTML = `
-            <div style="padding: 10px; border: 1px solid #444; border-radius: 8px; margin-bottom:15px; font-size:10px">
+            <div style="font-size:10px; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px">
                 <b>CONTRATO:</b> ${document.getElementById('main-contrato').value || 'N/A'}<br>
-                <b>MES:</b> ${document.getElementById('main-mes').value}<br>
-                <b>SEMANAS EJECUTADAS:</b> ${numSemanas}
+                <b>MES:</b> ${document.getElementById('main-mes').value}
             </div>
             <table style="width:100%">
                 <thead><tr><th>PRODUCTO</th><th>CANT</th><th>TOTAL</th></tr></thead>
                 <tbody>
-                    ${resumen.filter(r => r.total > 0).map(r => `
-                        <tr><td>${r.nombre}</td><td>${r.cant.toFixed(1)}</td><td class="price-display">${formatter.format(r.total)}</td></tr>
-                    `).join('')}
-                    <tr style="border-top:1px solid #555">
-                        <td colspan="2"><b>SUMA PRODUCTOS</b></td>
-                        <td class="price-display"><b>${formatter.format(sumProd)}</b></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"><b>DISTRIBUIDORA</b></td>
-                        <td class="price-display">${formatter.format(sumDist)}</td>
-                    </tr>
-                    <tr style="background:rgba(0,242,255,0.15); font-weight:bold">
-                        <td colspan="2" style="color:var(--accent-cyan)">SUBTOTAL EJECUTADO</td>
-                        <td class="price-display" style="color:var(--accent-cyan)">${formatter.format(sumProd + sumDist)}</td>
+                    ${rProd.filter(x => x.t > 0).map(x => `<tr><td>${x.n}</td><td>${x.c.toFixed(1)}</td><td class="price-display">${formatter.format(x.t)}</td></tr>`).join('')}
+                    <tr style="border-top:1px solid #555"><td><b>SUMA PRODUCTOS</b></td><td></td><td class="price-display"><b>${formatter.format(tProd)}</b></td></tr>
+                    <tr><td><b>DISTRIBUIDORA</b></td><td></td><td class="price-display">${formatter.format(tDist)}</td></tr>
+                    <tr style="background:rgba(0,242,255,0.1)">
+                        <td style="color:var(--accent-cyan)"><b>TOTAL EJECUTADO</b></td><td></td><td class="price-display" style="color:var(--accent-cyan)">${formatter.format(tProd + tDist)}</td>
                     </tr>
                 </tbody>
             </table>
-            <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:10px">
-                <small style="color:var(--text-dim)">TOTAL PRESUPUESTADO</small><br>
-                <b style="font-size:1.5em; color:var(--primary-gold)">${formatter.format(sumPres)}</b>
+            <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:5px">
+                <small>VALOR PRESUPUESTADO TOTAL</small><br>
+                <b style="font-size:1.6em; color:var(--primary-gold)">${formatter.format(tPres)}</b>
             </div>`;
     }
 
-    // --- Dynamic Adjustments ---
-    function toggleAjustes(show) { 
-        document.getElementById('modal-ajustes').style.display = show ? 'flex' : 'none'; 
-        if(show) renderAjustesEdicion();
+    // --- Persistencia ---
+    function guardarLocal() {
+        const semanas = parseInt(document.getElementById('num-semanas').value);
+        const data = {
+            mes: document.getElementById('main-mes').value,
+            contrato: document.getElementById('main-contrato').value,
+            numSemanas: semanas,
+            productosBase,
+            semanas: {}
+        };
+        for(let s=1; s<=semanas; s++) {
+            data.semanas[s] = {
+                d: document.getElementById(`dias-${s}`).value,
+                c: document.getElementById(`cupos-${s}`).value,
+                f: productosBase.map((_, i) => document.getElementById(`fac-${s}-${i}`).value),
+                q: productosBase.map((_, i) => document.getElementById(`cant-${s}-${i}`).value),
+                v: productosBase.map((_, i) => document.getElementById(`val-${s}-${i}`).value)
+            };
+        }
+        localStorage.setItem(`elite_draft_${currentUser}`, JSON.stringify(data));
     }
 
-    function renderAjustesEdicion() {
-        const cont = document.getElementById('lista-precios-config');
-        cont.innerHTML = `<div style="display:grid; grid-template-columns: 2fr 1fr 40px; gap:10px; margin-bottom:10px; font-weight:bold; color:var(--text-dim)"><span>Producto</span><span>Precio</span><span></span></div>`;
-        productosBase.forEach((p, i) => {
-            const div = document.createElement('div');
-            div.style = "display:grid; grid-template-columns: 2fr 1fr 40px; gap:10px; margin-bottom:5px";
-            div.innerHTML = `<input type="text" value="${p.nombre}" onchange="productosBase[${i}].nombre=this.value"><input type="number" value="${p.precio}" onchange="productosBase[${i}].precio=parseFloat(this.value)||0"><button class="btn btn-danger" onclick="eliminarProducto(${i})" style="padding:2px">X</button>`;
-            cont.appendChild(div);
-        });
+    function cargarLocal() {
+        const saved = localStorage.getItem(`elite_draft_${currentUser}`);
+        if(saved) restaurar(JSON.parse(saved));
+        else initGrid();
     }
 
-    function agregarProductoNuevo() { productosBase.push({ nombre: "Nuevo", precio: 0 }); renderAjustesEdicion(); }
-    function eliminarProducto(index) { productosBase.splice(index, 1); renderAjustesEdicion(); }
-    function aplicarAjustes() { initGrid(); toggleAjustes(false); autoGuardado(); }
+    function restaurar(data) {
+        if(data.productosBase) productosBase = data.productosBase;
+        document.getElementById('main-mes').value = data.mes;
+        document.getElementById('main-contrato').value = data.contrato || "";
+        document.getElementById('num-semanas').value = data.numSemanas || 4;
+        initGrid();
+        for(let s=1; s<=data.numSemanas; s++) {
+            if(!data.semanas[s]) continue;
+            document.getElementById(`dias-${s}`).value = data.semanas[s].d;
+            document.getElementById(`cupos-${s}`).value = data.semanas[s].c;
+            data.semanas[s].f.forEach((v, i) => { if(document.getElementById(`fac-${s}-${i}`)) document.getElementById(`fac-${s}-${i}`).value = v; });
+            data.semanas[s].q.forEach((v, i) => { if(document.getElementById(`cant-${s}-${i}`)) document.getElementById(`cant-${s}-${i}`).value = v; });
+            data.semanas[s].v.forEach((v, i) => { if(document.getElementById(`val-${s}-${i}`)) document.getElementById(`val-${s}-${i}`).value = v; });
+            calcular(s);
+        }
+        marcarGuardado();
+    }
+
+    async function guardarFirebase() {
+		const mes = document.getElementById('main-mes').value;
+		const con = document.getElementById('main-contrato').value || "S_N";
+		
+		// 1. Definimos una referencia fija basada en Mes y Contrato (sin el Date.now variable)
+		// Usamos un ID limpio para evitar problemas con caracteres especiales
+		const fixedId = `${mes}_${con}`.replace(/\s+/g, '_');
+		const userFileRef = db.ref(`files/${currentUser}/${fixedId}`);
+
+		try {
+			// 2. Verificamos si ya existe un registro con ese nombre
+			const snap = await userFileRef.once('value');
+			const data = JSON.parse(localStorage.getItem(`elite_draft_${currentUser}`));
+			
+			if (snap.exists()) {
+				// Si ya existe, pedimos confirmación o informamos la sobreescritura
+				if(confirm(`Ya existe un registro para ${mes} con contrato ${con}. ¿Deseas actualizarlo?`)) {
+					await userFileRef.set(data);
+					alert("Registro actualizado: Se han sobrescrito los datos existentes.");
+					marcarGuardado();
+				}
+			} else {
+				// Si es nuevo, guardamos normalmente
+				await userFileRef.set(data);
+				alert("Sincronizado con Firebase ☁️: Registro nuevo guardado.");
+				marcarGuardado();
+			}
+		} catch (error) {
+			console.error("Error al guardar:", error);
+			alert("Error al intentar conectar con la nube.");
+		}
+	}
 
     // --- UI Drawers ---
     function toggleDrawer(id, show) {
         document.getElementById(`drawer-${id}`).classList.toggle('open', show);
         document.getElementById('overlay').style.display = show ? 'block' : 'none';
-        if(id === 'archivo' && show) listarArchivos();
+        if(id === 'archivo' && show) listarCloud();
     }
+    function closeAllDrawers() { toggleDrawer('archivo', false); toggleDrawer('resumen', false); }
 
-    function closeAllDrawers() {
-        document.getElementById('drawer-archivo').classList.remove('open');
-        document.getElementById('drawer-resumen').classList.remove('open');
-        document.getElementById('overlay').style.display = 'none';
-    }
-
-    // --- Firebase & Storage ---
-    async function guardarEnFirebase() {
-        const mes = document.getElementById('main-mes').value;
-        const con = document.getElementById('main-contrato').value || "S_N";
-        const numSemanas = document.getElementById('num-semanas').value;
-        const id = `${mes}_${con}`;
-        const data = { mes, contrato: con, numSemanas, productosBase, semanas: {} };
-        for(let s=1; s<=numSemanas; s++) {
-            data.semanas[s] = {
-                dias: document.getElementById(`dias-${s}`).value,
-                cupos: document.getElementById(`cupos-${s}`).value,
-                cants: productosBase.map((_, i) => document.getElementById(`cant-${s}-${i}`).value),
-                vals: productosBase.map((_, i) => document.getElementById(`val-${s}-${i}`).value),
-                facs: productosBase.map((_, i) => document.getElementById(`fac-${s}-${i}`).value)
-            };
+    function toggleAjustes(show) {
+        document.getElementById('modal-ajustes').style.display = show ? 'flex' : 'none';
+        if(show) {
+            const cont = document.getElementById('lista-config-prod');
+            cont.innerHTML = productosBase.map((p, i) => `
+                <div style="display:flex; gap:5px; margin-bottom:8px">
+                    <input type="text" value="${p.nombre}" onchange="productosBase[${i}].nombre=this.value; marcarCambio()">
+                    <input type="number" value="${p.precio}" style="width:80px" onchange="productosBase[${i}].precio=parseFloat(this.value); marcarCambio()">
+                    <button class="btn-danger" style="padding:0 10px" onclick="productosBase.splice(${i},1); toggleAjustes(true); marcarCambio()">X</button>
+                </div>`).join('');
         }
-        await db.ref(`files/${currentUser}/${id}`).set(data);
-        alert("Sincronización completa");
     }
+    function agregarProd() { productosBase.push({nombre: "Nuevo", precio: 0}); toggleAjustes(true); }
+    function aplicarAjustes() { initGrid(); toggleAjustes(false); guardarLocal(); }
 
-    async function listarArchivos() {
-		const cont = document.getElementById('lista-guardados');
-		cont.innerHTML = "Cargando...";
-		try {
-			const snap = await db.ref(`files/${currentUser}`).once('value');
-			cont.innerHTML = "";
-			if (!snap.exists()) {
-				cont.innerHTML = "No hay registros";
-				return;
-			}
-			snap.forEach(child => {
-				const v = child.val();
-				const key = child.key; // Esta es la ID única (Mes_Contrato)
-				const div = document.createElement('div');
-				div.style = "background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border: 1px solid #333;";
-				div.innerHTML = `
-					<div style="cursor:pointer; flex-grow:1" onclick="cargarDesdeFirebase('${key}')">
-						<b style="color:var(--primary-gold)">${v.mes}</b> - ${v.contrato} 
-						<br><small style="color:var(--text-dim)">(${v.numSemanas || 4} semanas)</small>
-					</div>
-					<button class="btn btn-danger" onclick="eliminarDesdeFirebase('${key}')" style="padding: 5px 10px; margin-left:10px">🗑️</button>
-				`;
-				cont.appendChild(div);
-			});
-		} catch (error) {
-			console.error(error);
-			cont.innerHTML = "Error al cargar archivos";
-		}
-	}
-
-		async function eliminarDesdeFirebase(key) {
-			// Confirmación de seguridad
-			if (confirm(`¿Estás seguro de que deseas eliminar el registro "${key}"? Esta acción no se puede deshacer.`)) {
-				try {
-					await db.ref(`files/${currentUser}/${key}`).remove();
-					alert("Registro eliminado con éxito.");
-					listarArchivos(); // Recargar la lista automáticamente
-				} catch (error) {
-					console.error("Error al eliminar:", error);
-					alert("No se pudo eliminar el registro. Inténtalo de nuevo.");
-				}
-			}
-		}
-
-
-    async function cargarDesdeFirebase(key) {
-        const snap = await db.ref(`files/${currentUser}/${key}`).once('value');
-        restaurarTodo(snap.val());
-        closeAllDrawers();
+    async function listarCloud() {
+        const cont = document.getElementById('lista-archivos');
+        cont.innerHTML = "Cargando...";
+        const snap = await db.ref(`files/${currentUser}`).once('value');
+        cont.innerHTML = "";
+        if(!snap.exists()) return cont.innerHTML = "Sin archivos";
+        snap.forEach(child => {
+            const v = child.val();
+            const div = document.createElement('div');
+            div.style = "background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center";
+            div.innerHTML = `<div onclick="cargarArchivo('${child.key}')" style="cursor:pointer"><b>${v.mes}</b> - ${v.contrato}</div>
+                             <button class="btn-danger" style="padding:4px" onclick="borrarArchivo('${child.key}')">🗑️</button>`;
+            cont.appendChild(div);
+        });
     }
-
-    function autoGuardado() {
-        const data = { 
-            mes: document.getElementById('main-mes').value, 
-            contrato: document.getElementById('main-contrato').value, 
-            numSemanas: document.getElementById('num-semanas').value,
-            productosBase 
-        };
-        localStorage.setItem(`elite_config_${currentUser}`, JSON.stringify(data));
+    async function cargarArchivo(k) {
+        const snap = await db.ref(`files/${currentUser}/${k}`).once('value');
+        restaurar(snap.val()); closeAllDrawers();
     }
-
-    function cargarBorrador() {
-        const saved = localStorage.getItem(`elite_config_${currentUser}`);
-        if(saved) {
-            const data = JSON.parse(saved);
-            productosBase = data.productosBase || productosBase;
-            document.getElementById('main-mes').value = data.mes;
-            document.getElementById('main-contrato').value = data.contrato;
-            document.getElementById('num-semanas').value = data.numSemanas || 4;
-        }
-        initGrid();
-    }
-
-    function restaurarTodo(data) {
-        if(data.productosBase) productosBase = data.productosBase;
-        document.getElementById('num-semanas').value = data.numSemanas || 4;
-        initGrid();
-        document.getElementById('main-mes').value = data.mes;
-        document.getElementById('main-contrato').value = data.contrato;
-        for(let s=1; s<=data.numSemanas; s++) {
-            if(!data.semanas[s]) continue;
-            document.getElementById(`dias-${s}`).value = data.semanas[s].dias;
-            document.getElementById(`cupos-${s}`).value = data.semanas[s].cupos;
-            data.semanas[s].cants.forEach((v, i) => { if(document.getElementById(`cant-${s}-${i}`)) document.getElementById(`cant-${s}-${i}`).value = v; });
-            data.semanas[s].vals.forEach((v, i) => { if(document.getElementById(`val-${s}-${i}`)) document.getElementById(`val-${s}-${i}`).value = v; });
-            data.semanas[s].facs.forEach((v, i) => { if(document.getElementById(`fac-${s}-${i}`)) document.getElementById(`fac-${s}-${i}`).value = v; });
-            calcular(s);
-        }
+    async function borrarArchivo(k) {
+        if(confirm("¿Eliminar registro de la nube?")) await db.ref(`files/${currentUser}/${k}`).remove().then(listarCloud);
     }
 
     function exportExcel() {
-        let csv = "Producto,Cantidad,Total\n";
+        let csv = "Resumen Mensual\nProducto,Cantidad,Total\n";
         document.querySelectorAll('#summary-content tr').forEach(r => {
             const cols = r.querySelectorAll('td');
             if(cols.length > 0) csv += Array.from(cols).map(c => c.innerText.replace(/[$.,]/g, '')).join(",") + "\n";
         });
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-        a.download = `Resumen_${document.getElementById('main-mes').value}.csv`;
-        a.click();
+        a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+        a.download = `Reporte_${document.getElementById('main-mes').value}.csv`; a.click();
     }
 </script>
 </body>
