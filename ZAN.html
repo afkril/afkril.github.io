@@ -341,78 +341,90 @@
     }
 
     function actualizarResumen() {
-        const numSemSelect = document.getElementById('num-semanas');
-        if(!numSemSelect) return;
-        const semanas = parseInt(numSemSelect.value);
+    const numSemSelect = document.getElementById('num-semanas');
+    if(!numSemSelect) return;
+    const semanas = parseInt(numSemSelect.value);
+    
+    let tPres = 0, tProdCL = 0, tProdOtros = 0;
+    // Inicializamos el reporte con cantidad (c) y total monetario (t)
+    let rProd = productosBase.map(p => ({ n: p.nombre, c: 0, t: 0, cl: p.cl }));
+
+    for(let s=1; s<=semanas; s++) {
+        const pVal = document.getElementById(`pres-${s}`);
+        if(!pVal) continue;
+        tPres += limpiarNum(pVal.value);
         
-        let tPres = 0, tProdCL = 0, tProdOtros = 0;
-        let rProd = productosBase.map(p => ({ n: p.nombre, c: 0, t: 0, cl: p.cl }));
-
-        for(let s=1; s<=semanas; s++) {
-            const pVal = document.getElementById(`pres-${s}`);
-            if(!pVal) continue;
-            tPres += limpiarNum(pVal.value);
+        productosBase.forEach((p, i) => {
+            const vInput = document.getElementById(`val-${s}-${i}`);
+            const cInput = document.getElementById(`cant-${s}-${i}`);
+            if(!vInput) return;
             
-            productosBase.forEach((p, i) => {
-                const vInput = document.getElementById(`val-${s}-${i}`);
-                const cInput = document.getElementById(`cant-${s}-${i}`);
-                if(!vInput) return;
-                
-                const t = limpiarNum(vInput.value);
-                const c = parseFloat(cInput.value) || 0;
-                
-                rProd[i].t += t;
-                rProd[i].c += c;
-                
-                if(p.cl) tProdCL += t; else tProdOtros += t;
-            });
-        }
-
-        const tDist = tPres - tProdCL - tProdOtros;
-        const porcCL = tPres > 0 ? (tProdCL / tPres) * 100 : 0;
-        const ledColor = porcCL >= 30 ? 'var(--success)' : 'var(--danger)';
-
-        const sumCont = document.getElementById('summary-content');
-        if(sumCont) {
-            sumCont.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid ${ledColor}">
-                    <div>
-                        <small style="display:block; color:var(--text-dim)">% COMPRAS LOCALES (CL)</small>
-                        <b style="font-size: 1.3em; color:${ledColor}">${porcCL.toFixed(1)}%</b>
-                    </div>
-                    <div style="width: 15px; height: 15px; background: ${ledColor}; border-radius: 50%; box-shadow: 0 0 10px ${ledColor}"></div>
-                </div>
-
-                <table style="width:100%">
-                    <thead><tr><th>PRODUCTO</th><th style="text-align:center">CL</th><th style="text-align:right">TOTAL $</th></tr></thead>
-                    <tbody>
-                        ${rProd.filter(x => x.t > 0 || x.c > 0).map(x => `
-                            <tr>
-                                <td>${x.n}</td>
-                                <td style="text-align:center; font-size:8px">${x.cl ? '✅' : '❌'}</td>
-                                <td class="price-display">${formatter.format(x.t)}</td>
-                            </tr>`).join('')}
-                        <tr style="border-top:1px solid #555; color:var(--accent-cyan)">
-                            <td><b>TOTAL CL</b></td><td></td>
-                            <td class="price-display"><b>${formatter.format(tProdCL)} (${porcCL.toFixed(1)}%)</b></td>
-                        </tr>
-                        <tr style="color:var(--text-dim)">
-                            <td>OTROS PRODUCTOS</td><td></td>
-                            <td class="price-display">${formatter.format(tProdOtros)}</td>
-                        </tr>
-                        <tr>
-                            <td><b style="color:var(--success)">DISTRIBUIDORA</b></td><td></td>
-                            <td class="price-display" style="color:var(--success)">${formatter.format(tDist)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:10px">
-                    <small>PRESUPUESTO TOTAL</small><br>
-                    <b style="font-size:1.5em; color:var(--primary-gold)">${formatter.format(tPres)}</b>
-                </div>`;
-        }
-        renderChart(rProd.filter(x => x.t > 0), tDist);
+            const t = limpiarNum(vInput.value);
+            const c = parseFloat(cInput.value) || 0;
+            
+            rProd[i].t += t;
+            rProd[i].c += c; // Sumatoria de cantidades físicas
+            
+            if(p.cl) tProdCL += t; else tProdOtros += t;
+        });
     }
+
+    const tDist = tPres - tProdCL - tProdOtros;
+    const porcCL = tPres > 0 ? (tProdCL / tPres) * 100 : 0;
+    const ledColor = porcCL >= 30 ? 'var(--success)' : 'var(--danger)';
+
+    const sumCont = document.getElementById('summary-content');
+    if(sumCont) {
+        sumCont.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid ${ledColor}">
+                <div>
+                    <small style="display:block; color:var(--text-dim)">% COMPRAS LOCALES (CL)</small>
+                    <b style="font-size: 1.3em; color:${ledColor}">${porcCL.toFixed(1)}%</b>
+                </div>
+                <div style="width: 15px; height: 15px; background: ${ledColor}; border-radius: 50%; box-shadow: 0 0 10px ${ledColor}"></div>
+            </div>
+
+            <table style="width:100%">
+                <thead>
+                    <tr>
+                        <th>PRODUCTO</th>
+                        <th style="text-align:center">CL</th>
+                        <th style="text-align:center">CANT. TOTAL</th> <th style="text-align:right">TOTAL $</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rProd.filter(x => x.t > 0 || x.c > 0).map(x => `
+                        <tr>
+                            <td>${x.n}</td>
+                            <td style="text-align:center; font-size:8px">${x.cl ? '✅' : '❌'}</td>
+                            <td style="text-align:center; color:var(--accent-cyan); font-weight:bold">${x.c.toLocaleString()}</td> <td class="price-display">${formatter.format(x.t)}</td>
+                        </tr>`).join('')}
+                    
+                    <tr style="border-top:1px solid #555; color:var(--accent-cyan)">
+                        <td colspan="2"><b>TOTAL CL</b></td>
+                        <td></td>
+                        <td class="price-display"><b>${formatter.format(tProdCL)} (${porcCL.toFixed(1)}%)</b></td>
+                    </tr>
+                    <tr style="color:var(--text-dim)">
+                        <td colspan="2">OTROS PRODUCTOS</td>
+                        <td></td>
+                        <td class="price-display">${formatter.format(tProdOtros)}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><b style="color:var(--success)">DISTRIBUIDORA</b></td>
+                        <td></td>
+                        <td class="price-display" style="color:var(--success)">${formatter.format(tDist)}</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:10px">
+                <small>PRESUPUESTO TOTAL MES</small><br>
+                <b style="font-size:1.5em; color:var(--primary-gold)">${formatter.format(tPres)}</b>
+            </div>`;
+    }
+    renderChart(rProd.filter(x => x.t > 0), tDist);
+}
 
     function renderChart(prods, distVal) {
         const chartCanvas = document.getElementById('chartGasto');
