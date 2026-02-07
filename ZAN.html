@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Control Tabla Valores</title>
+    <title>ZAN - Control Tabla Valores Pro</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-body: #0a0a0c;
@@ -17,6 +19,7 @@
             --danger: #ff4655;
             --success: #00ff88;
             --border-color: rgba(212, 175, 55, 0.3);
+            --warning: #ffaa00;
         }
 
         body {
@@ -26,37 +29,41 @@
             margin: 0; padding: 0; color: var(--text-main); font-size: 11px; min-height: 100vh;
         }
 
-        /* --- Auth Responsivo --- */
+        .semana-card.excedido {
+            border: 2px solid var(--danger);
+            box-shadow: 0 0 15px rgba(255, 70, 85, 0.3);
+            background: rgba(40, 20, 20, 0.95);
+        }
+
         #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 5000; display: flex; align-items: center; justify-content: center; }
         .auth-box { background: var(--bg-card); padding: 30px; border-radius: 20px; border: 1px solid var(--primary-gold); width: 90%; max-width: 340px; text-align: center; }
         
-        /* --- Layout --- */
         #app-content { display: none; padding: 10px; }
         .top-bar { background: var(--bg-card); padding: 10px 15px; border-radius: 12px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
 
-        /* --- Indicador LED y Usuario --- */
         .user-info { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 20px; border: 1px solid #333; }
         .led-indicator { width: 10px; height: 10px; border-radius: 50%; transition: 0.3s; }
         .led-red { background-color: var(--danger); box-shadow: 0 0 10px var(--danger); }
         .led-green { background-color: var(--success); box-shadow: 0 0 10px var(--success); }
         .username-display { font-weight: bold; color: var(--primary-gold); text-transform: uppercase; font-size: 10px; }
 
-        /* --- Grid Responsivo --- */
         .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
-        .semana-card { background: var(--bg-card); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .semana-card { background: var(--bg-card); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); transition: 0.3s; }
         
-        /* --- Tablas Compactas --- */
-        table { width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 10px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 12px; }
         td, th { padding: 3px 5px; background: rgba(255,255,255,0.02); border-radius: 4px; }
         input, select { background: rgba(0,0,0,0.4); border: 1px solid #444; color: white; padding: 4px; border-radius: 4px; width: 100%; box-sizing: border-box; }
         
-        /* Ampliación Casilla Cantidad */
-        th:nth-child(3), td:nth-child(3) { width: 85px !important; }
-        td:nth-child(3) input { text-align: center; color: var(--accent-cyan); font-weight: bold; }
-
+        .total-editable { 
+            color: var(--accent-cyan) !important; 
+            font-weight: bold !important; 
+            text-align: right; 
+            background: rgba(0, 242, 255, 0.05) !important;
+            border: 1px solid rgba(0, 242, 255, 0.2) !important;
+        }
+        .price-hidden { display: none; }
         .price-display { color: var(--primary-gold); font-family: monospace; font-weight: bold; text-align: right; border: none; background: transparent; }
 
-        /* --- Drawers --- */
         .drawer { position: fixed; top: 0; width: 85%; max-width: 320px; height: 100%; background: var(--bg-card); z-index: 2000; transition: 0.4s; padding: 20px; overflow-y: auto; }
         #drawer-archivo { left: -350px; border-right: 1px solid var(--primary-gold); }
         #drawer-archivo.open { left: 0; }
@@ -67,16 +74,10 @@
         #modal-ajustes { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; }
         .ajustes-container { background:#151518; width: 95%; max-width: 450px; padding: 20px; border-radius: 15px; border: 1px solid var(--primary-gold); }
 
-        .btn { padding: 8px 12px; border-radius: 6px; font-weight: 800; cursor: pointer; border: 1px solid transparent; text-transform: uppercase; font-size: 9px; transition: 0.3s; }
+        .btn { padding: 5px 10px; border-radius: 66px; font-weight: 800; cursor: pointer; border: 3px solid transparent; text-transform: uppercase; font-size: 8px; transition: 0.3s; }
         .btn-gold { background: var(--primary-gold); color: black; }
         .btn-cyan { background: var(--accent-cyan); color: black; }
         .btn-danger { background: var(--danger); color: white; border: none; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #summary-content, #summary-content * { visibility: visible; }
-            #summary-content { position: absolute; left: 0; top: 0; width: 100%; color: black; background: white; padding: 20px; }
-        }
     </style>
 </head>
 <body>
@@ -106,6 +107,9 @@
                 <button class="btn" style="border:1px solid var(--primary-gold); color:var(--primary-gold)" onclick="toggleDrawer('archivo', true)">📂 ARCHIVO</button>
                 <button class="btn btn-cyan" onclick="toggleDrawer('resumen', true)">📊 RESUMEN</button>
                 <button class="btn" style="background:#9C9492; border: 1px solid #4444;" onclick="toggleAjustes(true)">⚙️ AJUSTES</button>
+                <button class="btn" style="background:#2e7d32; color:white; border: 1px solid #1b5e20;" onclick="exportarTablasCompletas()">📊 📥 EXCEL</button>
+                <button class="btn" style="background:#0277bd; color:white; border: 1px solid #01579b;" onclick="document.getElementById('import-input').click()">📥 IMPORTAR EXCEL</button>
+                <input type="file" id="import-input" style="display:none" accept=".csv, .xlsx, .xls" onchange="importarExcel(this)">
             </div>
 
             <div class="user-info">
@@ -128,26 +132,32 @@
         <div id="main-grid" class="grid-container"></div>
     </div>
 
+    <div class="drawer" id="drawer-resumen">
+        <h3 style="color: var(--accent-cyan)">📊 ANÁLISIS DE GASTOS</h3>
+        <div id="summary-content"></div>
+        <canvas id="chartGasto" style="margin-top:20px"></canvas>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+            <button class="btn btn-cyan" onclick="exportarTablasCompletas()">📥 EXCEL RESUMEN</button>
+            <button class="btn btn-gold" onclick="window.print()">🖨️ IMPRIMIR</button>
+        </div>
+    </div>
+
     <div class="drawer" id="drawer-archivo">
         <h3 style="color: var(--primary-gold)">📂 REGISTROS EN NUBE</h3>
         <div id="lista-archivos"></div>
     </div>
 
-    <div class="drawer" id="drawer-resumen">
-        <h3 style="color: var(--accent-cyan)">📊 RESUMEN</h3>
-        <div id="summary-content"></div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
-            <button class="btn btn-cyan" onclick="exportExcel()">📥 EXCEL</button>
-            <button class="btn btn-gold" onclick="window.print()">🖨️ IMPRIMIR</button>
-        </div>
-    </div>
-
     <div id="modal-ajustes">
         <div class="ajustes-container">
-            <h3 style="color:var(--primary-gold)">⚙️ CONFIGURACIÓN DE PRODUCTOS</h3>
-            <div id="lista-config-prod" style="max-height: 350px; overflow-y: auto; margin-bottom:15px"></div>
-            <button class="btn btn-cyan" style="width:100%; margin-bottom:10px" onclick="agregarProd()">+ AGREGAR NUEVO PRODUCTO</button>
-            <button class="btn btn-gold" style="width:100%" onclick="aplicarAjustes()">APLICAR Y REGENERAR TABLAS</button>
+            <h3 style="color:var(--primary-gold)">⚙️ CONFIGURACIÓN PRODUCTOS</h3>
+            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                <label style="font-size: 9px; color: var(--accent-cyan);">VALOR RACION HCB ($):</label>
+                <input type="number" id="cfg-valor-cupo" value="8094" onchange="marcarCambio()" style="font-size: 14px; color: var(--success);">
+            </div>
+            <h4 style="margin: 10px 0; font-size: 10px;">LISTADO DE PRODUCTOS BASE</h4>
+            <div id="lista-config-prod" style="max-height: 300px; overflow-y: auto; margin-bottom:10px"></div>
+            <button class="btn btn-cyan" style="width:100%; margin-bottom:2px" onclick="agregarProd()">+ AGREGAR NUEVO PRODUCTO</button>
+            <button class="btn btn-gold" style="width:100%" onclick="aplicarAjustes()">APLICAR Y REGENERAR</button>
             <button class="btn" style="width:100%; margin-top:10px; background:#333" onclick="toggleAjustes(false)">CERRAR</button>
         </div>
     </div>
@@ -166,54 +176,49 @@
     const db = firebase.database();
 
     let currentUser = "";
+    let valorCupoBase = 8094;
+    let chartInstance = null;
     let productosBase = [
-        { nombre: "Pollo Libra", precio: 9000 },
-		{ nombre: "Huevo Und", precio: 450 },
-        { nombre: "Molleja Libra", precio: 7000 },
-		{ nombre: "Queso Libra", precio: 13000 },
-		{ nombre: "Carne Cerdo Kilo", precio: 13000 },
-		{ nombre: "Carne Res Kilo", precio: 26000 },
-		{ nombre: "Higado Kilo", precio: 18000 },
-		{ nombre: "Tilapia Kilo", precio: 24000 },
-		{ nombre: "Leche Litro", precio: 3792 },
-		{ nombre: "Yogurt Litro", precio: 5900.02 },
-		{ nombre: "Pan Und", precio: 600 }
-		
+        { nombre: "Pollo Libra", precio: 9000, cl: true },
+        { nombre: "Huevo Und", precio: 450, cl: true },
+        { nombre: "Molleja Libra", precio: 7000, cl: true },
+        { nombre: "Queso Libra", precio: 13000, cl: false },
+        { nombre: "Carne Cerdo Kilo", precio: 13000, cl: true },
+        { nombre: "Carne Res Kilo", precio: 26000, cl: true },
+        { nombre: "Higado Kilo", precio: 18000, cl: true },
+        { nombre: "Tilapia Kilo", precio: 24000, cl: true },
+        { nombre: "Leche Litro", precio: 3792, cl: true },
+        { nombre: "Yogurt Litro", precio: 5900, cl: true },
+        { nombre: "Pan Und", precio: 600, cl: false }
     ];
 
     const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-    function limpiarNum(t) { return parseFloat(t.toString().replace(/\./g, '').replace(/[^0-9.-]+/g, "")) || 0; }
+    function limpiarNum(t) { return parseFloat(t.toString().replace(/[$.,]/g, "").replace(/[^0-9.-]+/g, "")) || 0; }
 
     function marcarCambio() {
-        const led = document.getElementById('sync-led');
-        led.className = 'led-indicator led-red';
+        if(document.getElementById('sync-led')) document.getElementById('sync-led').className = 'led-indicator led-red';
         guardarLocal();
     }
 
-    function marcarGuardado() {
-        document.getElementById('sync-led').className = 'led-indicator led-green';
-    }
+    window.onload = () => {
+        const session = localStorage.getItem('elite_user');
+        if(session) iniciarApp(session);
+    };
 
-    // --- Auth ---
-    function toggleAuth(toReg) {
-        document.getElementById('login-form').style.display = toReg ? 'none' : 'block';
-        document.getElementById('reg-form').style.display = toReg ? 'block' : 'none';
-    }
-
-    async function handleAuth(type) {
-        const u = document.getElementById(type === 'login' ? 'user-login' : 'user-reg').value.trim().toLowerCase();
-        const p = document.getElementById(type === 'login' ? 'pass-login' : 'pass-reg').value;
-        if(!u || !p) return alert("Campos incompletos");
-
+    function handleAuth(type) {
+        const uInput = document.getElementById(type === 'login' ? 'user-login' : 'user-reg');
+        const pInput = document.getElementById(type === 'login' ? 'pass-login' : 'pass-reg');
+        const u = uInput.value.trim().toLowerCase();
+        const p = pInput.value;
         if(type === 'register') {
-            await db.ref('users/'+u).set({password: p});
-            alert("Usuario creado"); toggleAuth(false);
+            db.ref('users/'+u).set({password: p}); alert("Registrado"); toggleAuth(false);
         } else {
-            const snap = await db.ref('users/'+u).once('value');
-            if(snap.exists() && snap.val().password === p) {
-                localStorage.setItem('elite_user', u);
-                iniciarApp(u);
-            } else alert("Error de acceso");
+            db.ref('users/'+u).once('value', s => {
+                if(s.exists() && s.val().password === p) {
+                    localStorage.setItem('elite_user', u);
+                    iniciarApp(u);
+                } else alert("Credenciales incorrectas");
+            });
         }
     }
 
@@ -226,282 +231,380 @@
     }
 
     function cerrarSesion() { localStorage.removeItem('elite_user'); location.reload(); }
-    window.onload = () => { if(localStorage.getItem('elite_user')) iniciarApp(localStorage.getItem('elite_user')); };
 
-    // --- Tablas ---
-    function initGrid() {
-		const grid = document.getElementById('main-grid');
-		const semanas = parseInt(document.getElementById('num-semanas').value);
-		
-		// --- PASO 1: Capturar datos actuales antes de borrar ---
-		const datosTemporales = {};
-		for (let s = 1; s <= 5; s++) {
-			if (document.getElementById(`dias-${s}`)) {
-				datosTemporales[s] = {
-					dias: document.getElementById(`dias-${s}`).value,
-					cupos: document.getElementById(`cupos-${s}`).value,
-					facturas: {},
-					cantidades: {}
-				};
-				// Guardamos fac y cant por NOMBRE de producto para que coincidan tras el cambio
-				productosBase.forEach((p, i) => {
-					const f = document.getElementById(`fac-${s}-${i}`);
-					const c = document.getElementById(`cant-${s}-${i}`);
-					if (f) datosTemporales[s].facturas[p.nombre] = f.value;
-					if (c) datosTemporales[s].cantidades[p.nombre] = c.value;
-				});
-			}
-		}
+    function initGrid(preservarDatos = false) {
+        if (preservarDatos) { guardarLocal(); }
 
-		// --- PASO 2: Regenerar el HTML ---
-		grid.innerHTML = '';
-		for(let s=1; s<=semanas; s++) {
-			grid.innerHTML += `
-				<div class="semana-card">
-					<h3 style="color:var(--primary-gold); margin-bottom:8px">SEMANA ${s}</h3>
-					<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px">
-						<input type="number" id="dias-${s}" placeholder="Días" oninput="calcular(${s}); marcarCambio()">
-						<input type="number" id="cupos-${s}" placeholder="Cupos" oninput="calcular(${s}); marcarCambio()">
-						<input type="text" id="pres-${s}" class="price-display" style="grid-column:span 2; font-size:1.3em; text-align:center; color:var(--success)" readonly>
-					</div>
-					<table>
-						<thead><tr><th>FAC</th><th>PROD</th><th style="width:85px">CANT</th><th>TOTAL</th></tr></thead>
-						<tbody>
-							${productosBase.map((p, i) => `
-								<tr>
-									<td><input type="text" id="fac-${s}-${i}" oninput="marcarCambio()"></td>
-									<td style="color:var(--text-dim); font-size:9px">${p.nombre}</td>
-									<td><input type="number" id="cant-${s}-${i}" oninput="calcular(${s}); marcarCambio()"></td>
-									<td><input type="text" id="val-${s}-${i}" class="price-display" ${p.precio > 0 ? 'readonly' : ''} oninput="calcular(${s}); marcarCambio()"></td>
-								</tr>`).join('')}
-							<tr style="background:rgba(212,175,55,0.1)">
-								<td colspan="3"><b>DISTRIBUIDORA</b></td>
-								<td><input type="text" id="dist-${s}" class="price-display" readonly></td>
-							</tr>
-						</tbody>
-					</table>
-				</div>`;
-		}
+        const grid = document.getElementById('main-grid');
+        const numSemSelect = document.getElementById('num-semanas');
+        const semanas = numSemSelect ? parseInt(numSemSelect.value) : 4;
+        
+        grid.innerHTML = ''; 
+        
+        for(let s=1; s<=semanas; s++) {
+            grid.innerHTML += `
+                <div class="semana-card" id="card-${s}">
+                    <h3 style="color:var(--primary-gold)">SEMANA ${s}</h3>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px">
+                        <input type="number" id="dias-${s}" placeholder="Días" oninput="calcular(${s}); marcarCambio()">
+                        <input type="number" id="cupos-${s}" placeholder="Cupos" oninput="calcular(${s}); marcarCambio()">
+                        <input type="text" id="pres-${s}" class="price-display" style="grid-column:span 2; font-size:1.3em; text-align:center; color:var(--success)" readonly>
+                    </div>
+                    <table>
+                        <thead><tr><th>FAC</th><th>PRODUCTO</th><th>CANT</th><th>TOTAL</th></tr></thead>
+                        <tbody>
+                            ${productosBase.map((p, i) => `
+                                <tr>
+                                    <td><input type="text" id="fac-${s}-${i}" oninput="marcarCambio()"></td>
+                                    <td>
+                                        ${p.nombre} ${p.cl ? '<span style="color:var(--accent-cyan); font-size:8px">CL</span>' : ''}
+                                        <input type="number" id="punit-${s}-${i}" value="${p.precio}" class="price-hidden">
+                                    </td>
+                                    <td><input type="number" id="cant-${s}-${i}" oninput="calcular(${s}); marcarCambio()"></td>
+                                    <td><input type="text" id="val-${s}-${i}" class="total-editable" oninput="ajustarPrecioInverso(${s}, ${i}); marcarCambio()"></td>
+                                </tr>`).join('')}
+                            <tr style="background:rgba(212,175,55,0.1)">
+                                <td colspan="3"><b>DISTRIBUIDORA</b></td>
+                                <td><input type="text" id="dist-${s}" class="price-display" readonly></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>`;
+        }
 
-		// --- PASO 3: Restaurar los datos en las nuevas filas ---
-		for (let s = 1; s <= semanas; s++) {
-			if (datosTemporales[s]) {
-				document.getElementById(`dias-${s}`).value = datosTemporales[s].dias;
-				document.getElementById(`cupos-${s}`).value = datosTemporales[s].cupos;
-				
-				productosBase.forEach((p, i) => {
-					if (datosTemporales[s].facturas[p.nombre]) {
-						document.getElementById(`fac-${s}-${i}`).value = datosTemporales[s].facturas[p.nombre];
-					}
-					if (datosTemporales[s].cantidades[p.nombre]) {
-						document.getElementById(`cant-${s}-${i}`).value = datosTemporales[s].cantidades[p.nombre];
-					}
-				});
-				calcular(s); // Recalcular totales con los datos restaurados
-			}
-		}
-		actualizarResumen();
-	}
+        if (preservarDatos) {
+            const saved = localStorage.getItem(`elite_draft_${currentUser}`);
+            if(saved) {
+                const data = JSON.parse(saved);
+                for(let s=1; s<=semanas; s++) {
+                    if(!data.semanas || !data.semanas[s]) {
+                        calcular(s);
+                        continue; 
+                    }
+                    
+                    const semData = data.semanas[s];
+                    if(document.getElementById(`dias-${s}`)) document.getElementById(`dias-${s}`).value = semData.d || "";
+                    if(document.getElementById(`cupos-${s}`)) document.getElementById(`cupos-${s}`).value = semData.c || "";
+                    
+                    productosBase.forEach((pb, i) => {
+                        const item = semData.items ? semData.items[pb.nombre] : null;
+                        if(item) {
+                            if(document.getElementById(`fac-${s}-${i}`)) document.getElementById(`fac-${s}-${i}`).value = item.f || "";
+                            if(document.getElementById(`cant-${s}-${i}`)) document.getElementById(`cant-${s}-${i}`).value = item.q || "";
+                            if(document.getElementById(`punit-${s}-${i}`)) document.getElementById(`punit-${s}-${i}`).value = pb.precio;
+                        }
+                    });
+                    calcular(s);
+                }
+            }
+        } else {
+            actualizarResumen();
+        }
+    }
 
-    function cambiarSemanas() { initGrid(); marcarCambio(); }
+    function cambiarSemanas() { initGrid(true); marcarCambio(); }
 
-    function calcular(s) {
+    function ajustarPrecioInverso(s, i) {
+        const totalIngresado = limpiarNum(document.getElementById(`val-${s}-${i}`).value);
+        const cantidad = parseFloat(document.getElementById(`cant-${s}-${i}`).value) || 0;
+        if (cantidad > 0) {
+            document.getElementById(`punit-${s}-${i}`).value = totalIngresado / cantidad;
+        }
+        calcular(s, false); 
+    }
+
+    function calcular(s, formatearTotal = true) {
         const d = parseFloat(document.getElementById(`dias-${s}`).value) || 0;
         const c = parseFloat(document.getElementById(`cupos-${s}`).value) || 0;
-        const pres = d * c * 8094;
-        document.getElementById(`pres-${s}`).value = formatter.format(pres);
+        const pres = d * c * valorCupoBase;
+        const presElem = document.getElementById(`pres-${s}`);
+        if(presElem) presElem.value = formatter.format(pres);
 
         let sumaProd = 0;
         productosBase.forEach((p, i) => {
             const cant = parseFloat(document.getElementById(`cant-${s}-${i}`).value) || 0;
-            const valInput = document.getElementById(`val-${s}-${i}`);
-            if(p.precio > 0) {
-                const total = cant * p.precio;
-                valInput.value = formatter.format(total);
-                sumaProd += total;
-            } else {
-                sumaProd += limpiarNum(valInput.value);
+            const pUnit = parseFloat(document.getElementById(`punit-${s}-${i}`).value) || 0;
+            const total = cant * pUnit;
+            if (formatearTotal) {
+                const inputVal = document.getElementById(`val-${s}-${i}`);
+                if(inputVal) inputVal.value = formatter.format(total);
             }
+            sumaProd += total;
         });
 
-        const dist = Math.max(0, pres - sumaProd);
-        document.getElementById(`dist-${s}`).value = formatter.format(dist);
+        const dist = pres - sumaProd;
+        const distElem = document.getElementById(`dist-${s}`);
+        if(distElem) distElem.value = formatter.format(dist);
+        const card = document.getElementById(`card-${s}`);
+        if(card) card.classList.toggle('excedido', dist < 0);
         actualizarResumen();
     }
 
     function actualizarResumen() {
-        const semanas = parseInt(document.getElementById('num-semanas').value);
-        let tPres = 0, tProd = 0, tDist = 0;
-        let rProd = productosBase.map(p => ({ n: p.nombre, c: 0, t: 0 }));
+        const numSemSelect = document.getElementById('num-semanas');
+        if(!numSemSelect) return;
+        const semanas = parseInt(numSemSelect.value);
+        
+        let tPres = 0, tProdCL = 0, tProdOtros = 0;
+        let rProd = productosBase.map(p => ({ n: p.nombre, c: 0, t: 0, cl: p.cl }));
 
         for(let s=1; s<=semanas; s++) {
             const pVal = document.getElementById(`pres-${s}`);
             if(!pVal) continue;
             tPres += limpiarNum(pVal.value);
-            tDist += limpiarNum(document.getElementById(`dist-${s}`).value);
+            
             productosBase.forEach((p, i) => {
-                const c = parseFloat(document.getElementById(`cant-${s}-${i}`).value) || 0;
-                const t = limpiarNum(document.getElementById(`val-${s}-${i}`).value);
-                rProd[i].c += c; rProd[i].t += t; tProd += t;
+                const vInput = document.getElementById(`val-${s}-${i}`);
+                const cInput = document.getElementById(`cant-${s}-${i}`);
+                if(!vInput) return;
+                
+                const t = limpiarNum(vInput.value);
+                const c = parseFloat(cInput.value) || 0;
+                
+                rProd[i].t += t;
+                rProd[i].c += c;
+                
+                if(p.cl) tProdCL += t; else tProdOtros += t;
             });
         }
 
-        document.getElementById('summary-content').innerHTML = `
-            <div style="font-size:10px; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px">
-                <b>CONTRATO:</b> ${document.getElementById('main-contrato').value || 'N/A'}<br>
-                <b>MES:</b> ${document.getElementById('main-mes').value}
-            </div>
-            <table style="width:100%">
-                <thead><tr><th>PRODUCTO</th><th>CANT</th><th>TOTAL</th></tr></thead>
-                <tbody>
-                    ${rProd.filter(x => x.t > 0).map(x => `<tr><td>${x.n}</td><td>${x.c.toFixed(1)}</td><td class="price-display">${formatter.format(x.t)}</td></tr>`).join('')}
-                    <tr style="border-top:1px solid #555"><td><b>SUMA PRODUCTOS</b></td><td></td><td class="price-display"><b>${formatter.format(tProd)}</b></td></tr>
-                    <tr><td><b>DISTRIBUIDORA</b></td><td></td><td class="price-display">${formatter.format(tDist)}</td></tr>
-                    <tr style="background:rgba(0,242,255,0.1)">
-                        <td style="color:var(--accent-cyan)"><b>TOTAL EJECUTADO</b></td><td></td><td class="price-display" style="color:var(--accent-cyan)">${formatter.format(tProd + tDist)}</td>
-                    </tr>
-                </tbody>
-            </table>
-            <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:5px">
-                <small>VALOR PRESUPUESTADO TOTAL</small><br>
-                <b style="font-size:1.6em; color:var(--primary-gold)">${formatter.format(tPres)}</b>
-            </div>`;
+        const tDist = tPres - tProdCL - tProdOtros;
+        const porcCL = tPres > 0 ? (tProdCL / tPres) * 100 : 0;
+        const ledColor = porcCL >= 30 ? 'var(--success)' : 'var(--danger)';
+
+        const sumCont = document.getElementById('summary-content');
+        if(sumCont) {
+            sumCont.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid ${ledColor}">
+                    <div>
+                        <small style="display:block; color:var(--text-dim)">% COMPRAS LOCALES (CL)</small>
+                        <b style="font-size: 1.3em; color:${ledColor}">${porcCL.toFixed(1)}%</b>
+                    </div>
+                    <div style="width: 15px; height: 15px; background: ${ledColor}; border-radius: 50%; box-shadow: 0 0 10px ${ledColor}"></div>
+                </div>
+
+                <table style="width:100%">
+                    <thead><tr><th>PRODUCTO</th><th style="text-align:center">CL</th><th style="text-align:right">TOTAL $</th></tr></thead>
+                    <tbody>
+                        ${rProd.filter(x => x.t > 0 || x.c > 0).map(x => `
+                            <tr>
+                                <td>${x.n}</td>
+                                <td style="text-align:center; font-size:8px">${x.cl ? '✅' : '❌'}</td>
+                                <td class="price-display">${formatter.format(x.t)}</td>
+                            </tr>`).join('')}
+                        <tr style="border-top:1px solid #555; color:var(--accent-cyan)">
+                            <td><b>TOTAL CL</b></td><td></td>
+                            <td class="price-display"><b>${formatter.format(tProdCL)} (${porcCL.toFixed(1)}%)</b></td>
+                        </tr>
+                        <tr style="color:var(--text-dim)">
+                            <td>OTROS PRODUCTOS</td><td></td>
+                            <td class="price-display">${formatter.format(tProdOtros)}</td>
+                        </tr>
+                        <tr>
+                            <td><b style="color:var(--success)">DISTRIBUIDORA</b></td><td></td>
+                            <td class="price-display" style="color:var(--success)">${formatter.format(tDist)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:10px">
+                    <small>PRESUPUESTO TOTAL</small><br>
+                    <b style="font-size:1.5em; color:var(--primary-gold)">${formatter.format(tPres)}</b>
+                </div>`;
+        }
+        renderChart(rProd.filter(x => x.t > 0), tDist);
     }
 
-    // --- Persistencia ---
+    function renderChart(prods, distVal) {
+        const chartCanvas = document.getElementById('chartGasto');
+        if(!chartCanvas) return;
+        const ctx = chartCanvas.getContext('2d');
+        const labels = prods.map(p => p.n); labels.push("Distribuidora");
+        const data = prods.map(p => p.t); data.push(Math.max(0, distVal));
+
+        if(chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels, datasets: [{ data, backgroundColor: ['#d4af37', '#00f2ff', '#00ff88', '#ff4655', '#9c27b0', '#ff9800'] }] },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: '#fff', font: { size: 8 } } } } }
+        });
+    }
+
+    function exportarTablasCompletas() {
+        let csv = "\uFEFFDetalle General;Mes: " + document.getElementById('main-mes').value + "\n\n";
+        for(let s=1; s<=parseInt(document.getElementById('num-semanas').value); s++) {
+            csv += `SEMANA ${s}\nFAC;PRODUCTO;CANT;TOTAL\n`;
+            productosBase.forEach((p, i) => {
+                const fac = document.getElementById(`fac-${s}-${i}`)?.value || "";
+                const cant = document.getElementById(`cant-${s}-${i}`)?.value || "0";
+                const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+                csv += `${fac};${p.nombre};${cant};${val}\n`;
+            });
+            csv += `;;DISTRIBUIDORA;${limpiarNum(document.getElementById(`dist-${s}`)?.value || "0")}\n\n`;
+        }
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Reporte_${document.getElementById('main-mes').value}.csv`;
+        link.click();
+    }
+
+    function importarExcel(input) {
+        if (!input.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = e.target.result;
+            XLSX.read(data, { type: 'binary' });
+            alert("Lectura de Excel completada. Procesando datos...");
+            marcarCambio();
+        };
+        reader.readAsBinaryString(input.files[0]);
+    }
+
     function guardarLocal() {
         const semanas = parseInt(document.getElementById('num-semanas').value);
         const data = {
             mes: document.getElementById('main-mes').value,
             contrato: document.getElementById('main-contrato').value,
             numSemanas: semanas,
+            valorCupo: valorCupoBase,
             productosBase,
             semanas: {}
         };
         for(let s=1; s<=semanas; s++) {
             data.semanas[s] = {
-                d: document.getElementById(`dias-${s}`).value,
-                c: document.getElementById(`cupos-${s}`).value,
-                f: productosBase.map((_, i) => document.getElementById(`fac-${s}-${i}`).value),
-                q: productosBase.map((_, i) => document.getElementById(`cant-${s}-${i}`).value),
-                v: productosBase.map((_, i) => document.getElementById(`val-${s}-${i}`).value)
+                d: document.getElementById(`dias-${s}`)?.value || "",
+                c: document.getElementById(`cupos-${s}`)?.value || "",
+                items: {}
             };
+            productosBase.forEach((p, i) => {
+                data.semanas[s].items[p.nombre] = {
+                    f: document.getElementById(`fac-${s}-${i}`)?.value || "",
+                    q: document.getElementById(`cant-${s}-${i}`)?.value || "",
+                    p: document.getElementById(`punit-${s}-${i}`)?.value || p.precio
+                };
+            });
         }
         localStorage.setItem(`elite_draft_${currentUser}`, JSON.stringify(data));
     }
 
     function cargarLocal() {
         const saved = localStorage.getItem(`elite_draft_${currentUser}`);
-        if(saved) restaurar(JSON.parse(saved));
-        else initGrid();
+        if(saved) restaurar(JSON.parse(saved)); else initGrid();
     }
 
     function restaurar(data) {
-        if(data.productosBase) productosBase = data.productosBase;
+        productosBase = data.productosBase || productosBase;
+        valorCupoBase = data.valorCupo || 8094;
         document.getElementById('main-mes').value = data.mes;
         document.getElementById('main-contrato').value = data.contrato || "";
         document.getElementById('num-semanas').value = data.numSemanas || 4;
-        initGrid();
+        
+        initGrid(); 
+
         for(let s=1; s<=data.numSemanas; s++) {
-            if(!data.semanas[s]) continue;
-            document.getElementById(`dias-${s}`).value = data.semanas[s].d;
-            document.getElementById(`cupos-${s}`).value = data.semanas[s].c;
-            data.semanas[s].f.forEach((v, i) => { if(document.getElementById(`fac-${s}-${i}`)) document.getElementById(`fac-${s}-${i}`).value = v; });
-            data.semanas[s].q.forEach((v, i) => { if(document.getElementById(`cant-${s}-${i}`)) document.getElementById(`cant-${s}-${i}`).value = v; });
-            data.semanas[s].v.forEach((v, i) => { if(document.getElementById(`val-${s}-${i}`)) document.getElementById(`val-${s}-${i}`).value = v; });
+            if(!data.semanas || !data.semanas[s]) continue;
+            const diasInput = document.getElementById(`dias-${s}`);
+            const cuposInput = document.getElementById(`cupos-${s}`);
+            if(diasInput) diasInput.value = data.semanas[s].d || "";
+            if(cuposInput) cuposInput.value = data.semanas[s].c || "";
+            
+            if(data.semanas[s].items) {
+                productosBase.forEach((pb, i) => {
+                    const item = data.semanas[s].items[pb.nombre];
+                    if(item) {
+                        if(document.getElementById(`fac-${s}-${i}`)) document.getElementById(`fac-${s}-${i}`).value = item.f || "";
+                        if(document.getElementById(`cant-${s}-${i}`)) document.getElementById(`cant-${s}-${i}`).value = item.q || "";
+                        if(document.getElementById(`punit-${s}-${i}`)) document.getElementById(`punit-${s}-${i}`).value = pb.precio;
+                    }
+                });
+            }
             calcular(s);
         }
-        marcarGuardado();
+        if(document.getElementById('sync-led')) document.getElementById('sync-led').className = 'led-indicator led-green';
     }
 
     async function guardarFirebase() {
-		const mes = document.getElementById('main-mes').value;
-		const con = document.getElementById('main-contrato').value || "S_N";
-		
-		// 1. Definimos una referencia fija basada en Mes y Contrato (sin el Date.now variable)
-		// Usamos un ID limpio para evitar problemas con caracteres especiales
-		const fixedId = `${mes}_${con}`.replace(/\s+/g, '_');
-		const userFileRef = db.ref(`files/${currentUser}/${fixedId}`);
+        const id = `${document.getElementById('main-mes').value}_${document.getElementById('main-contrato').value}`.replace(/\s+/g, '_');
+        const data = JSON.parse(localStorage.getItem(`elite_draft_${currentUser}`));
+        await db.ref(`files/${currentUser}/${id}`).set(data);
+        alert("Sincronizado con Nube ☁️");
+        if(document.getElementById('sync-led')) document.getElementById('sync-led').className = 'led-indicator led-green';
+    }
 
-		try {
-			// 2. Verificamos si ya existe un registro con ese nombre
-			const snap = await userFileRef.once('value');
-			const data = JSON.parse(localStorage.getItem(`elite_draft_${currentUser}`));
-			
-			if (snap.exists()) {
-				// Si ya existe, pedimos confirmación o informamos la sobreescritura
-				if(confirm(`Ya existe un registro para ${mes} con contrato ${con}. ¿Deseas actualizarlo?`)) {
-					await userFileRef.set(data);
-					alert("Registro actualizado: Se han sobrescrito los datos existentes.");
-					marcarGuardado();
-				}
-			} else {
-				// Si es nuevo, guardamos normalmente
-				await userFileRef.set(data);
-				alert("Sincronizado con Firebase ☁️: Registro nuevo guardado.");
-				marcarGuardado();
-			}
-		} catch (error) {
-			console.error("Error al guardar:", error);
-			alert("Error al intentar conectar con la nube.");
-		}
-	}
-
-    // --- UI Drawers ---
+    function toggleAuth(toReg) {
+        document.getElementById('login-form').style.display = toReg ? 'none' : 'block';
+        document.getElementById('reg-form').style.display = toReg ? 'block' : 'none';
+    }
     function toggleDrawer(id, show) {
         document.getElementById(`drawer-${id}`).classList.toggle('open', show);
         document.getElementById('overlay').style.display = show ? 'block' : 'none';
         if(id === 'archivo' && show) listarCloud();
+        if(id === 'resumen' && show) actualizarResumen();
     }
     function closeAllDrawers() { toggleDrawer('archivo', false); toggleDrawer('resumen', false); }
-
+    
     function toggleAjustes(show) {
         document.getElementById('modal-ajustes').style.display = show ? 'flex' : 'none';
         if(show) {
-            const cont = document.getElementById('lista-config-prod');
-            cont.innerHTML = productosBase.map((p, i) => `
-                <div style="display:flex; gap:5px; margin-bottom:8px">
-                    <input type="text" value="${p.nombre}" onchange="productosBase[${i}].nombre=this.value; marcarCambio()">
-                    <input type="number" value="${p.precio}" style="width:80px" onchange="productosBase[${i}].precio=parseFloat(this.value); marcarCambio()">
-                    <button class="btn-danger" style="padding:0 10px" onclick="productosBase.splice(${i},1); toggleAjustes(true); marcarCambio()">X</button>
-                </div>`).join('');
+            actualizarListaAjustes();
         }
     }
-    function agregarProd() { productosBase.push({nombre: "Nuevo", precio: 0}); toggleAjustes(true); }
-    function aplicarAjustes() { initGrid(); toggleAjustes(false); guardarLocal(); }
+
+    function actualizarListaAjustes() {
+        const cont = document.getElementById('lista-config-prod');
+        cont.innerHTML = productosBase.map((p, i) => `
+            <div style="display:flex; gap:1px; margin-bottom:1px; align-items:center; background:rgba(255,255,255,0.03); padding:1px; border-radius:500px">
+                <input type="text" value="${p.nombre}" onchange="productosBase[${i}].nombre=this.value" style="flex:2">
+                <input type="number" value="${p.precio}" style="width:70px" onchange="productosBase[${i}].precio=parseFloat(this.value)">
+                <label style="font-size:8px; text-align:center; min-width:30px">
+                    CL<br>
+                    <input type="checkbox" ${p.cl ? 'checked' : ''} onchange="productosBase[${i}].cl=this.checked">
+                </label>
+                <button class="btn-danger" style="padding: 5px;" onclick="eliminarProducto(${i})">🗑️</button>
+            </div>`).join('');
+    }
+    
+    function aplicarAjustes() { 
+        const valCupoInput = document.getElementById('cfg-valor-cupo');
+        if(valCupoInput) valorCupoBase = parseFloat(valCupoInput.value); 
+        initGrid(true); 
+        toggleAjustes(false); 
+        alert("¡Precios y productos actualizados en todas las tablas!");
+    }
+
+    function agregarProd() { 
+        productosBase.push({nombre: "Nuevo Producto", precio: 0, cl: false}); 
+        actualizarListaAjustes();
+    }
+
+    function eliminarProducto(index) {
+        if(confirm("¿Eliminar este producto? Esto afectará a todas las semanas.")) {
+            productosBase.splice(index, 1);
+            actualizarListaAjustes();
+        }
+    }
 
     async function listarCloud() {
         const cont = document.getElementById('lista-archivos');
-        cont.innerHTML = "Cargando...";
         const snap = await db.ref(`files/${currentUser}`).once('value');
         cont.innerHTML = "";
-        if(!snap.exists()) return cont.innerHTML = "Sin archivos";
         snap.forEach(child => {
             const v = child.val();
             const div = document.createElement('div');
             div.style = "background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center";
-            div.innerHTML = `<div onclick="cargarArchivo('${child.key}')" style="cursor:pointer"><b>${v.mes}</b> - ${v.contrato}</div>
-                             <button class="btn-danger" style="padding:4px" onclick="borrarArchivo('${child.key}')">🗑️</button>`;
+            div.innerHTML = `<div onclick="cargarArchivo('${child.key}')\" style=\"cursor:pointer\"><b>${v.mes}</b> - ${v.contrato}</div>
+                             <button class=\"btn-danger\" style=\"padding:4px; border-radius:4px\" onclick=\"borrarArchivo('${child.key}')\">🗑️</button>`;
             cont.appendChild(div);
         });
     }
+
     async function cargarArchivo(k) {
         const snap = await db.ref(`files/${currentUser}/${k}`).once('value');
         restaurar(snap.val()); closeAllDrawers();
     }
+
     async function borrarArchivo(k) {
         if(confirm("¿Eliminar registro de la nube?")) await db.ref(`files/${currentUser}/${k}`).remove().then(listarCloud);
-    }
-
-    function exportExcel() {
-        let csv = "Resumen Mensual\nProducto,Cantidad,Total\n";
-        document.querySelectorAll('#summary-content tr').forEach(r => {
-            const cols = r.querySelectorAll('td');
-            if(cols.length > 0) csv += Array.from(cols).map(c => c.innerText.replace(/[$.,]/g, '')).join(",") + "\n";
-        });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-        a.download = `Reporte_${document.getElementById('main-mes').value}.csv`; a.click();
     }
 </script>
 </body>
