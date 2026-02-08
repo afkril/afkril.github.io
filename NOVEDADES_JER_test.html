@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+	
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Mercado Regionales</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-	
+    
 	<style>
 	
 	/* VARIABLES DE COLOR DINÁMICAS */
@@ -276,9 +277,9 @@
 
     <div id="gridInputs" class="grid-admin"></div>
     
-    <button onclick="guardarGramajesFirebase()" style="width:100%; margin-top:15px; background:#27ae60; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; font-weight:bold;">
-        💾 Guardar Cambios en la Nube
-    </button>
+    <button onclick="guardarGramajesFirebase()" style="width:100%; margin-top:10px; background:#27ae60; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">
+		💾 Guardar en la Nube
+	</button>
 </div>
 
 
@@ -339,78 +340,80 @@
 
 <script>
 
-	// Configuración proporcionada
+
+
+
+	// Tus credenciales configuradas
 	  const firebaseConfig = {
-		apiKey: "AIzaSyCrC5m1hm6uV2MngN7OVkVMC3987FcMTa8",
-		authDomain: "lista-mercado-61830.firebaseapp.com",
-		projectId: "lista-mercado-61830",
-		storageBucket: "lista-mercado-61830.firebasestorage.app",
-		messagingSenderId: "1015835944569",
-		appId: "1:1015835944569:web:732e412c436499a11116a8",
-		measurementId: "G-L143WME3CG"
+		apiKey: "AIzaSyDX9mBXhGSx6vVqvrLgMLY0Stno4nI-jPw",
+		authDomain: "moonbox-b997c.firebaseapp.com",
+		projectId: "moonbox-b997c",
+		storageBucket: "moonbox-b997c.firebasestorage.app",
+		messagingSenderId: "507195516792",
+		appId: "1:507195516792:web:a4ed4d8715e137d6e48a8d",
+		measurementId: "G-10F98RC1Z0"
 	  };
 
-	  // Inicializar Firebase
+	  // Inicializar
 	  firebase.initializeApp(firebaseConfig);
 	  const db = firebase.firestore();
+	  
+	
 
-// 1. Cargar datos al iniciar la página
-async function cargarDatosDesdeFirebase() {
-    const loader = document.createElement('div');
-    loader.innerText = "Cargando gramajes desde la nube...";
-    loader.style.cssText = "position:fixed; top:10px; left:50%; transform:translateX(-50%); background:gold; padding:5px; z-index:9999;";
-    document.body.appendChild(loader);
 
-    try {
-        const docNeiva = await db.collection("configuracion").doc("neiva").get();
-        const docGaitana = await db.collection("configuracion").doc("gaitana").get();
-
-        if (docNeiva.exists) regionales.neiva.db = docNeiva.data().db;
-        if (docGaitana.exists) regionales.gaitana.db = docGaitana.data().db;
-        
-        console.log("Gramajes sincronizados con Firebase");
-        loader.remove();
-    } catch (error) {
-        console.error("Error cargando Firebase:", error);
-        loader.style.background = "red";
-        loader.innerText = "Error al conectar con la base de datos";
-    }
-}
-
-// 2. Función para guardar cambios del panel
-async function guardarGramajesFirebase() {
-    const regKey = document.getElementById('adm-reg').value; // 'neiva' o 'gaitana'
-    const prodName = document.getElementById('adm-prod').value;
-    
-    // Buscar el producto en el array local para actualizarlo antes de subir
-    const producto = regionales[regKey].db.find(p => p.n === prodName);
-    
-    // Recoger valores de los 24 inputs (m1 a m24)
-    for (let i = 1; i <= 24; i++) {
-        const val = parseFloat(document.getElementById(`m${i}`).value) || 0;
-        producto.g[`m${i}`] = val;
-    }
-
-    try {
-        // Guardar todo el array de productos de la regional
-        await db.collection("configuracion").doc(regKey).set({
-            db: regionales[regKey].db
-        });
-        alert("✅ Gramajes actualizados correctamente en Firebase");
-    } catch (error) {
-        alert("❌ Error al guardar: " + error.message);
-    }
-}
-
-// Ejecutar carga al inicio
-window.onload = () => {
-    cargarDatosDesdeFirebase();
-    // Tu lógica actual de inicialización (cambiarRegional, etc)
-};
 
     const memoriaEntrega = JSON.parse(localStorage.getItem('datosEntregaMultiregional')) || {};
 
     const ORDEN_CATEGORIAS = { "granos": 1, "lacteos": 2, "proteinas": 3, "verduras": 4, "frutas": 5, "panaderia": 6, "otros": 7 };
+
+	// FUNCIÓN PARA GUARDAR EN FIREBASE
+	async function guardarGramajesFirebase() {
+		const regKey = document.getElementById('adm-reg').value;
+		const prodName = document.getElementById('adm-prod').value;
+		
+		// 1. Actualizar el objeto localmente primero
+		const producto = regionales[regKey].db.find(p => p.n === prodName);
+		for (let i = 1; i <= 24; i++) {
+			const val = parseFloat(document.getElementById(`m${i}`).value) || 0;
+			producto.g[`m${i}`] = val;
+		}
+
+		try {
+			// 2. Subir toda la base de datos de esa regional a Firebase
+			await db.collection("configuracion").doc(regKey).set({
+				db: regionales[regKey].db
+			});
+			alert("✅ Cambios guardados en la nube exitosamente.");
+		} catch (error) {
+			console.error("Error al guardar:", error);
+			alert("❌ Error de conexión con Firebase. Revisa las reglas de seguridad.");
+		}
+	}
+
+	// FUNCIÓN PARA CARGAR DESDE FIREBASE AL INICIAR
+	async function sincronizarConNube() {
+		try {
+			// Consultar documentos de neiva y gaitana
+			const docNeiva = await db.collection("configuracion").doc("neiva").get();
+			const docGaitana = await db.collection("configuracion").doc("gaitana").get();
+
+			if (docNeiva.exists) {
+				regionales.neiva.db = docNeiva.data().db;
+				console.log("Datos de Neiva cargados desde la nube");
+			}
+			if (docGaitana.exists) {
+				regionales.gaitana.db = docGaitana.data().db;
+				console.log("Datos de Gaitana cargados desde la nube");
+			}
+		} catch (error) {
+			console.warn("No se pudo conectar con la nube, usando valores locales por defecto.", error);
+		}
+	}
+
+	// LLAMAR A LA SINCRONIZACIÓN AL CARGAR LA PÁGINA
+	window.addEventListener('load', sincronizarConNube);
+
+
 
     // ESTRUCTURA DE REGIONALES
     const regionales = {
@@ -769,6 +772,7 @@ window.onload = cambiarRegional;
 </script>
 </body>
 </html>
+
 
 
 
