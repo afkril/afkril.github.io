@@ -26,12 +26,10 @@
         .glass-container { 
             background: rgba(255, 255, 255, 0.98); 
             backdrop-filter: blur(10px);
-            /* Reescalado solicitado para zoom 100% */
             transform: scale(1.05);
             transform-origin: center;
         }
 
-        /* Ajuste de fuentes y campos */
         input, select { 
             padding: 0.8rem 1rem !important; 
             font-size: 1rem !important; 
@@ -47,18 +45,10 @@
 
         .step-badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.9rem; }
         
-        .contract-667 .dynamic-bg { background-color: #D97706; }
-        .contract-667 .dynamic-text { color: #D97706; }
-        .contract-667 .dynamic-border { border-top-color: #D97706; }
-        
         .contract-668 .dynamic-bg { background-color: #2563EB; }
         .contract-668 .dynamic-text { color: #2563EB; }
         .contract-668 .dynamic-border { border-top-color: #2563EB; }
         
-        .contract-676 .dynamic-bg { background-color: #059669; }
-        .contract-676 .dynamic-text { color: #059669; }
-        .contract-676 .dynamic-border { border-top-color: #059669; }
-
         @media (max-width: 768px) {
             .glass-container { transform: scale(1); margin: 1rem; }
         }
@@ -76,7 +66,7 @@
 			
 			<div class="flex items-center space-x-4">
 				<div class="flex-shrink-0 w-20 h-20 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm">
-					<img src="LOGOT3.png" alt="Logo" class="w-full h-full object-cover">
+					<img src="LOGOT3.PNG" alt="Logo" class="w-full h-full object-cover">
 				</div>
 				<div class="flex flex-col items-end space-y-1">
 					<div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono">
@@ -87,27 +77,25 @@
 					</div>
 				</div>
 			</div>
-			
         </header>
-		<form id="noveltyForm" action="https://formspree.io/f/xbdalral" method="POST" class="p-8 space-y-6">
+		
+		<form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbz9HXjaEdWSBrARbqfTyeM5a-obTbmQPtGoH7W14vqstPth_9QcD37WcKk0jt_Nx69A/exec" method="POST" class="p-8 space-y-6">
 		
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
                     <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
                         <span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
                     </label>
-                    <select id="contractNumber" id="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
+                    <select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
                         <option value="">Seleccione...</option>
                         <option value="668">Contrato 41006682024</option>
-                        <!-- <option value="667">OTRO</option>
-                        <option value="676">OTRO</option> -->
                     </select>
                 </div>
                 <div id="sectionUDS" class="space-y-2 opacity-50">
                     <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
                         <span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
                     </label>
-                    <select id="mainUdsDropdown" id="UDS_Full" required disabled class="w-full rounded-xl">
+                    <select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
                         <option value="">-- Primero Contrato --</option>
                     </select>
                 </div>
@@ -134,29 +122,29 @@
                     <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<select id="retiroDocType" id="retiro_tipo_doc" class="w-full rounded-lg">
-						<option value="RC">RC - Registro Civil</option>
-						<option value="AN">AN - Acta Nacimiento</option>
-						<option value="PEP">PEP / PPT</option>
-						<option value="SD">SD - Sin Documento</option>
-					</select>
-					<input type="text" id="retiroDocNumber" id="retiro_documento" placeholder="Número de Documento" 
-						   class="w-full rounded-lg" minlength="7" maxlength="10" 
-						   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-					</div>
-                    <input type="text" id="retiroFullName" placeholder="Nombres y Aplellidos Completo" class="w-full rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select id="retiroDocType" name="retiro_tipo_doc" class="w-full rounded-lg">
+                            <option value="RC">RC - Registro Civil</option>
+                            <option value="AN">AN - Acta Nacimiento</option>
+                            <option value="PEP">PEP / PPT</option>
+                            <option value="SD">SD - Sin Documento</option>
+                        </select>
+                        <input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de Documento" 
+                               class="w-full rounded-lg" minlength="7" maxlength="10" 
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <input type="text" id="retiroFullName" name="retiro_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
                     <div class="space-y-1">
                         <label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
-						<input type="date" id="retiroDate" class="w-full rounded-lg" onchange="validateDatesRealTime()">
+                        <input type="date" id="retiroDate" name="retiro_fecha" class="w-full rounded-lg" onchange="validateDatesRealTime()">
                     </div>
                     <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
 						<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
 						<label class="text-sm font-bold flex items-center">
-							<input type="radio" id="_retiroGender" value="M" class="mr-1"> M
+							<input type="radio" name="_retiroGender" value="M" class="mr-1"> M
 						</label>
 						<label class="text-sm font-bold flex items-center">
-							<input type="radio" id="_retiroGender" value="F" class="mr-1"> F
+							<input type="radio" name="_retiroGender" value="F" class="mr-1"> F
 						</label>
 					</div>
                 </div>
@@ -169,40 +157,47 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<select id="ingresoDocType" id="ingreso_tipo_doc" class="w-full rounded-lg">
+							<select id="ingresoDocType" name="ingreso_tipo_doc" class="w-full rounded-lg">
 								<option value="RC">RC - Registro Civil</option>
 								<option value="AN">AN - Acta Nacimiento</option>
 								<option value="PEP">PEP / PPT</option>
 								<option value="SD">SD - Sin Documento</option>
 							</select>
-							<input type="text" id="ingresoDocNumber" id="ingreso_documento" placeholder="Numero Documento" 
+							<input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Numero Documento" 
 								   class="w-full rounded-lg" minlength="7" maxlength="10" 
 								   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
 							</div>
-                        <input type="text" id="ingresoFullName" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
+                        <input type="text" id="ingresoFullName" name="ingreso_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
-                            <input type="date" id="ingresoDOB" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+                            <input type="date" id="ingresoDOB" name="ingreso_nacimiento" class="w-full rounded-lg" onchange="updateAgeDisplay()">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
-                            <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+                            <input type="date" id="ingresoDate" name="ingreso_fecha" class="w-full rounded-lg" onchange="updateAgeDisplay()">
                         </div>
                         <div class="md:col-span-2 space-y-1">
                             <label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
-                            <input type="text" id="displayAge" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
+                            <input type="text" id="displayAge" name="edad_calculada" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
                         </div>
                         <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
 							<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
 							<label class="text-sm font-bold flex items-center">
-								<input type="radio" id="_ingresoGender" value="M" class="mr-1"> M
+								<input type="radio" name="_ingresoGender" value="M" class="mr-1"> M
 							</label>
 							<label class="text-sm font-bold flex items-center">
-								<input type="radio" id="_ingresoGender" value="F" class="mr-1"> F
+								<input type="radio" name="_ingresoGender" value="F" class="mr-1"> F
 							</label>
 						</div>
-                        <input type="text" id="ingresoAddress" placeholder="Dirección y Barrio" class="w-full rounded-lg">
-                        <input type="tel" id="ingresoPhone" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
+                        <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección y Barrio" class="w-full rounded-lg">
+                        <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
+						
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
+                            <input type="file" id="fileInput" name="soporte_documento" accept=".pdf,image/*" 
+                                   class="w-full rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border-2 border-dashed border-green-200">
+                        </div>
+						
                     </div>
                 </div>
 
@@ -211,11 +206,11 @@
                         <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="acudienteDoc" placeholder="Documento Acudiente" class="w-full rounded-lg">
-                        <input type="text" id="acudienteName" placeholder="Nombre Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
                         <div class="space-y-1 md:col-span-2">
                             <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
-                            <input type="date" id="acudienteDOB" class="w-full rounded-lg">
+                            <input type="date" id="acudienteDOB" name="acudiente_nacimiento" class="w-full rounded-lg">
                         </div>
                     </div>
                 </div>
@@ -237,89 +232,17 @@
     </main>
 
     <script>
-       
-		const UDS_DATA = { 
-		    '668': [
-		        ['BURBUJAS', '-'], 
-		        ['CAPERUCITA ROJA', '-'], 
-		        ['CARIÑOSITOS', '-'], 
-		        ['DIVINO NIÑO', '-'], 
-		        ['LOS BABYS', '-'], 
-		        ['LOS CARIÑOSITOS', '-'], 
-		        ['LOS GNOMOS', '-'], 
-		        ['LOS PATICOS', '-'], 
-		        ['LOS PEQUEÑINES', '-'], 
-		        ['MI BELLA INFANCIA', '-'], 
-		        ['MI CABAÑA', '-'], 
-		        ['MI TRAVESURA', '-'], 
-		        ['MIS AMIGUITOS 1', '-'], 
-		        ['MIS CONSENTIDOS', '-'], 
-		        ['MIS OSITOS', '-'], 
-		        ['MIS PATICOS', '-'], 
-		        ['MIS PINGUINOS', '-']
-		    ], 
-		    '667': [['HCB', '0000']], 
-		    '676': [['HCB', '0000']] 
-		};
-		
-		const BACKGROUNDS = { '667': 'linear-gradient(to bottom right, #fef3c7, #fbbf24)', '668': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', '676': 'linear-gradient(to bottom right, #d1fae5, #10b981)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
+        const UDS_DATA = { '668': [['BURBUJAS.', '-'], ['CAPERUCITA ROJA', '-'], ['CARIÑOSITOS', '-'], ['DIVINO NIÑO', '-'], ['LOS BABYS', '-'], ['LOS CARIÑOSITOS', '-'], ['LOS GNOMOS', '-'], ['LOS PATICOS', '-'], ['LOS PEQUEÑINES', '-'], ['MI BELLA INFANCIA', '-'], ['MI CABAÑA', '-'], ['MI TRAVESURA', '-'], ['MIS AMIGUITOS 1', '-'], ['MIS CONSENTIDOS', '-'], ['MIS OSITOS', '-'], ['MIS PATICOS', '-'], ['MIS PINGUINOS', '-']] };
+        const BACKGROUNDS = { '668': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
 
 		function updateClock() {
 			const now = new Date();
-			
-			// Formatear fecha: DD/MM/YYYY
-			const date = now.toLocaleDateString('es-CO', {
-				day: '2-digit',
-				month: '2-digit',
-				year: 'numeric'
-			});
-			
-			// Formatear hora: HH:MM:SS (24h)
-			const time = now.toLocaleTimeString('es-CO', {
-				hour: '2-digit',
-				minute: '2-digit',
-				second: '2-digit',
-				hour12: false
-			});
-
+			const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+			const time = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
 			document.getElementById('clockDisplay').textContent = `${date} | ${time}`;
 		}
-
-		// Iniciar el reloj inmediatamente y actualizar cada segundo
 		setInterval(updateClock, 1000);
 		updateClock();
-
-		function validateDatesRealTime() {
-			const isRetiro = document.getElementById('checkRetiro').checked;
-			const isIngreso = document.getElementById('checkIngreso').checked;
-			const fechaRetiroInput = document.getElementById('retiroDate');
-			const fechaIngresoInput = document.getElementById('ingresoDate');
-			const feedback = document.getElementById('feedbackContainer');
-
-			// Solo validar si ambos checks están marcados y ambos campos tienen fecha
-			if (isRetiro && isIngreso && fechaRetiroInput.value && fechaIngresoInput.value) {
-				const dRetiro = new Date(fechaRetiroInput.value);
-				const dIngreso = new Date(fechaIngresoInput.value);
-				
-				// Ajuste de zona horaria
-				dRetiro.setMinutes(dRetiro.getMinutes() + dRetiro.getTimezoneOffset());
-				dIngreso.setMinutes(dIngreso.getMinutes() + dIngreso.getTimezoneOffset());
-
-				if (dRetiro >= dIngreso) {
-					showFeedback("⚠️ Atención: La fecha de retiro no puede ser igual o posterior a la de ingreso.", "error");
-					fechaRetiroInput.classList.add('border-red-500', 'bg-red-50');
-					fechaIngresoInput.classList.add('border-red-500', 'bg-red-50');
-					return false;
-				} else {
-					// Limpiar error si la corrección es válida
-					feedback.classList.add('hidden');
-					fechaRetiroInput.classList.remove('border-red-500', 'bg-red-50');
-					fechaIngresoInput.classList.remove('border-red-500', 'bg-red-50');
-					return true;
-				}
-			}
-			return true;
-		}
 
         function updateStyles() {
             const contract = document.getElementById('contractNumber').value;
@@ -336,12 +259,6 @@
                 udsSelect.disabled = false;
                 sectionUDS.style.opacity = "1";
                 populateUDS(contract);
-            } else {
-                indicator.className = "px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase";
-                indicator.textContent = "Sin Contrato";
-                udsSelect.disabled = true;
-                udsSelect.innerHTML = '<option value="">-- Primero Contrato --</option>';
-                sectionUDS.style.opacity = "0.5";
             }
         }
 
@@ -366,25 +283,19 @@
             const dobValue = document.getElementById('ingresoDOB').value;
             const entryValue = document.getElementById('ingresoDate').value;
             const displayField = document.getElementById('displayAge');
-
             if (dobValue && entryValue) {
                 const ageResult = calculateAge(dobValue, entryValue);
                 displayField.value = ageResult;
-            } else {
-                displayField.value = "Esperando fechas...";
             }
         }
 
         function calculateAge(dob, entry) {
-            const d1 = new Date(dob);
-            const d2 = new Date(entry);
+            const d1 = new Date(dob); d2 = new Date(entry);
             d1.setMinutes(d1.getMinutes() + d1.getTimezoneOffset());
             d2.setMinutes(d2.getMinutes() + d2.getTimezoneOffset());
-
             let years = d2.getFullYear() - d1.getFullYear();
             let months = d2.getMonth() - d1.getMonth();
             let days = d2.getDate() - d1.getDate();
-
             if (days < 0) months--;
             if (months < 0) { years--; months += 12; }
             return `${years} años y ${months} meses`;
@@ -393,9 +304,7 @@
         function showFeedback(message, type) {
             const container = document.getElementById('feedbackContainer');
             container.textContent = message;
-            container.className = `p-5 rounded-2xl text-center text-sm font-bold animate__animated animate__fadeInUp mt-4 `;
-            if (type === 'success') container.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
-            else container.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200', 'animate__shakeX');
+            container.className = `p-5 rounded-2xl text-center text-sm font-bold mt-4 animate__animated animate__fadeInUp ${type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200 animate__shakeX'}`;
             container.classList.remove('hidden');
         }
 
@@ -405,7 +314,9 @@
 			const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
 			const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
 			
-			let formData = 	`╔═══════════════════════════════╗\n`;
+			let formData = 	`Reporte Recibido\n`;
+			formData += 	`\n`;
+			formData += 	`╔═══════════════════════════════╗\n`;
 			formData += 	` REPORTE DE NOVEDADES - ASOCIACIÓN T3\n`;
 			formData += 	`╚═══════════════════════════════╝\n\n`;
 			
@@ -451,99 +362,76 @@
             e.preventDefault();
             const btn = document.getElementById('submitButton');
             
-            // Validaciones
-            const contract = document.getElementById('contractNumber').value;
+            // Validaciones básicas
             const uds = document.getElementById('mainUdsDropdown').value;
-            const isRetiro = document.getElementById('checkRetiro').checked;
-            const isIngreso = document.getElementById('checkIngreso').checked;
-			
-			// ... (dentro del listener de submit, después de las validaciones de campos vacíos)
-			if (isRetiro) {
-				const docRetiro = document.getElementById('retiroDocNumber').value;
-				if (docRetiro.length < 7 || docRetiro.length > 10) {
-					showFeedback("❌ El documento de retiro debe tener entre 7 y 10 dígitos.", "error");
-					return;
-				}
-			}
-
-			if (isIngreso) {
-				const docIngreso = document.getElementById('ingresoDocNumber').value;
-				if (docIngreso.length < 7 || docIngreso.length > 10) {
-					showFeedback("❌ El documento de ingreso debe tener entre 7 y 10 dígitos.", "error");
-					return;
-				}
-			}
-
-			// ... (proceder con el envío si todo es correcto)
-
-			// ... (dentro del listener de 'submit', después de las validaciones de campos vacíos)
-			if (isRetiro && isIngreso) {
-				const fechaRetiro = new Date(document.getElementById('retiroDate').value);
-				const fechaIngreso = new Date(document.getElementById('ingresoDate').value);
-
-				// Ajustar desfase de zona horaria para comparación precisa
-				fechaRetiro.setMinutes(fechaRetiro.getMinutes() + fechaRetiro.getTimezoneOffset());
-				fechaIngreso.setMinutes(fechaIngreso.getMinutes() + fechaIngreso.getTimezoneOffset());
-
-				if (fechaRetiro >= fechaIngreso) {
-					showFeedback("❌ Error: La fecha de retiro debe ser anterior a la fecha de ingreso.", "error");
-					return; // Detiene el envío del formulario
-				}
-			}
-
-			// ... (continúa el proceso de envío del formulario)
-
-            if (!contract || !uds) {
-                showFeedback("❌ Seleccione Contrato y Unidad de Servicio (UDS).", "error");
-                return;
-            }
-            if (!isRetiro && !isIngreso) {
-                showFeedback("❌ Seleccione al menos una acción: RETIRO o INGRESO.", "error");
-                return;
-            }
-
-            // Validar campos según sección
-            if (isRetiro) {
-                if (!document.getElementById('retiroDocNumber').value || !document.getElementById('retiroDate').value) {
-                    showFeedback("❌ Complete los datos de RETIRO.", "error"); return;
-                }
-            }
-            if (isIngreso) {
-                if (!document.getElementById('ingresoDocNumber').value || !document.getElementById('acudienteName').value) {
-                    showFeedback("❌ Complete los datos de INGRESO y ACUDIENTE.", "error"); return;
-                }
-            }
+            if (!uds) { showFeedback("❌ Seleccione una UDS.", "error"); return; }
 
             document.getElementById('emailSubject').value = `Novedad UDS: ${uds.split(' - ')[0]}`;
             document.getElementById('hiddenFormattedData').value = formatData();
 
             btn.disabled = true;
-            btn.textContent = "ENVIANDO REPORTE...";
+            btn.textContent = "PROCESANDO ARCHIVOS...";
 
-            try {
-                const response = await fetch(this.action, {
-                    method: 'POST',
-                    body: new FormData(this),
-                    headers: { 'Accept': 'application/json' }
-                });
-                if (response.ok) {
-                    showFeedback('✅¡Éxito! La novedad ha sido enviada correctamente al correo.✅', 'success');
-                    this.reset();
-                    updateStyles();
-                    document.getElementById('sectionRetiro').classList.add('hidden');
-                    document.getElementById('sectionIngreso').classList.add('hidden');
-                } else {
-                    showFeedback("❌ Error al enviar. Intente nuevamente.❌", "error");
-                }
-            } catch {
-                showFeedback("❌ Error de conexión de red.❌", "error");
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Enviar Reporte Al Correo";
+            const fileInput = document.getElementById('fileInput');
+            const formData = new FormData(this);
+            const obj = Object.fromEntries(formData.entries());
+
+            // Procesar archivo si existe
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = async function() {
+                    obj.file_base64 = reader.result.split(',')[1];
+                    obj.file_type = file.type;
+                    obj.file_name = file.name;
+                    await enviarAGoogle(obj, btn);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                await enviarAGoogle(obj, btn);
             }
+			return formData;
         });
+
+        async function enviarAGoogle(data, btn) {
+			btn.textContent = "ENVIANDO A GOOGLE DRIVE...";
+			const formBody = Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
+
+			try {
+				await fetch(document.getElementById('noveltyForm').action, {
+					method: 'POST',
+					mode: 'no-cors',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+					body: formBody
+				});
+
+				// 1. Mostrar mensaje de éxito
+				showFeedback('✅ ¡Éxito! Reporte y archivo enviados correctamente. ✅', 'success');
+				
+				// 2. Resetear todos los campos del formulario
+				document.getElementById('noveltyForm').reset();
+				
+				// 3. OCULTAR LAS SECCIONES DE INGRESO Y RETIRO
+				document.getElementById('sectionRetiro').classList.add('hidden');
+				document.getElementById('sectionIngreso').classList.add('hidden');
+				
+				// 4. Desmarcar visualmente los checkboxes (por si el reset no lo hizo)
+				document.getElementById('checkRetiro').checked = false;
+				document.getElementById('checkIngreso').checked = false;
+				
+				// 5. Limpiar el campo de edad calculada
+				document.getElementById('displayAge').value = "Esperando fechas...";
+				
+				// 6. Actualizar estilos visuales (volver a gris si no hay contrato seleccionado)
+				updateStyles();
+
+			} catch (error) {
+				showFeedback("❌ Error de conexión con Google Apps Script. ❌", "error");
+			} finally {
+				btn.disabled = false;
+				btn.textContent = "Enviar Reporte Al Correo";
+			}
+		}
     </script>
 </body>
 </html>
-
-
