@@ -45,12 +45,12 @@
         .led-indicator { width: 10px; height: 10px; border-radius: 50%; transition: 0.3s; }
         .led-red { background-color: var(--danger); box-shadow: 0 0 10px var(--danger); }
         .led-green { background-color: var(--success); box-shadow: 0 0 10px var(--success); }
-        .username-display { font-weight: bold; color: var(--primary-gold); text-transform: uppercase; font-size: 10px; }
+        .username-display { font-weight: bold; color: var(--primary-gold); text-transform: uppercase; font-size: 15px; }
 
         .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
         .semana-card { background: var(--bg-card); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); transition: 0.3s; }
         
-        table { width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 12px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 4px; font-size: 11px; }
         td, th { padding: 3px 5px; background: rgba(255,255,255,0.02); border-radius: 4px; }
         input, select { background: rgba(0,0,0,0.4); border: 1px solid #444; color: white; padding: 4px; border-radius: 4px; width: 100%; box-sizing: border-box; }
         
@@ -60,10 +60,25 @@
             text-align: right; 
             background: rgba(0, 242, 255, 0.05) !important;
             border: 1px solid rgba(0, 242, 255, 0.2) !important;
+			width: 110%; /* Ocupa todo el ancho de su celda */
         }
         .price-hidden { display: none; }
-        .price-display { color: var(--primary-gold); font-family: monospace; font-weight: bold; text-align: right; border: none; background: transparent; }
+        .price-display {
+			color: var(--primary-gold);
+			font-family: monospace;
+			font-weight: bold;
+			text-align: right;
+			border: none;
+			background: transparent;
+			width: 100%; /* Ocupa todo el ancho de su celda */
+			box-sizing: border-box;
+		}
 
+		.row-distribuidora {
+			color: white;
+			background:rgba(212,175,55,0.1) !important; /* Un toque verde muy sutil */
+			height: 40px;
+		}
         .drawer { position: fixed; top: 0; width: 85%; max-width: 320px; height: 100%; background: var(--bg-card); z-index: 2000; transition: 0.4s; padding: 20px; overflow-y: auto; }
         #drawer-archivo { left: -350px; border-right: 1px solid var(--primary-gold); }
         #drawer-archivo.open { left: 0; }
@@ -74,10 +89,13 @@
         #modal-ajustes { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; }
         .ajustes-container { background:#151518; width: 95%; max-width: 450px; padding: 20px; border-radius: 15px; border: 1px solid var(--primary-gold); }
 
-        .btn { padding: 5px 10px; border-radius: 66px; font-weight: 800; cursor: pointer; border: 3px solid transparent; text-transform: uppercase; font-size: 8px; transition: 0.3s; }
+        .btn { padding: 5px 10px; border-radius: 66px; font-weight: 800; cursor: pointer; border: 3px solid transparent; text-transform: uppercase; font-size: 9px; transition: 0.3s; }
         .btn-gold { background: var(--primary-gold); color: black; }
         .btn-cyan { background: var(--accent-cyan); color: black; }
         .btn-danger { background: var(--danger); color: white; border: none; }
+		
+		
+		
     </style>
 </head>
 <body>
@@ -88,14 +106,14 @@
             <input type="text" id="user-login" placeholder="Usuario">
             <input type="password" id="pass-login" placeholder="Contraseña" style="margin: 10px 0 20px 0">
             <button class="btn btn-gold" style="width:100%" onclick="handleAuth('login')">ENTRAR</button>
-            <p onclick="toggleAuth(true)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--accent-cyan)">REGISTRAR CUENTA</p>
+            <p onclick="toggleAuth(true)" style="font-size: 15px; margin-top: 15px; cursor: pointer; color: var(--accent-cyan)">NO TIENE CUENTA? REGISTRAR CUENTA</p>
         </div>
         <div class="auth-box" id="reg-form" style="display:none">
             <h2 style="color:var(--accent-cyan)">NUEVO REGISTRO</h2>
             <input type="text" id="user-reg" placeholder="Usuario">
             <input type="password" id="pass-reg" placeholder="Contraseña" style="margin: 10px 0 20px 0">
             <button class="btn btn-cyan" style="width:100%" onclick="handleAuth('register')">CREAR USUARIO</button>
-            <p onclick="toggleAuth(false)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--primary-gold)">VOLVER AL LOGIN</p>
+            <p onclick="toggleAuth(false)" style="font-size: 15px; margin-top: 15px; cursor: pointer; color: var(--primary-gold)">VOLVER AL LOGIN PRAR INGRESAR</p>
         </div>
     </div>
 
@@ -151,8 +169,8 @@
         <div class="ajustes-container">
             <h3 style="color:var(--primary-gold)">⚙️ CONFIGURACIÓN PRODUCTOS</h3>
             <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-                <label style="font-size: 9px; color: var(--accent-cyan);">VALOR RACION HCB ($):</label>
-                <input type="number" id="cfg-valor-cupo" value="8094" onchange="marcarCambio()" style="font-size: 14px; color: var(--success);">
+                <label style="font-size: 10px; color: var(--accent-cyan);">VALOR RACION HCB ($):</label>
+                <input type="number" id="cfg-valor-cupo" value="8094" onchange="marcarCambio()" style="font-size: 12px; color: var(--success);">
             </div>
             <h4 style="margin: 10px 0; font-size: 10px;">LISTADO DE PRODUCTOS BASE</h4>
             <div id="lista-config-prod" style="max-height: 300px; overflow-y: auto; margin-bottom:10px"></div>
@@ -242,13 +260,23 @@
         grid.innerHTML = ''; 
         
         for(let s=1; s<=semanas; s++) {
+		
             grid.innerHTML += `
                 <div class="semana-card" id="card-${s}">
-                    <h3 style="color:var(--primary-gold)">SEMANA ${s}</h3>
+					<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+						<h3 style="color:var(--primary-gold); margin:0">SEMANA ${s}</h3>
+					
+						<button class="btn" 
+							style="background:rgba(255,70,85,0.1); color:var(--danger); border:1px solid var(--danger); font-size:9px; padding:2px 6px;" 
+							onclick="limpiarSemana(${s})">
+						🧹 LIMPIAR
+						</button>
+					</div>
+					
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px">
                         <input type="number" id="dias-${s}" placeholder="Días" oninput="calcular(${s}); marcarCambio()">
                         <input type="number" id="cupos-${s}" placeholder="Cupos" oninput="calcular(${s}); marcarCambio()">
-                        <input type="text" id="pres-${s}" class="price-display" style="grid-column:span 2; font-size:1.3em; text-align:center; color:var(--success)" readonly>
+                        <input type="text" id="pres-${s}" class="price-display" style="grid-column:span 2; font-size:1.6em; text-align:center; color:var(--success)" readonly>
                     </div>
                     <table>
                         <thead><tr><th>FAC</th><th>PRODUCTO</th><th>CANT</th><th>TOTAL</th></tr></thead>
@@ -263,10 +291,16 @@
                                     <td><input type="number" id="cant-${s}-${i}" oninput="calcular(${s}); marcarCambio()"></td>
                                     <td><input type="text" id="val-${s}-${i}" class="total-editable" oninput="ajustarPrecioInverso(${s}, ${i}); marcarCambio()"></td>
                                 </tr>`).join('')}
-                            <tr style="background:rgba(212,175,55,0.1)">
-                                <td colspan="3"><b>DISTRIBUIDORA</b></td>
-                                <td><input type="text" id="dist-${s}" class="price-display" readonly></td>
-                            </tr>
+                            <tr class="row-distribuidora">
+							<td colspan="2" style="width: 40%; padding-left: 5px;">
+								<b style="font-size: 9px;">DISTRIBUIDORA.</b>
+							</td>
+							<td colspan="2" style="width: 70%;">
+								<input type="text" id="dist-${s}" class="price-display" 
+									   style="color:var(--primary-gold); font-size: 13px; width: 100%; padding-right: 10px;" 
+									   readonly>
+							</td>
+						</tr>
                         </tbody>
                     </table>
                 </div>`;
@@ -442,35 +476,163 @@
     }
 
     function exportarTablasCompletas() {
-        let csv = "\uFEFFDetalle General;Mes: " + document.getElementById('main-mes').value + "\n\n";
-        for(let s=1; s<=parseInt(document.getElementById('num-semanas').value); s++) {
-            csv += `SEMANA ${s}\nFAC;PRODUCTO;CANT;TOTAL\n`;
-            productosBase.forEach((p, i) => {
-                const fac = document.getElementById(`fac-${s}-${i}`)?.value || "";
-                const cant = document.getElementById(`cant-${s}-${i}`)?.value || "0";
-                const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
-                csv += `${fac};${p.nombre};${cant};${val}\n`;
-            });
-            csv += `;;DISTRIBUIDORA;${limpiarNum(document.getElementById(`dist-${s}`)?.value || "0")}\n\n`;
-        }
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Reporte_${document.getElementById('main-mes').value}.csv`;
-        link.click();
-    }
+		const mes = document.getElementById('main-mes').value;
+		const contrato = document.getElementById('main-contrato').value;
+		const numSemanas = parseInt(document.getElementById('num-semanas').value);
+		
+		// Encabezado principal
+		let csv = "\uFEFFINFORME DE CONTROL;ZAN - TABLA VALORES\n";
+		csv += `MES;${mes};CONTRATO;${contrato}\n\n`;
+
+		for (let s = 1; s <= numSemanas; s++) {
+			// Extraer metadatos de la semana
+			const dias = document.getElementById(`dias-${s}`)?.value || "0";
+			const cupos = document.getElementById(`cupos-${s}`)?.value || "0";
+			const presupuesto = limpiarNum(document.getElementById(`pres-${s}`)?.value || "0");
+
+			// Fila de encabezado de semana con sus datos generales
+			csv += `--- SEMANA ${s} ---\n`;
+			csv += `DIAS ATENCIÓN;CUPOS ATENDIDOS;VALOR PRESUPUESTADO\n`;
+			csv += `${dias};${cupos};${presupuesto}\n\n`;
+
+			// Encabezado de tabla de productos
+			csv += `FACTURA;PRODUCTO;CANTIDAD;VALOR TOTAL\n`;
+			
+			productosBase.forEach((p, i) => {
+				const fac = document.getElementById(`fac-${s}-${i}`)?.value || "N/A";
+				const cant = document.getElementById(`cant-${s}-${i}`)?.value || "0";
+				const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+				csv += `${fac};${p.nombre};${cant};${val}\n`;
+			});
+
+			// Fila de distribuidora
+			const dist = limpiarNum(document.getElementById(`dist-${s}`)?.value || "0");
+			csv += `;;DISTRIBUIDORA;${dist}\n\n`;
+		}
+
+		const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = `Reporte_${mes}_${contrato}.csv`;
+		link.click();
+	}
 
     function importarExcel(input) {
-        if (!input.files[0]) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const data = e.target.result;
-            XLSX.read(data, { type: 'binary' });
-            alert("Lectura de Excel completada. Procesando datos...");
-            marcarCambio();
-        };
-        reader.readAsBinaryString(input.files[0]);
-    }
+		if (!input.files[0]) return;
+		const reader = new FileReader();
+
+		reader.onload = function(e) {
+			try {
+				const data = e.target.result;
+				const workbook = XLSX.read(data, { type: 'binary' });
+				const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+				const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+				// 1. CARGAR ENCABEZADOS (MES Y CONTRATO)
+				// Buscamos en las primeras filas el formato: MES;Enero;CONTRATO;123
+				rows.slice(0, 5).forEach(fila => {
+					const f = fila.map(c => String(c).toUpperCase());
+					if (f.includes("MES")) {
+						document.getElementById('main-mes').value = fila[f.indexOf("MES") + 1];
+					}
+					if (f.includes("CONTRATO")) {
+						document.getElementById('main-contrato').value = fila[f.indexOf("CONTRATO") + 1];
+					}
+				});
+
+				// 2. DETECTAR TOTAL DE SEMANAS EN EL ARCHIVO
+				let maxSemanaEnArchivo = 0;
+				rows.forEach(fila => {
+					const texto = String(fila[0]).toUpperCase();
+					if (texto.includes("SEMANA")) {
+						const num = parseInt(texto.replace(/[^0-9]/g, ""));
+						if (num > maxSemanaEnArchivo) maxSemanaEnArchivo = num;
+					}
+				});
+
+				// Actualizar selector de semanas y regenerar grid si es necesario
+				if (maxSemanaEnArchivo > 0) {
+					document.getElementById('num-semanas').value = maxSemanaEnArchivo;
+					initGrid(false); // Regeneramos la interfaz para recibir los datos
+				}
+
+				// 3. PROCESAR DATOS POR SEMANA
+				let semanaActual = 0;
+				rows.forEach((fila) => {
+					if (!fila || fila.length === 0) return;
+					const textoFila = fila.map(c => String(c).toUpperCase()).join(" ");
+
+					// Detectar cambio de semana
+					if (textoFila.includes("SEMANA")) {
+						const match = textoFila.match(/SEMANA\s+(\d+)/);
+						if (match) semanaActual = parseInt(match[1]);
+						return;
+					}
+
+					if (semanaActual > 0) {
+						// Cargar Días, Cupos y Presupuesto
+						// Si la fila tiene números y la anterior fue "DIAS ATENCIÓN"
+						if (!isNaN(fila[0]) && fila[0] !== "" && !textoFila.includes("FACTURA")) {
+							const dInput = document.getElementById(`dias-${semanaActual}`);
+							const cInput = document.getElementById(`cupos-${semanaActual}`);
+							if (dInput) dInput.value = fila[0];
+							if (cInput) cInput.value = fila[1];
+						}
+
+						// Cargar Productos
+						productosBase.forEach((p, i) => {
+							if (textoFila.includes(p.nombre.toUpperCase())) {
+								const facInput = document.getElementById(`fac-${semanaActual}-${i}`);
+								const cantInput = document.getElementById(`cant-${semanaActual}-${i}`);
+								const valInput = document.getElementById(`val-${semanaActual}-${i}`);
+
+								if (facInput) facInput.value = fila[0] || "";
+								if (cantInput) cantInput.value = fila[2] || "0";
+								if (valInput) {
+									valInput.value = fila[3] || "0";
+									// Usamos el ajuste inverso para que el precio unitario sea coherente
+									ajustarPrecioInverso(semanaActual, i);
+								}
+							}
+						});
+					}
+				});
+
+				// 4. RECALCULAR FINAL
+				for (let s = 1; s <= maxSemanaEnArchivo; s++) {
+					calcular(s);
+				}
+
+				alert("✅ Importación completa: Mes, Contrato, Semanas y Datos actualizados.");
+				marcarCambio();
+
+			} catch (error) {
+				console.error(error);
+				alert("❌ Error crítico: El formato del archivo no es compatible.");
+			}
+		};
+		reader.readAsBinaryString(input.files[0]);
+	}
+	
+	function limpiarSemana(s) {
+		if (confirm(`⚠️¿Estás seguro de borrar FACTURAS y CANTIDADES de la SEMANA ${s}?⚠️`)) {
+			productosBase.forEach((p, i) => {
+				const cantInput = document.getElementById(`cant-${s}-${i}`);
+				if (cantInput) {
+					cantInput.value = ""; // Limpiamos el valor
+				}
+				// Limpia las facturas (AQUÍ ESTÁ EL AJUSTE)
+				const facInput = document.getElementById(`fac-${s}-${i}`);
+				if (facInput) {
+					facInput.value = ""; 
+				}
+			});
+			
+			// Recalculamos la semana para que los totales y la distribuidora se actualicen a 0
+			calcular(s);
+			marcarCambio(); // Notificamos que hubo un cambio para el guardado
+		}
+	}
 
     function guardarLocal() {
         const semanas = parseInt(document.getElementById('num-semanas').value);
@@ -568,7 +730,7 @@
             <div style="display:flex; gap:1px; margin-bottom:1px; align-items:center; background:rgba(255,255,255,0.03); padding:1px; border-radius:500px">
                 <input type="text" value="${p.nombre}" onchange="productosBase[${i}].nombre=this.value" style="flex:2">
                 <input type="number" value="${p.precio}" style="width:70px" onchange="productosBase[${i}].precio=parseFloat(this.value)">
-                <label style="font-size:8px; text-align:center; min-width:30px">
+                <label style="font-size:7px; text-align:center; min-width:30px">
                     CL<br>
                     <input type="checkbox" ${p.cl ? 'checked' : ''} onchange="productosBase[${i}].cl=this.checked">
                 </label>
@@ -621,5 +783,3 @@
 </script>
 </body>
 </html>
-
-
