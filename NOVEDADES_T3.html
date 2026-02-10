@@ -1,438 +1,609 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte_Novedades | T3</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        
-        body { 
-            background-attachment: fixed; 
-            background-size: cover; 
-            background-position: center; 
-            transition: all 0.5s ease; 
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f1f5f9;
-        }
-
-        .glass-container { 
-            background: rgba(255, 255, 255, 0.98); 
-            backdrop-filter: blur(10px);
-            transform: scale(1.05);
-            transform-origin: center;
-        }
-
-        input, select { 
-            padding: 0.8rem 1rem !important; 
-            font-size: 1rem !important; 
-            border: 2px solid #e2e8f0 !important; 
-            outline: none !important; 
-            transition: all 0.2s; 
-        }
-        
-        input:focus, select:focus { 
-            border-color: #94a3b8 !important; 
-            box-shadow: 0 0 0 3px rgba(0,0,0,0.05); 
-        }
-
-        .step-badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.9rem; }
-        
-        .contract-668 .dynamic-bg { background-color: #2563EB; }
-        .contract-668 .dynamic-text { color: #2563EB; }
-        .contract-668 .dynamic-border { border-top-color: #2563EB; }
-        
-        @media (max-width: 768px) {
-            .glass-container { transform: scale(1); margin: 1rem; }
-        }
-    </style>
-</head>
-<body>
-
-    <main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
-        
-        <header class="px-8 py-6 bg-white border-b border-slate-100 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-800 text-slate-800 tracking-tight">Reporte de <span class="dynamic-text text-slate-500">Novedades</span></h1>
-                <p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Asociación Timanco 3 - Neiva</p>
-            </div>
+	<!DOCTYPE html>
+	<html lang="es">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Reporte_Novedades|T3</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
 			
-			<div class="flex items-center space-x-4">
-				<div class="flex-shrink-0 w-20 h-20 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm">
-					<img src="LOGOT3.png" alt="Logo" class="w-full h-full object-cover">
+			body { 
+				background-attachment: fixed; 
+				background-size: cover; 
+				background-position: center; 
+				transition: all 0.5s ease; 
+				font-family: 'Inter', sans-serif;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				min-height: 100vh;
+				margin: 0;
+				background-color: #f1f5f9;
+			}
+
+			.glass-container { 
+				background: rgba(255, 255, 255, 0.98); 
+				backdrop-filter: blur(10px);
+				transform: scale(1.05);
+				transform-origin: center;
+			}
+
+			input, select { 
+				padding: 0.8rem 1rem !important; 
+				font-size: 1rem !important; 
+				border: 2px solid #e2e8f0 !important; 
+				outline: none !important; 
+				transition: all 0.2s; 
+				transition: all 1.5s ease !important; /* Esto permite el desvanecimiento lento */
+			}
+			
+			input:focus, select:focus { 
+				border-color: #94a3b8 !important; 
+				box-shadow: 0 0 0 3px rgba(0,0,0,0.05); 
+			}
+
+			.step-badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.9rem; }
+			
+			.contract-668 .dynamic-bg { background-color: #2563EB; }
+			.contract-668 .dynamic-text { color: #2563EB; }
+			.contract-668 .dynamic-border { border-top-color: #2563EB; }
+			
+			@media (max-width: 768px) {
+				.glass-container { transform: scale(1); margin: 1rem; }
+			}
+			/* Estilo para campos obligatorios vacíos */
+			.input-error {
+				border-color: #ef4444 !important;
+				background-color: #fef2f2 !important;
+				box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+				transition: all 0.5s ease;
+			}
+
+			/* Estilo para el Toast de Fechas */
+			#dateToast {
+				position: fixed;
+				bottom: 20px;
+				right: 20px;
+				background: #7f1d1d;
+				color: white;
+				padding: 1rem 1.5rem;
+				border-radius: 25px;
+				box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+				z-index: 1000;
+				display: none;
+				border: 1px solid #b91c1c;
+			}
+		</style>
+	</head>
+	<body>
+
+		<main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
+			
+			<header class="px-8 py-6 bg-white border-b border-slate-100 flex justify-between items-center">
+				<div>
+					<h1 class="text-2xl font-800 text-slate-800 tracking-tight">Reporte de <span class="dynamic-text text-slate-500">Novedades</span></h1>
+					<p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Asociación Timanco 3 - Neiva</p>
 				</div>
-				<div class="flex flex-col items-end space-y-1">
-					<div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono">
-						00/00/0000 00:00:00
+				
+				<div class="flex items-center space-x-4">
+					<div class="flex-shrink-0 w-20 h-20 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm">
+						<img src="LOGOT3.png" alt="Logo" class="w-full h-full object-cover">
 					</div>
-					<div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">
-						Sin Contrato
+					<div class="flex flex-col items-end space-y-1">
+						<div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono">
+							00/00/0000 00:00:00
+						</div>
+						<div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">
+							Sin Contrato
+						</div>
 					</div>
 				</div>
-			</div>
-        </header>
-		
-		<form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbz9HXjaEdWSBrARbqfTyeM5a-obTbmQPtGoH7W14vqstPth_9QcD37WcKk0jt_Nx69A/exec" method="POST" class="p-8 space-y-6">
-		
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-2">
-                    <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
-                        <span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
-                    </label>
-                    <select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
-                        <option value="">Seleccione...</option>
-                        <option value="668">Contrato 41006682024</option>
-                    </select>
-                </div>
-                <div id="sectionUDS" class="space-y-2 opacity-50">
-                    <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
-                        <span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
-                    </label>
-                    <select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
-                        <option value="">-- Primero Contrato --</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="pt-2">
-                <label class="flex items-center text-sm font-bold text-slate-600 uppercase mb-4">
-                    <span class="step-badge bg-slate-400 dynamic-bg mr-3">3</span> ¿Qué reportará?
-                </label>
-                <div class="grid grid-cols-2 gap-4">
-                    <label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
-                        <input type="checkbox" id="checkRetiro" class="hidden" onchange="toggleSection('retiro')">
-                        <span class="text-sm font-bold text-slate-600">RETIRO DE BENEFICIARIO</span>
-                    </label>
-                    <label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
-                        <input type="checkbox" id="checkIngreso" class="hidden" onchange="toggleSection('ingreso')">
-                        <span class="text-sm font-bold text-slate-600">INGRESO DE BENEFICIARIO</span>
-                    </label>
-                </div>
-            </div>
-
-            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-6 rounded-2xl bg-red-100/100 border border-red-500 space-y-4">
-                <h3 class="text-sm font-black text-red-700 uppercase flex items-center">
-                    <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <select id="retiroDocType" name="retiro_tipo_doc" class="w-full rounded-lg">
-                            <option value="RC">RC - Registro Civil</option>
-                            <option value="AN">AN - Acta Nacimiento</option>
-                            <option value="PEP">PEP / PPT</option>
-                            <option value="SD">SD - Sin Documento</option>
-                        </select>
-                        <input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de Documento" 
-                               class="w-full rounded-lg" minlength="7" maxlength="10" 
-                               oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                    </div>
-                    <input type="text" id="retiroFullName" name="retiro_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
-                    <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
-                        <input type="date" id="retiroDate" name="retiro_fecha" class="w-full rounded-lg" onchange="validateDatesRealTime()">
-                    </div>
-                    <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
-						<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
-						<label class="text-sm font-bold flex items-center">
-							<input type="radio" name="_retiroGender" value="M" class="mr-1"> M
+			</header>
+			
+			<form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbz9HXjaEdWSBrARbqfTyeM5a-obTbmQPtGoH7W14vqstPth_9QcD37WcKk0jt_Nx69A/exec" method="POST" class="p-8 space-y-6">
+			
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div class="space-y-2">
+						<label class="flex items-center text-sm font-bold text-slate-600 uppercase">
+							<span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
 						</label>
-						<label class="text-sm font-bold flex items-center">
-							<input type="radio" name="_retiroGender" value="F" class="mr-1"> F
+						<select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
+							<option value="">Seleccione...</option>
+							<option value="668">Contrato 41006682024</option>
+						</select>
+					</div>
+					<div id="sectionUDS" class="space-y-2 opacity-50">
+						<label class="flex items-center text-sm font-bold text-slate-600 uppercase">
+							<span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
+						</label>
+						<select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
+							<option value="">-- Primero Contrato --</option>
+						</select>
+					</div>
+				</div>
+
+				<div class="pt-2">
+					<label class="flex items-center text-sm font-bold text-slate-600 uppercase mb-4">
+						<span class="step-badge bg-slate-400 dynamic-bg mr-3">3</span> ¿Qué reportará?
+					</label>
+					<div class="grid grid-cols-2 gap-4">
+						<label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+							<input type="checkbox" id="checkRetiro" class="hidden" onchange="toggleSection('retiro')">
+							<span class="text-sm font-bold text-slate-600">RETIRO DE BENEFICIARIO</span>
+						</label>
+						<label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+							<input type="checkbox" id="checkIngreso" class="hidden" onchange="toggleSection('ingreso')">
+							<span class="text-sm font-bold text-slate-600">INGRESO DE BENEFICIARIO</span>
 						</label>
 					</div>
-                </div>
-            </div>
+				</div>
 
-            <div id="sectionIngreso" class="hidden animate__animated animate__fadeIn space-y-6">
-                <div class="p-6 rounded-2xl bg-green-100/100 border border-green-500 space-y-4">
-                    <h3 class="text-sm font-black text-green-700 uppercase flex items-center">
-                        <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Beneficiario Entrante
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<select id="ingresoDocType" name="ingreso_tipo_doc" class="w-full rounded-lg">
+				<div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-6 rounded-2xl bg-red-100/100 border border-red-500 space-y-4">
+					<h3 class="text-sm font-black text-red-700 uppercase flex items-center">
+						<span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
+					</h3>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<select id="retiroDocType" name="retiro_tipo_doc" class="w-full rounded-lg">
 								<option value="RC">RC - Registro Civil</option>
 								<option value="AN">AN - Acta Nacimiento</option>
 								<option value="PEP">PEP / PPT</option>
 								<option value="SD">SD - Sin Documento</option>
 							</select>
-							<input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Numero Documento" 
+							<input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de Documento" 
 								   class="w-full rounded-lg" minlength="7" maxlength="10" 
 								   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-							</div>
-                        <input type="text" id="ingresoFullName" name="ingreso_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
-                        <div class="space-y-1">
-                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
-                            <input type="date" id="ingresoDOB" name="ingreso_nacimiento" class="w-full rounded-lg" onchange="updateAgeDisplay()">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
-                            <input type="date" id="ingresoDate" name="ingreso_fecha" class="w-full rounded-lg" onchange="updateAgeDisplay()">
-                        </div>
-                        <div class="md:col-span-2 space-y-1">
-                            <label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
-                            <input type="text" id="displayAge" name="edad_calculada" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
-                        </div>
-                        <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
+						</div>
+						<input type="text" id="retiroFullName" name="retiro_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
+							<input type="date" id="retiroDate" name="retiro_fecha" class="w-full rounded-lg" onchange="validateDatesRealTime()">
+						</div>
+						<div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
 							<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
 							<label class="text-sm font-bold flex items-center">
-								<input type="radio" name="_ingresoGender" value="M" class="mr-1"> M
+								<input type="radio" name="_retiroGender" value="M" class="mr-1"> M
 							</label>
 							<label class="text-sm font-bold flex items-center">
-								<input type="radio" name="_ingresoGender" value="F" class="mr-1"> F
+								<input type="radio" name="_retiroGender" value="F" class="mr-1"> F
 							</label>
 						</div>
-                        <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección y Barrio" class="w-full rounded-lg">
-                        <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
-						
-                        <div class="md:col-span-2 space-y-2">
-                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
-                            <input type="file" id="fileInput" name="soporte_documento" accept=".pdf,image/*" 
-                                   class="w-full rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border-2 border-dashed border-green-200">
-                        </div>
-						
-                    </div>
-                </div>
+					</div>
+				</div>
 
-                <div class="p-6 rounded-2xl bg-blue-100/100 border border-blue-500 space-y-4">
-                    <h3 class="text-sm font-black text-blue-700 uppercase flex items-center">
-                        <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg">
-                        <input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
-                        <div class="space-y-1 md:col-span-2">
-                            <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
-                            <input type="date" id="acudienteDOB" name="acudiente_nacimiento" class="w-full rounded-lg">
-                        </div>
-                    </div>
-                </div>
-            </div>
+				<div id="sectionIngreso" class="hidden animate__animated animate__fadeIn space-y-6">
+					<div class="p-6 rounded-2xl bg-green-100/100 border border-green-500 space-y-4">
+						<h3 class="text-sm font-black text-green-700 uppercase flex items-center">
+							<span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Beneficiario Entrante
+						</h3>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<select id="ingresoDocType" name="ingreso_tipo_doc" class="w-full rounded-lg">
+									<option value="RC">RC - Registro Civil</option>
+									<option value="AN">AN - Acta Nacimiento</option>
+									<option value="PEP">PEP / PPT</option>
+									<option value="SD">SD - Sin Documento</option>
+								</select>
+								<input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Numero Documento" 
+									   class="w-full rounded-lg" minlength="7" maxlength="10" 
+									   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+								</div>
+							<input type="text" id="ingresoFullName" name="ingreso_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
+							<div class="space-y-1">
+								<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
+								<input type="date" id="ingresoDOB" name="ingreso_nacimiento" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+							</div>
+							<div class="space-y-1">
+								<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
+								<input type="date" id="ingresoDate" name="ingreso_fecha" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+							</div>
+							<div class="md:col-span-2 space-y-1">
+								<label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
+								<input type="text" id="displayAge" name="edad_calculada" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
+							</div>
+							<div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
+								<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+								<label class="text-sm font-bold flex items-center">
+									<input type="radio" name="_ingresoGender" value="M" class="mr-1"> M
+								</label>
+								<label class="text-sm font-bold flex items-center">
+									<input type="radio" name="_ingresoGender" value="F" class="mr-1"> F
+								</label>
+							</div>
+							<input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección y Barrio" class="w-full rounded-lg">
+							<input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
+							
+							<div class="md:col-span-2 space-y-2">
+								<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
+								<input type="file" id="fileInput" name="soporte_documento" accept=".pdf,image/*" 
+									   class="w-full rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border-2 border-dashed border-green-200">
+							</div>
+							
+						</div>
+					</div>
 
-            <input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
-            <input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
-            
-            <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
-                Enviar Reporte Al Correo
-            </button>
-            
-            <div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
-            
-            <footer class="mt-10 mb-2 text-[11px] font-black text-slate-400 tracking-[0.4em] text-center uppercase">
-                Asociación T3 • Neiva, Huila © 2026
-            </footer>
-        </form>
-    </main>
+					<div class="p-6 rounded-2xl bg-blue-100/100 border border-blue-500 space-y-4">
+						<h3 class="text-sm font-black text-blue-700 uppercase flex items-center">
+							<span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
+						</h3>
+						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+							<input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg">
+							<input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
+							<div class="space-y-1 md:col-span-2">
+								<label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
+								<input type="date" id="acudienteDOB" name="acudiente_nacimiento" class="w-full rounded-lg">
+							</div>
+						</div>
+					</div>
+				</div>
 
-    <script>
-        const UDS_DATA = { '668': [['BURBUJAS.', '-'], ['CAPERUCITA ROJA', '-'], ['CARIÑOSITOS', '-'], ['DIVINO NIÑO', '-'], ['LOS BABYS', '-'], ['LOS CARIÑOSITOS', '-'], ['LOS GNOMOS', '-'], ['LOS PATICOS', '-'], ['LOS PEQUEÑINES', '-'], ['MI BELLA INFANCIA', '-'], ['MI CABAÑA', '-'], ['MI TRAVESURA', '-'], ['MIS AMIGUITOS 1', '-'], ['MIS CONSENTIDOS', '-'], ['MIS OSITOS', '-'], ['MIS PATICOS', '-'], ['MIS PINGUINOS', '-']] };
-        const BACKGROUNDS = { '668': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
+				<input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
+				<input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
+				
+				<button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
+					Enviar Reporte Al Correo
+				</button>
+				
+				<div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
+				
+				<footer class="mt-10 mb-2 text-[11px] font-black text-slate-400 tracking-[0.4em] text-center uppercase">
+					Asociación T3 • Neiva, Huila © 2026
+				</footer>
+			</form>
+		</main>
 
-		function updateClock() {
-			const now = new Date();
-			const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
-			const time = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-			document.getElementById('clockDisplay').textContent = `${date} | ${time}`;
-		}
-		setInterval(updateClock, 1000);
-		updateClock();
+		<script>
+			const UDS_DATA = { '668': [['BURBUJAS.', '-'], ['CAPERUCITA ROJA', '-'], ['CARIÑOSITOS', '-'], ['DIVINO NIÑO', '-'], ['LOS BABYS', '-'], ['LOS CARIÑOSITOS', '-'], ['LOS GNOMOS', '-'], ['LOS PATICOS', '-'], ['LOS PEQUEÑINES', '-'], ['MI BELLA INFANCIA', '-'], ['MI CABAÑA', '-'], ['MI TRAVESURA', '-'], ['MIS AMIGUITOS 1', '-'], ['MIS CONSENTIDOS', '-'], ['MIS OSITOS', '-'], ['MIS PATICOS', '-'], ['MIS PINGUINOS', '-']] };
+			const BACKGROUNDS = { '668': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
 
-        function updateStyles() {
-            const contract = document.getElementById('contractNumber').value;
-            const mainCard = document.getElementById('mainCard');
-            const indicator = document.getElementById('contractIndicator');
-            const udsSelect = document.getElementById('mainUdsDropdown');
-            const sectionUDS = document.getElementById('sectionUDS');
-            mainCard.className = "glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] dynamic-border animate__animated animate__fadeIn";
-            document.body.style.background = BACKGROUNDS[contract] || BACKGROUNDS['default'];
-            if (contract) {
-                mainCard.classList.add(`contract-${contract}`);
-                indicator.className = `px-4 py-1.5 rounded-full text-xs font-black text-white dynamic-bg uppercase`;
-                indicator.textContent = `Contrato ${contract}`;
-                udsSelect.disabled = false;
-                sectionUDS.style.opacity = "1";
-                populateUDS(contract);
-            }
-        }
+			function updateClock() {
+				const now = new Date();
+				const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+				const time = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+				document.getElementById('clockDisplay').textContent = `${date} | ${time}`;
+			}
+			setInterval(updateClock, 1000);
+			updateClock();
 
-        function populateUDS(contract) {
-            const udsSelect = document.getElementById('mainUdsDropdown');
-            udsSelect.innerHTML = '<option value="">-- Seleccione UDS --</option>';
-            UDS_DATA[contract]?.forEach(([name, code]) => {
-                const opt = document.createElement('option');
-                opt.value = `${name} - ${code}`;
-                opt.textContent = `${name} - ${code}`;
-                udsSelect.appendChild(opt);
-            });
-        }
-
-        function toggleSection(type) {
-            const section = document.getElementById(type === 'retiro' ? 'sectionRetiro' : 'sectionIngreso');
-            const check = document.getElementById(type === 'retiro' ? 'checkRetiro' : 'checkIngreso');
-            section.classList.toggle('hidden', !check.checked);
-        }
-
-        function updateAgeDisplay() {
-            const dobValue = document.getElementById('ingresoDOB').value;
-            const entryValue = document.getElementById('ingresoDate').value;
-            const displayField = document.getElementById('displayAge');
-            if (dobValue && entryValue) {
-                const ageResult = calculateAge(dobValue, entryValue);
-                displayField.value = ageResult;
-            }
-        }
-
-        function calculateAge(dob, entry) {
-            const d1 = new Date(dob); d2 = new Date(entry);
-            d1.setMinutes(d1.getMinutes() + d1.getTimezoneOffset());
-            d2.setMinutes(d2.getMinutes() + d2.getTimezoneOffset());
-            let years = d2.getFullYear() - d1.getFullYear();
-            let months = d2.getMonth() - d1.getMonth();
-            let days = d2.getDate() - d1.getDate();
-            if (days < 0) months--;
-            if (months < 0) { years--; months += 12; }
-            return `${years} años y ${months} meses`;
-        }
-
-        function showFeedback(message, type) {
-            const container = document.getElementById('feedbackContainer');
-            container.textContent = message;
-            container.className = `p-5 rounded-2xl text-center text-sm font-bold mt-4 animate__animated animate__fadeInUp ${type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200 animate__shakeX'}`;
-            container.classList.remove('hidden');
-        }
-
-        function formatData() {
-			const contractNumber = document.getElementById('contractNumber').value;
-			const udsSelection = document.getElementById('mainUdsDropdown').value;
-			const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
-			const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
-			
-			let formData = 	`Reporte Recibido\n`;
-			formData += 	`\n`;
-			formData += 	`╔═══════════════════════════════╗\n`;
-			formData += 	` REPORTE DE NOVEDADES - ASOCIACIÓN T3\n`;
-			formData += 	`╚═══════════════════════════════╝\n\n`;
-			
-			formData += `[ INFORMACIÓN GENERAL ]\n`;
-			formData += `> CONTRATO:      ${contractNumber}\n`;
-			formData += `> UDS NOMBRE:    ${utsName}\n`;
-			formData += `> UDS CÓDIGO:    ${utsCode}\n`;
-			formData += `──────────────────────────────────────────────────────────\n\n`;
-
-			if (document.getElementById('checkRetiro').checked) {
-				formData += `┹ ✴ DATOS DE RETIRO (RETIRO)\n`;
-				formData += `  ├─ 📄Documento:  ${document.getElementById('retiroDocType').value} ${document.getElementById('retiroDocNumber').value}\n`;
-				formData += `  ├─ ✍️Nombre:     ${document.getElementById('retiroFullName').value.toUpperCase()}\n`;
-				formData += `  ├─ 📆Fecha:      ${document.getElementById('retiroDate').value}\n`;
-				formData += `  └─ ♀️Género:     ${document.querySelector('input[name="_retiroGender"]:checked')?.value || 'N/A'}\n\n`;
+			function updateStyles() {
+				const contract = document.getElementById('contractNumber').value;
+				const mainCard = document.getElementById('mainCard');
+				const indicator = document.getElementById('contractIndicator');
+				const udsSelect = document.getElementById('mainUdsDropdown');
+				const sectionUDS = document.getElementById('sectionUDS');
+				mainCard.className = "glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] dynamic-border animate__animated animate__fadeIn";
+				document.body.style.background = BACKGROUNDS[contract] || BACKGROUNDS['default'];
+				if (contract) {
+					mainCard.classList.add(`contract-${contract}`);
+					indicator.className = `px-4 py-1.5 rounded-full text-xs font-black text-white dynamic-bg uppercase`;
+					indicator.textContent = `Contrato ${contract}`;
+					udsSelect.disabled = false;
+					sectionUDS.style.opacity = "1";
+					populateUDS(contract);
+				}
 			}
 
-			if (document.getElementById('checkIngreso').checked) {
-				formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
-				formData += `  ├─ ✍️Niño:       ${document.getElementById('ingresoFullName').value.toUpperCase()}\n`;
-				formData += `  ├─ 📄Documento:  ${document.getElementById('ingresoDocType').value} ${document.getElementById('ingresoDocNumber').value}\n`;
-				formData += `  ├─ 👶Edad:       ${document.getElementById('displayAge').value}\n`;
-				formData += `  ├─ 📆F. Nacim:   ${document.getElementById('ingresoDOB').value}\n`;
-				formData += `  ├─ 📆F. Ingreso: ${document.getElementById('ingresoDate').value}\n`;
-				formData += `  ├─ ♀️Género:     ${document.querySelector('input[name="_ingresoGender"]:checked')?.value || 'N/A'}\n`;
-				formData += `  ├─ 📌Direccion:  ${document.getElementById('ingresoAddress').value}\n`;
-				formData += `  └─ ☎Teléfono:   ${document.getElementById('ingresoPhone').value}\n\n`;
-				
-				
-				formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
-				formData += `  ├─ ✍️Nombre:     ${document.getElementById('acudienteName').value}\n`;
-				formData += `  ├─ 📆F. Nacim:   ${document.getElementById('acudienteDOB').value}\n`;
-				formData += `  └─ 📄Documento:  ${document.getElementById('acudienteDoc').value}\n`;
-			}
-			
-			formData += `──────────────────────────────────────────────────────────\n`;
-			formData += `Generado el: ${new Date().toLocaleString()}\n`;
-			
-			return formData;
-		}
-
-        document.getElementById('noveltyForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitButton');
-            
-            // Validaciones básicas
-            const uds = document.getElementById('mainUdsDropdown').value;
-            if (!uds) { showFeedback("❌ Seleccione una UDS.", "error"); return; }
-
-            document.getElementById('emailSubject').value = `Novedad UDS: ${uds.split(' - ')[0]}`;
-            document.getElementById('hiddenFormattedData').value = formatData();
-
-            btn.disabled = true;
-            btn.textContent = "PROCESANDO ARCHIVOS...";
-
-            const fileInput = document.getElementById('fileInput');
-            const formData = new FormData(this);
-            const obj = Object.fromEntries(formData.entries());
-
-            // Procesar archivo si existe
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                reader.onload = async function() {
-                    obj.file_base64 = reader.result.split(',')[1];
-                    obj.file_type = file.type;
-                    obj.file_name = file.name;
-                    await enviarAGoogle(obj, btn);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                await enviarAGoogle(obj, btn);
-            }
-			return formData;
-        });
-
-        async function enviarAGoogle(data, btn) {
-			btn.textContent = "ENVIANDO A GOOGLE DRIVE...";
-			const formBody = Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
-
-			try {
-				await fetch(document.getElementById('noveltyForm').action, {
-					method: 'POST',
-					mode: 'no-cors',
-					headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-					body: formBody
+			function populateUDS(contract) {
+				const udsSelect = document.getElementById('mainUdsDropdown');
+				udsSelect.innerHTML = '<option value="">-- Seleccione UDS --</option>';
+				UDS_DATA[contract]?.forEach(([name, code]) => {
+					const opt = document.createElement('option');
+					opt.value = `${name} - ${code}`;
+					opt.textContent = `${name} - ${code}`;
+					udsSelect.appendChild(opt);
 				});
-
-				// 1. Mostrar mensaje de éxito
-				showFeedback('✅ ¡Éxito! Reporte y archivo enviados correctamente. ✅', 'success');
-				
-				// 2. Resetear todos los campos del formulario
-				document.getElementById('noveltyForm').reset();
-				
-				// 3. OCULTAR LAS SECCIONES DE INGRESO Y RETIRO
-				document.getElementById('sectionRetiro').classList.add('hidden');
-				document.getElementById('sectionIngreso').classList.add('hidden');
-				
-				// 4. Desmarcar visualmente los checkboxes (por si el reset no lo hizo)
-				document.getElementById('checkRetiro').checked = false;
-				document.getElementById('checkIngreso').checked = false;
-				
-				// 5. Limpiar el campo de edad calculada
-				document.getElementById('displayAge').value = "Esperando fechas...";
-				
-				// 6. Actualizar estilos visuales (volver a gris si no hay contrato seleccionado)
-				updateStyles();
-
-			} catch (error) {
-				showFeedback("❌ Error de conexión con Google Apps Script. ❌", "error");
-			} finally {
-				btn.disabled = false;
-				btn.textContent = "Enviar Reporte Al Correo";
 			}
-		}
-    </script>
-</body>
-</html>
 
+			function toggleSection(type) {
+				const section = document.getElementById(type === 'retiro' ? 'sectionRetiro' : 'sectionIngreso');
+				const check = document.getElementById(type === 'retiro' ? 'checkRetiro' : 'checkIngreso');
+				section.classList.toggle('hidden', !check.checked);
+			}
+
+			function updateAgeDisplay() {
+				const dobValue = document.getElementById('ingresoDOB').value;
+				const entryValue = document.getElementById('ingresoDate').value;
+				const displayField = document.getElementById('displayAge');
+				if (dobValue && entryValue) {
+					const ageResult = calculateAge(dobValue, entryValue);
+					displayField.value = ageResult;
+				}
+			}
+
+			function calculateAge(dob, entry) {
+				const d1 = new Date(dob); d2 = new Date(entry);
+				d1.setMinutes(d1.getMinutes() + d1.getTimezoneOffset());
+				d2.setMinutes(d2.getMinutes() + d2.getTimezoneOffset());
+				let years = d2.getFullYear() - d1.getFullYear();
+				let months = d2.getMonth() - d1.getMonth();
+				let days = d2.getDate() - d1.getDate();
+				if (days < 0) months--;
+				if (months < 0) { years--; months += 12; }
+				return `${years} años y ${months} meses`;
+			}
+
+			function showFeedback(message, type) {
+				const container = document.getElementById('feedbackContainer');
+				container.textContent = message;
+				container.className = `p-5 rounded-2xl text-center text-sm font-bold mt-4 animate__animated animate__fadeInUp ${type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200 animate__shakeX'}`;
+				container.classList.remove('hidden');
+			}
+			
+			function validarCamposObligatorios() {
+				const checkIngreso = document.getElementById('checkIngreso').checked;
+				const checkRetiro = document.getElementById('checkRetiro').checked;
+				let valid = true;
+
+				if (!checkIngreso && !checkRetiro) {
+					showToast("❌ Debes seleccionar al menos una opción (Ingreso o Retiro).", "error");
+					return false;
+				}
+
+				// Validación para Ingreso
+				if (checkIngreso) {
+					// Solo IDs de los campos de texto/fecha (excluimos el fileInput)
+					const camposIngreso = [
+						'ingresoDocNumber', 'ingresoFullName', 'ingresoDOB', 
+						'ingresoDate', 'ingresoAddress', 'ingresoPhone', 
+						'acudienteDoc', 'acudienteName', 'acudienteDOB'
+					];
+					
+					camposIngreso.forEach(id => {
+						const el = document.getElementById(id);
+						if (!el || !el.value.trim()) {
+							toggleFieldError(id, true);
+							valid = false;
+						} else {
+							toggleFieldError(id, false);
+						}
+					});
+				}
+
+				// Validación para Retiro
+				if (checkRetiro) {
+					const camposRetiro = ['retiroDocNumber', 'retiroFullName', 'retiroDate'];
+					camposRetiro.forEach(id => {
+						const el = document.getElementById(id);
+						if (!el || !el.value.trim()) {
+							toggleFieldError(id, true);
+							valid = false;
+						} else {
+							toggleFieldError(id, false);
+						}
+					});
+				}
+
+				if (!valid) {
+					showToast("❌ Por favor completa los campos resaltados en rojo.", "error");
+				}
+				return valid;
+			}
+			
+			function validarCoherenciaFechas() {
+				const checkRetiro = document.getElementById('checkRetiro').checked;
+				const checkIngreso = document.getElementById('checkIngreso').checked;
+				const fRetiroVal = document.getElementById('retiroDate').value;
+				const fIngresoVal = document.getElementById('ingresoDate').value;
+
+				if (checkRetiro && checkIngreso && fRetiroVal && fIngresoVal) {
+					const dRetiro = new Date(fRetiroVal);
+					const dIngreso = new Date(fIngresoVal);
+
+					if (dIngreso < dRetiro) {
+						toggleFieldError('ingresoDate', true);
+						toggleFieldError('retiroDate', true);
+						showToast("⚠️ La fecha de INGRESO no puede ser anterior a la de RETIRO");
+						return false; // Error de coherencia
+					}
+				}
+				// Si llegamos aquí o no se cumplen ambos checks, todo está bien
+				return true; 
+			}
+					
+			document.getElementById('noveltyForm').addEventListener('submit', async function(e) {
+				e.preventDefault();
+				const btn = document.getElementById('submitButton');
+				
+				const uds = document.getElementById('mainUdsDropdown').value;
+				if (!uds) { 
+					showToast("❌ Seleccione una UDS.", "error"); 
+					return; 
+				}
+
+			// 2. Validar campos vacíos (Inline)
+				const camposOk = validarCamposObligatorios();
+				
+				// 3. Validar coherencia de fechas (Toast)
+				const fechasOk = validarCoherenciaFechas();
+
+				// Si alguna validación falla, detenemos todo
+				if (!camposOk || !fechasOk) {
+					return; 
+				}
+				
+				if (!validarCamposObligatorios() || !validarCoherenciaFechas()) {
+					return; // Detiene el envío si algo falla
+				}
+				
+
+				document.getElementById('emailSubject').value = `Novedad UDS: ${uds.split(' - ')[0]}`;
+				document.getElementById('hiddenFormattedData').value = formatData();
+
+				btn.disabled = true;
+				btn.textContent = "PROCESANDO ARCHIVOS...";
+
+				const fileInput = document.getElementById('fileInput');
+				const formData = new FormData(this);
+				const obj = Object.fromEntries(formData.entries());
+
+				// Procesar archivo si existe
+				if (fileInput.files.length > 0) {
+					const file = fileInput.files[0];
+					const reader = new FileReader();
+					reader.onload = async function() {
+						obj.file_base64 = reader.result.split(',')[1];
+						obj.file_type = file.type;
+						obj.file_name = file.name;
+						await enviarAGoogle(obj, btn);
+					};
+					reader.readAsDataURL(file);
+				} else {
+					await enviarAGoogle(obj, btn);
+				}
+				return formData;
+			});
+			
+			// Función para limpiar el estado de error cuando el usuario interactúa
+			function setupErrorCleaners() {
+				// Seleccionamos todos los inputs y selects del formulario
+				const formInputs = document.querySelectorAll('#noveltyForm input, #noveltyForm select');
+				
+				formInputs.forEach(input => {
+					// Evento 'input' detecta cuando escriben, 'change' detecta cambios en selects/fechas
+					const clearError = () => {
+						if (input.classList.contains('input-error')) {
+							input.classList.remove('input-error');
+						}
+					};
+
+					input.addEventListener('input', clearError);
+					input.addEventListener('change', clearError);
+				});
+			}
+
+			// Ejecutar la configuración al cargar la página
+			document.addEventListener('DOMContentLoaded', setupErrorCleaners);
+			
+			// --- NUEVA FUNCIÓN: Control visual de errores ---
+			function toggleFieldError(id, isError) {
+				const el = document.getElementById(id);
+				if (el) {
+					if (isError) {
+						el.classList.add('input-error');
+					} else {
+						el.classList.remove('input-error');
+					}
+				}
+			}
+
+			// --- NUEVA FUNCIÓN: Mostrar Toast ---
+			function showToast(message) {
+				const toast = document.getElementById('dateToast');
+				const text = document.getElementById('toastText');
+				text.textContent = message;
+				toast.style.display = 'block';
+				toast.classList.remove('animate__fadeOutRight');
+				toast.classList.add('animate__fadeInRight');
+
+				setTimeout(() => {
+					toast.classList.replace('animate__fadeInRight', 'animate__fadeOutRight');
+					setTimeout(() => { toast.style.display = 'none'; }, 500);
+				}, 4000);
+			}
+			
+			
+			
+			function formatData() {
+				const contractNumber = document.getElementById('contractNumber').value;
+				const udsSelection = document.getElementById('mainUdsDropdown').value;
+				const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
+				const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
+				
+				let formData = 	`Reporte Recibido\n`;
+				formData += 	`\n`;
+				formData += 	`╔═══════════════════════════════╗\n`;
+				formData += 	` REPORTE DE NOVEDADES - ASOCIACIÓN T3\n`;
+				formData += 	`╚═══════════════════════════════╝\n\n`;
+				
+				formData += `[ INFORMACIÓN GENERAL ]\n`;
+				formData += `> CONTRATO:      ${contractNumber}\n`;
+				formData += `> UDS NOMBRE:    ${utsName}\n`;
+				formData += `> UDS CÓDIGO:    ${utsCode}\n`;
+				formData += `──────────────────────────────────────────────────────────\n\n`;
+
+				if (document.getElementById('checkRetiro').checked) {
+					formData += `┹ ✴ DATOS DE RETIRO (RETIRO)\n`;
+					formData += `  ├─ 📄Documento:  ${document.getElementById('retiroDocType').value} ${document.getElementById('retiroDocNumber').value}\n`;
+					formData += `  ├─ ✍️Nombre:     ${document.getElementById('retiroFullName').value.toUpperCase()}\n`;
+					formData += `  ├─ 📆Fecha:      ${document.getElementById('retiroDate').value}\n`;
+					formData += `  └─ ♀️Género:     ${document.querySelector('input[name="_retiroGender"]:checked')?.value || 'N/A'}\n\n`;
+				}
+
+				if (document.getElementById('checkIngreso').checked) {
+					formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
+					formData += `  ├─ ✍️Niño:       ${document.getElementById('ingresoFullName').value.toUpperCase()}\n`;
+					formData += `  ├─ 📄Documento:  ${document.getElementById('ingresoDocType').value} ${document.getElementById('ingresoDocNumber').value}\n`;
+					formData += `  ├─ 👶Edad:       ${document.getElementById('displayAge').value}\n`;
+					formData += `  ├─ 📆F. Nacim:   ${document.getElementById('ingresoDOB').value}\n`;
+					formData += `  ├─ 📆F. Ingreso: ${document.getElementById('ingresoDate').value}\n`;
+					formData += `  ├─ ♀️Género:     ${document.querySelector('input[name="_ingresoGender"]:checked')?.value || 'N/A'}\n`;
+					formData += `  ├─ 📌Direccion:  ${document.getElementById('ingresoAddress').value}\n`;
+					formData += `  └─ ☎Teléfono:   ${document.getElementById('ingresoPhone').value}\n\n`;
+					
+					
+					formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
+					formData += `  ├─ ✍️Nombre:     ${document.getElementById('acudienteName').value}\n`;
+					formData += `  ├─ 📆F. Nacim:   ${document.getElementById('acudienteDOB').value}\n`;
+					formData += `  └─ 📄Documento:  ${document.getElementById('acudienteDoc').value}\n`;
+				}
+				
+				formData += `──────────────────────────────────────────────────────────\n`;
+				formData += `Generado el: ${new Date().toLocaleString()}\n`;
+				
+				return formData;
+			}
+			
+
+			
+
+			async function enviarAGoogle(data, btn) {
+				btn.textContent = "ENVIANDO A GOOGLE DRIVE...";
+				const formBody = Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
+
+				try {
+					await fetch(document.getElementById('noveltyForm').action, {
+						method: 'POST',
+						mode: 'no-cors',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: formBody
+					});
+
+					// 1. Mostrar mensaje de éxito
+					showFeedback('✅ ¡Éxito! Reporte y archivo enviados correctamente. ✅', 'success');
+					
+					// 2. Resetear todos los campos del formulario
+					document.getElementById('noveltyForm').reset();
+					
+					// 3. OCULTAR LAS SECCIONES DE INGRESO Y RETIRO
+					document.getElementById('sectionRetiro').classList.add('hidden');
+					document.getElementById('sectionIngreso').classList.add('hidden');
+					
+					// 4. Desmarcar visualmente los checkboxes (por si el reset no lo hizo)
+					document.getElementById('checkRetiro').checked = false;
+					document.getElementById('checkIngreso').checked = false;
+					
+					// 5. Limpiar el campo de edad calculada
+					document.getElementById('displayAge').value = "Esperando fechas...";
+					
+					// 6. Actualizar estilos visuales (volver a gris si no hay contrato seleccionado)
+					updateStyles();
+
+				} catch (error) {
+					showToast("❌ Error de conexión con Google Apps Script. ❌", "error");
+				} finally {
+					btn.disabled = false;
+					btn.textContent = "Enviar Reporte Al Correo";
+				}
+			}
+		</script>
+		
+		<div id="dateToast" class="animate__animated">
+			<div class="flex items-center space-x-3">
+				<span class="text-xl">⚠️</span>
+				<p id="toastText" class="text-sm font-bold"></p>
+			</div>
+		</div>
+	</body>
+	</html>
