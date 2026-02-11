@@ -358,6 +358,7 @@
         productosBase.forEach((p, i) => {
             const cant = parseFloat(document.getElementById(`cant-${s}-${i}`).value) || 0;
             const pUnit = parseFloat(document.getElementById(`punit-${s}-${i}`).value) || 0;
+			
             const total = cant * pUnit;
             if (formatearTotal) {
                 const inputVal = document.getElementById(`val-${s}-${i}`);
@@ -650,6 +651,7 @@
                 c: document.getElementById(`cupos-${s}`)?.value || "",
                 items: {}
             };
+			
             productosBase.forEach((p, i) => {
                 data.semanas[s].items[p.nombre] = {
                     f: document.getElementById(`fac-${s}-${i}`)?.value || "",
@@ -688,8 +690,12 @@
                     if(item) {
                         if(document.getElementById(`fac-${s}-${i}`)) document.getElementById(`fac-${s}-${i}`).value = item.f || "";
                         if(document.getElementById(`cant-${s}-${i}`)) document.getElementById(`cant-${s}-${i}`).value = item.q || "";
-                        if(document.getElementById(`punit-${s}-${i}`)) document.getElementById(`punit-${s}-${i}`).value = pb.precio;
-                    }
+						
+						const inputPUnit = document.getElementById(`punit-${s}-${i}`);
+							if(inputPUnit) {
+								inputPUnit.value = item.p || pb.precio; 
+							}
+                        }
                 });
             }
             calcular(s);
