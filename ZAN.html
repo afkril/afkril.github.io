@@ -1270,11 +1270,13 @@ select option:checked {
                     <tbody>
                         ${rProd.filter(x => x.t > 0 || x.c > 0).map(x => `
                             <tr>
-                                <td>${x.n}</td>
-                                <td style="text-align:center; font-size:8px">${x.cl ? '?' : '?'}</td>
-                                <td style="text-align:center; color:var(--accent-cyan); font-weight:bold">${x.c.toLocaleString()}</td>
-                                <td class="price-display">${formatter.format(x.t)}</td>
-                            </tr>`).join('')}
+								<td>${x.n}</td>
+								<td style="text-align:center; font-size:12px">
+									${x.cl ? '<i class="fa-solid fa-check" style="color:var(--success)"></i>' : '<i class="fa-solid fa-xmark" style="color:var(--danger)"></i>'}
+								</td>
+								<td style="text-align:center; color:var(--accent-cyan); font-weight:bold">${x.c.toLocaleString()}</td>
+								<td class="price-display">${formatter.format(x.t)}</td>
+							</tr>`).join('')}
                         
                         <tr style="border-top:1px solid #555; color:var(--accent-cyan)">
                             <td colspan="2"><b>TOTAL CL</b></td>
@@ -1681,4 +1683,3 @@ select option:checked {
 </script>
 </body>
 </html>
-
