@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minutas HCB</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-neiva: #2563eb;
+            --primary-gaitana: #059669;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="light"] {
+            --bg-dark: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-hover: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
+            font-size: 13px;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            z-index: 100;
+        }
+
+        .hamburger {
+            width: 20px;
+            height: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            z-index: 101;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: var(--text-primary);
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+
+        .mobile-title {
+            font-weight: 700;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 50px;
+            left: -260px;
+            width: 260px;
+            height: calc(100vh - 50px);
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: left 0.3s ease;
+            z-index: 99;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 98;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-neiva), #3b82f6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .reg-gaitana .logo-icon {
+            background: linear-gradient(135deg, var(--primary-gaitana), #10b981);
+        }
+
+        .nav-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .nav-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 0.375rem;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-neiva);
+        }
+
+        .reg-gaitana .nav-item.active {
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--primary-gaitana);
+        }
+
+        .regional-selector {
+            background: var(--bg-dark);
+            padding: 0.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .reg-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            transition: all 0.3s;
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .reg-btn.active {
+            background: var(--primary-neiva);
+            color: white;
+        }
+
+        .reg-gaitana .reg-btn.active {
+            background: var(--primary-gaitana);
+        }
+
+        /* Theme Toggle en Sidebar */
+        .theme-section {
+            margin-top: auto;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .theme-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .theme-toggle {
+            position: relative;
+            width: 44px;
+            height: 22px;
+            background: var(--bg-hover);
+            border-radius: 11px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid var(--border);
+        }
+
+        .theme-toggle::after {
+            content: "🌙";
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            width: 18px;
+            height: 18px;
+            background: var(--bg-card);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            transition: all 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        [data-theme="light"] .theme-toggle::after {
+            content: "☀️";
+            left: calc(100% - 19px);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 50px;
+            padding: 0.75rem;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Config Panel Compacto */
+        .config-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .config-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .form-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-input, .form-select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.625rem;
+            color: var(--text-primary);
+            font-size: 0.8125rem;
+            height: 32px;
+        }
+
+        .days-selector {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .day-chip input {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .day-label {
+            display: block;
+            padding: 0.375rem 0.625rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .day-chip input:checked + .day-label {
+            background: var(--primary-neiva);
+            border-color: var(--primary-neiva);
+            color: white;
+        }
+
+        .reg-gaitana .day-chip input:checked + .day-label {
+            background: var(--primary-gaitana);
+            border-color: var(--primary-gaitana);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            height: 32px;
+        }
+
+        .btn-primary {
+            background: var(--primary-neiva);
+            color: white;
+        }
+
+        .reg-gaitana .btn-primary {
+            background: var(--primary-gaitana);
+        }
+
+        .btn-secondary {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        /* Category Filters */
+        .category-filters {
+            display: flex;
+            gap: 0.375rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+            align-items: center;
+            padding: 0.5rem;
+            background: var(--bg-card);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .filter-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-right: 0.375rem;
+        }
+
+        .filter-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.625rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .filter-chip.active {
+            background: rgba(37, 99, 235, 0.15);
+            border-color: var(--primary-neiva);
+            color: var(--primary-neiva);
+        }
+
+        .reg-gaitana .filter-chip.active {
+            background: rgba(5, 150, 105, 0.15);
+            border-color: var(--primary-gaitana);
+            color: var(--primary-gaitana);
+        }
+
+        .filter-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+        }
+
+        .dot-granos { background: #f59e0b; }
+        .dot-proteinas { background: #ef4444; }
+        .dot-lacteos { background: #3b82f6; }
+        .dot-panaderia { background: #8b5cf6; }
+        .dot-verduras { background: #10b981; }
+        .dot-frutas { background: #ec4899; }
+
+        /* Table Ultra Compacta */
+        .table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-dark);
+        }
+
+        .table-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .btn-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8125rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+
+        th {
+            padding: 0.375rem 0.5rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-dark);
+            white-space: nowrap;
+            height: 24px;
+        }
+
+        td {
+            padding: 0.25rem 0.5rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-primary);
+            height: 28px;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        [data-theme="light"] tr:hover {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .product-name {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            font-size: 0.8125rem;
+        }
+
+        .category-badge {
+            width: 3px;
+            height: 16px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .badge-granos { background: #f59e0b; }
+        .badge-proteinas { background: #ef4444; }
+        .badge-lacteos { background: #3b82f6; }
+        .badge-panaderia { background: #8b5cf6; }
+        .badge-verduras { background: #10b981; }
+        .badge-frutas { background: #ec4899; }
+
+        .amount-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.125rem 0.5rem;
+            background: rgba(37, 99, 235, 0.1);
+            color: #60a5fa;
+            border-radius: 1rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .reg-gaitana .amount-badge {
+            background: rgba(5, 150, 105, 0.1);
+            color: #34d399;
+        }
+
+        .suggested-amount {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            background: rgba(245, 158, 11, 0.1);
+            color: #fbbf24;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            white-space: nowrap;
+        }
+
+        .input-entrega {
+            width: 100%;
+            min-width: 80px;
+            max-width: 120px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            height: 24px;
+        }
+
+        .input-entrega:focus {
+            outline: none;
+            border-color: var(--primary-neiva);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            width: 95%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        /* Matrix Editor */
+        .product-selector {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .matrix-container {
+            padding: 0.75rem;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+        }
+
+        .matrix-header {
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.6875rem;
+            color: var(--text-secondary);
+            padding: 0.375rem;
+            background: var(--bg-dark);
+            border-radius: 0.375rem;
+        }
+
+        .matrix-cell {
+            position: relative;
+        }
+
+        .matrix-input {
+            width: 100%;
+            padding: 0.5rem 0.25rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-align: center;
+            height: 36px;
+        }
+
+        .matrix-input:focus {
+            outline: none;
+            border-color: var(--primary-neiva);
+        }
+
+        .matrix-input.changed {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .matrix-label {
+            position: absolute;
+            top: -6px;
+            left: 6px;
+            background: var(--bg-card);
+            padding: 0 3px;
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .editor-footer {
+            padding: 0.75rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-dark);
+        }
+
+        .change-indicator {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .change-indicator.has-changes {
+            color: var(--warning);
+            font-weight: 600;
+        }
+
+        /* Snapshots */
+        .snapshot-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .snapshot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .snapshot-info h4 {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .snapshot-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 300;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--success);
+            border-radius: 0.5rem;
+            padding: 0.625rem 1rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease;
+            font-size: 0.8125rem;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+
+        @media print {
+            .mobile-header, .sidebar, .overlay, .no-print { display: none !important; }
+            .main-content { margin-top: 0; padding: 0.5rem; }
+            body { background: white; color: black; font-size: 11px; }
+            .table-container { box-shadow: none; border: 1px solid #ddd; }
+            td { height: 20px; padding: 0.125rem 0.375rem; }
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                left: 0;
+                top: 0;
+                height: 100vh;
+                width: 240px;
+            }
+            .mobile-header {
+                display: none;
+            }
+            .main-content {
+                margin-left: 240px;
+                margin-top: 0;
+                padding: 1rem;
+            }
+            .overlay {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="reg-neiva" data-theme="dark">
+    <div class="mobile-header">
+        <div class="hamburger" onclick="toggleSidebar()" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="mobile-title">
+            <span>🍽️</span>
+            <span>Lista Mercados</span>
+        </div>
+        <div style="width: 20px;"></div>
+    </div>
+
+    <div class="overlay" onclick="toggleSidebar()" id="overlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🍽️</div>
+            <span>Lista Mercados</span>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Principal</div>
+            <button class="nav-item active" onclick="showSection('calculator'); toggleSidebar()">
+                <span>🧮</span> Minutas
+            </button>
+            <button class="nav-item" onclick="showSection('saved'); toggleSidebar()">
+                <span>💾</span> Guardadas
+                <span id="savedCount" style="margin-left: auto; background: var(--primary-neiva); color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.6875rem;">0</span>
+            </button>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Herramientas</div>
+            <button class="nav-item" onclick="openGramajeEditor(); toggleSidebar()">
+                <span>⚖️</span> Editor de Gramajes
+            </button>
+            <button class="nav-item" onclick="manageSnapshots(); toggleSidebar()">
+                <span>📸</span> Copias de Seguridad
+            </button>
+        </div>
+
+        <div class="regional-selector">
+            <button class="reg-btn active" onclick="cambiarRegional('neiva')" id="btnNeiva">REGIONAL NEIVA</button>
+            <button class="reg-btn" onclick="cambiarRegional('gaitana')" id="btnGaitana">REGIONAL GAITANA</button>
+        </div>
+
+        <div class="theme-section">
+            <span class="theme-label">Modo Oscuro</span>
+            <div class="theme-toggle" onclick="toggleTheme()"></div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="config-panel no-print">
+            <div class="config-row">
+                <div class="form-group">
+                    <label class="form-label">Niños</label>
+                    <input type="number" class="form-input" id="num-p" value="13" min="1" max="500" style="width: 60px;">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Semana</label>
+                    <select class="form-select" id="sem" style="width: 130px;">
+                        <option value="1">Sem 1 (M1-5)</option>
+                        <option value="2">Sem 2 (M6-10)</option>
+                        <option value="3">Sem 3 (M11-15)</option>
+                        <option value="4">Sem 4 (M16-20)</option>
+                        <option value="5">Sem 5 (M21-25)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="flex: 1; min-width: 220px;">
+                    <label class="form-label">Días</label>
+                    <div class="days-selector">
+                        <label class="day-chip">
+                            <input type="checkbox" class="d-ch" value="1" checked>
+                            <span class="day-label">Lun</span>
+                        </label>
+                        <label class="day-chip">
+                            <input type="checkbox" class="d-ch" value="2" checked>
+                            <span class="day-label">Mar</span>
+                        </label>
+                        <label class="day-chip">
+                            <input type="checkbox" class="d-ch" value="3" checked>
+                            <span class="day-label">Mié</span>
+                        </label>
+                        <label class="day-chip">
+                            <input type="checkbox" class="d-ch" value="4" checked>
+                            <span class="day-label">Jue</span>
+                        </label>
+                        <label class="day-chip">
+                            <input type="checkbox" class="d-ch" value="5" checked>
+                            <span class="day-label">Vie</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="generar()">
+                    <span>🚀</span> Generar
+                </button>
+            </div>
+        </div>
+
+        <div class="category-filters no-print" id="catFilters" style="display: none;">
+            <span class="filter-label">Mostrar:</span>
+            <div class="filter-chip active" onclick="toggleCategory(this, 'all')">
+                <span class="filter-dot" style="background: currentColor;"></span>
+                Todos
+            </div>
+            <div class="filter-chip" onclick="toggleCategory(this, 'granos')">
+                <span class="filter-dot dot-granos"></span>
+                Granos
+            </div>
+            <div class="filter-chip" onclick="toggleCategory(this, 'proteinas')">
+                <span class="filter-dot dot-proteinas"></span>
+                Proteínas
+            </div>
+            <div class="filter-chip" onclick="toggleCategory(this, 'lacteos')">
+                <span class="filter-dot dot-lacteos"></span>
+                Lácteos
+            </div>
+            <div class="filter-chip" onclick="toggleCategory(this, 'verduras')">
+                <span class="filter-dot dot-verduras"></span>
+                Verduras
+            </div>
+            <div class="filter-chip" onclick="toggleCategory(this, 'frutas')">
+                <span class="filter-dot dot-frutas"></span>
+                Frutas
+            </div>
+            <div class="filter-chip" onclick="toggleCategory(this, 'panaderia')">
+                <span class="filter-dot dot-panaderia"></span>
+                Panadería
+            </div>
+        </div>
+
+        <div class="table-container" id="resultContainer" style="display: none;">
+            <div class="table-header no-print">
+                <div class="table-title">Lista de Compras</div>
+                <div class="table-actions">
+                    <button class="btn-icon" onclick="exportExcel()" title="Excel">📊</button>
+                    <button class="btn-icon" onclick="exportPDF()" title="PDF">📄</button>
+                    <button class="btn-icon" onclick="guardarLista()" title="Guardar">💾</button>
+                    <button class="btn-icon" onclick="imprimir()" title="Imprimir">🖨️</button>
+                </div>
+            </div>
+            
+            <div id="resultado">
+                <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <p>Genere la lista para ver resultados</p>
+                </div>
+            </div>
+
+            <div class="table-header no-print" style="border-top: 1px solid var(--border); border-bottom: none; padding: 0.375rem 0.75rem;">
+                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                    <span id="totalItems">0</span> productos • <span id="lastUpdate">--</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modalGramaje">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">⚖️ Editor - <span id="editorRegionalName">Neiva</span></h3>
+                <button class="modal-close" onclick="closeModal('gramaje')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <div class="product-selector">
+                    <div class="form-group" style="flex: 1; min-width: 200px;">
+                        <label class="form-label">Producto</label>
+                        <select class="form-select" id="editorProductSelect" onchange="loadProductMatrix()">
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="width: 100px;">
+                        <label class="form-label">Cat.</label>
+                        <input type="text" class="form-input" id="editorProductCategory" readonly>
+                    </div>
+                    <div class="form-group" style="width: 80px;">
+                        <label class="form-label">Und.</label>
+                        <input type="text" class="form-input" id="editorProductUnit" readonly>
+                    </div>
+                </div>
+
+                <div class="matrix-container" id="matrixContainer" style="display: none;">
+                    <div class="matrix-grid" id="matrixGrid">
+                        <div class="matrix-header">Sem 1</div>
+                        <div class="matrix-header">Sem 2</div>
+                        <div class="matrix-header">Sem 3</div>
+                        <div class="matrix-header">Sem 4</div>
+                        <div class="matrix-header">Sem 5</div>
+                        
+                        <!-- M1-M5 -->
+                        <div class="matrix-cell"><span class="matrix-label">M1</span><input type="number" class="matrix-input" data-menu="m1" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M6</span><input type="number" class="matrix-input" data-menu="m6" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M11</span><input type="number" class="matrix-input" data-menu="m11" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M16</span><input type="number" class="matrix-input" data-menu="m16" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M21</span><input type="number" class="matrix-input" data-menu="m21" step="0.01" onchange="markChanged(this)"></div>
+
+                        <!-- M6-M10 -->
+                        <div class="matrix-cell"><span class="matrix-label">M2</span><input type="number" class="matrix-input" data-menu="m2" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M7</span><input type="number" class="matrix-input" data-menu="m7" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M12</span><input type="number" class="matrix-input" data-menu="m12" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M17</span><input type="number" class="matrix-input" data-menu="m17" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M22</span><input type="number" class="matrix-input" data-menu="m22" step="0.01" onchange="markChanged(this)"></div>
+
+                        <!-- M11-M15 -->
+                        <div class="matrix-cell"><span class="matrix-label">M3</span><input type="number" class="matrix-input" data-menu="m3" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M8</span><input type="number" class="matrix-input" data-menu="m8" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M13</span><input type="number" class="matrix-input" data-menu="m13" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M18</span><input type="number" class="matrix-input" data-menu="m18" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M23</span><input type="number" class="matrix-input" data-menu="m23" step="0.01" onchange="markChanged(this)"></div>
+
+                        <!-- M16-M20 -->
+                        <div class="matrix-cell"><span class="matrix-label">M4</span><input type="number" class="matrix-input" data-menu="m4" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M9</span><input type="number" class="matrix-input" data-menu="m9" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M14</span><input type="number" class="matrix-input" data-menu="m14" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M19</span><input type="number" class="matrix-input" data-menu="m19" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M24</span><input type="number" class="matrix-input" data-menu="m24" step="0.01" onchange="markChanged(this)"></div>
+
+                        <!-- M21-M25 -->
+                        <div class="matrix-cell"><span class="matrix-label">M5</span><input type="number" class="matrix-input" data-menu="m5" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M10</span><input type="number" class="matrix-input" data-menu="m10" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M15</span><input type="number" class="matrix-input" data-menu="m15" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M20</span><input type="number" class="matrix-input" data-menu="m20" step="0.01" onchange="markChanged(this)"></div>
+                        <div class="matrix-cell"><span class="matrix-label">M25</span><input type="number" class="matrix-input" data-menu="m25" step="0.01" onchange="markChanged(this)"></div>
+                    </div>
+                </div>
+
+                <div id="editorEmptyState" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚖️</div>
+                    <p style="font-size: 0.875rem;">Seleccione un producto</p>
+                </div>
+            </div>
+            <div class="editor-footer">
+                <div class="change-indicator" id="changeIndicator">Sin cambios</div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-secondary" onclick="createSnapshot()">💾 Copia</button>
+                    <button class="btn btn-primary" onclick="applyChanges()">Aplicar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalSnapshots">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">📸 Copias de Seguridad</h3>
+                <button class="modal-close" onclick="closeModal('snapshots')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="snapshot-list" id="snapshotList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalSaved">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">💾 Listas Guardadas</h3>
+                <button class="modal-close" onclick="closeModal('saved')">&times;</button>
+            </div>
+            <div class="modal-body" id="savedListsContainer"></div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const baseDatabase = {
+            neiva: {
+                titulo: "Regional Neiva",
+                db: [
+						{"n":"Aceite","c":"granos","u":"ml","g":{"m1":13,"m2":14,"m3":15,"m4":14,"m5":14,"m6":15,"m7":14,"m8":15,"m9":14,"m10":13,"m11":14,"m12":18,"m13":10,"m14":10,"m15":12,"m16":14,"m17":14,"m18":14,"m19":14,"m20":13,"m21":15,"m22":11,"m23":15,"m24":26}},
+						{"n":"Arroz","c":"granos","u":"gr","g":{"m1":23,"m2":23,"m3":46,"m4":23,"m5":48,"m6":23,"m7":23,"m9":48,"m10":23,"m11":23,"m12":23,"m13":23,"m14":25,"m15":48,"m16":23,"m17":23,"m18":23,"m19":23,"m20":23,"m21":23,"m22":23,"m23":23,"m24":73}},
+						{"n":"Arveja seca","c":"granos","u":"gr","g":{"m2":10,"m9":10,"m20":10}},
+						{"n":"Avena","c":"granos","u":"gr","g":{"m6":10,"m12":10,"m14":10,"m18":10,"m19":10,"m21":10,"m24":10}},
+						{"n":"Azúcar","c":"granos","u":"gr","g":{"m10":6,"m24":18}},
+						{"n":"Cebada","c":"granos","u":"gr","g":{"m4":10}},
+						{"n":"Cuchuco de trigo","c":"granos","u":"gr","g":{"m22":15}},
+						{"n":"Frijol","c":"granos","u":"gr","g":{"m4":10,"m13":10,"m16":10,"m23":10}},
+						{"n":"Harina de maíz","c":"granos","u":"gr","g":{"m3":25,"m4":25,"m6":25,"m10":25,"m15":25,"m17":25,"m18":25,"m19":25,"m20":25,"m23":25}},
+						{"n":"Harina de trigo","c":"granos","u":"gr","g":{"m2":30,"m3":10,"m8":2,"m10":2,"m12":25,"m20":25,"m21":25,"m23":30}},
+						{"n":"Lenteja","c":"granos","u":"gr","g":{"m1":10,"m7":10,"m15":10,"m24":10}},
+						{"n":"Panela","c":"granos","u":"gr","g":{"m2":6,"m3":6,"m4":6,"m5":6,"m6":6,"m7":6,"m8":6,"m9":6,"m11":6,"m12":6,"m13":6,"m14":6,"m15":6,"m16":4,"m17":6,"m18":6,"m19":6,"m20":6,"m21":6,"m22":6}},
+						{"n":"Pastas (Letras de sopa)","c":"granos","u":"gr","g":{"m12":2}},
+						{"n":"Pastas (Espaguetis)","c":"granos","u":"gr","g":{"m8":23,"m14":23,"m24":23}},
+						{"n":"Pastas fideos ","c":"granos","u":"gr","g":{"m2":4,"m9":4,"m10":5,"m15":1,"m17":1,"m18":10,"m24":5}},
+						{"n":"Sal","c":"granos","u":"gr","g":{"m1":3,"m2":3,"m3":3,"m4":3,"m5":3,"m6":3,"m7":3,"m8":3,"m9":3,"m11":3,"m12":3,"m13":3,"m14":3,"m15":3,"m16":3,"m17":3,"m18":3,"m19":3,"m20":3,"m21":3,"m22":3,"m23":3,"m24":6}},
+						{"n":"Huevo","c":"proteinas","u":"und","g":{"m1":1.00,"m2":1.19,"m3":1.11,"m4":1.00,"m5":1.00,"m6":1.00,"m7":1.00,"m8":1.11,"m9":1.00,"m10":1.02,"m11":1.00,"m12":1.02,"m13":1.00,"m14":1.00,"m15":1.00,"m16":1.00,"m17":1.00,"m18":1.00,"m19":1.00,"m20":1.09,"m21":1.09,"m22":1.00,"m23":1.09,"m24":2.00}},
+						{"n":"Pechuga","c":"proteinas","u":"GRS","g":{"m2":43.01,"m5":43.01,"m8":43.01,"m12":43.01,"m17":43.01,"m19":43.01,"m22":43.01}},
+						{"n":"Queso","c":"proteinas","u":"GRS","g":{"m2":10,"m4":10,"m5":10,"m6":10,"m10":10,"m12":10,"m15":20,"m17":10,"m18":10,"m19":10,"m20":20,"m23":30,"m24":30}},
+						{"n":"Carne de cerdo","c":"proteinas","u":"GRS","g":{"m6":40,"m14":40,"m24":40}},
+						{"n":"Carne de res ","c":"proteinas","u":"GRS","g":{"m4":40,"m9":40,"m13":40,"m16":40,"m18":40,"m20":40,"m21":40,"m23":40}},
+						{"n":"Carne de res molida","c":"proteinas","u":"GRS","g":{"m1":40,"m7":40,"m15":40,"m24":40}},
+						{"n":"Tilapia","c":"proteinas","u":"GRS","g":{"m3":64.52,"m10":64.52}},
+						{"n":"Hígado","c":"proteinas","u":"GRS","g":{"m11":40}},
+						{"n":"Kumis","c":"lacteos","u":"und 150 cc","g":{"m11":1,"m20":1,"m22":1}},
+						{"n":"Leche","c":"lacteos","u":"ml","g":{"m1":150,"m2":300,"m3":300,"m4":300,"m5":300,"m6":300,"m7":150,"m8":300,"m9":300,"m10":150,"m11":150,"m12":300,"m13":300,"m14":150,"m15":300,"m16":300,"m17":300,"m18":150,"m19":300,"m20":150,"m21":300,"m22":150,"m23":155,"m24":600}},
+						{"n":"Yogurt","c":"lacteos","u":"und 150 cc","g":{"m1":1,"m7":1,"m10":1,"m14":1,"m18":1,"m23":1}},
+						{"n":"Cucas","c":"panaderia","u":"und","g":{"m4":1,"m8":1,"m11":1,"m18":1,"m22":1}},
+						{"n":"Galletas dulces","c":"panaderia","u":"und","g":{"m6":1,"m13":1,"m16":1}},
+						{"n":"Mogolla","c":"panaderia","u":"und","g":{"m1":1,"m7":1,"m9":1,"m12":1,"m13":1,"m16":1}},
+						{"n":"Pan de sal","c":"panaderia","u":"und","g":{"m2":1,"m7":1,"m10":1,"m11":1,"m14":1,"m17":1,"m19":1,"m21":1,"m24":1}},
+						{"n":"Aguacate","c":"verduras","u":"gr","g":{"m13":65.5,"m16":19.48}},
+						{"n":"Ahuyama","c":"verduras","u":"gr","g":{"m5":116.67}},
+						{"n":"Ajo","c":"verduras","u":"gr","g":{"m1":2,"m2":0.53,"m3":0.53,"m4":0.53,"m5":1.53,"m6":1,"m7":0.53,"m8":0.53,"m11":1,"m12":1.06,"m13":0.53,"m14":0.53,"m15":1.05,"m16":0.53,"m17":0.53,"m18":0.53,"m19":0.53,"m20":0.53,"m21":0.53,"m22":0.53,"m23":1.06,"m24":2.5}},
+						{"n":"Cebolla cabezona","c":"verduras","u":"gr","g":{"m1":7.26, "m2":12.53, "m3":6.32, "m4":25.16, "m5":21.06, "m6":21.06, "m7":2, "m8":15.26, "m9":5.26, "m11":15, "m12":10.53, "m13":4.10, "m14":14.53, "m15":2, "m16":4.10, "m17":10, "m18":3, "m19":5.26, "m20":9, "m22":10.53, "m23":6.21, "m24":28.42}},
+						{"n":"Cebolla junca","c":"verduras","u":"gr","g":{"m1":10,"m2":5,"m3":15,"m4":5,"m5":5,"m6":5,"m7":2,"m8":5,"m9":7,"m10":2.5,"m11":2,"m12":15,"m13":2,"m14":5,"m15":2.5,"m16":2.5,"m17":2,"m18":11.5,"m19":5,"m20":2,"m21":5,"m22":14.75,"m23":5,"m24":12.5}},
+						{"n":"Cilantro","c":"verduras","u":"gr","g":{"m1":3.33,"m2":1.11,"m7":1.11,"m9":2.1,"m12":2,"m13":1,"m14":1,"m15":2.22,"m16":1,"m18":1.11,"m20":2,"m22":1.11,"m23":1,"m24":3.33}},
+						{"n":"Espinaca","c":"verduras","u":"gr","g":{"m6":83.33}},
+						{"n":"Habichuela","c":"verduras","u":"gr","g":{"m5":44.44,"m8":16.67,"m11":16.67,"m12":5,"m17":16.67,"m18":4.44,"m19":5,"m22":8.88}},
+						{"n":"Lechuga","c":"verduras","u":"gr","g":{"m1":18.18,"m12":18.18,"m19":36.36,"m22":18.18}},
+						{"n":"Papa criolla","c":"verduras","u":"gr","g":{"m8":30,"m15":30,"m18":16.3,"m22":5.43}},
+						{"n":"Papa pastusa","c":"verduras","u":"gr","g":{"m1":46.66,"m2":8.89,"m3":33.33,"m5":33.33,"m7":46.66,"m9":8.89,"m11":30,"m14":32.61,"m15":13.33,"m18":30,"m19":30,"m20":2,"m21":33.33,"m23":30,"m24":46.66}},
+						{"n":"Pepino cohombro","c":"verduras","u":"gr","g":{"m2":20,"m9":26.67,"m14":20,"m15":26.67,"m18":26.67,"m20":26.67,"m21":20,"m23":13.33,"m24":20}},
+						{"n":"Pimenton rojo","c":"verduras","u":"gr","g":{"m1":5.88,"m2":2,"m7":2.24,"m9":2,"m12":1.18,"m15":2.35,"m18":2,"m20":2.24,"m24":2.35}},
+						{"n":"Platano maduro","c":"verduras","u":"gr","g":{"m1":34.72,"m2":41.67,"m4":41.67,"m6":41.67,"m8":34.72,"m10":41.67,"m13":41.67,"m20":41.67,"m24":41.67}},
+						{"n":"Platano verde","c":"verduras","u":"gr","g":{"m4":4.41,"m5":36.76,"m12":44.12,"m13":4.41,"m16":36.76,"m17":44.12,"m22":44.12,"m23":4.41}},
+						{"n":"Remolacha","c":"verduras","u":"gr","g":{"m24":20}},
+						{"n":"Repollo","c":"verduras","u":"gr","g":{"m3":7.14,"m10":14.29}},
+						{"n":"Tomate","c":"verduras","u":"gr","g":{"m1":18.75,"m2":18.75,"m3":26.25,"m4":30,"m5":25,"m6":18.75,"m7":38.75,"m8":21.25,"m9":25,"m10":12.5,"m11":10,"m12":36.25,"m13":5,"m14":35,"m15":34.2,"m16":17.65,"m17":3.75,"m18":31,"m19":31.25,"m20":32.5,"m21":25,"m22":30,"m23":32.5,"m24":68.75}},
+						{"n":"Yuca","c":"verduras","u":"gr","g":{"m9":37.5,"m24":31.25}},{"n":"Zanahoria ","c":"verduras","u":"gr","g":{"m1":54.11,"m2":4.71,"m3":35.29,"m4":2.35,"m7":30.59,"m8":17.65,"m9":4.71,"m10":23.53,"m11":17.65,"m12":22.65,"m13":3.53,"m15":7.06,"m16":3.75,"m17":17.65,"m18":3.53,"m19":5,"m20":2.35,"m22":34.1,"m23":14.11,"m24":30.59}},
+						{"n":"Banano","c":"frutas","u":"gr","g":{"m1":85.71,"m2":57.14,"m5":85.71,"m6":85.71,"m7":85.71,"m8":28.57,"m11":85.71,"m12":28.57,"m13":85.71,"m16":85.71,"m17":85.71,"m21":85.71,"m23":85.71,"m24":28.57}},
+						{"n":"Fresa","c":"frutas","u":"gr","g":{"m1":21.05,"m3":21.05}},
+						{"n":"Guayaba","c":"frutas","u":"gr","g":{"m19":26.67}},
+						{"n":"Limón","c":"frutas","u":"gr","g":{"m1":4,"m2":5,"m3":6,"m4":10,"m7":10,"m8":5,"m9":5,"m10":6,"m12":5,"m14":5,"m15":6,"m18":5,"m19":3,"m20":5,"m21":10,"m22":10,"m23":5,"m24":5}},
+						{"n":"Mandarina","c":"frutas","u":"gr","g":{"m1":57.14,"m3":57.14,"m4":85.71,"m5":85.71,"m10":85.71,"m11":85.71,"m15":85.71,"m16":85.71,"m19":85.71,"m21":85.71}},
+						{"n":"Mango","c":"frutas","u":"gr","g":{"m4":120,"m8":120,"m9":120,"m10":120,"m11":120,"m14":120,"m15":120,"m16":80,"m17":120,"m18":120,"m19":120,"m24":200}},
+						{"n":"Manzana","c":"frutas","u":"gr","g":{"m5":70.59,"m19":70.59}},
+						{"n":"Melón","c":"frutas","u":"gr","g":{"m12":120,"m17":120,"m22":120}},
+						{"n":"Mora","c":"frutas","u":"gr","g":{"m2":22.22,"m10":22.22,"m13":22.22,"m16":22.22,"m24":22.22}},
+						{"n":"Naranja","c":"frutas","u":"gr","g":{"m4":100,"m6":100,"m8":100,"m9":66.67,"m14":100,"m15":100,"m18":100,"m24":200}},
+						{"n":"Papaya","c":"frutas","u":"gr","g":{"m1":57.14,"m2":85.71,"m3":57.14,"m7":85.71,"m9":28.57,"m10":57.14,"m12":85.71,"m20":85.71,"m21":85.71,"m22":85.71,"m24":57.14}},
+						{"n":"Pera","c":"frutas","u":"gr","g":{"m22":70.59}},
+						{"n":"Piña","c":"frutas","u":"gr","g":{"m2":109.09,"m3":109.09,"m6":109.09,"m8":72.73,"m9":109.09,"m13":72.73,"m14":109.09,"m18":109.09,"m20":109.91,"m23":72.73,"m24":109.09}},
+						{"n":"Sandia","c":"frutas","u":"gr","g":{"m7":150,"m12":100,"m13":150,"m20":150,"m23":150}}
+					]
+            },
+            gaitana: {
+                titulo: "Regional Gaitana",
+				
+                db: [
+					  { "n": "Aceite de soya", "c": "granos", "u": "ml", "g": { "m1": 14, "m2": 12, "m3": 14, "m4": 12, "m5": 8, "m6": 10, "m7": 9, "m8": 12, "m9": 10, "m10": 6,"m11":14, "m12":13, "m13":9, "m14":13, "m15":8, "m16":13, "m17":17, "m18":14, "m19":14, "m20":12 } },
+					  { "n": "Arroz", "c": "granos", "u": "gr", "g": { "m1": 23, "m2": 23, "m3": 23, "m4": 23, "m5": 23, "m6": 23, "m7": 23, "m8": 23,"m10": 23, "m11":23, "m12":23, "m13":23, "m15":23, "m16":23, "m17":23, "m18":23, "m19":23, "m20":23 } },
+					  { "n": "Arveja seca", c: "granos", u: "gr", "g": {"m19":25} },			  
+					  { "n": "Ajonjoli", "c": "granos", "u": "gr", "g": { "m10": 23} },
+					  { "n": "Avena", "c": "granos", "u": "gr", "g": { "m2": 10, "m6": 10,"m16":10, "m19":10} },
+					  { "n": "Azúcar", "c": "granos", "u": "gr", "g": { "m2": 6, "m4": 6, "m6": 3, "m8": 8, "m9": 3, "m10": 3, "m11":11, "m12":3, "m14":5, "m15":10, "m16":4, "m18":6, "m19":3, "m20":3 } },
+					  { "n": "Cocoa", "c": "granos", "u": "gr", "g": { "m3": 4, "m12":6, "m17":6} },
+					  { "n": "Cebada", "c": "granos", "u": "gr", "g": { "m8": 8, "m14":10} },
+					  { "n": "Frijol", "c": "granos", "u": "gr", "g": { "m3": 10, "m18":10} },
+					  { "n": "Harina de maíz", "c": "granos", "u": "gr", "g": { "m2": 25, "m4": 25, "m6": 25, "m8": 25, "m11":25, "m12":25, "m13":25, "m15":25, "m16":25, "m20":25} },
+					  { "n": "Harina de trigo", "c": "granos", "u": "gr", "g": { "m3": 20, "m5": 10, "m9": 25, "m11":25, "m17":45, "m19":25, "m20":5} },
+					  { "n": "Lenteja", "c": "granos", "u": "gr", "g": { "m8": 7, "m15":10} },
+					  { "n": "Maíz trillado", "c": "granos", "u": "gr", "g": { "m1": 10, "m7": 10,} },
+					  { "n": "Panela", "c": "granos", "u": "gr", "g": { "m1": 4, "m2": 4, "m4": 4, "m5": 4, "m7": 4, "m8": 4, "m10": 4, "m13":5, "m14":6, "m16":2, "m19":3, "m20":4 } },
+					  { "n": "Pasta Fideos", "c": "granos", "u": "gr", "g": { "m2": 3, "m8": 3, "m20":5} },
+					  { "n": "Pasta Spaquetis", "c": "granos", "u": "gr", "g": { "m9": 18, "m14":23} },
+					  { "n": "Pasta Tornillo", "c": "granos", "u": "gr", "g": { "m19": 23} },
+					  { "n": "Pasta Sopa de Letras", "c": "granos", "u": "gr", "g": { "m10": 10} },
+					  { "n": "Sal", "c": "granos", "u": "gr", "g": { "m1": 3, "m2": 3, "m3": 3, "m4": 3, "m5": 3, "m6": 3, "m7": 3, "m8": 3, "m9": 3, "m10": 3, "m11":2, "m12":2, "m13":2, "m14":2, "m15":2, "m16":2, "m17":2, "m18":2, "m19":2, "m20":2 } },
+					  { "n": "Aguacate", "c": "verduras", "u": "gr", "g": { "m3": 38.96, "m10": 19.48, "m18":25.97} },
+					  { "n": "Arracacha", "c": "verduras", "u": "gr", "g": { "m17": 18.75} },
+					  { "n": "Apio", "c": "verduras", "u": "gr", "g": { "m11": 10} },
+					  { "n": "Ahuyama", "c": "verduras", "u": "gr", "g": { "m5": 35.29, "m11":11.7} },
+					  { "n": "Ajo", "c": "verduras", "u": "gr", "g": { "m5": 1.05, "m6": 1.05, "m7": 1.05, "m9": 1.05, "m10": 1.05, "m11":0.52, "m15":0.52, "m16":1.05, "m17":0.5, "m18":0.5, "m20":1.05} },
+					  { "n": "Arveja Cascara", "c": "verduras", "u": "gr", "g": { "m2": 12.5, "m4": 5, "m6": 12.5, "m7": 7.5, "m13":10, "m16":12.5} },
+					  { "n": "Cebolla cabezona", "c": "verduras", "u": "gr", "g": { "m1": 31.58, "m2": 21.05, "m3": 7.37, "m4": 10.53, "m5": 10.53, "m6": 10.53, "m7": 26.32, "m8": 15.79, "m9": 21.05, "m10": 10.53, "m11":10.5, "m12":15.7, "m13":10.5, "m14":10.52, "m15":15.78, "m16":10.5, "m18":25.78, "m19":5.26 } },
+					  { "n": "Cebolla larga", "c": "verduras", "u": "gr", "g": { "m3": 13.33, "m6": 11.11, "m7": 6.67, "m8": 6.67, "m10": 6.67, "m11":15, "m12":27.5, "m13":27.5, "m14":17.5, "m15":2.5, "m16":20.2, "m17":12.5, "m19":17.5} },
+					  { "n": "Cilantro", "c": "verduras", "u": "gr", "g": { "m3": 2.22,"m7": 2.22,"m8": 2.22,"m9": 2.22, "m11":3.33, "m13":3.33, "m15":3.33, "m17":2.22, "m18":3.33, "m19":3.33 } },
+					  { "n": "espinaca", "c": "verduras", "u": "gr", "g": { "m17":16.66 } },
+					  { "n": "Habichuela", "c": "verduras", "u": "gr", "g": { "m6": 11.11, "m13":16.6, "m16":16.66, "m19":11.11} },
+					  { "n": "Lechuga", "c": "verduras", "u": "gr", "g": { "m2": 36.36, "m7": 18.18, "m12":27.2, "m17":18.18, "m18":9.09} },
+					  { "n": "Papa criolla", "c": "verduras", "u": "gr", "g": { "m2": 25} },
+					  { "n": "Papa Pastusa", "c": "verduras", "u": "gr", "g": { "m1": 27.78, "m3": 33.33,"m7": 27.78, "m11":15, "m12":30, "m13":30, "m17":33.33} },
+					  { "n": "Pepino", "c": "verduras", "u": "gr", "g": { "m1": 26.67} },
+					  { "n": "plátano maduro", "c": "verduras", "u": "gr", "g": { "m3": 27.78, "m5": 41.67, "m7": 34.72, "m10": 27.78, "m15":41.66, "m16":41.66, "m19":41.66, "m20":41.66} },
+					  { "n": "Plátano verde", "c": "verduras", "u": "gr", "g": { "m4": 44.12, "m6": 36.76, "m9": 36.76, "m11":22, "m14":44.11, "m18":36.76} },
+					  { "n": "Remolacha", "c": "verduras", "u": "gr", "g": { "m9": 18.75, "m20":25} },
+					  { "n": "Repollo", "c": "verduras", "u": "gr", "g": { "m4": 21.43, "m15":21.42} },
+					  { "n": "Tomate", "c": "verduras", "u": "gr", "g": { "m1": 37.5, "m2": 18.75, "m3": 20, "m4": 12.5, "m6": 12.5, "m7": 25, "m8": 48.75, "m9": 12.5, "m10": 12.5, "m11":25, "m12":43.75, "m13":6.25, "m14":37.5, "m15":18.75, "m16":22.5, "m18":56.25, "m19":8.75 } },
+					  { "n": "Yuca", "c": "verduras", "u": "gr", "g": { "m1": 37.5, "m7": 25, "m10": 31.25, "m11":5.88, "m14":31.25, "m18":37.5	 } },
+					  { "n": "Zanahoria", "c": "verduras", "u": "gr", "g": { "m2": 17.65,"m6": 11.76, "m7": 5.88, "m8": 4.71, "m9": 17.65, "m12":5.88, "m13":17.64, "m14":17.64, "m15":11.76, "m16":17.64, "m17":5.88, "m19":11.76, "m20":23.5} },
+					  { "n": "Banano", "c": "frutas", "u": "gr", "g": { "m1": 85.71, "m5": 85.71, "m7": 71.43, "m10": 42.86, "m12":85.7, "m14":85.71, "m16":85.71, "m17":85.71} },
+					  { "n": "Guayaba", "c": "frutas", "u": "gr", "g": {"m13":26.6, "m20":80} },
+					  { "n": "Fresa", "c": "frutas", "u": "gr", "g": { "m4": 10.53, "m10": 21.05, "m18":21} },
+					  { "n": "Limon", "c": "frutas", "u": "gr", "g": { "m10": 2} },
+					  { "n": "Lulo", "c": "frutas", "u": "gr", "g": {"m11":100, "m19":100} },
+					  { "n": "Mandarina", "c": "frutas", "u": "gr", "g": { "m1": 85.71, "m9": 85.71, "m11":85.7, "m13":57.14, "m14":85.7, "m17":85.7, "m18":57.14} },
+					  { "n": "Mango", "c": "frutas", "u": "gr", "g": { "m2": 120, "m4": 120, "m8": 120, "m9": 120, "m17":40, "m18":120, "m20":120} },
+					  { "n": "Manzana", "c": "frutas", "u": "gr", "g": { "m3": 70.59, "m15":70.5} },
+					  { "n": "Maracuya", "c": "frutas", "u": "gr", "g": { "m4": 187.5, "m4": 187.5, "m16":187.5} },
+					  { "n": "Melon", "c": "frutas", "u": "gr", "g": { "m3": 120, "m6": 120, "m9": 120, "m13":120} },
+					  { "n": "Mora", "c": "frutas", "u": "gr", "g": { "m2": 66.67, "m15":66.66} },
+					  { "n": "Naranja", "c": "frutas", "u": "gr", "g": { "m3": 100, "m6": 86.33, "m12":100, "m13":100, "m14":100, "m16":100, "m18":100} },
+					  { "n": "Papaya", "c": "frutas", "u": "gr", "g": { "m2": 85.71, "m4": 85.71, "m5": 85.71, "m6": 85.71, "m8": 85.71, "m10": 85.71, "m11":85.7, "m15":57.14, "m19":85.7} },
+					  { "n": "Pera", "c": "frutas", "u": "gr", "g": { "m5": 70.59, "m19":70.5} },
+					  { "n": "Piña", "c": "frutas", "u": "gr", "g": { "m4": 27.27, "m7": 90.91, "m12":109, "m15":36.36, "m17":109, "m20":109.09} },
+					  { "n": "Sandia", "c": "frutas", "u": "gr", "g": { "m1": 150, "m7": 150} },
+					  { "n": "Tomate de árbol", "c": "frutas", "u": "gr", "g": { "m8": 58.14} },
+					  { "n":"Huevo","c":"proteinas","u":"und","g":{"m1":1.00,"m3":1.00,"m4":1.00,"m5":1.00,"m6":1.00,"m7":1.00,"m9":1.00,"m10":1.00,"m11":1.12,"m12":1.00,"m13":1.00,"m14":1.00,"m16":1.00,"m17":1.09,"m19":1.00,}},
+					  { "n": "Molleja", "c": "proteinas", "u": "GRS", "g": { "m6": 40, "m16":40} },
+					  { "n": "Higado", "c": "proteinas", "u": "GRS", "g": {"m13":40} },
+					  { "n": "Pechuga", "c": "proteinas", "u": "GRS", "g": { "m1": 43.01,"m2": 26.88,"m5": 43.01,"m7": 43.01,"m8": 26.88, "m11":43.01, "m15":43.01, "m17":43.01, "m19":43.01} },
+					  { "n": "Carne de Cerdo", "c": "proteinas", "u": "GRS", "g": { "m3": 40, "m8": 40, "m12":40, "m14":40, "m18":25} },
+					  { "n": "Carne de Res", "c": "proteinas", "u": "GRS", "g": { "m2": 40, "m4": 40, "m9": 40, "m15":25, "m18":40} },
+					  { "n": "Tilapia", "c": "proteinas", "u": "GRS", "g": { "m10": 48.39, "m20":64.5} },
+					  { "n": "Queso", "c": "proteinas", "u": "GRS", "g": { "m4": 10, "m9": 10, "m11":10, "m12":10, "m13":5, "m15":10, "m16":10, "m20": 10,} },
+					  { "n": "kumis ", "c": "lacteos", "u": "und 150 cc", "g": { "m1": 1,"m5": 1,"m10": 1, "m13":1} },
+					  { "n": "yogurt", "c": "lacteos", "u": "und 150 cc", "g": { "m3": 1,"m6": 1,"m9": 1,"m11":1, "m18":1} },
+					  { "n": "Leche", "c": "lacteos", "u": "ml", "g": { "m1": 170,"m2": 300,"m3": 150,"m4": 300,"m5": 150,"m6": 150,"m7": 300,"m8": 300,"m9": 150,"m10": 150, "m11":150, "m12":300, "m13":150, "m14":300, "m15":300, "m16":300, "m17":310, "m18":150, "m19":300, "m20":300} },
+					  { "n": "Cucas", c: "panaderia", u: "und", g: { "m5": 1, "m13":1, "m15":1, "m20":1} },
+					  { "n": "Pan Blanco", c: "panaderia", u: "und", g: { "m5": 1, "m6": 1, m7: 1, "m12":1} },
+					  { "n": "Pan dulce", c: "panaderia", u: "und", g: { "m1": 1, "m10": 1, "m14":1, "m18":1} },
+					  { "n": "Pan de yuca", c: "panaderia", u: "und", g: { "m8": 1} },
+					  { "n": "Pandebono", c: "panaderia", u: "und", g: { "m4": 1,"m9": 1, "m16":1} },
+					  { "n": "Pan de yuca", c: "panaderia", u: "und", g: { "m8": 1} },
+					  { "n": "Ponque", c: "panaderia", u: "und", g: { "m2": 1} }
+					]
+            }
+        };
+
+        // Working Database
+        let regionales = JSON.parse(JSON.stringify(baseDatabase));
+        let currentRegional = 'neiva';
+        let currentData = null;
+        let activeFilters = new Set(['all']);
+        let savedLists = JSON.parse(localStorage.getItem('smartMenu_savedLists')) || [];
+        let snapshots = JSON.parse(localStorage.getItem('smartMenu_snapshots')) || {};
+        let hasUnsavedChanges = false;
+
+        // Theme Toggle
+        function toggleTheme() {
+            const current = document.body.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', next);
+            localStorage.setItem('smartMenu_theme', next);
+        }
+
+        // Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            const overlay = document.getElementById('overlay');
+            
+            sidebar.classList.toggle('open');
+            hamburger.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Regional
+        function cambiarRegional(regional) {
+            currentRegional = regional;
+            document.body.className = `reg-${regional}`;
+            
+            document.getElementById('btnNeiva').classList.toggle('active', regional === 'neiva');
+            document.getElementById('btnGaitana').classList.toggle('active', regional === 'gaitana');
+            
+            if (window.innerWidth < 1024) toggleSidebar();
+            
+            localStorage.setItem('smartMenu_lastRegional', regional);
+            showToast(`Regional: ${regionales[regional].titulo}`, 'success');
+            
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('catFilters').style.display = 'none';
+        }
+
+        // Generation
+        function generar() {
+            const sem = parseInt(document.getElementById('sem').value);
+            const personas = parseInt(document.getElementById('num-p').value) || 0;
+            const checks = document.querySelectorAll('.d-ch:checked');
+            
+            if(checks.length === 0) {
+                showToast('Selecciona al menos un día', 'error');
+                return;
+            }
+
+            const db = regionales[currentRegional].db;
+            let resumen = {};
+
+            checks.forEach(ch => {
+                const mId = `m${((sem - 1) * 5) + parseInt(ch.value)}`;
+                db.forEach(p => {
+                    const baseIndividual = (p.g[mId] || 0);
+                    const cantTotal = baseIndividual * personas;
+                    if(cantTotal > 0) {
+                        if(!resumen[p.n]) {
+                            resumen[p.n] = { 
+                                qTotal: 0, 
+                                qIndividual: 0, 
+                                u: p.u, 
+                                c: p.c
+                            };
+                        }
+                        resumen[p.n].qTotal += cantTotal;
+                        resumen[p.n].qIndividual += baseIndividual;
+                    }
+                });
+            });
+
+            currentData = resumen;
+            renderTable(resumen);
+            
+            document.getElementById('resultContainer').style.display = 'block';
+            document.getElementById('catFilters').style.display = 'flex';
+            document.getElementById('totalItems').textContent = Object.keys(resumen).length;
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            
+            showToast('Lista generada', 'success');
+        }
+
+        function renderTable(data) {
+            const sorted = Object.entries(data).sort((a, b) => 
+                (ORDER_CATEGORIES[a[1].c] || 99) - (ORDER_CATEGORIES[b[1].c] || 99)
+            );
+
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>xNiño</th>
+                        <th>Total</th>
+                        <th>Sugerido</th>
+                        <th>Entrega</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            sorted.forEach(([name, item]) => {
+                if (!activeFilters.has('all') && !activeFilters.has(item.c)) return;
+                
+                const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
+                const valorPrevio = localStorage.getItem(`entrega_${idRef}`) || "";
+                
+                html += `<tr>
+                    <td>
+                        <div class="product-name">
+                            <div class="category-badge badge-${item.c}"></div>
+                            ${name}
+                        </div>
+                    </td>
+                    <td><span class="amount-badge">${item.qIndividual.toFixed(2)} ${item.u}</span></td>
+                    <td><strong>${item.qTotal.toFixed(2)} ${item.u}</strong></td>
+                    <td><span class="suggested-amount">${redondearComercial(item.qTotal, item.u)}</span></td>
+                    <td>
+                        <input type="text" class="input-entrega" value="${valorPrevio}" 
+                               oninput="localStorage.setItem('entrega_${idRef}', this.value)"
+                               placeholder="...">
+                    </td>
+                </tr>`;
+            });
+
+            html += `</tbody></table>`;
+            document.getElementById('resultado').innerHTML = html;
+        }
+
+        const ORDER_CATEGORIES = { 
+            "granos": 1, "lacteos": 2, "proteinas": 3, 
+            "verduras": 4, "frutas": 5, "panaderia": 6 
+        };
+
+        function redondearComercial(gramos, unidad) {
+            if (unidad !== 'gr') {
+                // Para huevos y otras unidades, redondear al entero superior
+                if (unidad === 'und') return Math.ceil(gramos) + " und";
+                return Math.ceil(gramos) + " " + unidad;
+            }
+            const cuartoLibra = 125;
+            const unidadesCuartos = Math.ceil(gramos / cuartoLibra);
+            const totalGramos = unidadesCuartos * cuartoLibra;
+            const libras = totalGramos / 500;
+            
+            if (libras === 0.25) return "¼ Lb";
+            if (libras === 0.5) return "½ Lb";
+            if (libras === 1) return "1 Lb";
+            if (libras % 1 === 0) return `${libras} Lb`;
+            return `${libras.toFixed(2)} Lb`;
+        }
+
+        // Multi-Select Filter
+        function toggleCategory(btn, cat) {
+            if (cat === 'all') {
+                activeFilters = new Set(['all']);
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+            } else {
+                if (activeFilters.has('all')) {
+                    activeFilters.delete('all');
+                    document.querySelectorAll('.filter-chip')[0].classList.remove('active');
+                }
+                
+                if (activeFilters.has(cat)) {
+                    activeFilters.delete(cat);
+                    btn.classList.remove('active');
+                    if (activeFilters.size === 0) {
+                        activeFilters.add('all');
+                        document.querySelectorAll('.filter-chip')[0].classList.add('active');
+                    }
+                } else {
+                    activeFilters.add(cat);
+                    btn.classList.add('active');
+                }
+            }
+            
+            if (currentData) renderTable(currentData);
+        }
+
+        // Gramaje Editor
+        let currentEditingProduct = null;
+
+        function openGramajeEditor() {
+            document.getElementById('editorRegionalName').textContent = regionales[currentRegional].titulo;
+            
+            const select = document.getElementById('editorProductSelect');
+            select.innerHTML = '<option value="">Seleccione...</option>';
+            
+            regionales[currentRegional].db.forEach((p, idx) => {
+                select.innerHTML += `<option value="${idx}">${p.n}</option>`;
+            });
+            
+            document.getElementById('matrixContainer').style.display = 'none';
+            document.getElementById('editorEmptyState').style.display = 'block';
+            document.getElementById('changeIndicator').textContent = 'Sin cambios';
+            document.getElementById('changeIndicator').classList.remove('has-changes');
+            hasUnsavedChanges = false;
+            
+            openModal('gramaje');
+        }
+
+        function loadProductMatrix() {
+            const select = document.getElementById('editorProductSelect');
+            const idx = select.value;
+            
+            if (idx === '') {
+                document.getElementById('matrixContainer').style.display = 'none';
+                document.getElementById('editorEmptyState').style.display = 'block';
+                return;
+            }
+            
+            currentEditingProduct = parseInt(idx);
+            const product = regionales[currentRegional].db[currentEditingProduct];
+            
+            document.getElementById('editorProductCategory').value = product.c;
+            document.getElementById('editorProductUnit').value = product.u;
+            
+            const inputs = document.querySelectorAll('.matrix-input');
+            inputs.forEach(input => {
+                const menu = input.dataset.menu;
+                input.value = product.g[menu] || '';
+                input.classList.remove('changed');
+            });
+            
+            document.getElementById('matrixContainer').style.display = 'block';
+            document.getElementById('editorEmptyState').style.display = 'none';
+            document.getElementById('changeIndicator').textContent = 'Sin cambios';
+            document.getElementById('changeIndicator').classList.remove('has-changes');
+            hasUnsavedChanges = false;
+        }
+
+        function markChanged(input) {
+            input.classList.add('changed');
+            hasUnsavedChanges = true;
+            document.getElementById('changeIndicator').textContent = '⚠️ Sin aplicar';
+            document.getElementById('changeIndicator').classList.add('has-changes');
+        }
+
+        function applyChanges() {
+            if (currentEditingProduct === null) return;
+            
+            const product = regionales[currentRegional].db[currentEditingProduct];
+            const inputs = document.querySelectorAll('.matrix-input');
+            
+            inputs.forEach(input => {
+                const menu = input.dataset.menu;
+                const val = parseFloat(input.value);
+                if (!isNaN(val) && val > 0) {
+                    product.g[menu] = val;
+                } else {
+                    delete product.g[menu];
+                }
+            });
+            
+            inputs.forEach(input => input.classList.remove('changed'));
+            
+            document.getElementById('changeIndicator').textContent = '✓ Aplicado';
+            document.getElementById('changeIndicator').classList.remove('has-changes');
+            hasUnsavedChanges = false;
+            
+            if (currentData && document.getElementById('resultContainer').style.display !== 'none') {
+                generar();
+            }
+            
+            showToast('Gramajes actualizados', 'success');
+        }
+
+        // Snapshots
+        function createSnapshot() {
+            const name = prompt('Nombre de la copia:');
+            if (!name) return;
+            
+            if (!snapshots[currentRegional]) snapshots[currentRegional] = [];
+            
+            snapshots[currentRegional].push({
+                id: Date.now(),
+                name: name,
+                date: new Date().toISOString(),
+                data: JSON.parse(JSON.stringify(regionales[currentRegional].db))
+            });
+            
+            localStorage.setItem('smartMenu_snapshots', JSON.stringify(snapshots));
+            showToast('Copia guardada', 'success');
+        }
+
+        function manageSnapshots() {
+            const container = document.getElementById('snapshotList');
+            const regionalSnapshots = snapshots[currentRegional] || [];
+            
+            if (regionalSnapshots.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding: 1rem;"><div class="empty-icon">📸</div><p>No hay copias</p></div>';
+            } else {
+                container.innerHTML = regionalSnapshots.map(s => `
+                    <div class="snapshot-item">
+                        <div class="snapshot-info">
+                            <h4>${s.name}</h4>
+                            <div class="snapshot-meta">${new Date(s.date).toLocaleString()}</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-primary" onclick="restoreSnapshot(${s.id})" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;">Restaurar</button>
+                            <button class="btn btn-secondary" onclick="deleteSnapshot(${s.id})" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; color: var(--danger);">Eliminar</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            openModal('snapshots');
+        }
+
+        function restoreSnapshot(id) {
+            if (!confirm('¿Restaurar esta copia?')) return;
+            
+            const snap = snapshots[currentRegional].find(s => s.id === id);
+            if (!snap) return;
+            
+            regionales[currentRegional].db = JSON.parse(JSON.stringify(snap.data));
+            showToast('Copia restaurada', 'success');
+            
+            if (document.getElementById('modalGramaje').classList.contains('active')) {
+                loadProductMatrix();
+            }
+            
+            if (currentData) generar();
+        }
+
+        function deleteSnapshot(id) {
+            if (!confirm('¿Eliminar esta copia?')) return;
+            
+            snapshots[currentRegional] = snapshots[currentRegional].filter(s => s.id !== id);
+            localStorage.setItem('smartMenu_snapshots', JSON.stringify(snapshots));
+            manageSnapshots();
+            showToast('Copia eliminada', 'success');
+        }
+
+        // Save Lists
+        function guardarLista() {
+            if (!currentData) {
+                showToast('Genere una lista primero', 'error');
+                return;
+            }
+
+            const nombre = prompt('Nombre de la lista:');
+            if (!nombre) return;
+
+            const lista = {
+                id: Date.now(),
+                nombre,
+                regional: currentRegional,
+                fecha: new Date().toISOString(),
+                semana: document.getElementById('sem').value,
+                personas: document.getElementById('num-p').value,
+                filters: Array.from(activeFilters),
+                data: currentData
+            };
+
+            savedLists.unshift(lista);
+            localStorage.setItem('smartMenu_savedLists', JSON.stringify(savedLists));
+            updateSavedCount();
+            showToast('Lista guardada', 'success');
+        }
+
+        function updateSavedCount() {
+            document.getElementById('savedCount').textContent = savedLists.length;
+        }
+
+        function showSavedLists() {
+            const container = document.getElementById('savedListsContainer');
+            
+            if (savedLists.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-icon">💾</div><p>No hay listas guardadas</p></div>';
+            } else {
+                container.innerHTML = savedLists.map(l => `
+                    <div class="snapshot-item" onclick="loadList(${l.id})" style="cursor: pointer;">
+                        <div class="snapshot-info">
+                            <h4>${l.nombre}</h4>
+                            <div class="snapshot-meta">${regionales[l.regional].titulo} • Sem ${l.semana} • ${l.personas} niños</div>
+                        </div>
+                        <button class="btn-icon" onclick="event.stopPropagation(); deleteList(${l.id})" style="color: var(--danger);">🗑️</button>
+                    </div>
+                `).join('');
+            }
+            
+            openModal('saved');
+        }
+
+        function loadList(id) {
+            const l = savedLists.find(x => x.id === id);
+            if (!l) return;
+
+            cambiarRegional(l.regional);
+            document.getElementById('sem').value = l.semana;
+            document.getElementById('num-p').value = l.personas;
+            activeFilters = new Set(l.filters || ['all']);
+            currentData = l.data;
+            
+            document.querySelectorAll('.filter-chip').forEach((chip, idx) => {
+                chip.classList.remove('active');
+                if (idx === 0 && activeFilters.has('all')) chip.classList.add('active');
+                else if (idx > 0 && activeFilters.has(['all','granos','proteinas','lacteos','verduras','frutas','panaderia'][idx])) {
+                    chip.classList.add('active');
+                }
+            });
+            
+            renderTable(currentData);
+            document.getElementById('resultContainer').style.display = 'block';
+            document.getElementById('catFilters').style.display = 'flex';
+            
+            closeModal('saved');
+            showToast('Lista cargada', 'success');
+        }
+
+        function deleteList(id) {
+            savedLists = savedLists.filter(x => x.id !== id);
+            localStorage.setItem('smartMenu_savedLists', JSON.stringify(savedLists));
+            updateSavedCount();
+            showSavedLists();
+            showToast('Lista eliminada', 'success');
+        }
+
+        // Utilities
+        function resetForm() {
+            document.getElementById('num-p').value = 13;
+            document.getElementById('sem').value = 1;
+            document.querySelectorAll('.d-ch').forEach(ch => ch.checked = true);
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('catFilters').style.display = 'none';
+            activeFilters = new Set(['all']);
+            currentData = null;
+            showToast('Formulario reiniciado', 'success');
+        }
+
+        function exportExcel() {
+            if (!currentData) return;
+            
+            const data = Object.entries(currentData).map(([name, item]) => ({
+                Producto: name,
+                Categoría: item.c,
+                Porción: `${item.qIndividual.toFixed(2)} ${item.u}`,
+                Cantidad: `${item.qTotal.toFixed(2)} ${item.u}`,
+                Sugerencia: redondearComercial(item.qTotal, item.u)
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Lista");
+            XLSX.writeFile(wb, `Lista_${currentRegional}_S${document.getElementById('sem').value}.xlsx`);
+            showToast('Excel descargado', 'success');
+        }
+
+        function exportPDF() {
+            const element = document.getElementById('resultContainer');
+            html2pdf().set({
+                margin: 10,
+                filename: `Lista_${currentRegional}_S${document.getElementById('sem').value}.pdf`,
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            }).from(element).save();
+            showToast('PDF generado', 'success');
+        }
+
+        function imprimir() {
+            window.print();
+        }
+
+        function showSection(section) {
+            if (section === 'saved') showSavedLists();
+        }
+
+        function openModal(modal) {
+            document.getElementById(`modal${modal.charAt(0).toUpperCase() + modal.slice(1)}`).classList.add('active');
+        }
+
+        function closeModal(modal) {
+            document.getElementById(`modal${modal.charAt(0).toUpperCase() + modal.slice(1)}`).classList.remove('active');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if (type === 'error') toast.style.borderLeftColor = 'var(--danger)';
+            
+            const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+            toast.innerHTML = `<span>${icons[type]}</span> ${message}`;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('smartMenu_theme') || 'dark';
+            document.body.setAttribute('data-theme', savedTheme);
+            
+            const lastRegional = localStorage.getItem('smartMenu_lastRegional') || 'neiva';
+            cambiarRegional(lastRegional);
+            
+            updateSavedCount();
+        });
+
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+            m.addEventListener('click', (e) => {
+                if (e.target === m) {
+                    if (m.id === 'modalGramaje' && hasUnsavedChanges) {
+                        if (!confirm('Hay cambios sin aplicar. ¿Cerrar?')) return;
+                    }
+                    m.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
