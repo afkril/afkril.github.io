@@ -6,6 +6,15 @@
     <title>Reporte_Novedades | JER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Firebase SDK para Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Chart.js para estadísticas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS para exportar Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF para exportar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         
@@ -23,15 +32,52 @@
             background-color: #f1f5f9;
         }
 
+        body.dark-mode {
+            background-color: #0f172a;
+        }
+
         .glass-container { 
             background: rgba(255, 255, 255, 0.98); 
             backdrop-filter: blur(10px);
-            /* Reescalado solicitado para zoom 100% */
             transform: scale(1.05);
             transform-origin: center;
+            transition: all 0.3s ease;
         }
 
-        /* Ajuste de fuentes y campos */
+        body.dark-mode .glass-container {
+            background: rgba(30, 41, 59, 0.98);
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .glass-container input,
+        body.dark-mode .glass-container select {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-color: #475569 !important;
+        }
+
+        body.dark-mode .glass-container label,
+        body.dark-mode .glass-container h1,
+        body.dark-mode .glass-container h3 {
+            color: #e2e8f0 !important;
+        }
+
+        body.dark-mode .glass-container .text-slate-600 {
+            color: #94a3b8 !important;
+        }
+
+        body.dark-mode .glass-container .text-slate-800 {
+            color: #f1f5f9 !important;
+        }
+
+        body.dark-mode .glass-container .bg-white {
+            background: #1e293b !important;
+        }
+
+        body.dark-mode .glass-container .border-slate-100 {
+            border-color: #334155 !important;
+        }
+
         input, select { 
             padding: 0.8rem 1rem !important; 
             font-size: 1rem !important; 
@@ -59,12 +105,219 @@
         .contract-676 .dynamic-text { color: #059669; }
         .contract-676 .dynamic-border { border-top-color: #059669; }
 
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 4.7s;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(100%); }
+        }
+
+        .toast-success { background: linear-gradient(135deg, #10b981, #059669); }
+        .toast-error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .toast-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+        /* Admin Panel */
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-content {
+            background: white;
+            margin: 20px auto;
+            max-width: 1200px;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: calc(100vh - 40px);
+        }
+
+        body.dark-mode .admin-content {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.dark-mode .stats-card {
+            background: linear-gradient(135deg, #334155, #1e293b);
+            border-color: #475569;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toggle Switch */
+        .theme-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #cbd5e1;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .theme-toggle.active {
+            background: #475569;
+        }
+
+        .theme-toggle::after {
+            content: '☀️';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .theme-toggle.active::after {
+            content: '🌙';
+            transform: translateX(30px);
+        }
+
+        /* Search and Filter Styles */
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding-left: 40px !important;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        body.dark-mode .data-table th,
+        body.dark-mode .data-table td {
+            border-color: #475569;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+        }
+
+        body.dark-mode .data-table th {
+            background: #334155;
+        }
+
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+
+        body.dark-mode .data-table tr:hover {
+            background: #334155;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-retiro { background: #fee2e2; color: #991b1b; }
+        .badge-ingreso { background: #dcfce7; color: #166534; }
+
+        body.dark-mode .badge-retiro { background: #450a0a; color: #fca5a5; }
+        body.dark-mode .badge-ingreso { background: #052e16; color: #86efac; }
+
         @media (max-width: 768px) {
             .glass-container { transform: scale(1); margin: 1rem; }
+            .admin-content { margin: 10px; padding: 20px; }
         }
     </style>
 </head>
 <body>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
         
@@ -74,24 +327,34 @@
                 <p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Asociación J.E.R - Neiva</p>
             </div>
             <div class="flex items-center space-x-4">
-				<div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono">
-					00/00/0000 00:00:00
-				</div>
-				<div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">
-					Sin Contrato
-				</div>
-			</div>
-			
+                <div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono">
+                    00/00/0000 00:00:00
+                </div>
+				
+				
+				
+				
+				
+                <div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">
+                    Sin Contrato
+                </div>
+                <!-- Theme Toggle -->
+                <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema"></div>
+                <!-- Admin Access -->
+                <button onclick="promptAdminAccess()" class="text-slate-400 hover:text-slate-600 transition-colors" title="Acceso Admin">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                </button>
+            </div>
         </header>
-		
-        <form id="noveltyForm" action="https://formspree.io/f/mqardynz" method="POST" class="p-8 space-y-6">
+        
+        <form id="noveltyForm" action="https://formspree.io/f/movbkavk" method="POST" class="p-8 space-y-6">
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
                     <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
                         <span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
                     </label>
-                    <select id="contractNumber" id="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
+                    <select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
                         <option value="">Seleccione...</option>
                         <option value="665">Contrato 665</option>
                         <option value="667">Contrato 667</option>
@@ -102,7 +365,7 @@
                     <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
                         <span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
                     </label>
-                    <select id="mainUdsDropdown" id="UDS_Full" required disabled class="w-full rounded-xl">
+                    <select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
                         <option value="">-- Primero Contrato --</option>
                     </select>
                 </div>
@@ -129,31 +392,31 @@
                     <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-					<select id="retiroDocType" id="retiro_tipo_doc" class="w-full rounded-lg">
-						<option value="RC">RC - Registro Civil</option>
-						<option value="AN">AN - Acta Nacimiento</option>
-						<option value="PEP">PEP / PPT</option>
-						<option value="SD">SD - Sin Documento</option>
-					</select>
-					<input type="text" id="retiroDocNumber" id="retiro_documento" placeholder="Número de Documento" 
-						   class="w-full rounded-lg" minlength="7" maxlength="10" 
-						   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-					</div>
-                    <input type="text" id="retiroFullName" placeholder="Nombres y Aplellidos Completo" class="w-full rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select id="retiroDocType" name="retiro_tipo_doc" class="w-full rounded-lg">
+                            <option value="RC">RC - Registro Civil</option>
+                            <option value="AN">AN - Acta Nacimiento</option>
+                            <option value="PEP">PEP / PPT</option>
+                            <option value="SD">SD - Sin Documento</option>
+                        </select>
+                        <input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de Documento" 
+                               class="w-full rounded-lg" minlength="7" maxlength="10" 
+                               oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkExistingBeneficiary(this.value, 'retiro')">
+                    </div>
+                    <input type="text" id="retiroFullName" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
                     <div class="space-y-1">
                         <label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
-						<input type="date" id="retiroDate" class="w-full rounded-lg" onchange="validateDatesRealTime()">
+                        <input type="date" id="retiroDate" class="w-full rounded-lg" onchange="validateDatesRealTime()">
                     </div>
                     <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
-						<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
-						<label class="text-sm font-bold flex items-center">
-							<input type="radio" id="_retiroGender" value="M" class="mr-1"> M
-						</label>
-						<label class="text-sm font-bold flex items-center">
-							<input type="radio" id="_retiroGender" value="F" class="mr-1"> F
-						</label>
-					</div>
+                        <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+                        <label class="text-sm font-bold flex items-center">
+                            <input type="radio" name="retiroGender" value="M" class="mr-1"> M
+                        </label>
+                        <label class="text-sm font-bold flex items-center">
+                            <input type="radio" name="retiroGender" value="F" class="mr-1"> F
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -164,38 +427,38 @@
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<select id="ingresoDocType" id="ingreso_tipo_doc" class="w-full rounded-lg">
-								<option value="RC">RC - Registro Civil</option>
-								<option value="AN">AN - Acta Nacimiento</option>
-								<option value="PEP">PEP / PPT</option>
-								<option value="SD">SD - Sin Documento</option>
-							</select>
-							<input type="text" id="ingresoDocNumber" id="ingreso_documento" placeholder="Numero Documento" 
-								   class="w-full rounded-lg" minlength="7" maxlength="10" 
-								   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-							</div>
+                            <select id="ingresoDocType" name="ingreso_tipo_doc" class="w-full rounded-lg">
+                                <option value="RC">RC - Registro Civil</option>
+                                <option value="AN">AN - Acta Nacimiento</option>
+                                <option value="PEP">PEP / PPT</option>
+                                <option value="SD">SD - Sin Documento</option>
+                            </select>
+                            <input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Numero Documento" 
+                                   class="w-full rounded-lg" minlength="7" maxlength="10" 
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkExistingBeneficiary(this.value, 'ingreso')">
+                        </div>
                         <input type="text" id="ingresoFullName" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
-                            <input type="date" id="ingresoDOB" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+                            <input type="date" id="ingresoDOB" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateAgeRange()">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
-                            <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="updateAgeDisplay()">
+                            <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateDatesRealTime()">
                         </div>
                         <div class="md:col-span-2 space-y-1">
                             <label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
                             <input type="text" id="displayAge" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
                         </div>
                         <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
-							<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
-							<label class="text-sm font-bold flex items-center">
-								<input type="radio" id="_ingresoGender" value="M" class="mr-1"> M
-							</label>
-							<label class="text-sm font-bold flex items-center">
-								<input type="radio" id="_ingresoGender" value="F" class="mr-1"> F
-							</label>
-						</div>
+                            <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+                            <label class="text-sm font-bold flex items-center">
+                                <input type="radio" name="ingresoGender" value="M" class="mr-1"> M
+                            </label>
+                            <label class="text-sm font-bold flex items-center">
+                                <input type="radio" name="ingresoGender" value="F" class="mr-1"> F
+                            </label>
+                        </div>
                         <input type="text" id="ingresoAddress" placeholder="Dirección y Barrio" class="w-full rounded-lg">
                         <input type="tel" id="ingresoPhone" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
                     </div>
@@ -219,8 +482,8 @@
             <input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
             <input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
             
-            <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
-                Enviar Reporte Al Correo
+            <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase flex items-center justify-center gap-2">
+                <span>Enviar Reporte Al Correo</span>
             </button>
             
             <div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
@@ -231,66 +494,768 @@
         </form>
     </main>
 
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-panel">
+        <div class="admin-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-slate-800">Panel de Administración</h2>
+                <div class="flex gap-4 flex-wrap">
+					<button onclick="exportToExcel()" class="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+						📊 Exportar Vista Actual
+					</button>
+					<button onclick="exportToExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition">
+						📈 Exportar Completo (Todo)
+					</button>
+					<button onclick="exportToPDF()" class="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition">
+						📄 Exportar PDF
+					</button>
+					<button onclick="closeAdminPanel()" class="px-4 py-2 bg-slate-600 text-white rounded-lg font-semibold hover:bg-slate-700 transition">
+						✕ Cerrar
+					</button>
+				</div>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="stats-card">
+                    <h4 class="text-sm font-bold text-slate-500 uppercase">Hoy</h4>
+                    <p class="text-3xl font-black text-slate-800" id="statToday">0</p>
+                    <p class="text-xs text-slate-400">Novedades registradas</p>
+                </div>
+                <div class="stats-card">
+                    <h4 class="text-sm font-bold text-slate-500 uppercase">Esta Semana</h4>
+                    <p class="text-3xl font-black text-slate-800" id="statWeek">0</p>
+                    <p class="text-xs text-slate-400">Total acumulado</p>
+                </div>
+                <div class="stats-card">
+                    <h4 class="text-sm font-bold text-slate-500 uppercase">Este Mes</h4>
+                    <p class="text-3xl font-black text-slate-800" id="statMonth">0</p>
+                    <p class="text-xs text-slate-400">Total acumulado</p>
+                </div>
+                <div class="stats-card">
+                    <h4 class="text-sm font-bold text-slate-500 uppercase">Retiros vs Ingresos</h4>
+                    <div class="flex gap-4 mt-2">
+                        <div>
+                            <span class="text-2xl font-black text-red-600" id="statRetiros">0</span>
+                            <span class="text-xs text-slate-400 block">Retiros</span>
+                        </div>
+                        <div>
+                            <span class="text-2xl font-black text-green-600" id="statIngresos">0</span>
+                            <span class="text-xs text-slate-400 block">Ingresos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="stats-card">
+                    <h4 class="text-lg font-bold text-slate-700 mb-4">Novedades por Contrato</h4>
+                    <div class="chart-container">
+                        <canvas id="contractChart"></canvas>
+                    </div>
+                </div>
+                <div class="stats-card">
+                    <h4 class="text-lg font-bold text-slate-700 mb-4">UDS con más movimiento</h4>
+                    <div class="chart-container">
+                        <canvas id="udsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="stats-card mb-6">
+                <h4 class="text-lg font-bold text-slate-700 mb-4">Búsqueda y Filtrado</h4>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Buscar por nombre o documento..." class="w-full rounded-lg" oninput="filterNovelties()">
+                    </div>
+                    <select id="filterContract" class="rounded-lg" onchange="filterNovelties()">
+                        <option value="">Todos los contratos</option>
+                        <option value="665">Contrato 665</option>
+                        <option value="667">Contrato 667</option>
+                        <option value="676">Contrato 676</option>
+                    </select>
+                    <select id="filterType" class="rounded-lg" onchange="filterNovelties()">
+                        <option value="">Todos los tipos</option>
+                        <option value="retiro">Solo Retiros</option>
+                        <option value="ingreso">Solo Ingresos</option>
+                    </select>
+                    <input type="date" id="filterDate" class="rounded-lg" onchange="filterNovelties()">
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Contrato</th>
+                                <th>UDS</th>
+                                <th>Tipo</th>
+                                <th>Documento</th>
+                                <th>Nombre</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="noveltiesTableBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="flex justify-center gap-2 mt-4">
+                    <!-- Pagination buttons -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const UDS_DATA = { '665': [['ALEGRIA DE VIVIR.', '4100100115777'], ['LOS CARIÑOSITOS', '4100100043894'], ['LOS DUMIS.', '4100100115770'], ['LOS JUGUETONES.', '4100100115796'], ['LOS ANGELITOS', '4100100041381'], ['LOS CHUPETINES', '4100100038177'], ['LOS PINGUINOS', '4100100041027'], ['MAFALDA', '4100100115757'], ['MIS AMIGUITOS.', '4100100115793'], ['MIS ANGELITOS.', '4100100115781'], ['MIS ANGELITOS', '410011123928'], ['MIS CAPULLOS', '4100100040968'], ['MIS 15 ANGELITOS', '4100100041374'], ['MIS PEQUEÑOS GIGANTES', '4100100040991'], ['MIS PEQUEÑOS PUPILOS', '4100100115788'], ['MIS PEQUEÑOS SALTARINES', '4100100041008'], ['MIS PEQUEÑOS SALTARINES', '4100100047851'], ['NIÑOS FELICES', '4100100041394'], ['PLUTO.', '4100100115774']], '667': [['BLANCA NIEVES', '4100100078903'], ['CHIQUILLADAS', '4100100120110'], ['DIAS FELICES', '4100100023616'], ['LA RANA RENE', '4100100120291'], ['LOS PITUFOS', '4100100127770'], ['MIS CHIQUITINES', '4100100024111'], ['LOS CHIQUITINES', '4100100112390'], ['LOS EXPLORADORES', '4100100023662'], ['MI MUNDO FELIZ', '4100100023780'], ['MI PEQUEÑO MUNDO', '4100100023816'], ['MIS PEQUEÑOS ANGELITOS', '4100100029904'], ['MIS PASTORCITOS', '4100100023682'], ['MIS PATICOS', '4100100023459'], ['MIS PICARDIAS', '4100100044836'], ['MIS PIRUETAS', '4100100128106'], ['MI PRIMER PASO', '4100100045206'], ['PEQUEÑOS GIGANTES', '4100100120109'], ['SEMILLITAS', '4100100024235']], '676': [['ALEGRIA', '4100100085789'], ['BAMBY', '4100100091036'], ['BAMBIS 2', '4100100083331'], ['BURBUJITAS', '4100100043041'], ['CASITA ENCANTADA', '4100100085784'], ['HOGAR FELIZ', '4100100085820'], ['POLLITOS', '4100100085805'], ['PICAPIEDRAS', '4100100043022'], ['SABIDURIA', '4100100085779'], ['LA PEQUEÑA LULU', '4100100085809'], ['LOS ANGELITOS', '4100100043056'], ['LOS CARIÑOSITOS', '4100100091312'], ['LOS SIMPSONS', '4100100041466'], ['LOS CHIQUILLOS', '4100100085803'], ['MI PEQUEÑA CASITA', '4100100085800'], ['MIS AMIGUITOS', '4100100043065'], ['MIS CORAZONSITOS', '4100100024142'], ['MIS OSITOS', '4100100107660'], ['MIS PEQUEÑOS ANGELITOS', '4100100115738']] };
-        const BACKGROUNDS = { '665': 'linear-gradient(to bottom right, #fef3c7, #fbbf24)', '667': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', '676': 'linear-gradient(to bottom right, #d1fae5, #10b981)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
+        // Firebase Configuration - moonbox-b997c (Realtime Database)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX9mBXhGSx6vVqvrLgMLY0Stno4nI-jPw",
+            authDomain: "moonbox-b997c.firebaseapp.com",
+            databaseURL: "https://moonbox-b997c-default-rtdb.firebaseio.com",
+            projectId: "moonbox-b997c",
+            storageBucket: "moonbox-b997c.firebasestorage.app",
+            messagingSenderId: "507195516792",
+            appId: "1:507195516792:web:a4ed4d8715e137d6e48a8d",
+            measurementId: "G-10F98RC1Z0"
+        };
 
-		function updateClock() {
-			const now = new Date();
-			
-			// Formatear fecha: DD/MM/YYYY
-			const date = now.toLocaleDateString('es-CO', {
-				day: '2-digit',
-				month: '2-digit',
-				year: 'numeric'
-			});
-			
-			// Formatear hora: HH:MM:SS (24h)
-			const time = now.toLocaleTimeString('es-CO', {
-				hour: '2-digit',
-				minute: '2-digit',
-				second: '2-digit',
-				hour12: false
-			});
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-			document.getElementById('clockDisplay').textContent = `${date} | ${time}`;
-		}
+        const UDS_DATA = { 
+            '665': [['ALEGRIA DE VIVIR.', '4100100115777'], ['LOS CARIÑOSITOS', '4100100043894'], ['LOS DUMIS.', '4100100115770'], ['LOS JUGUETONES.', '4100100115796'], ['LOS ANGELITOS', '4100100041381'], ['LOS CHUPETINES', '4100100038177'], ['LOS PINGUINOS', '4100100041027'], ['MAFALDA', '4100100115757'], ['MIS AMIGUITOS.', '4100100115793'], ['MIS ANGELITOS.', '4100100115781'], ['MIS ANGELITOS', '410011123928'], ['MIS CAPULLOS', '4100100040968'], ['MIS 15 ANGELITOS', '4100100041374'], ['MIS PEQUEÑOS GIGANTES', '4100100040991'], ['MIS PEQUEÑOS PUPILOS', '4100100115788'], ['MIS PEQUEÑOS SALTARINES', '4100100041008'], ['MIS PEQUEÑOS SALTARINES', '4100100047851'], ['NIÑOS FELICES', '4100100041394'], ['PLUTO.', '4100100115774']], 
+            '667': [['BLANCA NIEVES', '4100100078903'], ['CHIQUILLADAS', '4100100120110'], ['DIAS FELICES', '4100100023616'], ['LA RANA RENE', '4100100120291'], ['LOS PITUFOS', '4100100127770'], ['MIS CHIQUITINES', '4100100024111'], ['LOS CHIQUITINES', '4100100112390'], ['LOS EXPLORADORES', '4100100023662'], ['MI MUNDO FELIZ', '4100100023780'], ['MI PEQUEÑO MUNDO', '4100100023816'], ['MIS PEQUEÑOS ANGELITOS', '4100100029904'], ['MIS PASTORCITOS', '4100100023682'], ['MIS PATICOS', '4100100023459'], ['MIS PICARDIAS', '4100100044836'], ['MIS PIRUETAS', '4100100128106'], ['MI PRIMER PASO', '4100100045206'], ['PEQUEÑOS GIGANTES', '4100100120109'], ['SEMILLITAS', '4100100024235']], 
+            '676': [['ALEGRIA', '4100100085789'], ['BAMBY', '4100100091036'], ['BAMBIS 2', '4100100083331'], ['BURBUJITAS', '4100100043041'], ['CASITA ENCANTADA', '4100100085784'], ['HOGAR FELIZ', '4100100085820'], ['POLLITOS', '4100100085805'], ['PICAPIEDRAS', '4100100043022'], ['SABIDURIA', '4100100085779'], ['LA PEQUEÑA LULU', '4100100085809'], ['LOS ANGELITOS', '4100100043056'], ['LOS CARIÑOSITOS', '4100100091312'], ['LOS SIMPSONS', '4100100041466'], ['LOS CHIQUILLOS', '4100100085803'], ['MI PEQUEÑA CASITA', '4100100085800'], ['MIS AMIGUITOS', '4100100043065'], ['MIS CORAZONSITOS', '4100100024142'], ['MIS OSITOS', '4100100107660'], ['MIS PEQUEÑOS ANGELITOS', '4100100115738']] 
+        };
+        
+        const BACKGROUNDS = { 
+            '665': 'linear-gradient(to bottom right, #fef3c7, #fbbf24)', 
+            '667': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', 
+            '676': 'linear-gradient(to bottom right, #d1fae5, #10b981)', 
+            'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' 
+        };
 
-		// Iniciar el reloj inmediatamente y actualizar cada segundo
-		setInterval(updateClock, 1000);
-		updateClock();
+        // Admin password
+        const ADMIN_PASSWORD = "ZAN";
 
-		function validateDatesRealTime() {
-			const isRetiro = document.getElementById('checkRetiro').checked;
-			const isIngreso = document.getElementById('checkIngreso').checked;
-			const fechaRetiroInput = document.getElementById('retiroDate');
-			const fechaIngresoInput = document.getElementById('ingresoDate');
-			const feedback = document.getElementById('feedbackContainer');
+        // Charts instances
+        let contractChartInstance = null;
+        let udsChartInstance = null;
 
-			// Solo validar si ambos checks están marcados y ambos campos tienen fecha
-			if (isRetiro && isIngreso && fechaRetiroInput.value && fechaIngresoInput.value) {
-				const dRetiro = new Date(fechaRetiroInput.value);
-				const dIngreso = new Date(fechaIngresoInput.value);
-				
-				// Ajuste de zona horaria
-				dRetiro.setMinutes(dRetiro.getMinutes() + dRetiro.getTimezoneOffset());
-				dIngreso.setMinutes(dIngreso.getMinutes() + dIngreso.getTimezoneOffset());
+        function updateClock() {
+            const now = new Date();
+            const date = now.toLocaleDateString('es-CO', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            const time = now.toLocaleTimeString('es-CO', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            document.getElementById('clockDisplay').textContent = `${date} | ${time}`;
+        }
 
-				if (dRetiro >= dIngreso) {
-					showFeedback("⚠️ Atención: La fecha de retiro no puede ser igual o posterior a la de ingreso.", "error");
-					fechaRetiroInput.classList.add('border-red-500', 'bg-red-50');
-					fechaIngresoInput.classList.add('border-red-500', 'bg-red-50');
-					return false;
-				} else {
-					// Limpiar error si la corrección es válida
-					feedback.classList.add('hidden');
-					fechaRetiroInput.classList.remove('border-red-500', 'bg-red-50');
-					fechaIngresoInput.classList.remove('border-red-500', 'bg-red-50');
-					return true;
-				}
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Toast Notification System
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            
+            toast.innerHTML = `<span>${icons[type]}</span><span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, duration);
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const toggle = document.getElementById('themeToggle');
+            toggle.classList.toggle('active');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('themeToggle').classList.add('active');
+        }
+
+        // Admin Access
+        function promptAdminAccess() {
+            const password = prompt("Ingrese la contraseña de administrador:");
+            if (password === ADMIN_PASSWORD) {
+                openAdminPanel();
+                showToast("Acceso concedido al panel de administración", "success");
+            } else if (password !== null) {
+                showToast("Contraseña incorrecta", "error");
+            }
+        }
+
+		// Exportar solo la vista actual (filtrada)
+		function exportToExcelCurrent() {
+			if (currentNovelties.length === 0) {
+				showToast("No hay datos para exportar", "warning");
+				return;
 			}
-			return true;
+
+			const exportData = currentNovelties.map(n => ({
+				'Fecha': new Date(n.timestamp).toLocaleDateString('es-CO'),
+				'Contrato': n.contract,
+				'UDS': n.udsName,
+				'Tipo': n.type,
+				'Documento': n.document,
+				'Nombre': n.name,
+				'Edad': n.age || '-',
+				'Género': n.gender || '-'
+			}));
+
+			const ws = XLSX.utils.json_to_sheet(exportData);
+			const wb = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(wb, ws, 'Vista Actual');
+			XLSX.writeFile(wb, `Reporte_Filtrado_JER_${new Date().toISOString().split('T')[0]}.xlsx`);
+			
+			showToast(`📊 Exportados ${currentNovelties.length} registros de la vista actual`, "success");
 		}
+
+        function openAdminPanel() {
+            document.getElementById('adminPanel').style.display = 'block';
+            loadDashboardStats();
+            loadCharts();
+            loadNoveltiesTable();
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+
+        // Dashboard Statistics
+        function loadDashboardStats() {
+            const noveltiesRef = database.ref('novelties');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+                let todayCount = 0, weekCount = 0, monthCount = 0, retiros = 0, ingresos = 0;
+
+                novelties.forEach(n => {
+                    const nDate = new Date(n.timestamp);
+                    if (nDate >= today) todayCount++;
+                    if (nDate >= weekAgo) weekCount++;
+                    if (nDate >= monthAgo) monthCount++;
+                    
+                    if (n.type === 'retiro') retiros++;
+                    else if (n.type === 'ingreso') ingresos++;
+                });
+
+                document.getElementById('statToday').textContent = todayCount;
+                document.getElementById('statWeek').textContent = weekCount;
+                document.getElementById('statMonth').textContent = monthCount;
+                document.getElementById('statRetiros').textContent = retiros;
+                document.getElementById('statIngresos').textContent = ingresos;
+            });
+        }
+
+        // Charts
+        function loadCharts() {
+            loadContractChart();
+            loadUDSChart();
+        }
+
+        function loadContractChart() {
+            const noveltiesRef = database.ref('novelties');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                
+                const contractCounts = { '665': 0, '667': 0, '676': 0 };
+                novelties.forEach(n => {
+                    if (contractCounts[n.contract] !== undefined) {
+                        contractCounts[n.contract]++;
+                    }
+                });
+
+                const ctx = document.getElementById('contractChart').getContext('2d');
+                
+                if (contractChartInstance) {
+                    contractChartInstance.destroy();
+                }
+
+                contractChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Contrato 665', 'Contrato 667', 'Contrato 676'],
+                        datasets: [{
+                            label: 'Novedades',
+                            data: [contractCounts['665'], contractCounts['667'], contractCounts['676']],
+                            backgroundColor: ['#D97706', '#2563EB', '#059669'],
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        }
+                    }
+                });
+            });
+        }
+
+        function loadUDSChart() {
+            const noveltiesRef = database.ref('novelties');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                
+                const udsCounts = {};
+                novelties.forEach(n => {
+                    udsCounts[n.udsName] = (udsCounts[n.udsName] || 0) + 1;
+                });
+
+                const sortedUDS = Object.entries(udsCounts)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10);
+
+                const ctx = document.getElementById('udsChart').getContext('2d');
+                
+                if (udsChartInstance) {
+                    udsChartInstance.destroy();
+                }
+
+                udsChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: sortedUDS.map(([name]) => name),
+                        datasets: [{
+                            data: sortedUDS.map(([, count]) => count),
+                            backgroundColor: [
+                                '#D97706', '#2563EB', '#059669', '#dc2626', '#7c3aed',
+                                '#db2777', '#0891b2', '#65a30d', '#ea580c', '#4f46e5'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { boxWidth: 12, font: { size: 11 } }
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        // Search and Filter
+        let currentNovelties = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function loadNoveltiesTable() {
+            const noveltiesRef = database.ref('novelties');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                currentNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+                filterNovelties();
+            });
+        }
+
+        function filterNovelties() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const contractFilter = document.getElementById('filterContract').value;
+            const typeFilter = document.getElementById('filterType').value;
+            const dateFilter = document.getElementById('filterDate').value;
+
+            let filtered = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    n.name?.toLowerCase().includes(searchTerm) || 
+                    n.document?.includes(searchTerm);
+                const matchesContract = !contractFilter || n.contract === contractFilter;
+                const matchesType = !typeFilter || n.type === typeFilter;
+                const matchesDate = !dateFilter || n.date === dateFilter;
+
+                return matchesSearch && matchesContract && matchesType && matchesDate;
+            });
+
+            filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            renderTable(filtered);
+        }
+
+        function renderTable(novelties) {
+			const tbody = document.getElementById('noveltiesTableBody');
+			tbody.innerHTML = '';
+
+			const start = (currentPage - 1) * itemsPerPage;
+			const paginated = novelties.slice(start, start + itemsPerPage);
+
+			paginated.forEach(n => {
+				const row = document.createElement('tr');
+				row.innerHTML = `
+					<td>${new Date(n.timestamp).toLocaleDateString('es-CO')}</td>
+					<td><span class="badge" style="background: ${getContractColor(n.contract)}20; color: ${getContractColor(n.contract)}">${n.contract}</span></td>
+					<td>${n.udsName}</td>
+					<td><span class="badge badge-${n.type}">${n.type.toUpperCase()}</span></td>
+					<td>${n.document || '-'}</td>
+					<td>${n.name || '-'}</td>
+					<td>
+						<button onclick="viewNovelty('${n.id}')" class="text-blue-600 hover:text-blue-800 text-sm font-semibold mr-2">Ver</button>
+						<button onclick="deleteNovelty('${n.id}')" class="text-red-600 hover:text-red-800 text-sm font-semibold">🗑️ Eliminar</button>
+					</td>
+				`;
+				tbody.appendChild(row);
+			});
+
+			renderPagination(novelties.length);
+		}
+
+		// Función para eliminar registro
+		function deleteNovelty(id) {
+			if (!confirm('⚠️ ¿Está seguro de que desea eliminar este registro permanentemente?\n\nEsta acción no se puede deshacer.')) {
+				return;
+			}
+
+			const noveltiesRef = database.ref('novelties/' + id);
+			noveltiesRef.remove()
+				.then(() => {
+					showToast('✅ Registro eliminado correctamente', 'success');
+					// Recargar la tabla
+					loadNoveltiesTable();
+					// Recargar estadísticas si el panel está abierto
+					if (document.getElementById('adminPanel').style.display === 'block') {
+						loadDashboardStats();
+						loadCharts();
+					}
+				})
+				.catch((error) => {
+					console.error('Error al eliminar:', error);
+					showToast('❌ Error al eliminar el registro: ' + error.message, 'error');
+				});
+		}
+
+		// Función para exportar Excel completo con todos los datos
+		function exportToExcel() {
+			const noveltiesRef = database.ref('novelties');
+			noveltiesRef.once('value', (snapshot) => {
+				const data = snapshot.val() || {};
+				const novelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+				
+				// Separar retiros e ingresos
+				const retiros = novelties.filter(n => n.type === 'retiro');
+				const ingresos = novelties.filter(n => n.type === 'ingreso');
+
+				// Crear libro de Excel con múltiples hojas
+				const wb = XLSX.utils.book_new();
+
+				// Hoja 1: Resumen General
+				const resumenData = [
+					['REPORTE COMPLETO DE NOVEDADES - ASOCIACIÓN J.E.R'],
+					['Generado:', new Date().toLocaleString('es-CO')],
+					[''],
+					['RESUMEN'],
+					['Total Registros:', novelties.length],
+					['Total Retiros:', retiros.length],
+					['Total Ingresos:', ingresos.length],
+					[''],
+					['Por Contrato:'],
+					['Contrato 665:', novelties.filter(n => n.contract === '665').length],
+					['Contrato 667:', novelties.filter(n => n.contract === '667').length],
+					['Contrato 676:', novelties.filter(n => n.contract === '676').length],
+				];
+				const wsResumen = XLSX.utils.aoa_to_sheet(resumenData);
+				XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
+
+				// Hoja 2: Todos los Retiros (con todos los campos)
+				const retirosData = retiros.map(n => ({
+					'ID': n.id,
+					'Fecha Registro': new Date(n.timestamp).toLocaleString('es-CO'),
+					'Fecha Reporte': n.date,
+					'Contrato': n.contract,
+					'UDS Nombre': n.udsName,
+					'UDS Código': n.udsFull?.split(' - ')[1] || '',
+					'Tipo': 'RETIRO',
+					'Tipo Documento': n.docType || 'RC',
+					'Número Documento': n.document,
+					'Nombre Completo': n.name,
+					'Género': n.gender === 'M' ? 'Masculino' : n.gender === 'F' ? 'Femenino' : 'No especificado',
+					'Fecha Retiro': n.retiroDate || '',
+					// Campos vacíos para mantener estructura
+					'Fecha Nacimiento': '',
+					'Edad': '',
+					'Dirección': '',
+					'Teléfono': '',
+					'Acudiente Nombre': '',
+					'Acudiente Documento': '',
+					'Acudiente Fecha Nac': ''
+				}));
+				
+				if (retirosData.length > 0) {
+					const wsRetiros = XLSX.utils.json_to_sheet(retirosData);
+					XLSX.utils.book_append_sheet(wb, wsRetiros, 'Retiros');
+				}
+
+				// Hoja 3: Todos los Ingresos (con todos los campos)
+				const ingresosData = ingresos.map(n => ({
+					'ID': n.id,
+					'Fecha Registro': new Date(n.timestamp).toLocaleString('es-CO'),
+					'Fecha Reporte': n.date,
+					'Contrato': n.contract,
+					'UDS Nombre': n.udsName,
+					'UDS Código': n.udsFull?.split(' - ')[1] || '',
+					'Tipo': 'INGRESO',
+					'Tipo Documento': n.docType || 'RC',
+					'Número Documento': n.document,
+					'Nombre Completo': n.name,
+					'Género': n.gender === 'M' ? 'Masculino' : n.gender === 'F' ? 'Femenino' : 'No especificado',
+					'Fecha Retiro': '',
+					'Fecha Nacimiento': n.dob || '',
+					'Edad al Ingreso': n.age || '',
+					'Dirección': n.address || '',
+					'Teléfono': n.phone || '',
+					'Acudiente Nombre': n.acudiente || '',
+					'Acudiente Documento': n.acudienteDoc || '',
+					'Acudiente Fecha Nac': n.acudienteDOB || ''
+				}));
+				
+				if (ingresosData.length > 0) {
+					const wsIngresos = XLSX.utils.json_to_sheet(ingresosData);
+					XLSX.utils.book_append_sheet(wb, wsIngresos, 'Ingresos');
+				}
+
+				// Hoja 4: Todos los registros combinados
+				const todosData = novelties.map(n => ({
+					'ID': n.id,
+					'Fecha Registro': new Date(n.timestamp).toLocaleString('es-CO'),
+					'Fecha Reporte': n.date,
+					'Contrato': n.contract,
+					'UDS Nombre': n.udsName,
+					'UDS Código': n.udsFull?.split(' - ')[1] || '',
+					'Tipo': n.type?.toUpperCase(),
+					'Tipo Documento': n.docType || 'RC',
+					'Número Documento': n.document,
+					'Nombre Completo': n.name,
+					'Género': n.gender === 'M' ? 'Masculino' : n.gender === 'F' ? 'Femenino' : 'No especificado',
+					'Fecha Retiro': n.retiroDate || '',
+					'Fecha Nacimiento': n.dob || '',
+					'Edad al Ingreso': n.age || '',
+					'Dirección': n.address || '',
+					'Teléfono': n.phone || '',
+					'Acudiente Nombre': n.acudiente || '',
+					'Acudiente Documento': n.acudienteDoc || '',
+					'Acudiente Fecha Nac': n.acudienteDOB || ''
+				}));
+				
+				const wsTodos = XLSX.utils.json_to_sheet(todosData);
+				XLSX.utils.book_append_sheet(wb, wsTodos, 'Todos los Registros');
+
+				// Descargar archivo
+				XLSX.writeFile(wb, `Reporte_Completo_JER_${new Date().toISOString().split('T')[0]}.xlsx`);
+				
+				showToast(`📊 Excel exportado: ${novelties.length} registros (${retiros.length} retiros, ${ingresos.length} ingresos)`, "success");
+			});
+		}
+
+        function getContractColor(contract) {
+            const colors = { '665': '#D97706', '667': '#2563EB', '676': '#059669' };
+            return colors[contract] || '#64748b';
+        }
+
+        function renderPagination(totalItems) {
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            const container = document.getElementById('pagination');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1 rounded ${i === currentPage ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-700'}`;
+                btn.textContent = i;
+                btn.onclick = () => { currentPage = i; filterNovelties(); };
+                container.appendChild(btn);
+            }
+        }
+
+        function viewNovelty(id) {
+            const novelty = currentNovelties.find(n => n.id === id);
+            if (novelty) {
+                alert(`Detalles de la novedad:\n\n${JSON.stringify(novelty, null, 2)}`);
+            }
+        }
+
+        // Export Functions
+        function exportToExcel() {
+            const noveltiesRef = database.ref('novelties');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                
+                const exportData = novelties.map(n => ({
+                    'Fecha': new Date(n.timestamp).toLocaleDateString('es-CO'),
+                    'Contrato': n.contract,
+                    'UDS': n.udsName,
+                    'Tipo': n.type,
+                    'Documento': n.document,
+                    'Nombre': n.name,
+                    'Edad': n.age || '-',
+                    'Género': n.gender || '-'
+                }));
+
+                const ws = XLSX.utils.json_to_sheet(exportData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Novedades');
+                XLSX.writeFile(wb, `Reporte_Novedades_JER_${new Date().toISOString().split('T')[0]}.xlsx`);
+                
+                showToast("Reporte exportado a Excel correctamente", "success");
+            });
+        }
+
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const noveltiesRef = database.ref('novelties');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                
+                doc.setFontSize(18);
+                doc.text('Reporte de Novedades - Asociación J.E.R', 14, 20);
+                
+                doc.setFontSize(10);
+                doc.text(`Generado: ${new Date().toLocaleString('es-CO')}`, 14, 30);
+                
+                let y = 40;
+                doc.setFontSize(12);
+                doc.setFillColor(200, 200, 200);
+                doc.rect(14, y, 182, 10, 'F');
+                doc.text('Fecha', 16, y + 7);
+                doc.text('Contrato', 45, y + 7);
+                doc.text('UDS', 75, y + 7);
+                doc.text('Tipo', 130, y + 7);
+                doc.text('Documento', 155, y + 7);
+                
+                y += 15;
+                
+                novelties.slice(0, 50).forEach(n => {
+                    if (y > 280) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    
+                    doc.setFontSize(10);
+                    doc.text(new Date(n.timestamp).toLocaleDateString('es-CO'), 16, y);
+                    doc.text(n.contract, 45, y);
+                    doc.text(n.udsName.substring(0, 25), 75, y);
+                    doc.text(n.type.toUpperCase(), 130, y);
+                    doc.text(n.document || '-', 155, y);
+                    
+                    y += 8;
+                });
+                
+                doc.save(`Reporte_Novedades_JER_${new Date().toISOString().split('T')[0]}.pdf`);
+                showToast("Reporte exportado a PDF correctamente", "success");
+            });
+        }
+
+        // Smart Validations
+        function checkExistingBeneficiary(document, type) {
+            if (document.length < 5) return;
+            
+            const noveltiesRef = database.ref('novelties');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                const existing = novelties.find(n => n.document === document);
+                
+                if (existing) {
+                    if (type === 'ingreso') {
+                        showToast(`⚠️ Beneficiario ya existe en ${existing.udsName} (Contrato ${existing.contract})`, "warning");
+                    } else if (type === 'retiro') {
+                        showToast(`✅ Beneficiario encontrado en base de datos`, "info");
+                    }
+                }
+            });
+        }
+
+        function validateAgeRange() {
+            const dob = document.getElementById('ingresoDOB').value;
+            if (!dob) return;
+            
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            if (age > 5) {
+                showToast("⚠️ Alerta: La edad supera los 5 años (Primera Infancia)", "warning");
+            } else if (age < 0) {
+                showToast("❌ Error: Fecha de nacimiento inválida", "error");
+            }
+        }
+
+        // Original Functions (preserved)
+        function validateDatesRealTime() {
+            const isRetiro = document.getElementById('checkRetiro').checked;
+            const isIngreso = document.getElementById('checkIngreso').checked;
+            const fechaRetiroInput = document.getElementById('retiroDate');
+            const fechaIngresoInput = document.getElementById('ingresoDate');
+            const feedback = document.getElementById('feedbackContainer');
+
+            if (isRetiro && isIngreso && fechaRetiroInput.value && fechaIngresoInput.value) {
+                const dRetiro = new Date(fechaRetiroInput.value);
+                const dIngreso = new Date(fechaIngresoInput.value);
+                
+                dRetiro.setMinutes(dRetiro.getMinutes() + dRetiro.getTimezoneOffset());
+                dIngreso.setMinutes(dIngreso.getMinutes() + dIngreso.getTimezoneOffset());
+
+                if (dRetiro >= dIngreso) {
+                    showFeedback("⚠️ Atención: La fecha de retiro no puede ser igual o posterior a la de ingreso.", "error");
+                    fechaRetiroInput.classList.add('border-red-500', 'bg-red-50');
+                    fechaIngresoInput.classList.add('border-red-500', 'bg-red-50');
+                    return false;
+                } else {
+                    feedback.classList.add('hidden');
+                    fechaRetiroInput.classList.remove('border-red-500', 'bg-red-50');
+                    fechaIngresoInput.classList.remove('border-red-500', 'bg-red-50');
+                    return true;
+                }
+            }
+            return true;
+        }
 
         function updateStyles() {
             const contract = document.getElementById('contractNumber').value;
@@ -298,8 +1263,10 @@
             const indicator = document.getElementById('contractIndicator');
             const udsSelect = document.getElementById('mainUdsDropdown');
             const sectionUDS = document.getElementById('sectionUDS');
+            
             mainCard.className = "glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] dynamic-border animate__animated animate__fadeIn";
             document.body.style.background = BACKGROUNDS[contract] || BACKGROUNDS['default'];
+            
             if (contract) {
                 mainCard.classList.add(`contract-${contract}`);
                 indicator.className = `px-4 py-1.5 rounded-full text-xs font-black text-white dynamic-bg uppercase`;
@@ -371,154 +1338,197 @@
         }
 
         function formatData() {
-			const contractNumber = document.getElementById('contractNumber').value;
-			const udsSelection = document.getElementById('mainUdsDropdown').value;
-			const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
-			const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
-			
-			let formData = 	`╔═══════════════════════════════╗\n`;
-			formData += 	` REPORTE DE NOVEDADES - ASOCIACIÓN J.E.R\n`;
-			formData += 	`╚═══════════════════════════════╝\n\n`;
-			
-			formData += `[ INFORMACIÓN GENERAL ]\n`;
-			formData += `> CONTRATO:      ${contractNumber}\n`;
-			formData += `> UDS NOMBRE:    ${utsName}\n`;
-			formData += `> UDS CÓDIGO:    ${utsCode}\n`;
-			formData += `──────────────────────────────────────────────────────────\n\n`;
+            const contractNumber = document.getElementById('contractNumber').value;
+            const udsSelection = document.getElementById('mainUdsDropdown').value;
+            const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
+            const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
+            
+            let formData = 	`╔═══════════════════════════════╗\n`;
+            formData += 	` REPORTE DE NOVEDADES - ASOCIACIÓN J.E.R\n`;
+            formData += 	`╚═══════════════════════════════╝\n\n`;
+            
+            formData += `[ INFORMACIÓN GENERAL ]\n`;
+            formData += `> CONTRATO:      ${contractNumber}\n`;
+            formData += `> UDS NOMBRE:    ${utsName}\n`;
+            formData += `> UDS CÓDIGO:    ${utsCode}\n`;
+            formData += `──────────────────────────────────────────────────────────\n\n`;
 
-			if (document.getElementById('checkRetiro').checked) {
-				formData += `┹ ✴ DATOS DE RETIRO (RETIRO)\n`;
-				formData += `  ├─ 📄Documento:  ${document.getElementById('retiroDocType').value} ${document.getElementById('retiroDocNumber').value}\n`;
-				formData += `  ├─ ✍️Nombre:     ${document.getElementById('retiroFullName').value.toUpperCase()}\n`;
-				formData += `  ├─ 📆Fecha:      ${document.getElementById('retiroDate').value}\n`;
-				formData += `  └─ ♀️Género:     ${document.querySelector('input[name="_retiroGender"]:checked')?.value || 'N/A'}\n\n`;
-			}
+            if (document.getElementById('checkRetiro').checked) {
+                formData += `┹ ✴ DATOS DE RETIRO (RETIRO)\n`;
+                formData += `  ├─ 📄Documento:  ${document.getElementById('retiroDocType').value} ${document.getElementById('retiroDocNumber').value}\n`;
+                formData += `  ├─ ✍️Nombre:     ${document.getElementById('retiroFullName').value.toUpperCase()}\n`;
+                formData += `  ├─ 📆Fecha:      ${document.getElementById('retiroDate').value}\n`;
+                formData += `  └─ ♀️Género:     ${document.querySelector('input[name="retiroGender"]:checked')?.value || 'N/A'}\n\n`;
+            }
 
-			if (document.getElementById('checkIngreso').checked) {
-				formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
-				formData += `  ├─ ✍️Niño:       ${document.getElementById('ingresoFullName').value.toUpperCase()}\n`;
-				formData += `  ├─ 📄Documento:  ${document.getElementById('ingresoDocType').value} ${document.getElementById('ingresoDocNumber').value}\n`;
-				formData += `  ├─ 👶Edad:       ${document.getElementById('displayAge').value}\n`;
-				formData += `  ├─ 📆F. Nacim:   ${document.getElementById('ingresoDOB').value}\n`;
-				formData += `  ├─ 📆F. Ingreso: ${document.getElementById('ingresoDate').value}\n`;
-				formData += `  ├─ ♀️Género:     ${document.querySelector('input[name="_ingresoGender"]:checked')?.value || 'N/A'}\n`;
-				formData += `  ├─ 📌Direccion:  ${document.getElementById('ingresoAddress').value}\n`;
-				formData += `  └─ ☎Teléfono:   ${document.getElementById('ingresoPhone').value}\n\n`;
-				
-				
-				formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
-				formData += `  ├─ ✍️Nombre:     ${document.getElementById('acudienteName').value}\n`;
-				formData += `  ├─ 📆F. Nacim:   ${document.getElementById('acudienteDOB').value}\n`;
-				formData += `  └─ 📄Documento:  ${document.getElementById('acudienteDoc').value}\n`;
-			}
-			
-			formData += `──────────────────────────────────────────────────────────\n`;
-			formData += `Generado el: ${new Date().toLocaleString()}\n`;
-			
-			return formData;
-		}
+            if (document.getElementById('checkIngreso').checked) {
+                formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
+                formData += `  ├─ ✍️Niño:       ${document.getElementById('ingresoFullName').value.toUpperCase()}\n`;
+                formData += `  ├─ 📄Documento:  ${document.getElementById('ingresoDocType').value} ${document.getElementById('ingresoDocNumber').value}\n`;
+                formData += `  ├─ 👶Edad:       ${document.getElementById('displayAge').value}\n`;
+                formData += `  ├─ 📆F. Nacim:   ${document.getElementById('ingresoDOB').value}\n`;
+                formData += `  ├─ 📆F. Ingreso: ${document.getElementById('ingresoDate').value}\n`;
+                formData += `  ├─ ♀️Género:     ${document.querySelector('input[name="ingresoGender"]:checked')?.value || 'N/A'}\n`;
+                formData += `  ├─ 📌Direccion:  ${document.getElementById('ingresoAddress').value}\n`;
+                formData += `  └─ ☎Teléfono:   ${document.getElementById('ingresoPhone').value}\n\n`;
+                
+                formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
+                formData += `  ├─ ✍️Nombre:     ${document.getElementById('acudienteName').value}\n`;
+                formData += `  ├─ 📆F. Nacim:   ${document.getElementById('acudienteDOB').value}\n`;
+                formData += `  └─ 📄Documento:  ${document.getElementById('acudienteDoc').value}\n`;
+            }
+            
+            formData += `──────────────────────────────────────────────────────────\n`;
+            formData += `Generado el: ${new Date().toLocaleString()}\n`;
+            
+            return formData;
+        }
 
+        // Form Submission
         document.getElementById('noveltyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = document.getElementById('submitButton');
             
-            // Validaciones
             const contract = document.getElementById('contractNumber').value;
             const uds = document.getElementById('mainUdsDropdown').value;
             const isRetiro = document.getElementById('checkRetiro').checked;
             const isIngreso = document.getElementById('checkIngreso').checked;
-			
-			// ... (dentro del listener de submit, después de las validaciones de campos vacíos)
-			if (isRetiro) {
-				const docRetiro = document.getElementById('retiroDocNumber').value;
-				if (docRetiro.length < 7 || docRetiro.length > 10) {
-					showFeedback("❌ El documento de retiro debe tener entre 7 y 10 dígitos.", "error");
-					return;
-				}
-			}
 
-			if (isIngreso) {
-				const docIngreso = document.getElementById('ingresoDocNumber').value;
-				if (docIngreso.length < 7 || docIngreso.length > 10) {
-					showFeedback("❌ El documento de ingreso debe tener entre 7 y 10 dígitos.", "error");
-					return;
-				}
-			}
+            // Validations
+            if (isRetiro) {
+                const docRetiro = document.getElementById('retiroDocNumber').value;
+                if (docRetiro.length < 7 || docRetiro.length > 10) {
+                    showToast("El documento de retiro debe tener entre 7 y 10 dígitos.", "error");
+                    return;
+                }
+            }
 
-			// ... (proceder con el envío si todo es correcto)
+            if (isIngreso) {
+                const docIngreso = document.getElementById('ingresoDocNumber').value;
+                if (docIngreso.length < 7 || docIngreso.length > 10) {
+                    showToast("El documento de ingreso debe tener entre 7 y 10 dígitos.", "error");
+                    return;
+                }
+            }
 
-			// ... (dentro del listener de 'submit', después de las validaciones de campos vacíos)
-			if (isRetiro && isIngreso) {
-				const fechaRetiro = new Date(document.getElementById('retiroDate').value);
-				const fechaIngreso = new Date(document.getElementById('ingresoDate').value);
+            if (isRetiro && isIngreso) {
+                const fechaRetiro = new Date(document.getElementById('retiroDate').value);
+                const fechaIngreso = new Date(document.getElementById('ingresoDate').value);
+                fechaRetiro.setMinutes(fechaRetiro.getMinutes() + fechaRetiro.getTimezoneOffset());
+                fechaIngreso.setMinutes(fechaIngreso.getMinutes() + fechaIngreso.getTimezoneOffset());
 
-				// Ajustar desfase de zona horaria para comparación precisa
-				fechaRetiro.setMinutes(fechaRetiro.getMinutes() + fechaRetiro.getTimezoneOffset());
-				fechaIngreso.setMinutes(fechaIngreso.getMinutes() + fechaIngreso.getTimezoneOffset());
-
-				if (fechaRetiro >= fechaIngreso) {
-					showFeedback("❌ Error: La fecha de retiro debe ser anterior a la fecha de ingreso.", "error");
-					return; // Detiene el envío del formulario
-				}
-			}
-
-			// ... (continúa el proceso de envío del formulario)
+                if (fechaRetiro >= fechaIngreso) {
+                    showToast("La fecha de retiro debe ser anterior a la fecha de ingreso.", "error");
+                    return;
+                }
+            }
 
             if (!contract || !uds) {
-                showFeedback("❌ Seleccione Contrato y Unidad de Servicio (UDS).", "error");
+                showToast("Seleccione Contrato y Unidad de Servicio (UDS).", "error");
                 return;
             }
             if (!isRetiro && !isIngreso) {
-                showFeedback("❌ Seleccione al menos una acción: RETIRO o INGRESO.", "error");
+                showToast("Seleccione al menos una acción: RETIRO o INGRESO.", "error");
                 return;
             }
 
-            // Validar campos según sección
             if (isRetiro) {
                 if (!document.getElementById('retiroDocNumber').value || !document.getElementById('retiroDate').value) {
-                    showFeedback("❌ Complete los datos de RETIRO.", "error"); return;
+                    showToast("Complete los datos de RETIRO.", "error"); 
+                    return;
                 }
             }
             if (isIngreso) {
                 if (!document.getElementById('ingresoDocNumber').value || !document.getElementById('acudienteName').value) {
-                    showFeedback("❌ Complete los datos de INGRESO y ACUDIENTE.", "error"); return;
+                    showToast("Complete los datos de INGRESO y ACUDIENTE.", "error"); 
+                    return;
                 }
             }
 
-            document.getElementById('emailSubject').value = `Novedad UDS: ${uds.split(' - ')[0]}`;
+            // Preparar datos para Firebase
+            const udsName = uds.split(' - ')[0];
+            const noveltyData = {
+                contract: contract,
+                udsName: udsName,
+                udsFull: uds,
+                timestamp: new Date().toISOString(),
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            if (isRetiro) {
+                noveltyData.type = 'retiro';
+                noveltyData.document = document.getElementById('retiroDocNumber').value;
+                noveltyData.name = document.getElementById('retiroFullName').value;
+                noveltyData.gender = document.querySelector('input[name="retiroGender"]:checked')?.value;
+            }
+
+            if (isIngreso) {
+                noveltyData.type = 'ingreso';
+                noveltyData.document = document.getElementById('ingresoDocNumber').value;
+                noveltyData.name = document.getElementById('ingresoFullName').value;
+                noveltyData.age = document.getElementById('displayAge').value;
+                noveltyData.gender = document.querySelector('input[name="ingresoGender"]:checked')?.value;
+                noveltyData.address = document.getElementById('ingresoAddress').value;
+                noveltyData.phone = document.getElementById('ingresoPhone').value;
+                noveltyData.acudiente = document.getElementById('acudienteName').value;
+            }
+
+            // Preparar Formspree
+            document.getElementById('emailSubject').value = `Novedad UDS: ${udsName}`;
             document.getElementById('hiddenFormattedData').value = formatData();
 
+            // Mostrar loading
             btn.disabled = true;
-            btn.textContent = "ENVIANDO REPORTE...";
+            btn.innerHTML = '<span class="spinner"></span> ENVIANDO...';
 
+            let firebaseSaved = false;
+
+            // Intentar guardar en Firebase (no bloquea si falla)
+            try {
+                const noveltiesRef = database.ref('novelties');
+                await noveltiesRef.push(noveltyData);
+                firebaseSaved = true;
+                console.log('✅ Guardado en Firebase correctamente');
+            } catch (firebaseError) {
+                console.warn('⚠️ No se pudo guardar en Firebase:', firebaseError.message);
+                // Continuar con el envío por correo aunque falle Firebase
+            }
+
+            // Enviar a Formspree (siempre se intenta)
             try {
                 const response = await fetch(this.action, {
                     method: 'POST',
                     body: new FormData(this),
                     headers: { 'Accept': 'application/json' }
                 });
+                
                 if (response.ok) {
-                    showFeedback('✅¡Éxito! La novedad ha sido enviada correctamente al correo.✅', 'success');
+                    let successMsg = '¡Éxito! La novedad ha sido enviada correctamente al correo';
+                    if (firebaseSaved) {
+                        successMsg += ' y guardada en la base de datos';
+                    } else {
+                        successMsg += ' (modo offline - Firebase no disponible)';
+                    }
+                    showToast(successMsg, 'success');
+                    
                     this.reset();
                     updateStyles();
                     document.getElementById('sectionRetiro').classList.add('hidden');
                     document.getElementById('sectionIngreso').classList.add('hidden');
                 } else {
-                    showFeedback("❌ Error al enviar. Intente nuevamente.❌", "error");
+                    throw new Error('Error en respuesta de Formspree');
                 }
-            } catch {
-                showFeedback("❌ Error de conexión de red.❌", "error");
+            } catch (error) {
+                console.error('Error:', error);
+                showToast("❌ Error al enviar el correo. Intente nuevamente.", "error");
             } finally {
                 btn.disabled = false;
-                btn.textContent = "Enviar Reporte Al Correo";
+                btn.innerHTML = '<span>Enviar Reporte Al Correo</span>';
             }
         });
     </script>
 </body>
 </html>
-
-
-
 
 
 
