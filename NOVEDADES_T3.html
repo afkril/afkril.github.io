@@ -1,609 +1,2327 @@
-	<!DOCTYPE html>
-	<html lang="es">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Reporte_Novedades|T3</title>
-		<script src="https://cdn.tailwindcss.com"></script>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-		<style>
-			@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-			
-			body { 
-				background-attachment: fixed; 
-				background-size: cover; 
-				background-position: center; 
-				transition: all 0.5s ease; 
-				font-family: 'Inter', sans-serif;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				min-height: 100vh;
-				margin: 0;
-				background-color: #f1f5f9;
-			}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte_Novedades|T3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Firebase SDK para Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Chart.js para estadísticas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS para exportar Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF para exportar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        body { 
+            background-attachment: fixed; 
+            background-size: cover; 
+            background-position: center; 
+            transition: all 0.5s ease; 
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f1f5f9;
+        }
 
-			.glass-container { 
-				background: rgba(255, 255, 255, 0.98); 
-				backdrop-filter: blur(10px);
-				transform: scale(1.05);
-				transform-origin: center;
-			}
+        body.dark-mode {
+            background-color: #0f172a;
+        }
 
-			input, select { 
-				padding: 0.8rem 1rem !important; 
-				font-size: 1rem !important; 
-				border: 2px solid #e2e8f0 !important; 
-				outline: none !important; 
-				transition: all 0.2s; 
-				transition: all 1.5s ease !important; /* Esto permite el desvanecimiento lento */
-			}
-			
-			input:focus, select:focus { 
-				border-color: #94a3b8 !important; 
-				box-shadow: 0 0 0 3px rgba(0,0,0,0.05); 
-			}
+        .glass-container { 
+            background: rgba(255, 255, 255, 0.98); 
+            backdrop-filter: blur(10px);
+            transform: scale(1.05);
+            transform-origin: center;
+            transition: all 0.3s ease;
+        }
 
-			.step-badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.9rem; }
-			
-			.contract-668 .dynamic-bg { background-color: #2563EB; }
-			.contract-668 .dynamic-text { color: #2563EB; }
-			.contract-668 .dynamic-border { border-top-color: #2563EB; }
-			
-			@media (max-width: 768px) {
-				.glass-container { transform: scale(1); margin: 1rem; }
-			}
-			/* Estilo para campos obligatorios vacíos */
-			.input-error {
-				border-color: #ef4444 !important;
-				background-color: #fef2f2 !important;
-				box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
-				transition: all 0.5s ease;
-			}
+        body.dark-mode .glass-container {
+            background: rgba(30, 41, 59, 0.98);
+            color: #e2e8f0;
+        }
 
-			/* Estilo para el Toast de Fechas */
-			#dateToast {
-				position: fixed;
-				bottom: 20px;
-				right: 20px;
-				background: #7f1d1d;
-				color: white;
-				padding: 1rem 1.5rem;
-				border-radius: 25px;
-				box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-				z-index: 1000;
-				display: none;
-				border: 1px solid #b91c1c;
-			}
-		</style>
-	</head>
-	<body>
+        body.dark-mode .glass-container input,
+        body.dark-mode .glass-container select {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-color: #475569 !important;
+        }
 
-		<main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
-			
-			<header class="px-8 py-6 bg-white border-b border-slate-100 flex justify-between items-center">
-				<div>
-					<h1 class="text-2xl font-800 text-slate-800 tracking-tight">Reporte de <span class="dynamic-text text-slate-500">Novedades</span></h1>
-					<p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Asociación Timanco 3 - Neiva</p>
-				</div>
+        body.dark-mode .glass-container label,
+        body.dark-mode .glass-container h1,
+        body.dark-mode .glass-container h3 {
+            color: #e2e8f0 !important;
+        }
+
+        body.dark-mode .glass-container .text-slate-600 {
+            color: #94a3b8 !important;
+        }
+
+        body.dark-mode .glass-container .text-slate-800 {
+            color: #f1f5f9 !important;
+        }
+
+        body.dark-mode .glass-container .bg-white {
+            background: #1e293b !important;
+        }
+
+        body.dark-mode .glass-container .border-slate-100 {
+            border-color: #334155 !important;
+        }
+
+        input, select { 
+            padding: 0.8rem 1rem !important; 
+            font-size: 1rem !important; 
+            border: 2px solid #e2e8f0 !important; 
+            outline: none !important; 
+            transition: all 0.2s; 
+        }
+        
+        input:focus, select:focus { 
+            border-color: #94a3b8 !important; 
+            box-shadow: 0 0 0 3px rgba(0,0,0,0.05); 
+        }
+
+        .step-badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.9rem; }
+        
+        .contract-668 .dynamic-bg { background-color: #2563EB; }
+        .contract-668 .dynamic-text { color: #2563EB; }
+        .contract-668 .dynamic-border { border-top-color: #2563EB; }
+        
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            animation: slideInRight 0.3s ease, fadeOut 0.3s ease 4.7s;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(100%); }
+        }
+
+        .toast-success { background: linear-gradient(135deg, #10b981, #059669); }
+        .toast-error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .toast-info { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+
+        /* Admin Panel */
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-content {
+            background: white;
+            margin: 20px auto;
+            max-width: 1200px;
+            border-radius: 20px;
+            padding: 30px;
+            min-height: calc(100vh - 40px);
+        }
+
+        body.dark-mode .admin-content {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .stats-card {
+            background: linear-gradient(135deg, #334155, #1e293b);
+            border-color: #475569;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin: 15px 0;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toggle Switch */
+        .theme-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #cbd5e1;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .theme-toggle.active {
+            background: #475569;
+        }
+
+        .theme-toggle::after {
+            content: '☀️';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .theme-toggle.active::after {
+            content: '🌙';
+            transform: translateX(30px);
+        }
+
+        /* Search and Filter Styles - Compact */
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding-left: 35px !important;
+            padding-top: 0.6rem !important;
+            padding-bottom: 0.6rem !important;
+            font-size: 0.9rem !important;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        body.dark-mode .data-table th,
+        body.dark-mode .data-table td {
+            border-color: #475569;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+        }
+
+        body.dark-mode .data-table th {
+            background: #334155;
+        }
+
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+
+        body.dark-mode .data-table tr:hover {
+            background: #334155;
+        }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-retiro { background: #fee2e2; color: #991b1b; }
+        .badge-ingreso { background: #dcfce7; color: #166534; }
+
+        body.dark-mode .badge-retiro { background: #450a0a; color: #fca5a5; }
+        body.dark-mode .badge-ingreso { background: #052e16; color: #86efac; }
+
+        /* Compact Filter Section */
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .filter-grid input,
+        .filter-grid select {
+            padding: 0.6rem 0.8rem !important;
+            font-size: 0.9rem !important;
+        }
+
+        /* Modal for View Details */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        body.dark-mode .modal-content {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode .modal-header {
+            border-color: #475569;
+        }
+
+        .modal-body {
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        /* Export Buttons */
+        .export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.2);
+        }
+
+        .export-excel { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .export-pdf { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+        .export-excel-full { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+
+        /* Bloqueo de Formulario Styles */
+        .bloqueo-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            z-index: 9998;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .bloqueo-content {
+            background: white;
+            border-radius: 24px;
+            padding: 50px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 3px solid #ef4444;
+        }
+
+        body.dark-mode .bloqueo-content {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        .bloqueo-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .bloqueo-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #dc2626;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .bloqueo-message {
+            font-size: 18px;
+            color: #475569;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        body.dark-mode .bloqueo-message {
+            color: #94a3b8;
+        }
+
+        .bloqueo-dates {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: inline-block;
+        }
+
+        body.dark-mode .bloqueo-dates {
+            background: #450a0a;
+            border-color: #7f1d1d;
+        }
+
+        .bloqueo-dates strong {
+            color: #dc2626;
+            font-size: 20px;
+        }
+
+        .bloqueo-contacto {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        /* Configuracion de Bloqueo en Admin */
+        .config-bloqueo-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #f59e0b;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        body.dark-mode .config-bloqueo-card {
+            background: linear-gradient(135deg, #451a03, #78350f);
+            border-color: #d97706;
+        }
+
+        .config-bloqueo-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        body.dark-mode .config-bloqueo-title {
+            color: #fcd34d;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 32px;
+            background: #cbd5e1;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #10b981;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(28px);
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .config-label {
+            font-weight: 600;
+            color: #475569;
+            min-width: 120px;
+        }
+
+        body.dark-mode .config-label {
+            color: #cbd5e1;
+        }
+
+        .config-input {
+            padding: 8px 12px !important;
+            border-radius: 8px !important;
+            border: 2px solid #d1d5db !important;
+            font-size: 14px !important;
+            width: 150px;
+        }
+
+        .estado-activo {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .estado-inactivo {
+            color: #6b7280;
+            font-weight: 700;
+        }
+
+        /* Estilo para campos obligatorios vacíos */
+        .input-error {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+            transition: all 0.5s ease;
+        }
+
+        /* Boton de acceso admin en bloqueo */
+        .bloqueo-admin-access {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #cbd5e1;
+            display: flex;
+            justify-content: center;
+        }
+
+        body.dark-mode .bloqueo-admin-access {
+            border-top-color: #475569;
+        }
+
+        .btn-casita-admin {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-casita-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .btn-casita-admin svg {
+            stroke: white;
+        }
+
+        .btn-casita-admin span {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .glass-container { transform: scale(1); margin: 1rem; }
+            .admin-content { margin: 10px; padding: 15px; }
+            .filter-grid { grid-template-columns: 1fr; }
+            .chart-container { height: 200px; }
+            .bloqueo-content { padding: 30px 20px; }
+            .bloqueo-title { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Modal for View Details -->
+    <div id="viewModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="text-xl font-bold">Detalles de la Novedad</h3>
+                <button onclick="closeModal()" class="text-2xl hover:text-red-500 transition">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Overlay de Bloqueo de Formulario -->
+    <div id="bloqueoOverlay" class="bloqueo-overlay">
+        <div class="bloqueo-content">
+            <div class="bloqueo-icon">🔒</div>
+            <h2 class="bloqueo-title">CIERRE DE MES</h2>
+            <p class="bloqueo-message">
+                El sistema se encuentra en periodo de cierre.<br>
+                No se pueden registrar nuevas novedades en este momento.
+            </p>
+            <div class="bloqueo-dates">
+                <strong id="bloqueoFechasDisplay">Periodo de cierre: 28 - 30 de cada mes</strong>
+            </div>
+            <div class="bloqueo-contacto">
+                📞 Comuníquese con el administrativo de Timanco 3
+            </div>
+            
+            <!-- BOTON DE CASITA PARA ADMIN -->
+            <div class="bloqueo-admin-access">
+                <button onclick="accesoAdminDesdeBloqueo()" class="btn-casita-admin" title="Acceso Administrador">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Admin</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
+        
+        <header class="px-8 py-6 bg-white border-b border-slate-100 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-800 text-slate-800 tracking-tight">Reporte de <span class="dynamic-text text-slate-500">Novedades</span></h1>
+                <p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest">Asociación Timanco 3 - Neiva</p>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0 w-20 h-20 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm">
+                    <img src="LOGOT3.png" alt="Logo" class="w-full h-full object-cover">
+                </div>
+                <div class="flex flex-col items-end space-y-1">
+                    <div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono">
+                        00/00/0000 00:00:00
+                    </div>
+                    <div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">
+                        Sin Contrato
+                    </div>
+                    <!-- Theme Toggle -->
+                    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema"></div>
+                    <!-- Admin Access -->
+                    <button onclick="promptAdminAccess()" class="text-slate-400 hover:text-slate-600 transition-colors" title="Acceso Admin">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbz9HXjaEdWSBrARbqfTyeM5a-obTbmQPtGoH7W14vqstPth_9QcD37WcKk0jt_Nx69A/exec" method="POST" class="p-8 space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
+                        <span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
+                    </label>
+                    <select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
+                        <option value="">Seleccione...</option>
+                        <option value="668">Contrato 41006682024</option>
+                    </select>
+                </div>
+                <div id="sectionUDS" class="space-y-2 opacity-50">
+                    <label class="flex items-center text-sm font-bold text-slate-600 uppercase">
+                        <span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
+                    </label>
+                    <select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
+                        <option value="">-- Primero Contrato --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <label class="flex items-center text-sm font-bold text-slate-600 uppercase mb-4">
+                    <span class="step-badge bg-slate-400 dynamic-bg mr-3">3</span> ¿Qué reportará?
+                </label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
+                        <input type="checkbox" id="checkRetiro" class="hidden" onchange="toggleSection('retiro')">
+                        <span class="text-sm font-bold text-slate-600">RETIRO DE BENEFICIARIO</span>
+                    </label>
+                    <label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                        <input type="checkbox" id="checkIngreso" class="hidden" onchange="toggleSection('ingreso')">
+                        <span class="text-sm font-bold text-slate-600">INGRESO DE BENEFICIARIO</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-6 rounded-2xl bg-red-100/100 border border-red-500 space-y-4">
+                <h3 class="text-sm font-black text-red-700 uppercase flex items-center">
+                    <span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select id="retiroDocType" name="retiro_tipo_doc" class="w-full rounded-lg">
+                            <option value="RC">RC - Registro Civil</option>
+                            <option value="AN">AN - Acta Nacimiento</option>
+                            <option value="PEP">PEP / PPT</option>
+                            <option value="SD">SD - Sin Documento</option>
+                        </select>
+                        <input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de Documento" 
+                               class="w-full rounded-lg" minlength="7" maxlength="10" 
+                               oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkExistingBeneficiary(this.value, 'retiro')">
+                    </div>
+                    <input type="text" id="retiroFullName" name="retiro_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
+                        <input type="date" id="retiroDate" name="retiro_fecha" class="w-full rounded-lg" onchange="validateDatesRealTime()">
+                    </div>
+                    <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
+                        <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+                        <label class="text-sm font-bold flex items-center">
+                            <input type="radio" name="_retiroGender" value="M" class="mr-1"> M
+                        </label>
+                        <label class="text-sm font-bold flex items-center">
+                            <input type="radio" name="_retiroGender" value="F" class="mr-1"> F
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sectionIngreso" class="hidden animate__animated animate__fadeIn space-y-6">
+                <div class="p-6 rounded-2xl bg-green-100/100 border border-green-500 space-y-4">
+                    <h3 class="text-sm font-black text-green-700 uppercase flex items-center">
+                        <span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Beneficiario Entrante
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <select id="ingresoDocType" name="ingreso_tipo_doc" class="w-full rounded-lg">
+                                <option value="RC">RC - Registro Civil</option>
+                                <option value="AN">AN - Acta Nacimiento</option>
+                                <option value="PEP">PEP / PPT</option>
+                                <option value="SD">SD - Sin Documento</option>
+                            </select>
+                            <input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Numero Documento" 
+                                   class="w-full rounded-lg" minlength="7" maxlength="10" 
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkExistingBeneficiary(this.value, 'ingreso')">
+                        </div>
+                        <input type="text" id="ingresoFullName" name="ingreso_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
+                            <input type="date" id="ingresoDOB" name="ingreso_nacimiento" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateAgeRange()">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
+                            <input type="date" id="ingresoDate" name="ingreso_fecha" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateDatesRealTime()">
+                        </div>
+                        <div class="md:col-span-2 space-y-1">
+                            <label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
+                            <input type="text" id="displayAge" name="edad_calculada" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
+                        </div>
+                        <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
+                            <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+                            <label class="text-sm font-bold flex items-center">
+                                <input type="radio" name="_ingresoGender" value="M" class="mr-1"> M
+                            </label>
+                            <label class="text-sm font-bold flex items-center">
+                                <input type="radio" name="_ingresoGender" value="F" class="mr-1"> F
+                            </label>
+                        </div>
+                        <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección y Barrio" class="w-full rounded-lg">
+                        <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
+                        
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
+                            <input type="file" id="fileInput" name="soporte_documento" accept=".pdf,image/*" 
+                                   class="w-full rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border-2 border-dashed border-green-200">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-2xl bg-blue-100/100 border border-blue-500 space-y-4">
+                    <h3 class="text-sm font-black text-blue-700 uppercase flex items-center">
+                        <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
+                        <div class="space-y-1 md:col-span-2">
+                            <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
+                            <input type="date" id="acudienteDOB" name="acudiente_nacimiento" class="w-full rounded-lg">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
+            <input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
+            
+            <button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase flex items-center justify-center gap-2">
+                <span>Enviar Reporte Al Correo</span>
+            </button>
+            
+            <div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
+            
+            <footer class="mt-10 mb-2 text-[11px] font-black text-slate-400 tracking-[0.4em] text-center uppercase">
+                Asociación T3 • Neiva, Huila © 2026
+            </footer>
+        </form>
+    </main>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-panel">
+        <div class="admin-content">
+            <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Panel de Administración</h2>
+                <div class="flex gap-3 flex-wrap">
+                    <button onclick="exportToExcelCurrent()" class="export-btn export-excel">
+                        Exportar Vista Actual
+                    </button>
+                    <button onclick="exportToExcelFull()" class="export-btn export-excel-full">
+                        Exportar Completo
+                    </button>
+                    <button onclick="exportToPDF()" class="export-btn export-pdf">
+                        Exportar PDF
+                    </button>
+                    <button onclick="closeAdminPanel()" class="px-4 py-2 bg-slate-600 text-white rounded-lg font-semibold hover:bg-slate-700 transition">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Configuracion de Bloqueo de Formulario -->
+            <div class="config-bloqueo-card">
+                <h3 class="config-bloqueo-title">
+                    <span>🔒</span> Configuración de Cierre de Mes
+                </h3>
+                
+                <div class="config-row">
+                    <span class="config-label">Estado:</span>
+                    <div class="toggle-switch" id="toggleBloqueo" onclick="toggleBloqueoSistema()"></div>
+                    <span id="estadoBloqueoText" class="estado-inactivo">DESACTIVADO</span>
+                </div>
+
+                <div class="config-row">
+                    <span class="config-label">Fecha Inicio:</span>
+                    <input type="number" id="configFechaInicio" class="config-input" value="28" min="1" max="31" onchange="guardarConfigBloqueo()">
+                    <span>de cada mes</span>
+                </div>
+
+                <div class="config-row">
+                    <span class="config-label">Fecha Fin:</span>
+                    <input type="number" id="configFechaFin" class="config-input" value="30" min="1" max="31" onchange="guardarConfigBloqueo()">
+                    <span>de cada mes</span>
+                </div>
+
+                <div class="config-row" style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #f59e0b;">
+                    <span class="config-label">Periodo actual:</span>
+                    <strong id="periodoActualDisplay" style="color: #92400e; font-size: 16px;">28 - 30 de cada mes</strong>
+                </div>
+
+                <div style="margin-top: 15px; font-size: 12px; color: #78716c;">
+                    * Cuando está activado, el formulario se bloquea automáticamente durante estas fechas.
+                </div>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="stats-card">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Hoy</h4>
+                    <p class="text-2xl font-black text-slate-800" id="statToday">0</p>
+                    <p class="text-xs text-slate-400 mt-1">Novedades</p>
+                </div>
+                <div class="stats-card">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Esta Semana</h4>
+                    <p class="text-2xl font-black text-slate-800" id="statWeek">0</p>
+                    <p class="text-xs text-slate-400 mt-1">Total</p>
+                </div>
+                <div class="stats-card">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Este Mes</h4>
+                    <p class="text-2xl font-black text-slate-800" id="statMonth">0</p>
+                    <p class="text-xs text-slate-400 mt-1">Total</p>
+                </div>
+                <div class="stats-card">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Retiros/Ingresos</h4>
+                    <div class="flex gap-3 mt-1">
+                        <div>
+                            <span class="text-xl font-black text-red-600" id="statRetiros">0</span>
+                            <span class="text-xs text-slate-400 block">Ret</span>
+                        </div>
+                        <div>
+                            <span class="text-xl font-black text-green-600" id="statIngresos">0</span>
+                            <span class="text-xs text-slate-400 block">Ing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="stats-card">
+                    <h4 class="text-sm font-bold text-slate-700 mb-3">Novedades por Tipo</h4>
+                    <div class="chart-container">
+                        <canvas id="typeChart"></canvas>
+                    </div>
+                </div>
+                <div class="stats-card">
+                    <h4 class="text-sm font-bold text-slate-700 mb-3">UDS con más movimiento</h4>
+                    <div class="chart-container">
+                        <canvas id="udsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter - Compact -->
+            <div class="stats-card">
+                <h4 class="text-sm font-bold text-slate-700 mb-3">Búsqueda y Filtrado</h4>
+                <div class="filter-grid">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Buscar nombre o documento..." oninput="filterNovelties()">
+                    </div>
+                    <select id="filterType" onchange="filterNovelties()">
+                        <option value="">Todos los tipos</option>
+                        <option value="retiro">Solo Retiros</option>
+                        <option value="ingreso">Solo Ingresos</option>
+                    </select>
+                    <select id="filterMonth" onchange="filterNovelties()">
+                        <option value="">Todos los meses</option>
+                        <option value="0">Enero</option>
+                        <option value="1">Febrero</option>
+                        <option value="2">Marzo</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Mayo</option>
+                        <option value="5">Junio</option>
+                        <option value="6">Julio</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Septiembre</option>
+                        <option value="9">Octubre</option>
+                        <option value="10">Noviembre</option>
+                        <option value="11">Diciembre</option>
+                    </select>
+                    <select id="filterUDS" onchange="filterNovelties()">
+                        <option value="">Todas las UDS</option>
+                    </select>
+                    <input type="date" id="filterDate" onchange="filterNovelties()">
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha Registro</th>
+                                <th>Fecha Movimiento</th>
+                                <th>UDS</th>
+                                <th>Tipo</th>
+                                <th>Documento</th>
+                                <th>Nombre</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="noveltiesTableBody">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="pagination" class="flex justify-center gap-2 mt-4 flex-wrap">
+                    <!-- Pagination buttons -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration - Realtime Database para T3
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX9mBXhGSx6vVqvrLgMLY0Stno4nI-jPw",
+            authDomain: "moonbox-b997c.firebaseapp.com",
+            databaseURL: "https://moonbox-b997c-default-rtdb.firebaseio.com",
+            projectId: "moonbox-b997c",
+            storageBucket: "moonbox-b997c.firebasestorage.app",
+            messagingSenderId: "507195516792",
+            appId: "1:507195516792:web:a4ed4d8715e137d6e48a8d",
+            measurementId: "G-10F98RC1Z0"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Datos UDS de T3 (Contrato 668)
+        const UDS_DATA = { 
+            '668': [
+                ['BURBUJAS.', '-'], ['CAPERUCITA ROJA', '-'], ['CARIÑOSITOS', '-'], 
+                ['DIVINO NIÑO', '-'], ['LOS BABYS', '-'], ['LOS CARIÑOSITOS', '-'], 
+                ['LOS GNOMOS', '-'], ['LOS PATICOS', '-'], ['LOS PEQUEÑINES', '-'], 
+                ['MI BELLA INFANCIA', '-'], ['MI CABAÑA', '-'], ['MI TRAVESURA', '-'], 
+                ['MIS AMIGUITOS 1', '-'], ['MIS CONSENTIDOS', '-'], ['MIS OSITOS', '-'], 
+                ['MIS PATICOS', '-'], ['MIS PINGUINOS', '-']
+            ] 
+        };
+        
+        const BACKGROUNDS = { 
+            '668': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', 
+            'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' 
+        };
+
+        // Admin password
+        const ADMIN_PASSWORD = "ZAN";
+
+        // Charts instances
+        let typeChartInstance = null;
+        let udsChartInstance = null;
+
+        // Configuracion de bloqueo
+        let configBloqueo = {
+            activo: false,
+            fechaInicio: 28,
+            fechaFin: 30
+        };
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const time = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const clockEl = document.getElementById('clockDisplay');
+            if (clockEl) clockEl.textContent = `${date} | ${time}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Toast Notification System
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icons = {
+                success: '✓',
+                error: '✕',
+                warning: '!',
+                info: 'i'
+            };
+            
+            toast.innerHTML = `<span style="font-weight:bold">${icons[type]}</span><span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, duration);
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) toggle.classList.toggle('active');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            const toggle = document.getElementById('themeToggle');
+            if (toggle) toggle.classList.add('active');
+        }
+
+        // Admin Access
+        function promptAdminAccess() {
+            const password = prompt("Ingrese la contraseña de administrador:");
+            if (password === ADMIN_PASSWORD) {
+                openAdminPanel();
+                showToast("Acceso concedido al panel de administración", "success");
+            } else if (password !== null) {
+                showToast("Contraseña incorrecta", "error");
+            }
+        }
+
+        function openAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            if (panel) panel.style.display = 'block';
+            loadDashboardStats();
+            loadCharts();
+            loadNoveltiesTable();
+            cargarConfigBloqueo();
+            populateUDSFilter();
+        }
+
+        function closeAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            if (panel) panel.style.display = 'none';
+        }
+
+        function populateUDSFilter() {
+            const filterUDS = document.getElementById('filterUDS');
+            if (!filterUDS) return;
+            
+            filterUDS.innerHTML = '<option value="">Todas las UDS</option>';
+            UDS_DATA['668']?.forEach(([name, code]) => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                filterUDS.appendChild(opt);
+            });
+        }
+
+        // FUNCIONES DE BLOQUEO DE FORMULARIO
+        function cargarConfigBloqueo() {
+            const configRef = database.ref('configBloqueo_T3');
+            configRef.once('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    configBloqueo = data;
+                    actualizarUIConfigBloqueo();
+                    verificarBloqueo();
+                }
+            });
+        }
+
+        function guardarConfigBloqueo() {
+            const fechaInicio = document.getElementById('configFechaInicio');
+            const fechaFin = document.getElementById('configFechaFin');
+            
+            if (!fechaInicio || !fechaFin) return;
+            
+            let inicio = parseInt(fechaInicio.value);
+            let fin = parseInt(fechaFin.value);
+            
+            if (inicio < 1) inicio = 1;
+            if (inicio > 31) inicio = 31;
+            if (fin < 1) fin = 1;
+            if (fin > 31) fin = 31;
+            if (fin < inicio) fin = inicio;
+            
+            configBloqueo.fechaInicio = inicio;
+            configBloqueo.fechaFin = fin;
+            
+            const configRef = database.ref('configBloqueo_T3');
+            configRef.set(configBloqueo)
+                .then(() => {
+                    showToast("Configuración guardada correctamente", "success");
+                    actualizarUIConfigBloqueo();
+                    verificarBloqueo();
+                })
+                .catch((error) => {
+                    showToast("Error al guardar configuración: " + error.message, "error");
+                });
+        }
+
+        function toggleBloqueoSistema() {
+            configBloqueo.activo = !configBloqueo.activo;
+            
+            const configRef = database.ref('configBloqueo_T3');
+            configRef.set(configBloqueo)
+                .then(() => {
+                    showToast(configBloqueo.activo ? "Bloqueo ACTIVADO" : "Bloqueo DESACTIVADO", configBloqueo.activo ? "warning" : "success");
+                    actualizarUIConfigBloqueo();
+                    verificarBloqueo();
+                })
+                .catch((error) => {
+                    showToast("Error al cambiar estado: " + error.message, "error");
+                });
+        }
+
+        function actualizarUIConfigBloqueo() {
+            const toggle = document.getElementById('toggleBloqueo');
+            const estadoText = document.getElementById('estadoBloqueoText');
+            const fechaInicio = document.getElementById('configFechaInicio');
+            const fechaFin = document.getElementById('configFechaFin');
+            const periodoDisplay = document.getElementById('periodoActualDisplay');
+            const bloqueoFechasDisplay = document.getElementById('bloqueoFechasDisplay');
+            
+            if (toggle) {
+                if (configBloqueo.activo) {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+            }
+            
+            if (estadoText) {
+                if (configBloqueo.activo) {
+                    estadoText.textContent = "ACTIVADO";
+                    estadoText.className = "estado-activo";
+                } else {
+                    estadoText.textContent = "DESACTIVADO";
+                    estadoText.className = "estado-inactivo";
+                }
+            }
+            
+            if (fechaInicio) fechaInicio.value = configBloqueo.fechaInicio;
+            if (fechaFin) fechaFin.value = configBloqueo.fechaFin;
+            
+            const textoPeriodo = `${configBloqueo.fechaInicio} - ${configBloqueo.fechaFin} de cada mes`;
+            if (periodoDisplay) periodoDisplay.textContent = textoPeriodo;
+            if (bloqueoFechasDisplay) bloqueoFechasDisplay.textContent = `Periodo de cierre: ${textoPeriodo}`;
+        }
+
+        function verificarBloqueo() {
+            const overlay = document.getElementById('bloqueoOverlay');
+            const mainCard = document.getElementById('mainCard');
+            
+            if (!configBloqueo.activo) {
+                if (overlay) overlay.style.display = 'none';
+                if (mainCard) mainCard.style.display = 'block';
+                return;
+            }
+            
+            const hoy = new Date();
+            const diaActual = hoy.getDate();
+            
+            const enPeriodoBloqueo = diaActual >= configBloqueo.fechaInicio && diaActual <= configBloqueo.fechaFin;
+            
+            if (enPeriodoBloqueo) {
+                if (overlay) overlay.style.display = 'flex';
+                if (mainCard) mainCard.style.display = 'none';
+            } else {
+                if (overlay) overlay.style.display = 'none';
+                if (mainCard) mainCard.style.display = 'block';
+            }
+        }
+
+        function accesoAdminDesdeBloqueo() {
+            const password = prompt("🔒 ACCESO ADMINISTRADOR\n\nIngrese la contraseña para desactivar el bloqueo de cierre de mes:");
+            
+            if (password === null) return;
+            
+            if (password === ADMIN_PASSWORD) {
+                configBloqueo.activo = false;
+                
+                const configRef = database.ref('configBloqueo_T3');
+                configRef.set(configBloqueo)
+                    .then(() => {
+                        showToast("✅ Bloqueo desactivado correctamente", "success");
+                        actualizarUIConfigBloqueo();
+                        verificarBloqueo();
+                        
+                        setTimeout(() => {
+                            const abrirPanel = confirm("¿Desea abrir el panel de administración?");
+                            if (abrirPanel) openAdminPanel();
+                        }, 500);
+                    })
+                    .catch((error) => {
+                        showToast("❌ Error al desactivar bloqueo: " + error.message, "error");
+                    });
+            } else {
+                showToast("❌ Contraseña incorrecta", "error");
+            }
+        }
+
+        setInterval(verificarBloqueo, 3600000);
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarConfigBloqueo();
+        });
+
+        // Dashboard Statistics
+        function loadDashboardStats() {
+            const noveltiesRef = database.ref('novelties_T3');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+                let todayCount = 0, weekCount = 0, monthCount = 0, retiros = 0, ingresos = 0;
+
+                novelties.forEach(n => {
+                    const nDate = new Date(n.timestamp);
+                    if (nDate >= today) todayCount++;
+                    if (nDate >= weekAgo) weekCount++;
+                    if (nDate >= monthAgo) monthCount++;
+                    
+                    if (n.type === 'retiro') retiros++;
+                    else if (n.type === 'ingreso') ingresos++;
+                });
+
+                const elToday = document.getElementById('statToday');
+                const elWeek = document.getElementById('statWeek');
+                const elMonth = document.getElementById('statMonth');
+                const elRetiros = document.getElementById('statRetiros');
+                const elIngresos = document.getElementById('statIngresos');
+
+                if (elToday) elToday.textContent = todayCount;
+                if (elWeek) elWeek.textContent = weekCount;
+                if (elMonth) elMonth.textContent = monthCount;
+                if (elRetiros) elRetiros.textContent = retiros;
+                if (elIngresos) elIngresos.textContent = ingresos;
+            });
+        }
+
+        // Charts
+        function loadCharts() {
+            loadTypeChart();
+            loadUDSChart();
+        }
+
+        function loadTypeChart() {
+            const noveltiesRef = database.ref('novelties_T3');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                
+                const retirosCount = novelties.filter(n => n.type === 'retiro').length;
+                const ingresosCount = novelties.filter(n => n.type === 'ingreso').length;
+
+                const ctx = document.getElementById('typeChart');
+                if (!ctx) return;
+                
+                if (typeChartInstance) typeChartInstance.destroy();
+
+                typeChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Retiros', 'Ingresos'],
+                        datasets: [{
+                            data: [retirosCount, ingresosCount],
+                            backgroundColor: ['#ef4444', '#10b981'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        plugins: {
+                            legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 }, padding: 10 } }
+                        }
+                    }
+                });
+            });
+        }
+
+        function loadUDSChart() {
+            const noveltiesRef = database.ref('novelties_T3');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                
+                const udsCounts = {};
+                
+                novelties.forEach(n => {
+                    udsCounts[n.udsName] = (udsCounts[n.udsName] || 0) + 1;
+                });
+
+                const sortedUDS = Object.entries(udsCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+                const ctx = document.getElementById('udsChart');
+                if (!ctx) return;
+                
+                if (udsChartInstance) udsChartInstance.destroy();
+
+                const colors = ['#2563EB', '#3b82f6', '#60a5fa', '#93c5fd', '#dbeafe', '#1d4ed8', '#1e40af', '#1e3a8a'];
+
+                udsChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedUDS.map(([name]) => name.length > 20 ? name.substring(0, 20) + '...' : name),
+                        datasets: [{
+                            data: sortedUDS.map(([, count]) => count),
+                            backgroundColor: colors,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            });
+        }
+
+        // Search and Filter
+        let currentNovelties = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function loadNoveltiesTable() {
+            const noveltiesRef = database.ref('novelties_T3');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                currentNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+                filterNovelties();
+            });
+        }
+
+        function filterNovelties() {
+            const searchInput = document.getElementById('searchInput');
+            const filterType = document.getElementById('filterType');
+            const filterDate = document.getElementById('filterDate');
+            const filterMonth = document.getElementById('filterMonth');
+            const filterUDS = document.getElementById('filterUDS');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const typeFilter = filterType ? filterType.value : '';
+            const dateFilter = filterDate ? filterDate.value : '';
+            const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
+
+            let filtered = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm));
+                const matchesType = !typeFilter || n.type === typeFilter;
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
+
+                return matchesSearch && matchesType && matchesDate && matchesMonth && matchesUDS;
+            });
+
+            filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            renderTable(filtered);
+        }
+
+        function getFechaMovimiento(novelty) {
+            if (novelty.type === 'retiro') return novelty.retiroDate || novelty.date || '-';
+            else if (novelty.type === 'ingreso') return novelty.ingresoDate || novelty.date || '-';
+            return novelty.date || '-';
+        }
+
+        function renderTable(novelties) {
+            const tbody = document.getElementById('noveltiesTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginated = novelties.slice(start, start + itemsPerPage);
+
+            paginated.forEach(n => {
+                const fechaMovimiento = getFechaMovimiento(n);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(n.timestamp).toLocaleDateString('es-CO')}</td>
+                    <td><strong>${fechaMovimiento}</strong></td>
+                    <td>${n.udsName}</td>
+                    <td><span class="badge badge-${n.type}">${n.type ? n.type.toUpperCase() : ''}</span></td>
+                    <td>${n.document || '-'}</td>
+                    <td>${n.name || '-'}</td>
+                    <td>
+                        <button onclick="viewNovelty('${n.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 bg-blue-50 px-2 py-1 rounded">Ver</button>
+                        <button onclick="deleteNovelty('${n.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold bg-red-50 px-2 py-1 rounded">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            renderPagination(novelties.length);
+        }
+
+        function viewNovelty(id) {
+            const novelty = currentNovelties.find(n => n.id === id);
+            if (!novelty) return;
+
+            let fechaMovimiento = '-';
+            let fechaNacimientoNiño = '-';
+            let fechaNacimientoAcudiente = '-';
+            
+            if (novelty.type === 'retiro') {
+                fechaMovimiento = novelty.retiroDate || novelty.date || '-';
+            } else if (novelty.type === 'ingreso') {
+                fechaMovimiento = novelty.ingresoDate || novelty.date || '-';
+                fechaNacimientoNiño = novelty.ingresoDOB || novelty.dob || '-';
+                fechaNacimientoAcudiente = novelty.acudienteDOB || '-';
+            }
+
+            let formData = `=================================\n`;
+            formData +=    ` REPORTE DE NOVEDADES - ASOCIACIÓN T3\n`;
+            formData +=    `=================================\n\n`;
+            
+            formData += `[ INFORMACIÓN GENERAL ]\n`;
+            formData += `> CONTRATO:         668\n`;
+            formData += `> UDS NOMBRE:       ${novelty.udsName || 'N/A'}\n`;
+            formData += `> FECHA REGISTRO:   ${new Date(novelty.timestamp).toLocaleString('es-CO')}\n`;
+            formData += `------------------------------------------\n\n`;
+
+            if (novelty.type === 'retiro') {
+                formData += `[ DATOS DE RETIRO ]\n`;
+                formData += `  - Documento:      ${novelty.docType || 'RC'} ${novelty.document || 'N/A'}\n`;
+                formData += `  - Nombre:         ${novelty.name ? novelty.name.toUpperCase() : 'N/A'}\n`;
+                formData += `  - Fecha Retiro:   ${fechaMovimiento}\n`;
+                formData += `  - Género:         ${novelty.gender === 'M' ? 'Masculino' : novelty.gender === 'F' ? 'Femenino' : 'N/A'}\n\n`;
+            }
+
+            if (novelty.type === 'ingreso') {
+                formData += `[ DATOS DE INGRESO ]\n`;
+                formData += `  - Niño:           ${novelty.name ? novelty.name.toUpperCase() : 'N/A'}\n`;
+                formData += `  - Documento:      ${novelty.docType || 'RC'} ${novelty.document || 'N/A'}\n`;
+                formData += `  - Edad:           ${novelty.age || 'N/A'}\n`;
+                formData += `  - F. Nacimiento:  ${fechaNacimientoNiño}\n`;
+                formData += `  - F. Ingreso:     ${fechaMovimiento}\n`;
+                formData += `  - Género:         ${novelty.gender === 'M' ? 'Masculino' : novelty.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
+                formData += `  - Dirección:      ${novelty.address || 'N/A'}\n`;
+                formData += `  - Teléfono:       ${novelty.phone || 'N/A'}\n\n`;
+                
+                formData += `[ DATOS DEL ACUDIENTE ]\n`;
+                formData += `  - Nombre:         ${novelty.acudiente || 'N/A'}\n`;
+                formData += `  - F. Nacimiento:  ${fechaNacimientoAcudiente}\n`;
+                formData += `  - Documento:      ${novelty.acudienteDoc || 'N/A'}\n`;
+            }
+
+            const modalBody = document.getElementById('modalBody');
+            const viewModal = document.getElementById('viewModal');
+            if (modalBody) modalBody.textContent = formData;
+            if (viewModal) viewModal.style.display = 'flex';
+        }
+
+        function closeModal(event) {
+            if (!event || event.target.id === 'viewModal' || event.target.tagName === 'BUTTON') {
+                const viewModal = document.getElementById('viewModal');
+                if (viewModal) viewModal.style.display = 'none';
+            }
+        }
+
+        function deleteNovelty(id) {
+            if (!confirm('¿Está seguro de que desea eliminar este registro permanentemente?\n\nEsta acción no se puede deshacer.')) return;
+
+            const noveltiesRef = database.ref('novelties_T3/' + id);
+            noveltiesRef.remove()
+                .then(() => {
+                    showToast('Registro eliminado correctamente', 'success');
+                    loadNoveltiesTable();
+                    loadDashboardStats();
+                    loadCharts();
+                })
+                .catch((error) => {
+                    showToast('Error al eliminar el registro: ' + error.message, 'error');
+                });
+        }
+
+        function renderPagination(totalItems) {
+            const container = document.getElementById('pagination');
+            if (!container) return;
+            
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            container.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1 rounded text-sm ${i === currentPage ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`;
+                btn.textContent = i;
+                btn.onclick = () => { currentPage = i; filterNovelties(); };
+                container.appendChild(btn);
+            }
+        }
+
+        function exportToExcelCurrent() {
+            if (currentNovelties.length === 0) {
+                showToast("No hay datos para exportar", "warning");
+                return;
+            }
+
+            const searchInput = document.getElementById('searchInput');
+            const filterType = document.getElementById('filterType');
+            const filterDate = document.getElementById('filterDate');
+            const filterMonth = document.getElementById('filterMonth');
+            const filterUDS = document.getElementById('filterUDS');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const typeFilter = filterType ? filterType.value : '';
+            const dateFilter = filterDate ? filterDate.value : '';
+            const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
+
+            let filtered = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm));
+                const matchesType = !typeFilter || n.type === typeFilter;
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
+
+                return matchesSearch && matchesType && matchesDate && matchesMonth && matchesUDS;
+            });
+
+            if (filtered.length === 0) {
+                showToast("No hay datos en la vista actual para exportar", "warning");
+                return;
+            }
+
+            const exportData = filtered.map(n => {
+                const fechaMovimiento = getFechaMovimiento(n);
+                let fechaNacimientoNiño = '';
+                let fechaNacimientoAcudiente = '';
+                
+                if (n.type === 'ingreso') {
+                    fechaNacimientoNiño = n.ingresoDOB || n.dob || '';
+                    fechaNacimientoAcudiente = n.acudienteDOB || '';
+                }
+
+                return {
+                    'Fecha Registro': new Date(n.timestamp).toLocaleString('es-CO'),
+                    'Fecha Movimiento': fechaMovimiento,
+                    'Contrato': '668',
+                    'UDS Nombre': n.udsName,
+                    'Tipo': n.type ? n.type.toUpperCase() : '',
+                    'Tipo Documento': n.docType || 'RC',
+                    'Número Documento': n.document,
+                    'Nombre Completo': n.name,
+                    'Género': n.gender === 'M' ? 'Masculino' : n.gender === 'F' ? 'Femenino' : 'No especificado',
+                    'Fecha Nacimiento Niño': fechaNacimientoNiño,
+                    'Edad al Ingreso': n.age || '',
+                    'Dirección': n.address || '',
+                    'Teléfono': n.phone || '',
+                    'Acudiente Nombre': n.acudiente || '',
+                    'Acudiente Documento': n.acudienteDoc || '',
+                    'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Vista Actual');
+            XLSX.writeFile(wb, `Reporte_Filtrado_T3_${new Date().toISOString().split('T')[0]}.xlsx`);
+            
+            showToast(`Exportados ${filtered.length} registros de la vista actual`, "success");
+        }
+
+        function exportToExcelFull() {
+            const noveltiesRef = database.ref('novelties_T3');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+                
+                if (novelties.length === 0) {
+                    showToast("No hay datos para exportar", "warning");
+                    return;
+                }
+
+                const retiros = novelties.filter(n => n.type === 'retiro');
+                const ingresos = novelties.filter(n => n.type === 'ingreso');
+                const wb = XLSX.utils.book_new();
+
+                // Resumen
+                const resumenData = [
+                    ['REPORTE COMPLETO DE NOVEDADES - ASOCIACIÓN T3'],
+                    ['Generado:', new Date().toLocaleString('es-CO')],
+                    [''],
+                    ['RESUMEN'],
+                    ['Total Registros:', novelties.length],
+                    ['Total Retiros:', retiros.length],
+                    ['Total Ingresos:', ingresos.length],
+                ];
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumenData), 'Resumen');
+
+                const mapNoveltyData = (n, tipo) => {
+                    const fechaMovimiento = getFechaMovimiento(n);
+                    let fechaNacimientoNiño = '';
+                    let fechaNacimientoAcudiente = '';
+                    
+                    if (n.type === 'ingreso') {
+                        fechaNacimientoNiño = n.ingresoDOB || n.dob || '';
+                        fechaNacimientoAcudiente = n.acudienteDOB || '';
+                    }
+
+                    return {
+                        'ID': n.id,
+                        'Fecha Registro': new Date(n.timestamp).toLocaleString('es-CO'),
+                        'Fecha Movimiento': fechaMovimiento,
+                        'Contrato': '668',
+                        'UDS Nombre': n.udsName,
+                        'Tipo': tipo,
+                        'Tipo Documento': n.docType || 'RC',
+                        'Número Documento': n.document,
+                        'Nombre Completo': n.name,
+                        'Género': n.gender === 'M' ? 'Masculino' : n.gender === 'F' ? 'Femenino' : 'No especificado',
+                        'Fecha Nacimiento Niño': fechaNacimientoNiño,
+                        'Edad al Ingreso': n.age || '',
+                        'Dirección': n.address || '',
+                        'Teléfono': n.phone || '',
+                        'Acudiente Nombre': n.acudiente || '',
+                        'Acudiente Documento': n.acudienteDoc || '',
+                        'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente
+                    };
+                };
+
+                if (retiros.length > 0) {
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(retiros.map(n => mapNoveltyData(n, 'RETIRO'))), 'Retiros');
+                }
+
+                if (ingresos.length > 0) {
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ingresos.map(n => mapNoveltyData(n, 'INGRESO'))), 'Ingresos');
+                }
+
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(novelties.map(n => mapNoveltyData(n, n.type ? n.type.toUpperCase() : ''))), 'Todos los Registros');
+
+                XLSX.writeFile(wb, `Reporte_Completo_T3_${new Date().toISOString().split('T')[0]}.xlsx`);
+                showToast(`Excel exportado: ${novelties.length} registros`, "success");
+            });
+        }
+
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            
+            const noveltiesRef = database.ref('novelties_T3');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+                
+                if (novelties.length === 0) {
+                    showToast("No hay datos para exportar", "warning");
+                    return;
+                }
+
+                doc.setFontSize(16);
+                doc.text('Reporte Completo de Novedades - Asociación T3', 14, 15);
+                
+                doc.setFontSize(10);
+                doc.text(`Generado: ${new Date().toLocaleString('es-CO')}`, 14, 22);
+                doc.text(`Total de registros: ${novelties.length}`, 14, 27);
+
+                let y = 35;
+                doc.setFillColor(240, 240, 240);
+                doc.rect(10, y, 277, 10, 'F');
+                doc.setFontSize(9);
+                
+                const headers = ['Fecha Reg', 'Fecha Mov', 'UDS', 'Tipo', 'Documento', 'Nombre', 'Edad', 'Teléfono'];
+                const colWidths = [25, 25, 50, 20, 30, 50, 25, 52];
+                let x = 12;
+                
+                headers.forEach((header, i) => {
+                    doc.text(header, x, y + 7);
+                    x += colWidths[i];
+                });
+
+                y += 15;
+                doc.setFontSize(8);
+                let count = 0;
+                
+                novelties.forEach(n => {
+                    if (y > 190) {
+                        doc.addPage();
+                        y = 15;
+                        doc.setFillColor(240, 240, 240);
+                        doc.rect(10, y - 5, 277, 10, 'F');
+                        doc.setFontSize(9);
+                        x = 12;
+                        headers.forEach((header, i) => {
+                            doc.text(header, x, y + 2);
+                            x += colWidths[i];
+                        });
+                        y += 10;
+                        doc.setFontSize(8);
+                    }
+                    
+                    const fechaMovimiento = getFechaMovimiento(n);
+                    
+                    x = 12;
+                    const rowData = [
+                        new Date(n.timestamp).toLocaleDateString('es-CO'),
+                        fechaMovimiento,
+                        n.udsName ? (n.udsName.length > 22 ? n.udsName.substring(0, 22) + '...' : n.udsName) : '',
+                        n.type ? n.type.toUpperCase() : '',
+                        n.document || '-',
+                        n.name ? (n.name.length > 25 ? n.name.substring(0, 25) + '...' : n.name) : '-',
+                        n.age || '-',
+                        n.phone || '-'
+                    ];
+                    
+                    if (n.type === 'retiro') doc.setTextColor(220, 38, 38);
+                    else if (n.type === 'ingreso') doc.setTextColor(16, 185, 129);
+                    else doc.setTextColor(0, 0, 0);
+                    
+                    rowData.forEach((cell, i) => {
+                        doc.text(String(cell), x, y);
+                        x += colWidths[i];
+                    });
+                    
+                    doc.setTextColor(0, 0, 0);
+                    y += 7;
+                    count++;
+                });
+
+                doc.setFontSize(8);
+                doc.text(`Mostrando ${count} registros`, 14, 200);
+                
+                doc.save(`Reporte_Completo_T3_${new Date().toISOString().split('T')[0]}.pdf`);
+                showToast(`PDF exportado: ${count} registros`, "success");
+            });
+        }
+
+        // Smart Validations
+        function checkExistingBeneficiary(document, type) {
+            if (document.length < 5) return;
+            
+            const noveltiesRef = database.ref('novelties_T3');
+            noveltiesRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                const novelties = Object.values(data);
+                const existing = novelties.find(n => n.document === document);
+                
+                if (existing) {
+                    if (type === 'ingreso') {
+                        showToast(`Beneficiario ya existe en ${existing.udsName}`, "warning");
+                    } else if (type === 'retiro') {
+                        showToast(`Beneficiario encontrado en base de datos`, "info");
+                    }
+                }
+            });
+        }
+
+        function validateAgeRange() {
+            const dob = document.getElementById('ingresoDOB');
+            if (!dob || !dob.value) return;
+            
+            const birthDate = new Date(dob.value);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            if (age > 5) {
+                showToast("Alerta: La edad supera los 5 años (Primera Infancia)", "warning");
+            } else if (age < 0) {
+                showToast("Error: Fecha de nacimiento inválida", "error");
+            }
+        }
+
+        function validateDatesRealTime() {
+            const checkRetiro = document.getElementById('checkRetiro');
+            const checkIngreso = document.getElementById('checkIngreso');
+            const fechaRetiroInput = document.getElementById('retiroDate');
+            const fechaIngresoInput = document.getElementById('ingresoDate');
+            const feedback = document.getElementById('feedbackContainer');
+
+            if (!checkRetiro || !checkIngreso || !fechaRetiroInput || !fechaIngresoInput) return true;
+
+            if (checkRetiro.checked && checkIngreso.checked && fechaRetiroInput.value && fechaIngresoInput.value) {
+                const dRetiro = new Date(fechaRetiroInput.value);
+                const dIngreso = new Date(fechaIngresoInput.value);
+                dRetiro.setMinutes(dRetiro.getMinutes() + dRetiro.getTimezoneOffset());
+                dIngreso.setMinutes(dIngreso.getMinutes() + dIngreso.getTimezoneOffset());
+
+                if (dRetiro >= dIngreso) {
+                    showFeedback("Atención: La fecha de retiro no puede ser igual o posterior a la de ingreso.", "error");
+                    fechaRetiroInput.classList.add('border-red-500', 'bg-red-50');
+                    fechaIngresoInput.classList.add('border-red-500', 'bg-red-50');
+                    return false;
+                } else {
+                    if (feedback) feedback.classList.add('hidden');
+                    fechaRetiroInput.classList.remove('border-red-500', 'bg-red-50');
+                    fechaIngresoInput.classList.remove('border-red-500', 'bg-red-50');
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        function updateStyles() {
+            const contract = document.getElementById('contractNumber');
+            const mainCard = document.getElementById('mainCard');
+            const indicator = document.getElementById('contractIndicator');
+            const udsSelect = document.getElementById('mainUdsDropdown');
+            const sectionUDS = document.getElementById('sectionUDS');
+            
+            if (!contract) return;
+            
+            const contractValue = contract.value;
+            
+            if (mainCard) {
+                mainCard.className = "glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] dynamic-border animate__animated animate__fadeIn";
+                if (contractValue) mainCard.classList.add(`contract-${contractValue}`);
+            }
+            
+            document.body.style.background = BACKGROUNDS[contractValue] || BACKGROUNDS['default'];
+            
+            if (contractValue) {
+                if (indicator) {
+                    indicator.className = `px-4 py-1.5 rounded-full text-xs font-black text-white dynamic-bg uppercase`;
+                    indicator.textContent = `Contrato ${contractValue}`;
+                }
+                if (udsSelect) udsSelect.disabled = false;
+                if (sectionUDS) sectionUDS.style.opacity = "1";
+                populateUDS(contractValue);
+            } else {
+                if (indicator) {
+                    indicator.className = "px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase";
+                    indicator.textContent = "Sin Contrato";
+                }
+                if (udsSelect) {
+                    udsSelect.disabled = true;
+                    udsSelect.innerHTML = '<option value="">-- Primero Contrato --</option>';
+                }
+                if (sectionUDS) sectionUDS.style.opacity = "0.5";
+            }
+        }
+
+        function populateUDS(contract) {
+            const udsSelect = document.getElementById('mainUdsDropdown');
+            if (!udsSelect) return;
+            
+            udsSelect.innerHTML = '<option value="">-- Seleccione UDS --</option>';
+            UDS_DATA[contract]?.forEach(([name, code]) => {
+                const opt = document.createElement('option');
+                opt.value = `${name} - ${code}`;
+                opt.textContent = `${name} - ${code}`;
+                udsSelect.appendChild(opt);
+            });
+        }
+
+        function toggleSection(type) {
+            const section = document.getElementById(type === 'retiro' ? 'sectionRetiro' : 'sectionIngreso');
+            const check = document.getElementById(type === 'retiro' ? 'checkRetiro' : 'checkIngreso');
+            if (section && check) section.classList.toggle('hidden', !check.checked);
+        }
+
+        function updateAgeDisplay() {
+            const dobValue = document.getElementById('ingresoDOB');
+            const entryValue = document.getElementById('ingresoDate');
+            const displayField = document.getElementById('displayAge');
+
+            if (dobValue && entryValue && displayField && dobValue.value && entryValue.value) {
+                const ageResult = calculateAge(dobValue.value, entryValue.value);
+                displayField.value = ageResult;
+            } else if (displayField) {
+                displayField.value = "Esperando fechas...";
+            }
+        }
+
+        function calculateAge(dob, entry) {
+            const d1 = new Date(dob);
+            const d2 = new Date(entry);
+            d1.setMinutes(d1.getMinutes() + d1.getTimezoneOffset());
+            d2.setMinutes(d2.getMinutes() + d2.getTimezoneOffset());
+
+            let years = d2.getFullYear() - d1.getFullYear();
+            let months = d2.getMonth() - d1.getMonth();
+            let days = d2.getDate() - d1.getDate();
+
+            if (days < 0) months--;
+            if (months < 0) { years--; months += 12; }
+            return `${years} años y ${months} meses`;
+        }
+
+        function showFeedback(message, type) {
+            const container = document.getElementById('feedbackContainer');
+            if (!container) return;
+            
+            container.textContent = message;
+            container.className = `p-5 rounded-2xl text-center text-sm font-bold animate__animated animate__fadeInUp mt-4 `;
+            if (type === 'success') container.classList.add('bg-green-100', 'text-green-700', 'border', 'border-green-200');
+            else container.classList.add('bg-red-100', 'text-red-700', 'border', 'border-red-200', 'animate__shakeX');
+            container.classList.remove('hidden');
+        }
+
+        function formatData() {
+            const contractNumber = document.getElementById('contractNumber');
+            const udsSelection = document.getElementById('mainUdsDropdown');
+            
+            if (!contractNumber || !udsSelection) return '';
+            
+            const utsName = udsSelection.value ? udsSelection.value.split(' - ')[0] : 'No Seleccionado';
+            const utsCode = udsSelection.value ? udsSelection.value.split(' - ')[1] : 'No Seleccionado';
+            
+            let formData = `=================================\n`;
+            formData +=    ` REPORTE DE NOVEDADES - ASOCIACIÓN T3\n`;
+            formData +=    `=================================\n\n`;
+            
+            formData += `[ INFORMACIÓN GENERAL ]\n`;
+            formData += `> CONTRATO:      ${contractNumber.value}\n`;
+            formData += `> UDS NOMBRE:    ${utsName}\n`;
+            formData += `> UDS CÓDIGO:    ${utsCode}\n`;
+            formData += `------------------------------------------\n\n`;
+
+            const checkRetiro = document.getElementById('checkRetiro');
+            const checkIngreso = document.getElementById('checkIngreso');
+            
+            if (checkRetiro && checkRetiro.checked) {
+                const retiroDocType = document.getElementById('retiroDocType');
+                const retiroDocNumber = document.getElementById('retiroDocNumber');
+                const retiroFullName = document.getElementById('retiroFullName');
+                const retiroDate = document.getElementById('retiroDate');
+                const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
+                
+                formData += `[ DATOS DE RETIRO ]\n`;
+                formData += `  - Documento:  ${retiroDocType ? retiroDocType.value : ''} ${retiroDocNumber ? retiroDocNumber.value : ''}\n`;
+                formData += `  - Nombre:     ${retiroFullName ? retiroFullName.value.toUpperCase() : ''}\n`;
+                formData += `  - Fecha:      ${retiroDate ? retiroDate.value : ''}\n`;
+                formData += `  - Género:     ${retiroGender ? retiroGender.value : 'N/A'}\n\n`;
+            }
+
+            if (checkIngreso && checkIngreso.checked) {
+                const ingresoDocType = document.getElementById('ingresoDocType');
+                const ingresoDocNumber = document.getElementById('ingresoDocNumber');
+                const ingresoFullName = document.getElementById('ingresoFullName');
+                const displayAge = document.getElementById('displayAge');
+                const ingresoDOB = document.getElementById('ingresoDOB');
+                const ingresoDate = document.getElementById('ingresoDate');
+                const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
+                const ingresoAddress = document.getElementById('ingresoAddress');
+                const ingresoPhone = document.getElementById('ingresoPhone');
+                const acudienteName = document.getElementById('acudienteName');
+                const acudienteDoc = document.getElementById('acudienteDoc');
+                const acudienteDOB = document.getElementById('acudienteDOB');
+                
+				formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
+				formData += `  ├─ ✍️Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
+				formData += `  ├─ 📄Documento:  ${ingresoDocType ? ingresoDocType.value : ''} ${ingresoDocNumber ? ingresoDocNumber.value : ''}\n`;
+				formData += `  ├─ 👶Edad:      ${displayAge ? displayAge.value : ''}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${ingresoDOB ? ingresoDOB.value : ''}\n`;
+				formData += `  ├─ 📆F. Ingreso: ${ingresoDate ? ingresoDate.value : ''}\n`;
+				formData += `  ├─ ♀️Género:     ${ingresoGender ? ingresoGender.value : 'N/A'}\n`;
+				formData += `  ├─ 📌Direccion: ${ingresoAddress ? ingresoAddress.value : ''}\n`;
+				formData += `  └─ ☎Teléfono:   ${ingresoPhone ? ingresoPhone.value : ''}\n\n`;
 				
-				<div class="flex items-center space-x-4">
-					<div class="flex-shrink-0 w-20 h-20 bg-slate-200 rounded-2xl overflow-hidden border-2 border-white shadow-sm">
-						<img src="LOGOT3.png" alt="Logo" class="w-full h-full object-cover">
-					</div>
-					<div class="flex flex-col items-end space-y-1">
-						<div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono">
-							00/00/0000 00:00:00
-						</div>
-						<div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase">
-							Sin Contrato
-						</div>
-					</div>
-				</div>
-			</header>
-			
-			<form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbz9HXjaEdWSBrARbqfTyeM5a-obTbmQPtGoH7W14vqstPth_9QcD37WcKk0jt_Nx69A/exec" method="POST" class="p-8 space-y-6">
-			
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div class="space-y-2">
-						<label class="flex items-center text-sm font-bold text-slate-600 uppercase">
-							<span class="step-badge bg-slate-400 dynamic-bg mr-3">1</span> Contrato
-						</label>
-						<select id="contractNumber" name="Contrato" required class="w-full rounded-xl" onchange="updateStyles()">
-							<option value="">Seleccione...</option>
-							<option value="668">Contrato 41006682024</option>
-						</select>
-					</div>
-					<div id="sectionUDS" class="space-y-2 opacity-50">
-						<label class="flex items-center text-sm font-bold text-slate-600 uppercase">
-							<span class="step-badge bg-slate-400 dynamic-bg mr-3">2</span> UDS
-						</label>
-						<select id="mainUdsDropdown" name="UDS_Full" required disabled class="w-full rounded-xl">
-							<option value="">-- Primero Contrato --</option>
-						</select>
-					</div>
-				</div>
-
-				<div class="pt-2">
-					<label class="flex items-center text-sm font-bold text-slate-600 uppercase mb-4">
-						<span class="step-badge bg-slate-400 dynamic-bg mr-3">3</span> ¿Qué reportará?
-					</label>
-					<div class="grid grid-cols-2 gap-4">
-						<label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-red-500 has-[:checked]:bg-red-50">
-							<input type="checkbox" id="checkRetiro" class="hidden" onchange="toggleSection('retiro')">
-							<span class="text-sm font-bold text-slate-600">RETIRO DE BENEFICIARIO</span>
-						</label>
-						<label class="flex items-center p-4 rounded-xl border-2 border-slate-100 cursor-pointer hover:bg-slate-50 transition-all has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
-							<input type="checkbox" id="checkIngreso" class="hidden" onchange="toggleSection('ingreso')">
-							<span class="text-sm font-bold text-slate-600">INGRESO DE BENEFICIARIO</span>
-						</label>
-					</div>
-				</div>
-
-				<div id="sectionRetiro" class="hidden animate__animated animate__fadeIn p-6 rounded-2xl bg-red-100/100 border border-red-500 space-y-4">
-					<h3 class="text-sm font-black text-red-700 uppercase flex items-center">
-						<span class="w-3 h-3 bg-red-500 rounded-full mr-2"></span> Beneficiario Saliente
-					</h3>
-					<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<select id="retiroDocType" name="retiro_tipo_doc" class="w-full rounded-lg">
-								<option value="RC">RC - Registro Civil</option>
-								<option value="AN">AN - Acta Nacimiento</option>
-								<option value="PEP">PEP / PPT</option>
-								<option value="SD">SD - Sin Documento</option>
-							</select>
-							<input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de Documento" 
-								   class="w-full rounded-lg" minlength="7" maxlength="10" 
-								   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-						</div>
-						<input type="text" id="retiroFullName" name="retiro_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
-						<div class="space-y-1">
-							<label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
-							<input type="date" id="retiroDate" name="retiro_fecha" class="w-full rounded-lg" onchange="validateDatesRealTime()">
-						</div>
-						<div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
-							<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
-							<label class="text-sm font-bold flex items-center">
-								<input type="radio" name="_retiroGender" value="M" class="mr-1"> M
-							</label>
-							<label class="text-sm font-bold flex items-center">
-								<input type="radio" name="_retiroGender" value="F" class="mr-1"> F
-							</label>
-						</div>
-					</div>
-				</div>
-
-				<div id="sectionIngreso" class="hidden animate__animated animate__fadeIn space-y-6">
-					<div class="p-6 rounded-2xl bg-green-100/100 border border-green-500 space-y-4">
-						<h3 class="text-sm font-black text-green-700 uppercase flex items-center">
-							<span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> Beneficiario Entrante
-						</h3>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<select id="ingresoDocType" name="ingreso_tipo_doc" class="w-full rounded-lg">
-									<option value="RC">RC - Registro Civil</option>
-									<option value="AN">AN - Acta Nacimiento</option>
-									<option value="PEP">PEP / PPT</option>
-									<option value="SD">SD - Sin Documento</option>
-								</select>
-								<input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Numero Documento" 
-									   class="w-full rounded-lg" minlength="7" maxlength="10" 
-									   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-								</div>
-							<input type="text" id="ingresoFullName" name="ingreso_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
-							<div class="space-y-1">
-								<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
-								<input type="date" id="ingresoDOB" name="ingreso_nacimiento" class="w-full rounded-lg" onchange="updateAgeDisplay()">
-							</div>
-							<div class="space-y-1">
-								<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
-								<input type="date" id="ingresoDate" name="ingreso_fecha" class="w-full rounded-lg" onchange="updateAgeDisplay()">
-							</div>
-							<div class="md:col-span-2 space-y-1">
-								<label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
-								<input type="text" id="displayAge" name="edad_calculada" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
-							</div>
-							<div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
-								<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
-								<label class="text-sm font-bold flex items-center">
-									<input type="radio" name="_ingresoGender" value="M" class="mr-1"> M
-								</label>
-								<label class="text-sm font-bold flex items-center">
-									<input type="radio" name="_ingresoGender" value="F" class="mr-1"> F
-								</label>
-							</div>
-							<input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección y Barrio" class="w-full rounded-lg">
-							<input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
-							
-							<div class="md:col-span-2 space-y-2">
-								<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
-								<input type="file" id="fileInput" name="soporte_documento" accept=".pdf,image/*" 
-									   class="w-full rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border-2 border-dashed border-green-200">
-							</div>
-							
-						</div>
-					</div>
-
-					<div class="p-6 rounded-2xl bg-blue-100/100 border border-blue-500 space-y-4">
-						<h3 class="text-sm font-black text-blue-700 uppercase flex items-center">
-							<span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
-						</h3>
-						<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg">
-							<input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
-							<div class="space-y-1 md:col-span-2">
-								<label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
-								<input type="date" id="acudienteDOB" name="acudiente_nacimiento" class="w-full rounded-lg">
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
-				<input type="hidden" name="_subject" id="emailSubject" value="Novedad UDS">
+				formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
+				formData += `  ├─ ✍️Nombre:     ${acudienteName ? acudienteName.value : ''}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${acudienteDOB ? acudienteDOB.value : ''}\n`;
+				formData += `  └─ 📄Documento:  ${acudienteDoc ? acudienteDoc.value : ''}\n`;
 				
-				<button type="submit" id="submitButton" class="dynamic-bg bg-slate-400 w-full py-4 rounded-2xl text-white font-black text-base tracking-widest shadow-lg hover:brightness-110 active:scale-[0.98] transition-all uppercase">
-					Enviar Reporte Al Correo
-				</button>
-				
-				<div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
-				
-				<footer class="mt-10 mb-2 text-[11px] font-black text-slate-400 tracking-[0.4em] text-center uppercase">
-					Asociación T3 • Neiva, Huila © 2026
-				</footer>
-			</form>
-		</main>
+            }
+            
+            formData += `------------------------------------------\n`;
+            formData += `Generado el: ${new Date().toLocaleString()}\n`;
+            
+            return formData;
+        }
 
-		<script>
-			const UDS_DATA = { '668': [['BURBUJAS.', '-'], ['CAPERUCITA ROJA', '-'], ['CARIÑOSITOS', '-'], ['DIVINO NIÑO', '-'], ['LOS BABYS', '-'], ['LOS CARIÑOSITOS', '-'], ['LOS GNOMOS', '-'], ['LOS PATICOS', '-'], ['LOS PEQUEÑINES', '-'], ['MI BELLA INFANCIA', '-'], ['MI CABAÑA', '-'], ['MI TRAVESURA', '-'], ['MIS AMIGUITOS 1', '-'], ['MIS CONSENTIDOS', '-'], ['MIS OSITOS', '-'], ['MIS PATICOS', '-'], ['MIS PINGUINOS', '-']] };
-			const BACKGROUNDS = { '668': 'linear-gradient(to bottom right, #dbeafe, #3b82f6)', 'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' };
+        // Form Submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('noveltyForm');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const btn = document.getElementById('submitButton');
+                    
+                    const contract = document.getElementById('contractNumber');
+                    const uds = document.getElementById('mainUdsDropdown');
+                    const checkRetiro = document.getElementById('checkRetiro');
+                    const checkIngreso = document.getElementById('checkIngreso');
+                    
+                    if (!contract || !uds || !checkRetiro || !checkIngreso) {
+                        showToast("Error: Elementos del formulario no encontrados", "error");
+                        return;
+                    }
 
-			function updateClock() {
-				const now = new Date();
-				const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
-				const time = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-				document.getElementById('clockDisplay').textContent = `${date} | ${time}`;
-			}
-			setInterval(updateClock, 1000);
-			updateClock();
+                    const isRetiro = checkRetiro.checked;
+                    const isIngreso = checkIngreso.checked;
 
-			function updateStyles() {
-				const contract = document.getElementById('contractNumber').value;
-				const mainCard = document.getElementById('mainCard');
-				const indicator = document.getElementById('contractIndicator');
-				const udsSelect = document.getElementById('mainUdsDropdown');
-				const sectionUDS = document.getElementById('sectionUDS');
-				mainCard.className = "glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] dynamic-border animate__animated animate__fadeIn";
-				document.body.style.background = BACKGROUNDS[contract] || BACKGROUNDS['default'];
-				if (contract) {
-					mainCard.classList.add(`contract-${contract}`);
-					indicator.className = `px-4 py-1.5 rounded-full text-xs font-black text-white dynamic-bg uppercase`;
-					indicator.textContent = `Contrato ${contract}`;
-					udsSelect.disabled = false;
-					sectionUDS.style.opacity = "1";
-					populateUDS(contract);
-				}
-			}
+                    // Validations
+                    if (isRetiro) {
+                        const retiroDocNumber = document.getElementById('retiroDocNumber');
+                        if (retiroDocNumber && (retiroDocNumber.value.length < 7 || retiroDocNumber.value.length > 10)) {
+                            showToast("El documento de retiro debe tener entre 7 y 10 dígitos.", "error");
+                            return;
+                        }
+                    }
 
-			function populateUDS(contract) {
-				const udsSelect = document.getElementById('mainUdsDropdown');
-				udsSelect.innerHTML = '<option value="">-- Seleccione UDS --</option>';
-				UDS_DATA[contract]?.forEach(([name, code]) => {
-					const opt = document.createElement('option');
-					opt.value = `${name} - ${code}`;
-					opt.textContent = `${name} - ${code}`;
-					udsSelect.appendChild(opt);
-				});
-			}
+                    if (isIngreso) {
+                        const ingresoDocNumber = document.getElementById('ingresoDocNumber');
+                        if (ingresoDocNumber && (ingresoDocNumber.value.length < 7 || ingresoDocNumber.value.length > 10)) {
+                            showToast("El documento de ingreso debe tener entre 7 y 10 dígitos.", "error");
+                            return;
+                        }
+                    }
 
-			function toggleSection(type) {
-				const section = document.getElementById(type === 'retiro' ? 'sectionRetiro' : 'sectionIngreso');
-				const check = document.getElementById(type === 'retiro' ? 'checkRetiro' : 'checkIngreso');
-				section.classList.toggle('hidden', !check.checked);
-			}
+                    if (isRetiro && isIngreso) {
+                        const retiroDate = document.getElementById('retiroDate');
+                        const ingresoDate = document.getElementById('ingresoDate');
+                        if (retiroDate && ingresoDate && retiroDate.value && ingresoDate.value) {
+                            const dRetiro = new Date(retiroDate.value);
+                            const dIngreso = new Date(ingresoDate.value);
+                            dRetiro.setMinutes(dRetiro.getMinutes() + dRetiro.getTimezoneOffset());
+                            dIngreso.setMinutes(dIngreso.getMinutes() + dIngreso.getTimezoneOffset());
 
-			function updateAgeDisplay() {
-				const dobValue = document.getElementById('ingresoDOB').value;
-				const entryValue = document.getElementById('ingresoDate').value;
-				const displayField = document.getElementById('displayAge');
-				if (dobValue && entryValue) {
-					const ageResult = calculateAge(dobValue, entryValue);
-					displayField.value = ageResult;
-				}
-			}
+                            if (dRetiro >= dIngreso) {
+                                showToast("La fecha de retiro debe ser anterior a la fecha de ingreso.", "error");
+                                return;
+                            }
+                        }
+                    }
 
-			function calculateAge(dob, entry) {
-				const d1 = new Date(dob); d2 = new Date(entry);
-				d1.setMinutes(d1.getMinutes() + d1.getTimezoneOffset());
-				d2.setMinutes(d2.getMinutes() + d2.getTimezoneOffset());
-				let years = d2.getFullYear() - d1.getFullYear();
-				let months = d2.getMonth() - d1.getMonth();
-				let days = d2.getDate() - d1.getDate();
-				if (days < 0) months--;
-				if (months < 0) { years--; months += 12; }
-				return `${years} años y ${months} meses`;
-			}
+                    if (!contract.value || !uds.value) {
+                        showToast("Seleccione Contrato y Unidad de Servicio (UDS).", "error");
+                        return;
+                    }
+                    if (!isRetiro && !isIngreso) {
+                        showToast("Seleccione al menos una acción: RETIRO o INGRESO.", "error");
+                        return;
+                    }
 
-			function showFeedback(message, type) {
-				const container = document.getElementById('feedbackContainer');
-				container.textContent = message;
-				container.className = `p-5 rounded-2xl text-center text-sm font-bold mt-4 animate__animated animate__fadeInUp ${type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200 animate__shakeX'}`;
-				container.classList.remove('hidden');
-			}
-			
-			function validarCamposObligatorios() {
-				const checkIngreso = document.getElementById('checkIngreso').checked;
-				const checkRetiro = document.getElementById('checkRetiro').checked;
-				let valid = true;
+                    if (isRetiro) {
+                        const retiroDocNumber = document.getElementById('retiroDocNumber');
+                        const retiroDate = document.getElementById('retiroDate');
+                        if ((!retiroDocNumber || !retiroDocNumber.value) || (!retiroDate || !retiroDate.value)) {
+                            showToast("Complete los datos de RETIRO.", "error"); 
+                            return;
+                        }
+                    }
+                    
+                    if (isIngreso) {
+                        const ingresoDocNumber = document.getElementById('ingresoDocNumber');
+                        const acudienteName = document.getElementById('acudienteName');
+                        if ((!ingresoDocNumber || !ingresoDocNumber.value) || (!acudienteName || !acudienteName.value)) {
+                            showToast("Complete los datos de INGRESO y ACUDIENTE.", "error"); 
+                            return;
+                        }
+                    }
 
-				if (!checkIngreso && !checkRetiro) {
-					showToast("❌ Debes seleccionar al menos una opción (Ingreso o Retiro).", "error");
-					return false;
-				}
+                    // Preparar datos para Firebase
+                    const udsName = uds.value.split(' - ')[0];
+                    const noveltyData = {
+                        contract: contract.value,
+                        udsName: udsName,
+                        udsFull: uds.value,
+                        timestamp: new Date().toISOString(),
+                        date: new Date().toISOString().split('T')[0]
+                    };
 
-				// Validación para Ingreso
-				if (checkIngreso) {
-					// Solo IDs de los campos de texto/fecha (excluimos el fileInput)
-					const camposIngreso = [
-						'ingresoDocNumber', 'ingresoFullName', 'ingresoDOB', 
-						'ingresoDate', 'ingresoAddress', 'ingresoPhone', 
-						'acudienteDoc', 'acudienteName', 'acudienteDOB'
-					];
-					
-					camposIngreso.forEach(id => {
-						const el = document.getElementById(id);
-						if (!el || !el.value.trim()) {
-							toggleFieldError(id, true);
-							valid = false;
-						} else {
-							toggleFieldError(id, false);
-						}
-					});
-				}
+                    if (isRetiro) {
+                        const retiroDocType = document.getElementById('retiroDocType');
+                        const retiroDocNumber = document.getElementById('retiroDocNumber');
+                        const retiroFullName = document.getElementById('retiroFullName');
+                        const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
+                        const retiroDate = document.getElementById('retiroDate');
+                        
+                        noveltyData.type = 'retiro';
+                        noveltyData.docType = retiroDocType ? retiroDocType.value : 'RC';
+                        noveltyData.document = retiroDocNumber ? retiroDocNumber.value : '';
+                        noveltyData.name = retiroFullName ? retiroFullName.value : '';
+                        noveltyData.gender = retiroGender ? retiroGender.value : '';
+                        noveltyData.retiroDate = retiroDate ? retiroDate.value : '';
+                    }
 
-				// Validación para Retiro
-				if (checkRetiro) {
-					const camposRetiro = ['retiroDocNumber', 'retiroFullName', 'retiroDate'];
-					camposRetiro.forEach(id => {
-						const el = document.getElementById(id);
-						if (!el || !el.value.trim()) {
-							toggleFieldError(id, true);
-							valid = false;
-						} else {
-							toggleFieldError(id, false);
-						}
-					});
-				}
+                    if (isIngreso) {
+                        const ingresoDocType = document.getElementById('ingresoDocType');
+                        const ingresoDocNumber = document.getElementById('ingresoDocNumber');
+                        const ingresoFullName = document.getElementById('ingresoFullName');
+                        const ingresoDOB = document.getElementById('ingresoDOB');
+                        const displayAge = document.getElementById('displayAge');
+                        const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
+                        const ingresoAddress = document.getElementById('ingresoAddress');
+                        const ingresoPhone = document.getElementById('ingresoPhone');
+                        const acudienteName = document.getElementById('acudienteName');
+                        const acudienteDoc = document.getElementById('acudienteDoc');
+                        const acudienteDOB = document.getElementById('acudienteDOB');
+                        const ingresoDate = document.getElementById('ingresoDate');
+                        
+                        noveltyData.type = 'ingreso';
+                        noveltyData.docType = ingresoDocType ? ingresoDocType.value : 'RC';
+                        noveltyData.document = ingresoDocNumber ? ingresoDocNumber.value : '';
+                        noveltyData.name = ingresoFullName ? ingresoFullName.value : '';
+                        noveltyData.ingresoDOB = ingresoDOB ? ingresoDOB.value : '';
+                        noveltyData.age = displayAge ? displayAge.value : '';
+                        noveltyData.gender = ingresoGender ? ingresoGender.value : '';
+                        noveltyData.address = ingresoAddress ? ingresoAddress.value : '';
+                        noveltyData.phone = ingresoPhone ? ingresoPhone.value : '';
+                        noveltyData.acudiente = acudienteName ? acudienteName.value : '';
+                        noveltyData.acudienteDoc = acudienteDoc ? acudienteDoc.value : '';
+                        noveltyData.acudienteDOB = acudienteDOB ? acudienteDOB.value : '';
+                        noveltyData.ingresoDate = ingresoDate ? ingresoDate.value : '';
+                    }
 
-				if (!valid) {
-					showToast("❌ Por favor completa los campos resaltados en rojo.", "error");
-				}
-				return valid;
-			}
-			
-			function validarCoherenciaFechas() {
-				const checkRetiro = document.getElementById('checkRetiro').checked;
-				const checkIngreso = document.getElementById('checkIngreso').checked;
-				const fRetiroVal = document.getElementById('retiroDate').value;
-				const fIngresoVal = document.getElementById('ingresoDate').value;
+                    // Preparar Formspree
+                    const emailSubject = document.getElementById('emailSubject');
+                    const hiddenFormattedData = document.getElementById('hiddenFormattedData');
+                    
+                    if (emailSubject) emailSubject.value = `Novedad UDS: ${udsName}`;
+                    if (hiddenFormattedData) hiddenFormattedData.value = formatData();
 
-				if (checkRetiro && checkIngreso && fRetiroVal && fIngresoVal) {
-					const dRetiro = new Date(fRetiroVal);
-					const dIngreso = new Date(fIngresoVal);
+                    // Mostrar loading
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<span class="spinner"></span> ENVIANDO...';
+                    }
 
-					if (dIngreso < dRetiro) {
-						toggleFieldError('ingresoDate', true);
-						toggleFieldError('retiroDate', true);
-						showToast("⚠️ La fecha de INGRESO no puede ser anterior a la de RETIRO");
-						return false; // Error de coherencia
-					}
-				}
-				// Si llegamos aquí o no se cumplen ambos checks, todo está bien
-				return true; 
-			}
-					
-			document.getElementById('noveltyForm').addEventListener('submit', async function(e) {
-				e.preventDefault();
-				const btn = document.getElementById('submitButton');
-				
-				const uds = document.getElementById('mainUdsDropdown').value;
-				if (!uds) { 
-					showToast("❌ Seleccione una UDS.", "error"); 
-					return; 
-				}
+                    let firebaseSaved = false;
 
-			// 2. Validar campos vacíos (Inline)
-				const camposOk = validarCamposObligatorios();
-				
-				// 3. Validar coherencia de fechas (Toast)
-				const fechasOk = validarCoherenciaFechas();
+                    // Intentar guardar en Firebase
+                    try {
+                        const noveltiesRef = database.ref('novelties_T3');
+                        await noveltiesRef.push(noveltyData);
+                        firebaseSaved = true;
+                        console.log('Guardado en Firebase correctamente');
+                    } catch (firebaseError) {
+                        console.warn('No se pudo guardar en Firebase:', firebaseError.message);
+                    }
 
-				// Si alguna validación falla, detenemos todo
-				if (!camposOk || !fechasOk) {
-					return; 
-				}
-				
-				if (!validarCamposObligatorios() || !validarCoherenciaFechas()) {
-					return; // Detiene el envío si algo falla
-				}
-				
+                    // Enviar a Google Apps Script
+                    try {
+                        const fileInput = document.getElementById('fileInput');
+                        const formData = new FormData(this);
+                        const obj = Object.fromEntries(formData.entries());
 
-				document.getElementById('emailSubject').value = `Novedad UDS: ${uds.split(' - ')[0]}`;
-				document.getElementById('hiddenFormattedData').value = formatData();
+                        // Procesar archivo si existe
+                        if (fileInput && fileInput.files.length > 0) {
+                            const file = fileInput.files[0];
+                            const reader = new FileReader();
+                            reader.onload = async function() {
+                                obj.file_base64 = reader.result.split(',')[1];
+                                obj.file_type = file.type;
+                                obj.file_name = file.name;
+                                await enviarAGoogle(obj, btn);
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            await enviarAGoogle(obj, btn);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        showToast("Error al preparar el envío. Intente nuevamente.", "error");
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = '<span>Enviar Reporte Al Correo</span>';
+                        }
+                    }
+                });
+            }
+        });
 
-				btn.disabled = true;
-				btn.textContent = "PROCESANDO ARCHIVOS...";
+        async function enviarAGoogle(data, btn) {
+            const formBody = Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
 
-				const fileInput = document.getElementById('fileInput');
-				const formData = new FormData(this);
-				const obj = Object.fromEntries(formData.entries());
+            try {
+                await fetch(document.getElementById('noveltyForm').action, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formBody
+                });
 
-				// Procesar archivo si existe
-				if (fileInput.files.length > 0) {
-					const file = fileInput.files[0];
-					const reader = new FileReader();
-					reader.onload = async function() {
-						obj.file_base64 = reader.result.split(',')[1];
-						obj.file_type = file.type;
-						obj.file_name = file.name;
-						await enviarAGoogle(obj, btn);
-					};
-					reader.readAsDataURL(file);
-				} else {
-					await enviarAGoogle(obj, btn);
-				}
-				return formData;
-			});
-			
-			// Función para limpiar el estado de error cuando el usuario interactúa
-			function setupErrorCleaners() {
-				// Seleccionamos todos los inputs y selects del formulario
-				const formInputs = document.querySelectorAll('#noveltyForm input, #noveltyForm select');
-				
-				formInputs.forEach(input => {
-					// Evento 'input' detecta cuando escriben, 'change' detecta cambios en selects/fechas
-					const clearError = () => {
-						if (input.classList.contains('input-error')) {
-							input.classList.remove('input-error');
-						}
-					};
+                showToast('✅ ¡Éxito! Reporte enviado correctamente.', 'success');
+                
+                // Resetear formulario
+                document.getElementById('noveltyForm').reset();
+                updateStyles();
+                document.getElementById('sectionRetiro').classList.add('hidden');
+                document.getElementById('sectionIngreso').classList.add('hidden');
+                document.getElementById('displayAge').value = "Esperando fechas...";
 
-					input.addEventListener('input', clearError);
-					input.addEventListener('change', clearError);
-				});
-			}
-
-			// Ejecutar la configuración al cargar la página
-			document.addEventListener('DOMContentLoaded', setupErrorCleaners);
-			
-			// --- NUEVA FUNCIÓN: Control visual de errores ---
-			function toggleFieldError(id, isError) {
-				const el = document.getElementById(id);
-				if (el) {
-					if (isError) {
-						el.classList.add('input-error');
-					} else {
-						el.classList.remove('input-error');
-					}
-				}
-			}
-
-			// --- NUEVA FUNCIÓN: Mostrar Toast ---
-			function showToast(message) {
-				const toast = document.getElementById('dateToast');
-				const text = document.getElementById('toastText');
-				text.textContent = message;
-				toast.style.display = 'block';
-				toast.classList.remove('animate__fadeOutRight');
-				toast.classList.add('animate__fadeInRight');
-
-				setTimeout(() => {
-					toast.classList.replace('animate__fadeInRight', 'animate__fadeOutRight');
-					setTimeout(() => { toast.style.display = 'none'; }, 500);
-				}, 4000);
-			}
-			
-			
-			
-			function formatData() {
-				const contractNumber = document.getElementById('contractNumber').value;
-				const udsSelection = document.getElementById('mainUdsDropdown').value;
-				const utsName = udsSelection.split(' - ')[0] || 'No Seleccionado';
-				const utsCode = udsSelection.split(' - ')[1] || 'No Seleccionado';
-				
-				let formData = 	`Reporte Recibido\n`;
-				formData += 	`\n`;
-				formData += 	`╔═══════════════════════════════╗\n`;
-				formData += 	` REPORTE DE NOVEDADES - ASOCIACIÓN T3\n`;
-				formData += 	`╚═══════════════════════════════╝\n\n`;
-				
-				formData += `[ INFORMACIÓN GENERAL ]\n`;
-				formData += `> CONTRATO:      ${contractNumber}\n`;
-				formData += `> UDS NOMBRE:    ${utsName}\n`;
-				formData += `> UDS CÓDIGO:    ${utsCode}\n`;
-				formData += `──────────────────────────────────────────────────────────\n\n`;
-
-				if (document.getElementById('checkRetiro').checked) {
-					formData += `┹ ✴ DATOS DE RETIRO (RETIRO)\n`;
-					formData += `  ├─ 📄Documento:  ${document.getElementById('retiroDocType').value} ${document.getElementById('retiroDocNumber').value}\n`;
-					formData += `  ├─ ✍️Nombre:     ${document.getElementById('retiroFullName').value.toUpperCase()}\n`;
-					formData += `  ├─ 📆Fecha:      ${document.getElementById('retiroDate').value}\n`;
-					formData += `  └─ ♀️Género:     ${document.querySelector('input[name="_retiroGender"]:checked')?.value || 'N/A'}\n\n`;
-				}
-
-				if (document.getElementById('checkIngreso').checked) {
-					formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
-					formData += `  ├─ ✍️Niño:       ${document.getElementById('ingresoFullName').value.toUpperCase()}\n`;
-					formData += `  ├─ 📄Documento:  ${document.getElementById('ingresoDocType').value} ${document.getElementById('ingresoDocNumber').value}\n`;
-					formData += `  ├─ 👶Edad:       ${document.getElementById('displayAge').value}\n`;
-					formData += `  ├─ 📆F. Nacim:   ${document.getElementById('ingresoDOB').value}\n`;
-					formData += `  ├─ 📆F. Ingreso: ${document.getElementById('ingresoDate').value}\n`;
-					formData += `  ├─ ♀️Género:     ${document.querySelector('input[name="_ingresoGender"]:checked')?.value || 'N/A'}\n`;
-					formData += `  ├─ 📌Direccion:  ${document.getElementById('ingresoAddress').value}\n`;
-					formData += `  └─ ☎Teléfono:   ${document.getElementById('ingresoPhone').value}\n\n`;
-					
-					
-					formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
-					formData += `  ├─ ✍️Nombre:     ${document.getElementById('acudienteName').value}\n`;
-					formData += `  ├─ 📆F. Nacim:   ${document.getElementById('acudienteDOB').value}\n`;
-					formData += `  └─ 📄Documento:  ${document.getElementById('acudienteDoc').value}\n`;
-				}
-				
-				formData += `──────────────────────────────────────────────────────────\n`;
-				formData += `Generado el: ${new Date().toLocaleString()}\n`;
-				
-				return formData;
-			}
-			
-
-			
-
-			async function enviarAGoogle(data, btn) {
-				btn.textContent = "ENVIANDO A GOOGLE DRIVE...";
-				const formBody = Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
-
-				try {
-					await fetch(document.getElementById('noveltyForm').action, {
-						method: 'POST',
-						mode: 'no-cors',
-						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-						body: formBody
-					});
-
-					// 1. Mostrar mensaje de éxito
-					showFeedback('✅ ¡Éxito! Reporte y archivo enviados correctamente. ✅', 'success');
-					
-					// 2. Resetear todos los campos del formulario
-					document.getElementById('noveltyForm').reset();
-					
-					// 3. OCULTAR LAS SECCIONES DE INGRESO Y RETIRO
-					document.getElementById('sectionRetiro').classList.add('hidden');
-					document.getElementById('sectionIngreso').classList.add('hidden');
-					
-					// 4. Desmarcar visualmente los checkboxes (por si el reset no lo hizo)
-					document.getElementById('checkRetiro').checked = false;
-					document.getElementById('checkIngreso').checked = false;
-					
-					// 5. Limpiar el campo de edad calculada
-					document.getElementById('displayAge').value = "Esperando fechas...";
-					
-					// 6. Actualizar estilos visuales (volver a gris si no hay contrato seleccionado)
-					updateStyles();
-
-				} catch (error) {
-					showToast("❌ Error de conexión con Google Apps Script. ❌", "error");
-				} finally {
-					btn.disabled = false;
-					btn.textContent = "Enviar Reporte Al Correo";
-				}
-			}
-		</script>
-		
-		<div id="dateToast" class="animate__animated">
-			<div class="flex items-center space-x-3">
-				<span class="text-xl">⚠️</span>
-				<p id="toastText" class="text-sm font-bold"></p>
-			</div>
-		</div>
-	</body>
-	</html>
+            } catch (error) {
+                showToast("❌ Error de conexión con Google Apps Script.", "error");
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Enviar Reporte Al Correo</span>';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
