@@ -315,6 +315,7 @@
 
         .badge-retiro { background: #fee2e2; color: #991b1b; }
         .badge-ingreso { background: #dcfce7; color: #166534; }
+        .badge-ambos { background: linear-gradient(135deg, #ef4444, #10b981); color: white; }
 
         body.dark-mode .badge-retiro { background: #450a0a; color: #fca5a5; }
         body.dark-mode .badge-ingreso { background: #052e16; color: #86efac; }
@@ -405,38 +406,6 @@
         .export-excel { background: linear-gradient(135deg, #10b981, #059669); color: white; }
         .export-pdf { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
         .export-excel-full { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
-
-        /* Contract Selector for UDS Chart */
-        .contract-selector {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .contract-chip {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-
-        .contract-chip.active {
-            transform: scale(1.05);
-        }
-
-        .contract-chip-665 { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
-        .contract-chip-667 { background: #dbeafe; color: #1e40af; border-color: #3b82f6; }
-        .contract-chip-676 { background: #d1fae5; color: #065f46; border-color: #10b981; }
-        .contract-chip-all { background: #f3f4f6; color: #374151; border-color: #9ca3af; }
-
-        body.dark-mode .contract-chip-665 { background: #451a03; color: #fcd34d; }
-        body.dark-mode .contract-chip-667 { background: #1e3a8a; color: #93c5fd; }
-        body.dark-mode .contract-chip-676 { background: #064e3b; color: #6ee7b7; }
-        body.dark-mode .contract-chip-all { background: #1f2937; color: #d1d5db; }
 
         /* Bloqueo de Formulario Styles */
         .bloqueo-overlay {
@@ -618,6 +587,14 @@
             font-weight: 700;
         }
 
+        /* Estilo para campos obligatorios vacíos */
+        .input-error {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+            transition: all 0.5s ease;
+        }
+
         @media (max-width: 768px) {
             .glass-container { transform: scale(1); margin: 1rem; }
             .admin-content { margin: 10px; padding: 15px; }
@@ -743,7 +720,8 @@
             </div>
         </header>
         
-        <form id="noveltyForm" action="https://formspree.io/f/movbkavk" method="POST" class="p-8 space-y-6">
+        <!-- FORMULARIO ACTUALIZADO PARA GOOGLE APPS SCRIPT -->
+        <form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbwDfN_uetafpPOlSV6Jv94B024YJ4uOShDBN0JBV1uozA0gaWyr0hNUMGQJqd3CyL4/exec" method="POST" class="p-8 space-y-6">
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
@@ -799,18 +777,18 @@
                                class="w-full rounded-lg" minlength="7" maxlength="10" 
                                oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkExistingBeneficiary(this.value, 'retiro')">
                     </div>
-                    <input type="text" id="retiroFullName" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
+                    <input type="text" id="retiroFullName" name="retiro_nombre" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
                     <div class="space-y-1">
                         <label class="text-[11px] font-bold text-red-600 ml-1 uppercase">Fecha de Retiro</label>
-                        <input type="date" id="retiroDate" class="w-full rounded-lg" onchange="validateDatesRealTime()">
+                        <input type="date" id="retiroDate" name="retiro_fecha" class="w-full rounded-lg" onchange="validateDatesRealTime()">
                     </div>
                     <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-red-100">
                         <span class="text-xs font-bold text-slate-400">GENERO:</span>
                         <label class="text-sm font-bold flex items-center">
-                            <input type="radio" name="retiroGender" value="M" class="mr-1"> M
+                            <input type="radio" name="_retiroGender" value="M" class="mr-1"> M
                         </label>
                         <label class="text-sm font-bold flex items-center">
-                            <input type="radio" name="retiroGender" value="F" class="mr-1"> F
+                            <input type="radio" name="_retiroGender" value="F" class="mr-1"> F
                         </label>
                     </div>
                 </div>
@@ -833,30 +811,36 @@
                                    class="w-full rounded-lg" minlength="7" maxlength="10" 
                                    oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkExistingBeneficiary(this.value, 'ingreso')">
                         </div>
-                        <input type="text" id="ingresoFullName" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
+                        <input type="text" id="ingresoFullName" name="ingreso_nombre" placeholder="Nombres y Apellidos Completo" class="w-full rounded-lg">
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
-                            <input type="date" id="ingresoDOB" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateAgeRange()">
+                            <input type="date" id="ingresoDOB" name="ingreso_nacimiento" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateAgeRange()">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
-                            <input type="date" id="ingresoDate" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateDatesRealTime()">
+                            <input type="date" id="ingresoDate" name="ingreso_fecha" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateDatesRealTime()">
                         </div>
                         <div class="md:col-span-2 space-y-1">
                             <label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
-                            <input type="text" id="displayAge" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
+                            <input type="text" id="displayAge" name="edad_calculada" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
                         </div>
                         <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
                             <span class="text-xs font-bold text-slate-400">GENERO:</span>
                             <label class="text-sm font-bold flex items-center">
-                                <input type="radio" name="ingresoGender" value="M" class="mr-1"> M
+                                <input type="radio" name="_ingresoGender" value="M" class="mr-1"> M
                             </label>
                             <label class="text-sm font-bold flex items-center">
-                                <input type="radio" name="ingresoGender" value="F" class="mr-1"> F
+                                <input type="radio" name="_ingresoGender" value="F" class="mr-1"> F
                             </label>
                         </div>
-                        <input type="text" id="ingresoAddress" placeholder="Direccion y Barrio" class="w-full rounded-lg">
-                        <input type="tel" id="ingresoPhone" placeholder="Telefono de Contacto" class="w-full rounded-lg md:col-span-2">
+                        <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Direccion y Barrio" class="w-full rounded-lg">
+                        <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Telefono de Contacto" class="w-full rounded-lg md:col-span-2">
+                        
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
+                            <input type="file" id="fileInput" name="soporte_documento" accept=".pdf,image/*" 
+                                   class="w-full rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border-2 border-dashed border-green-200">
+                        </div>
                     </div>
                 </div>
 
@@ -865,11 +849,11 @@
                         <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="acudienteDoc" placeholder="Documento Acudiente" class="w-full rounded-lg">
-                        <input type="text" id="acudienteName" placeholder="Nombre Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
                         <div class="space-y-1 md:col-span-2">
                             <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
-                            <input type="date" id="acudienteDOB" class="w-full rounded-lg">
+                            <input type="date" id="acudienteDOB" name="acudiente_nacimiento" class="w-full rounded-lg">
                         </div>
                     </div>
                 </div>
@@ -1019,6 +1003,7 @@
                         <option value="">Todos los tipos</option>
                         <option value="retiro">Solo Retiros</option>
                         <option value="ingreso">Solo Ingresos</option>
+                        <option value="ambos">Solo Ambos</option>
                     </select>
                     <select id="filterMonth" onchange="filterNovelties()">
                         <option value="">Todos los meses</option>
@@ -1034,6 +1019,9 @@
                         <option value="9">Octubre</option>
                         <option value="10">Noviembre</option>
                         <option value="11">Diciembre</option>
+                    </select>
+                    <select id="filterUDS" onchange="filterNovelties()">
+                        <option value="">Todas las UDS</option>
                     </select>
                     <input type="date" id="filterDate" onchange="filterNovelties()">
                 </div>
@@ -1108,42 +1096,6 @@
             fechaInicio: 28,
             fechaFin: 30
         };
-
-		// Función para acceso admin desde el bloqueo
-		function accesoAdminDesdeBloqueo() {
-			const password = prompt("🔒 ACCESO ADMINISTRADOR\n\nIngrese la contraseña para desactivar el bloqueo de cierre de mes:");
-			
-			if (password === null) {
-				// Usuario canceló
-				return;
-			}
-			
-			if (password === ADMIN_PASSWORD) {
-				// Contraseña correcta - Desactivar bloqueo
-				configBloqueo.activo = false;
-				
-				const configRef = database.ref('configBloqueo');
-				configRef.set(configBloqueo)
-					.then(() => {
-						showToast("✅ Bloqueo desactivado correctamente", "success");
-						actualizarUIConfigBloqueo();
-						verificarBloqueo(); // Esto ocultará el overlay y mostrará el formulario
-						
-						// Opcional: Abrir automáticamente el panel admin
-						setTimeout(() => {
-							const abrirPanel = confirm("¿Desea abrir el panel de administración?");
-							if (abrirPanel) {
-								openAdminPanel();
-							}
-						}, 500);
-					})
-					.catch((error) => {
-						showToast("❌ Error al desactivar bloqueo: " + error.message, "error");
-					});
-			} else {
-				showToast("❌ Contraseña incorrecta", "error");
-			}
-		}
 
         // Update clock
         function updateClock() {
@@ -1222,11 +1174,27 @@
             loadCharts();
             loadNoveltiesTable();
             cargarConfigBloqueo();
+            populateUDSFilter();
         }
 
         function closeAdminPanel() {
             const panel = document.getElementById('adminPanel');
             if (panel) panel.style.display = 'none';
+        }
+
+        function populateUDSFilter() {
+            const filterUDS = document.getElementById('filterUDS');
+            if (!filterUDS) return;
+            
+            filterUDS.innerHTML = '<option value="">Todas las UDS</option>';
+            Object.keys(UDS_DATA).forEach(contract => {
+                UDS_DATA[contract].forEach(([name, code]) => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    filterUDS.appendChild(opt);
+                });
+            });
         }
 
         // FUNCIONES DE BLOQUEO DE FORMULARIO
@@ -1323,32 +1291,58 @@
         }
 
         function verificarBloqueo() {
-		const overlay = document.getElementById('bloqueoOverlay');
-		const mainCard = document.getElementById('mainCard');
-		
-		if (!configBloqueo.activo) {
-			if (overlay) overlay.style.display = 'none';
-			if (mainCard) mainCard.style.display = 'block';
-			return;
-		}
-		
-		const hoy = new Date();
-		const diaActual = hoy.getDate();
-		
-		// Verificar si estamos en el periodo de bloqueo
-		const enPeriodoBloqueo = diaActual >= configBloqueo.fechaInicio && diaActual <= configBloqueo.fechaFin;
-		
-		if (enPeriodoBloqueo) {
-			if (overlay) overlay.style.display = 'flex';
-			if (mainCard) mainCard.style.display = 'none';
-		} else {
-			if (overlay) overlay.style.display = 'none';
-			if (mainCard) mainCard.style.display = 'block';
-		}
-	}
+            const overlay = document.getElementById('bloqueoOverlay');
+            const mainCard = document.getElementById('mainCard');
+            
+            if (!configBloqueo.activo) {
+                if (overlay) overlay.style.display = 'none';
+                if (mainCard) mainCard.style.display = 'block';
+                return;
+            }
+            
+            const hoy = new Date();
+            const diaActual = hoy.getDate();
+            
+            const enPeriodoBloqueo = diaActual >= configBloqueo.fechaInicio && diaActual <= configBloqueo.fechaFin;
+            
+            if (enPeriodoBloqueo) {
+                if (overlay) overlay.style.display = 'flex';
+                if (mainCard) mainCard.style.display = 'none';
+            } else {
+                if (overlay) overlay.style.display = 'none';
+                if (mainCard) mainCard.style.display = 'block';
+            }
+        }
 
-        // Verificar bloqueo cada hora y al cargar
-        setInterval(verificarBloqueo, 3600000); // Cada hora
+        function accesoAdminDesdeBloqueo() {
+            const password = prompt("🔒 ACCESO ADMINISTRADOR\n\nIngrese la contraseña para desactivar el bloqueo de cierre de mes:");
+            
+            if (password === null) return;
+            
+            if (password === ADMIN_PASSWORD) {
+                configBloqueo.activo = false;
+                
+                const configRef = database.ref('configBloqueo');
+                configRef.set(configBloqueo)
+                    .then(() => {
+                        showToast("✅ Bloqueo desactivado correctamente", "success");
+                        actualizarUIConfigBloqueo();
+                        verificarBloqueo();
+                        
+                        setTimeout(() => {
+                            const abrirPanel = confirm("¿Desea abrir el panel de administración?");
+                            if (abrirPanel) openAdminPanel();
+                        }, 500);
+                    })
+                    .catch((error) => {
+                        showToast("❌ Error al desactivar bloqueo: " + error.message, "error");
+                    });
+            } else {
+                showToast("❌ Contraseña incorrecta", "error");
+            }
+        }
+
+        setInterval(verificarBloqueo, 3600000);
         document.addEventListener('DOMContentLoaded', () => {
             cargarConfigBloqueo();
         });
@@ -1365,7 +1359,7 @@
                 const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
                 const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-                let todayCount = 0, weekCount = 0, monthCount = 0, retiros = 0, ingresos = 0;
+                let todayCount = 0, weekCount = 0, monthCount = 0, retiros = 0, ingresos = 0, ambos = 0;
 
                 novelties.forEach(n => {
                     const nDate = new Date(n.timestamp);
@@ -1373,8 +1367,15 @@
                     if (nDate >= weekAgo) weekCount++;
                     if (nDate >= monthAgo) monthCount++;
                     
-                    if (n.type === 'retiro') retiros++;
-                    else if (n.type === 'ingreso') ingresos++;
+                    if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                        ambos++;
+                        retiros++;
+                        ingresos++;
+                    } else if (n.type === 'retiro') {
+                        retiros++;
+                    } else if (n.type === 'ingreso') {
+                        ingresos++;
+                    }
                 });
 
                 const elToday = document.getElementById('statToday');
@@ -1406,11 +1407,17 @@
                 
                 const retirosCount = { '665': 0, '667': 0, '676': 0 };
                 const ingresosCount = { '665': 0, '667': 0, '676': 0 };
+                const ambosCount = { '665': 0, '667': 0, '676': 0 };
                 
                 novelties.forEach(n => {
                     if (n.contract && (n.contract === '665' || n.contract === '667' || n.contract === '676')) {
-                        if (n.type === 'retiro') retirosCount[n.contract]++;
-                        else if (n.type === 'ingreso') ingresosCount[n.contract]++;
+                        if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                            ambosCount[n.contract]++;
+                        } else if (n.type === 'retiro') {
+                            retirosCount[n.contract]++;
+                        } else if (n.type === 'ingreso') {
+                            ingresosCount[n.contract]++;
+                        }
                     }
                 });
 
@@ -1434,6 +1441,12 @@
                                 label: 'Ingresos',
                                 data: [ingresosCount['665'], ingresosCount['667'], ingresosCount['676']],
                                 backgroundColor: '#10b981',
+                                borderRadius: 6
+                            },
+                            {
+                                label: 'Ambos',
+                                data: [ambosCount['665'], ambosCount['667'], ambosCount['676']],
+                                backgroundColor: '#8b5cf6',
                                 borderRadius: 6
                             }
                         ]
@@ -1531,29 +1544,45 @@
             const filterType = document.getElementById('filterType');
             const filterDate = document.getElementById('filterDate');
             const filterMonth = document.getElementById('filterMonth');
+            const filterUDS = document.getElementById('filterUDS');
             
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             const contractFilter = filterContract ? filterContract.value : '';
             const typeFilter = filterType ? filterType.value : '';
             const dateFilter = filterDate ? filterDate.value : '';
             const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
 
             let filtered = currentNovelties.filter(n => {
                 const matchesSearch = !searchTerm || 
                     (n.name && n.name.toLowerCase().includes(searchTerm)) || 
-                    (n.document && n.document.includes(searchTerm));
-                const matchesContract = !contractFilter || n.contract === contractFilter;
-                const matchesType = !typeFilter || n.type === typeFilter;
-                const matchesDate = !dateFilter || n.date === dateFilter;
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
                 
-                // Filtro por mes
+                const matchesContract = !contractFilter || n.contract === contractFilter;
+                
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+                
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
                 let matchesMonth = true;
                 if (monthFilter !== '') {
                     const nDate = new Date(n.timestamp);
                     matchesMonth = nDate.getMonth() === parseInt(monthFilter);
                 }
 
-                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth;
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS;
             });
 
             filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -1561,8 +1590,22 @@
         }
 
         function getFechaMovimiento(novelty) {
-            if (novelty.type === 'retiro') return novelty.retiroDate || novelty.date || '-';
-            else if (novelty.type === 'ingreso') return novelty.ingresoDate || novelty.date || '-';
+            let fechas = [];
+            
+            if (novelty.type === 'retiro' || novelty.type === 'ambos' || novelty.hasRetiro) {
+                const fechaRetiro = novelty.retiro ? novelty.retiro.retiroDate : (novelty.retiroDate || null);
+                if (fechaRetiro) fechas.push('Ret: ' + fechaRetiro);
+            }
+            
+            if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
+                const fechaIngreso = novelty.ingreso ? novelty.ingreso.ingresoDate : (novelty.ingresoDate || null);
+                if (fechaIngreso) fechas.push('Ing: ' + fechaIngreso);
+            }
+            
+            if (fechas.length > 0) {
+                return fechas.join(' / ');
+            }
+            
             return novelty.date || '-';
         }
 
@@ -1576,15 +1619,40 @@
 
             paginated.forEach(n => {
                 const fechaMovimiento = getFechaMovimiento(n);
+                
+                let tipoBadge = '';
+                if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                    tipoBadge = '<span class="badge badge-ambos">AMBOS</span>';
+                } else if (n.type === 'retiro') {
+                    tipoBadge = '<span class="badge badge-retiro">RETIRO</span>';
+                } else if (n.type === 'ingreso') {
+                    tipoBadge = '<span class="badge badge-ingreso">INGRESO</span>';
+                } else {
+                    tipoBadge = '<span class="badge">' + (n.type || 'N/A').toUpperCase() + '</span>';
+                }
+                
+                let docDisplay = n.document || '-';
+                let nameDisplay = n.name || '-';
+                
+                if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                    const docRet = n.retiro ? n.retiro.document : (n.document || '-');
+                    const docIng = n.ingreso ? n.ingreso.document : '-';
+                    const nomRet = n.retiro ? n.retiro.name : (n.name || '-');
+                    const nomIng = n.ingreso ? n.ingreso.name : '-';
+                    
+                    docDisplay = docRet + ' / ' + docIng;
+                    nameDisplay = (nomRet.length > 15 ? nomRet.substring(0, 15) + '...' : nomRet) + ' / ' + (nomIng.length > 15 ? nomIng.substring(0, 15) + '...' : nomIng);
+                }
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${new Date(n.timestamp).toLocaleDateString('es-CO')}</td>
                     <td><strong>${fechaMovimiento}</strong></td>
                     <td><span class="badge" style="background: ${getContractColor(n.contract)}20; color: ${getContractColor(n.contract)}">${n.contract}</span></td>
                     <td>${n.udsName}</td>
-                    <td><span class="badge badge-${n.type}">${n.type ? n.type.toUpperCase() : ''}</span></td>
-                    <td>${n.document || '-'}</td>
-                    <td>${n.name || '-'}</td>
+                    <td>${tipoBadge}</td>
+                    <td>${docDisplay}</td>
+                    <td>${nameDisplay}</td>
                     <td>
                         <button onclick="viewNovelty('${n.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 bg-blue-50 px-2 py-1 rounded">Ver</button>
                         <button onclick="deleteNovelty('${n.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold bg-red-50 px-2 py-1 rounded">Eliminar</button>
@@ -1600,18 +1668,6 @@
             const novelty = currentNovelties.find(n => n.id === id);
             if (!novelty) return;
 
-            let fechaMovimiento = '-';
-            let fechaNacimientoNiño = '-';
-            let fechaNacimientoAcudiente = '-';
-            
-            if (novelty.type === 'retiro') {
-                fechaMovimiento = novelty.retiroDate || novelty.date || '-';
-            } else if (novelty.type === 'ingreso') {
-                fechaMovimiento = novelty.ingresoDate || novelty.date || '-';
-                fechaNacimientoNiño = novelty.ingresoDOB || novelty.dob || '-';
-                fechaNacimientoAcudiente = novelty.acudienteDOB || '-';
-            }
-
             let formData = `=================================\n`;
             formData +=    ` REPORTE DE NOVEDADES - ASOCIACION J.E.R\n`;
             formData +=    `=================================\n\n`;
@@ -1621,32 +1677,41 @@
             formData += `> UDS NOMBRE:       ${novelty.udsName || 'N/A'}\n`;
             formData += `> UDS CODIGO:       ${novelty.udsFull ? novelty.udsFull.split(' - ')[1] : 'N/A'}\n`;
             formData += `> FECHA REGISTRO:   ${new Date(novelty.timestamp).toLocaleString('es-CO')}\n`;
+            formData += `> TIPO DE NOVEDAD:  ${novelty.type === 'ambos' || (novelty.hasRetiro && novelty.hasIngreso) ? 'RETIRO + INGRESO (AMBOS)' : (novelty.type ? novelty.type.toUpperCase() : 'N/A')}\n`;
             formData += `------------------------------------------\n\n`;
 
-            if (novelty.type === 'retiro') {
-                formData += `[ DATOS DE RETIRO ]\n`;
-                formData += `  - Documento:      ${novelty.docType || 'RC'} ${novelty.document || 'N/A'}\n`;
-                formData += `  - Nombre:         ${novelty.name ? novelty.name.toUpperCase() : 'N/A'}\n`;
-                formData += `  - Fecha Retiro:   ${fechaMovimiento}\n`;
-                formData += `  - Genero:         ${novelty.gender === 'M' ? 'Masculino' : novelty.gender === 'F' ? 'Femenino' : 'N/A'}\n\n`;
-            }
+            if (novelty.type === 'retiro' || novelty.type === 'ambos' || novelty.hasRetiro) {
+                const retiroData = novelty.retiro || novelty;
+				
+				formData += `┹ ✴ DATOS DE RETIRO (RETIRO)\n`;
+				formData += `  ├─ 📄Documento:  ${retiroData.docType || 'RC'} ${retiroData.document || 'N/A'}\n`;
+				formData += `  ├─ ✍️Nombre:     ${retiroData.name ? retiroData.name.toUpperCase() : 'N/A'}\n`;
+				formData += `  ├─ 📆Fecha:      ${retiroData.retiroDate || novelty.retiroDate || '-'}\n`;
+				formData += `  └─ ♀️Género:      ${retiroData.gender === 'M' ? 'Masculino' : retiroData.gender === 'F' ? 'Femenino' : 'N/A'}\n\n`;
+			}
 
-            if (novelty.type === 'ingreso') {
-                formData += `[ DATOS DE INGRESO ]\n`;
-                formData += `  - Niño:           ${novelty.name ? novelty.name.toUpperCase() : 'N/A'}\n`;
-                formData += `  - Documento:      ${novelty.docType || 'RC'} ${novelty.document || 'N/A'}\n`;
-                formData += `  - Edad:           ${novelty.age || 'N/A'}\n`;
-                formData += `  - F. Nacimiento:  ${fechaNacimientoNiño}\n`;
-                formData += `  - F. Ingreso:     ${fechaMovimiento}\n`;
-                formData += `  - Genero:         ${novelty.gender === 'M' ? 'Masculino' : novelty.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
-                formData += `  - Direccion:      ${novelty.address || 'N/A'}\n`;
-                formData += `  - Telefono:       ${novelty.phone || 'N/A'}\n\n`;
-                
-                formData += `[ DATOS DEL ACUDIENTE ]\n`;
-                formData += `  - Nombre:         ${novelty.acudiente || 'N/A'}\n`;
-                formData += `  - F. Nacimiento:  ${fechaNacimientoAcudiente}\n`;
-                formData += `  - Documento:      ${novelty.acudienteDoc || 'N/A'}\n`;
-            }
+            if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
+                const ingresoData = novelty.ingreso || novelty;
+                let fechaNacimientoNiño = ingresoData.dob || ingresoData.ingresoDOB || novelty.ingresoDOB || '-';
+                let fechaNacimientoAcudiente = ingresoData.acudienteDOB || novelty.acudienteDOB || '-';
+                   
+				formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
+				formData += `  ├─ ✍️Niño:       ${ingresoData.name ? ingresoData.name.toUpperCase() : 'N/A'}\n`;
+				formData += `  ├─ 📄Documento:  ${ingresoData.docType || 'RC'} ${ingresoData.document || 'N/A'}\n`;
+				formData += `  ├─ 👶Edad:       ${ingresoData.age || novelty.age || 'N/A'}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${fechaNacimientoNiño}\n`;
+				formData += `  ├─ 📆F. Ingreso: ${ingresoData.ingresoDate || novelty.ingresoDate || '-'}\n`;
+				formData += `  ├─ ♀️Género:      ${ingresoData.gender === 'M' ? 'Masculino' : ingresoData.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
+				formData += `  ├─ 📌Direccion:  ${ingresoData.address || novelty.address || 'N/A'}\n`;
+				formData += `  └─ ☎Teléfono:   ${ingresoData.phone || novelty.phone || 'N/A'}\n\n`;
+				
+				formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
+				formData += `  ├─ ✍️Nombre:     ${ingresoData.acudiente || novelty.acudiente || 'N/A'}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${fechaNacimientoAcudiente}\n`;
+				formData += `  └─ 📄Documento:  ${ingresoData.acudienteDoc || novelty.acudienteDoc || 'N/A'}\n`;
+				
+			}
+			
 
             const modalBody = document.getElementById('modalBody');
             const viewModal = document.getElementById('viewModal');
@@ -1709,20 +1774,37 @@
             const filterType = document.getElementById('filterType');
             const filterDate = document.getElementById('filterDate');
             const filterMonth = document.getElementById('filterMonth');
+            const filterUDS = document.getElementById('filterUDS');
             
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             const contractFilter = filterContract ? filterContract.value : '';
             const typeFilter = filterType ? filterType.value : '';
             const dateFilter = filterDate ? filterDate.value : '';
             const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
 
             let filtered = currentNovelties.filter(n => {
                 const matchesSearch = !searchTerm || 
                     (n.name && n.name.toLowerCase().includes(searchTerm)) || 
-                    (n.document && n.document.includes(searchTerm));
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+                
                 const matchesContract = !contractFilter || n.contract === contractFilter;
-                const matchesType = !typeFilter || n.type === typeFilter;
+                
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+                
                 const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
                 
                 let matchesMonth = true;
                 if (monthFilter !== '') {
@@ -1730,7 +1812,7 @@
                     matchesMonth = nDate.getMonth() === parseInt(monthFilter);
                 }
 
-                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth;
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS;
             });
 
             if (filtered.length === 0) {
@@ -1742,10 +1824,48 @@
                 const fechaMovimiento = getFechaMovimiento(n);
                 let fechaNacimientoNiño = '';
                 let fechaNacimientoAcudiente = '';
+                let tipoNovedad = n.type ? n.type.toUpperCase() : '';
+                let docRetiro = '';
+                let docIngreso = '';
+                let nombreRetiro = '';
+                let nombreIngreso = '';
+                let generoRetiro = '';
+                let generoIngreso = '';
+                let fechaRetiro = '';
+                let fechaIngreso = '';
                 
-                if (n.type === 'ingreso') {
-                    fechaNacimientoNiño = n.ingresoDOB || n.dob || '';
-                    fechaNacimientoAcudiente = n.acudienteDOB || '';
+                if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                    tipoNovedad = 'AMBOS (RETIRO + INGRESO)';
+                    
+                    if (n.retiro) {
+                        docRetiro = n.retiro.document || '';
+                        nombreRetiro = n.retiro.name || '';
+                        generoRetiro = n.retiro.gender || '';
+                        fechaRetiro = n.retiro.retiroDate || '';
+                    }
+                    
+                    if (n.ingreso) {
+                        docIngreso = n.ingreso.document || '';
+                        nombreIngreso = n.ingreso.name || '';
+                        generoIngreso = n.ingreso.gender || '';
+                        fechaIngreso = n.ingreso.ingresoDate || '';
+                        fechaNacimientoNiño = n.ingreso.dob || '';
+                        fechaNacimientoAcudiente = n.ingreso.acudienteDOB || '';
+                    }
+                } else if (n.type === 'retiro') {
+                    const retiroData = n.retiro || n;
+                    docRetiro = retiroData.document || '';
+                    nombreRetiro = retiroData.name || '';
+                    generoRetiro = retiroData.gender || '';
+                    fechaRetiro = retiroData.retiroDate || n.retiroDate || '';
+                } else if (n.type === 'ingreso') {
+                    const ingresoData = n.ingreso || n;
+                    docIngreso = ingresoData.document || '';
+                    nombreIngreso = ingresoData.name || '';
+                    generoIngreso = ingresoData.gender || '';
+                    fechaIngreso = ingresoData.ingresoDate || n.ingresoDate || '';
+                    fechaNacimientoNiño = ingresoData.dob || n.ingresoDOB || '';
+                    fechaNacimientoAcudiente = ingresoData.acudienteDOB || n.acudienteDOB || '';
                 }
 
                 return {
@@ -1754,17 +1874,23 @@
                     'Contrato': n.contract,
                     'UDS Nombre': n.udsName,
                     'UDS Codigo': n.udsFull ? n.udsFull.split(' - ')[1] : '',
-                    'Tipo': n.type ? n.type.toUpperCase() : '',
-                    'Tipo Documento': n.docType || 'RC',
-                    'Numero Documento': n.document,
-                    'Nombre Completo': n.name,
-                    'Genero': n.gender === 'M' ? 'Masculino' : n.gender === 'F' ? 'Femenino' : 'No especificado',
+                    'Tipo Novedad': tipoNovedad,
+                    'Tipo Doc Retiro': n.retiro ? n.retiro.docType : (n.type === 'retiro' ? n.docType : ''),
+                    'Documento Retiro': docRetiro,
+                    'Nombre Retiro': nombreRetiro,
+                    'Género Retiro': generoRetiro === 'M' ? 'Masculino' : generoRetiro === 'F' ? 'Femenino' : '',
+                    'Fecha Retiro': fechaRetiro,
+                    'Tipo Doc Ingreso': n.ingreso ? n.ingreso.docType : (n.type === 'ingreso' ? n.docType : ''),
+                    'Documento Ingreso': docIngreso,
+                    'Nombre Ingreso': nombreIngreso,
+                    'Género Ingreso': generoIngreso === 'M' ? 'Masculino' : generoIngreso === 'F' ? 'Femenino' : '',
                     'Fecha Nacimiento Niño': fechaNacimientoNiño,
-                    'Edad al Ingreso': n.age || '',
-                    'Direccion': n.address || '',
-                    'Telefono': n.phone || '',
-                    'Acudiente Nombre': n.acudiente || '',
-                    'Acudiente Documento': n.acudienteDoc || '',
+                    'Edad al Ingreso': n.ingreso ? n.ingreso.age : n.age || '',
+                    'Fecha Ingreso': fechaIngreso,
+                    'Dirección': n.ingreso ? n.ingreso.address : n.address || '',
+                    'Teléfono': n.ingreso ? n.ingreso.phone : n.phone || '',
+                    'Acudiente Nombre': n.ingreso ? n.ingreso.acudiente : n.acudiente || '',
+                    'Acudiente Documento': n.ingreso ? n.ingreso.acudienteDoc : n.acudienteDoc || '',
                     'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente
                 };
             });
@@ -1788,11 +1914,12 @@
                     return;
                 }
 
-                const retiros = novelties.filter(n => n.type === 'retiro');
-                const ingresos = novelties.filter(n => n.type === 'ingreso');
+                const retiros = novelties.filter(n => n.type === 'retiro' && !n.hasIngreso);
+                const ingresos = novelties.filter(n => n.type === 'ingreso' && !n.hasRetiro);
+                const ambos = novelties.filter(n => n.type === 'ambos' || (n.hasRetiro && n.hasIngreso));
+                
                 const wb = XLSX.utils.book_new();
 
-                // Resumen
                 const resumenData = [
                     ['REPORTE COMPLETO DE NOVEDADES - ASOCIACION J.E.R'],
                     ['Generado:', new Date().toLocaleString('es-CO')],
@@ -1801,6 +1928,7 @@
                     ['Total Registros:', novelties.length],
                     ['Total Retiros:', retiros.length],
                     ['Total Ingresos:', ingresos.length],
+                    ['Total Ambos (Retiro + Ingreso):', ambos.length],
                     [''],
                     ['Por Contrato:'],
                     ['Contrato 665:', novelties.filter(n => n.contract === '665').length],
@@ -1813,10 +1941,35 @@
                     const fechaMovimiento = getFechaMovimiento(n);
                     let fechaNacimientoNiño = '';
                     let fechaNacimientoAcudiente = '';
+                    let docRetiro = '', docIngreso = '';
+                    let nombreRetiro = '', nombreIngreso = '';
+                    let fechaRetiro = '', fechaIngreso = '';
                     
-                    if (n.type === 'ingreso') {
-                        fechaNacimientoNiño = n.ingresoDOB || n.dob || '';
-                        fechaNacimientoAcudiente = n.acudienteDOB || '';
+                    if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                        if (n.retiro) {
+                            docRetiro = n.retiro.document || '';
+                            nombreRetiro = n.retiro.name || '';
+                            fechaRetiro = n.retiro.retiroDate || '';
+                        }
+                        if (n.ingreso) {
+                            docIngreso = n.ingreso.document || '';
+                            nombreIngreso = n.ingreso.name || '';
+                            fechaIngreso = n.ingreso.ingresoDate || '';
+                            fechaNacimientoNiño = n.ingreso.dob || '';
+                            fechaNacimientoAcudiente = n.ingreso.acudienteDOB || '';
+                        }
+                    } else if (n.type === 'retiro') {
+                        const retiroData = n.retiro || n;
+                        docRetiro = retiroData.document || '';
+                        nombreRetiro = retiroData.name || '';
+                        fechaRetiro = retiroData.retiroDate || n.retiroDate || '';
+                    } else if (n.type === 'ingreso') {
+                        const ingresoData = n.ingreso || n;
+                        docIngreso = ingresoData.document || '';
+                        nombreIngreso = ingresoData.name || '';
+                        fechaIngreso = ingresoData.ingresoDate || n.ingresoDate || '';
+                        fechaNacimientoNiño = ingresoData.dob || n.ingresoDOB || '';
+                        fechaNacimientoAcudiente = ingresoData.acudienteDOB || n.acudienteDOB || '';
                     }
 
                     return {
@@ -1827,16 +1980,18 @@
                         'UDS Nombre': n.udsName,
                         'UDS Codigo': n.udsFull ? n.udsFull.split(' - ')[1] : '',
                         'Tipo': tipo,
-                        'Tipo Documento': n.docType || 'RC',
-                        'Numero Documento': n.document,
-                        'Nombre Completo': n.name,
-                        'Genero': n.gender === 'M' ? 'Masculino' : n.gender === 'F' ? 'Femenino' : 'No especificado',
+                        'Doc Retiro': docRetiro,
+                        'Nombre Retiro': nombreRetiro,
+                        'Fecha Retiro': fechaRetiro,
+                        'Doc Ingreso': docIngreso,
+                        'Nombre Ingreso': nombreIngreso,
+                        'Fecha Ingreso': fechaIngreso,
                         'Fecha Nacimiento Niño': fechaNacimientoNiño,
-                        'Edad al Ingreso': n.age || '',
-                        'Direccion': n.address || '',
-                        'Telefono': n.phone || '',
-                        'Acudiente Nombre': n.acudiente || '',
-                        'Acudiente Documento': n.acudienteDoc || '',
+                        'Edad al Ingreso': n.ingreso ? n.ingreso.age : n.age || '',
+                        'Dirección': n.ingreso ? n.ingreso.address : n.address || '',
+                        'Teléfono': n.ingreso ? n.ingreso.phone : n.phone || '',
+                        'Acudiente Nombre': n.ingreso ? n.ingreso.acudiente : n.acudiente || '',
+                        'Acudiente Documento': n.ingreso ? n.ingreso.acudienteDoc : n.acudienteDoc || '',
                         'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente
                     };
                 };
@@ -1847,6 +2002,10 @@
 
                 if (ingresos.length > 0) {
                     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ingresos.map(n => mapNoveltyData(n, 'INGRESO'))), 'Ingresos');
+                }
+
+                if (ambos.length > 0) {
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ambos.map(n => mapNoveltyData(n, 'AMBOS'))), 'Ambos');
                 }
 
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(novelties.map(n => mapNoveltyData(n, n.type ? n.type.toUpperCase() : ''))), 'Todos los Registros');
@@ -1882,8 +2041,8 @@
                 doc.rect(10, y, 277, 10, 'F');
                 doc.setFontSize(9);
                 
-                const headers = ['Fecha Reg', 'Fecha Mov', 'Contrato', 'UDS', 'Tipo', 'Documento', 'Nombre', 'Edad', 'Telefono'];
-                const colWidths = [25, 25, 20, 45, 20, 30, 50, 25, 37];
+                const headers = ['Fecha Reg', 'Fecha Mov', 'Contrato', 'UDS', 'Tipo', 'Doc Ret', 'Nom Ret', 'Doc Ing', 'Nom Ing'];
+                const colWidths = [25, 35, 20, 40, 25, 30, 45, 30, 47];
                 let x = 12;
                 
                 headers.forEach((header, i) => {
@@ -1892,7 +2051,7 @@
                 });
 
                 y += 15;
-                doc.setFontSize(8);
+                doc.setFontSize(7);
                 let count = 0;
                 
                 novelties.forEach(n => {
@@ -1908,26 +2067,53 @@
                             x += colWidths[i];
                         });
                         y += 10;
-                        doc.setFontSize(8);
+                        doc.setFontSize(7);
                     }
                     
                     const fechaMovimiento = getFechaMovimiento(n);
                     
+                    let tipoDisplay = n.type ? n.type.toUpperCase() : '';
+                    let docRet = '';
+                    let nomRet = '';
+                    let docIng = '';
+                    let nomIng = '';
+                    
+                    if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                        tipoDisplay = 'AMBOS';
+                        if (n.retiro) {
+                            docRet = n.retiro.document || '-';
+                            nomRet = n.retiro.name ? (n.retiro.name.length > 20 ? n.retiro.name.substring(0, 20) + '...' : n.retiro.name) : '-';
+                        }
+                        if (n.ingreso) {
+                            docIng = n.ingreso.document || '-';
+                            nomIng = n.ingreso.name ? (n.ingreso.name.length > 20 ? n.ingreso.name.substring(0, 20) + '...' : n.ingreso.name) : '-';
+                        }
+                    } else if (n.type === 'retiro') {
+                        const retData = n.retiro || n;
+                        docRet = retData.document || '-';
+                        nomRet = retData.name ? (retData.name.length > 20 ? retData.name.substring(0, 20) + '...' : retData.name) : '-';
+                    } else if (n.type === 'ingreso') {
+                        const ingData = n.ingreso || n;
+                        docIng = ingData.document || '-';
+                        nomIng = ingData.name ? (ingData.name.length > 20 ? ingData.name.substring(0, 20) + '...' : ingData.name) : '-';
+                    }
+                    
                     x = 12;
                     const rowData = [
                         new Date(n.timestamp).toLocaleDateString('es-CO'),
-                        fechaMovimiento,
+                        fechaMovimiento.length > 22 ? fechaMovimiento.substring(0, 22) : fechaMovimiento,
                         n.contract || '',
-                        n.udsName ? (n.udsName.length > 22 ? n.udsName.substring(0, 22) + '...' : n.udsName) : '',
-                        n.type ? n.type.toUpperCase() : '',
-                        n.document || '-',
-                        n.name ? (n.name.length > 25 ? n.name.substring(0, 25) + '...' : n.name) : '-',
-                        n.age || '-',
-                        n.phone || '-'
+                        n.udsName ? (n.udsName.length > 18 ? n.udsName.substring(0, 18) + '...' : n.udsName) : '',
+                        tipoDisplay,
+                        docRet,
+                        nomRet,
+                        docIng,
+                        nomIng
                     ];
                     
                     if (n.type === 'retiro') doc.setTextColor(220, 38, 38);
                     else if (n.type === 'ingreso') doc.setTextColor(16, 185, 129);
+                    else if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) doc.setTextColor(139, 92, 246);
                     else doc.setTextColor(0, 0, 0);
                     
                     rowData.forEach((cell, i) => {
@@ -2142,13 +2328,13 @@
                 const retiroDocNumber = document.getElementById('retiroDocNumber');
                 const retiroFullName = document.getElementById('retiroFullName');
                 const retiroDate = document.getElementById('retiroDate');
-                const retiroGender = document.querySelector('input[name="retiroGender"]:checked');
+                const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
                 
-                formData += `[ DATOS DE RETIRO ]\n`;
-                formData += `  - Documento:  ${retiroDocType ? retiroDocType.value : ''} ${retiroDocNumber ? retiroDocNumber.value : ''}\n`;
-                formData += `  - Nombre:     ${retiroFullName ? retiroFullName.value.toUpperCase() : ''}\n`;
-                formData += `  - Fecha:      ${retiroDate ? retiroDate.value : ''}\n`;
-                formData += `  - Genero:     ${retiroGender ? retiroGender.value : 'N/A'}\n\n`;
+				formData += `┹ ✴ DATOS DE RETIRO (RETIRO)\n`;
+				formData += `  ├─ 📄Documento:  ${retiroDocType ? retiroDocType.value : ''} ${retiroDocNumber ? retiroDocNumber.value : ''}\n`;
+				formData += `  ├─ ✍️Nombre:      ${retiroFullName ? retiroFullName.value.toUpperCase() : ''}\n`;
+				formData += `  ├─ 📆Fecha:      ${retiroDate ? retiroDate.value : ''}\n`;
+				formData += `  └─ ♀️Género:     ${retiroGender ? retiroGender.value : 'N/A'}\n\n`;				
             }
 
             if (checkIngreso && checkIngreso.checked) {
@@ -2158,27 +2344,27 @@
                 const displayAge = document.getElementById('displayAge');
                 const ingresoDOB = document.getElementById('ingresoDOB');
                 const ingresoDate = document.getElementById('ingresoDate');
-                const ingresoGender = document.querySelector('input[name="ingresoGender"]:checked');
+                const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
                 const ingresoAddress = document.getElementById('ingresoAddress');
                 const ingresoPhone = document.getElementById('ingresoPhone');
                 const acudienteName = document.getElementById('acudienteName');
                 const acudienteDOB = document.getElementById('acudienteDOB');
                 const acudienteDoc = document.getElementById('acudienteDoc');
-                
-                formData += `[ DATOS DE INGRESO ]\n`;
-                formData += `  - Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
-                formData += `  - Documento:  ${ingresoDocType ? ingresoDocType.value : ''} ${ingresoDocNumber ? ingresoDocNumber.value : ''}\n`;
-                formData += `  - Edad:       ${displayAge ? displayAge.value : ''}\n`;
-                formData += `  - F. Nacim:   ${ingresoDOB ? ingresoDOB.value : ''}\n`;
-                formData += `  - F. Ingreso: ${ingresoDate ? ingresoDate.value : ''}\n`;
-                formData += `  - Genero:     ${ingresoGender ? ingresoGender.value : 'N/A'}\n`;
-                formData += `  - Direccion:  ${ingresoAddress ? ingresoAddress.value : ''}\n`;
-                formData += `  - Telefono:   ${ingresoPhone ? ingresoPhone.value : ''}\n\n`;
-                
-                formData += `[ DATOS DEL ACUDIENTE ]\n`;
-                formData += `  - Nombre:     ${acudienteName ? acudienteName.value : ''}\n`;
-                formData += `  - F. Nacim:   ${acudienteDOB ? acudienteDOB.value : ''}\n`;
-                formData += `  - Documento:  ${acudienteDoc ? acudienteDoc.value : ''}\n`;
+                				
+				formData += `┲ 🔰 DATOS DE INGRESO (INGRESO)\n`;
+				formData += `  ├─ ✍️Niño:        ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
+				formData += `  ├─ 📄Documento:  ${ingresoDocType ? ingresoDocType.value : ''} ${ingresoDocNumber ? ingresoDocNumber.value : ''}\n`;
+				formData += `  ├─ 👶Edad:       ${displayAge ? displayAge.value : ''}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${ingresoDOB ? ingresoDOB.value : ''}\n`;
+				formData += `  ├─ 📆F. Ingreso: ${ingresoDate ? ingresoDate.value : ''}\n`;
+				formData += `  ├─ ♀️Género:      ${ingresoGender ? ingresoGender.value : 'N/A'}\n`;
+				formData += `  ├─ 📌Direccion:  ${ingresoAddress ? ingresoAddress.value : ''}\n`;
+				formData += `  └─ ☎Teléfono:   ${ingresoPhone ? ingresoPhone.value : ''}\n\n`;
+				
+				formData += `  [ 🔀 DATOS DEL ACUDIENTE ]\n`;
+				formData += `  ├─ ✍️Nombre:     ${acudienteName ? acudienteName.value : ''}\n`;
+				formData += `  ├─ 📆F. Nacim:   ${acudienteDOB ? acudienteDOB.value : ''}\n`;
+				formData += `  └─ 📄Documento:  ${acudienteDoc ? acudienteDoc.value : ''}\n`;				
             }
             
             formData += `------------------------------------------\n`;
@@ -2187,7 +2373,7 @@
             return formData;
         }
 
-        // Form Submission
+        // Form Submission - ACTUALIZADO PARA GOOGLE APPS SCRIPT
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('noveltyForm');
             if (form) {
@@ -2278,28 +2464,51 @@
                         date: new Date().toISOString().split('T')[0]
                     };
 
+                    // Guardar información de ambos tipos si aplican
+                    if (isRetiro && isIngreso) {
+                        noveltyData.type = 'ambos';
+                        noveltyData.hasRetiro = true;
+                        noveltyData.hasIngreso = true;
+                    } else if (isRetiro) {
+                        noveltyData.type = 'retiro';
+                        noveltyData.hasRetiro = true;
+                        noveltyData.hasIngreso = false;
+                    } else if (isIngreso) {
+                        noveltyData.type = 'ingreso';
+                        noveltyData.hasRetiro = false;
+                        noveltyData.hasIngreso = true;
+                    }
+
+                    // Datos de RETIRO (si aplica)
                     if (isRetiro) {
                         const retiroDocType = document.getElementById('retiroDocType');
                         const retiroDocNumber = document.getElementById('retiroDocNumber');
                         const retiroFullName = document.getElementById('retiroFullName');
-                        const retiroGender = document.querySelector('input[name="retiroGender"]:checked');
+                        const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
                         const retiroDate = document.getElementById('retiroDate');
                         
-                        noveltyData.type = 'retiro';
-                        noveltyData.docType = retiroDocType ? retiroDocType.value : 'RC';
-                        noveltyData.document = retiroDocNumber ? retiroDocNumber.value : '';
-                        noveltyData.name = retiroFullName ? retiroFullName.value : '';
-                        noveltyData.gender = retiroGender ? retiroGender.value : '';
-                        noveltyData.retiroDate = retiroDate ? retiroDate.value : '';
+                        noveltyData.retiro = {
+                            docType: retiroDocType ? retiroDocType.value : 'RC',
+                            document: retiroDocNumber ? retiroDocNumber.value : '',
+                            name: retiroFullName ? retiroFullName.value : '',
+                            gender: retiroGender ? retiroGender.value : '',
+                            retiroDate: retiroDate ? retiroDate.value : ''
+                        };
+                        noveltyData.docType = noveltyData.retiro.docType;
+                        noveltyData.document = noveltyData.retiro.document;
+                        noveltyData.name = noveltyData.retiro.name;
+                        noveltyData.gender = noveltyData.retiro.gender;
+                        noveltyData.retiroDate = noveltyData.retiro.retiroDate;
                     }
 
+                    // Datos de INGRESO (si aplica)
                     if (isIngreso) {
                         const ingresoDocType = document.getElementById('ingresoDocType');
                         const ingresoDocNumber = document.getElementById('ingresoDocNumber');
                         const ingresoFullName = document.getElementById('ingresoFullName');
                         const ingresoDOB = document.getElementById('ingresoDOB');
                         const displayAge = document.getElementById('displayAge');
-                        const ingresoGender = document.querySelector('input[name="ingresoGender"]:checked');
+                        const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
                         const ingresoAddress = document.getElementById('ingresoAddress');
                         const ingresoPhone = document.getElementById('ingresoPhone');
                         const acudienteName = document.getElementById('acudienteName');
@@ -2307,22 +2516,38 @@
                         const acudienteDOB = document.getElementById('acudienteDOB');
                         const ingresoDate = document.getElementById('ingresoDate');
                         
-                        noveltyData.type = 'ingreso';
-                        noveltyData.docType = ingresoDocType ? ingresoDocType.value : 'RC';
-                        noveltyData.document = ingresoDocNumber ? ingresoDocNumber.value : '';
-                        noveltyData.name = ingresoFullName ? ingresoFullName.value : '';
-                        noveltyData.ingresoDOB = ingresoDOB ? ingresoDOB.value : '';
-                        noveltyData.age = displayAge ? displayAge.value : '';
-                        noveltyData.gender = ingresoGender ? ingresoGender.value : '';
-                        noveltyData.address = ingresoAddress ? ingresoAddress.value : '';
-                        noveltyData.phone = ingresoPhone ? ingresoPhone.value : '';
-                        noveltyData.acudiente = acudienteName ? acudienteName.value : '';
-                        noveltyData.acudienteDoc = acudienteDoc ? acudienteDoc.value : '';
-                        noveltyData.acudienteDOB = acudienteDOB ? acudienteDOB.value : '';
-                        noveltyData.ingresoDate = ingresoDate ? ingresoDate.value : '';
+                        noveltyData.ingreso = {
+                            docType: ingresoDocType ? ingresoDocType.value : 'RC',
+                            document: ingresoDocNumber ? ingresoDocNumber.value : '',
+                            name: ingresoFullName ? ingresoFullName.value : '',
+                            dob: ingresoDOB ? ingresoDOB.value : '',
+                            age: displayAge ? displayAge.value : '',
+                            gender: ingresoGender ? ingresoGender.value : '',
+                            address: ingresoAddress ? ingresoAddress.value : '',
+                            phone: ingresoPhone ? ingresoPhone.value : '',
+                            acudiente: acudienteName ? acudienteName.value : '',
+                            acudienteDoc: acudienteDoc ? acudienteDoc.value : '',
+                            acudienteDOB: acudienteDOB ? acudienteDOB.value : '',
+                            ingresoDate: ingresoDate ? ingresoDate.value : ''
+                        };
+                        noveltyData.ingresoDOB = noveltyData.ingreso.dob;
+                        noveltyData.age = noveltyData.ingreso.age;
+                        noveltyData.address = noveltyData.ingreso.address;
+                        noveltyData.phone = noveltyData.ingreso.phone;
+                        noveltyData.acudiente = noveltyData.ingreso.acudiente;
+                        noveltyData.acudienteDoc = noveltyData.ingreso.acudienteDoc;
+                        noveltyData.acudienteDOB = noveltyData.ingreso.acudienteDOB;
+                        noveltyData.ingresoDate = noveltyData.ingreso.ingresoDate;
+                        
+                        if (!isRetiro) {
+                            noveltyData.docType = noveltyData.ingreso.docType;
+                            noveltyData.document = noveltyData.ingreso.document;
+                            noveltyData.name = noveltyData.ingreso.name;
+                            noveltyData.gender = noveltyData.ingreso.gender;
+                        }
                     }
 
-                    // Preparar Formspree
+                    // Preparar Google Apps Script
                     const emailSubject = document.getElementById('emailSubject');
                     const hiddenFormattedData = document.getElementById('hiddenFormattedData');
                     
@@ -2347,36 +2572,29 @@
                         console.warn('No se pudo guardar en Firebase:', firebaseError.message);
                     }
 
-                    // Enviar a Formspree
+                    // Enviar a Google Apps Script
                     try {
-                        const response = await fetch(this.action, {
-                            method: 'POST',
-                            body: new FormData(this),
-                            headers: { 'Accept': 'application/json' }
-                        });
-                        
-                        if (response.ok) {
-                            let successMsg = 'Exito! La novedad ha sido enviada correctamente al correo';
-                            if (firebaseSaved) {
-                                successMsg += ' y guardada en la base de datos';
-                            } else {
-                                successMsg += ' (modo offline - Firebase no disponible)';
-                            }
-                            showToast(successMsg, 'success');
-                            
-                            this.reset();
-                            updateStyles();
-                            const sectionRetiro = document.getElementById('sectionRetiro');
-                            const sectionIngreso = document.getElementById('sectionIngreso');
-                            if (sectionRetiro) sectionRetiro.classList.add('hidden');
-                            if (sectionIngreso) sectionIngreso.classList.add('hidden');
+                        const fileInput = document.getElementById('fileInput');
+                        const formData = new FormData(this);
+                        const obj = Object.fromEntries(formData.entries());
+
+                        // Procesar archivo si existe
+                        if (fileInput && fileInput.files.length > 0) {
+                            const file = fileInput.files[0];
+                            const reader = new FileReader();
+                            reader.onload = async function() {
+                                obj.file_base64 = reader.result.split(',')[1];
+                                obj.file_type = file.type;
+                                obj.file_name = file.name;
+                                await enviarAGoogle(obj, btn);
+                            };
+                            reader.readAsDataURL(file);
                         } else {
-                            throw new Error('Error en respuesta de Formspree');
+                            await enviarAGoogle(obj, btn);
                         }
                     } catch (error) {
                         console.error('Error:', error);
-                        showToast("Error al enviar el correo. Intente nuevamente.", "error");
-                    } finally {
+                        showToast("Error al preparar el envío. Intente nuevamente.", "error");
                         if (btn) {
                             btn.disabled = false;
                             btn.innerHTML = '<span>Enviar Reporte Al Correo</span>';
@@ -2385,6 +2603,36 @@
                 });
             }
         });
+
+        async function enviarAGoogle(data, btn) {
+            const formBody = Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
+
+            try {
+                await fetch(document.getElementById('noveltyForm').action, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formBody
+                });
+
+                showToast('✅ ¡Éxito! Reporte enviado correctamente.', 'success');
+                
+                // Resetear formulario
+                document.getElementById('noveltyForm').reset();
+                updateStyles();
+                document.getElementById('sectionRetiro').classList.add('hidden');
+                document.getElementById('sectionIngreso').classList.add('hidden');
+                document.getElementById('displayAge').value = "Esperando fechas...";
+
+            } catch (error) {
+                showToast("❌ Error de conexión con Google Apps Script.", "error");
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Enviar Reporte Al Correo</span>';
+                }
+            }
+        }
     </script>
 </body>
 </html>
