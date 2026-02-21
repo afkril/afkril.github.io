@@ -1733,22 +1733,42 @@
         }
 
         function exportExcel() {
-            if (!currentData) return;
-            
-            const data = Object.entries(currentData).map(([name, item]) => ({
-                Producto: name,
-                Categoría: item.c,
-                Porción: `${item.qIndividual.toFixed(2)} ${item.u}`,
-                Cantidad: `${item.qTotal.toFixed(2)} ${item.u}`,
-                Sugerencia: redondearComercial(item.qTotal, item.u)
-            }));
+			if (!currentData) return;
+			
+			// Filtrar datos según los filtros activos (igual que en renderTable)
+			const filteredEntries = Object.entries(currentData).filter(([name, item]) => {
+				// Si "Todos" está activo, incluir todo
+				if (activeFilters.has('all')) return true;
+				// Si no, verificar si la categoría del item está en los filtros activos
+				return activeFilters.has(item.c);
+			});
+			
+			// Si no hay datos después de filtrar, mostrar advertencia
+			if (filteredEntries.length === 0) {
+				showToast('No hay productos en las categorías seleccionadas', 'error');
+				return;
+			}
+			
+			// Mapear solo los datos filtrados
+			const data = filteredEntries.map(([name, item]) => ({
+				Producto: name,
+				Categoría: item.c,
+				Porción: `${item.qIndividual.toFixed(2)} ${item.u}`,
+				Cantidad: `${item.qTotal.toFixed(2)} ${item.u}`,
+				Sugerencia: redondearComercial(item.qTotal, item.u)
+			}));
 
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Lista");
-            XLSX.writeFile(wb, `Lista_${currentRegional}_S${document.getElementById('sem').value}.xlsx`);
-            showToast('Excel descargado', 'success');
-        }
+			const ws = XLSX.utils.json_to_sheet(data);
+			const wb = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(wb, ws, "Lista");
+			
+			// Incluir info de filtros en el nombre del archivo
+			const semana = document.getElementById('sem').value;
+			let filtrosTexto = activeFilters.has('all') ? 'Todos' : Array.from(activeFilters).join('-');
+			XLSX.writeFile(wb, `Lista_${currentRegional}_S${semana}_${filtrosTexto}.xlsx`);
+			
+			showToast(`Excel exportado: ${filteredEntries.length} productos`, 'success');
+		}
 
         function exportPDF() {
             const element = document.getElementById('resultContainer');
