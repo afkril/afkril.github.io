@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Minutas - HCB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           VARIABLES BASE - Estilo LISTA_MERCADO_V2
+           ============================================ */
+        :root {
+            /* Fondos */
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --bg-elevated: #0f172a;
+            
+            /* Textos */
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            /* Bordes */
+            --border: #334155;
+            --border-light: #475569;
+            
+            /* Sombras */
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            
+            /* Acento semanas */
+            --accent: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.3);
+        }
+
+        /* ============================================
+           VARIABLES NEIVA - Azules
+           ============================================ */
+        [data-regional="neiva"] {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --primary-glow: rgba(37, 99, 235, 0.2);
+            --primary-transparent: rgba(37, 99, 235, 0.1);
+            
+            --gradient-primary: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            --gradient-header: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, transparent 100%);
+            --gradient-active: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            
+            --pattern-color: rgba(37, 99, 235, 0.03);
+        }
+
+        /* ============================================
+           VARIABLES GAITANA - Verdes
+           ============================================ */
+        [data-regional="gaitana"] {
+            --primary: #059669;
+            --primary-light: #10b981;
+            --primary-dark: #047857;
+            --primary-glow: rgba(5, 150, 105, 0.2);
+            --primary-transparent: rgba(5, 150, 105, 0.1);
+            
+            --gradient-primary: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            --gradient-header: linear-gradient(135deg, rgba(5, 150, 105, 0.15) 0%, transparent 100%);
+            --gradient-active: linear-gradient(135deg, #047857 0%, #059669 100%);
+            
+            --pattern-color: rgba(5, 150, 105, 0.03);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* ============================================
+           FONDO - Pattern sutil igual al original
+           ============================================ */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 25% 25%, var(--pattern-color) 2px, transparent 2px),
+                radial-gradient(circle at 75% 75%, var(--pattern-color) 2px, transparent 2px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+            animation: patternFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes patternFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10px, 10px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        /* ============================================
+           HEADER UNIFICADO - Estilo tarjeta
+           ============================================ */
+        .top-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 0 20px var(--primary-glow);
+            animation: logoPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 0 0 0 var(--primary-glow); }
+            50% { box-shadow: 0 0 20px 5px var(--primary-glow); }
+        }
+
+        .brand-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .brand-text p {
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            margin: 0;
+        }
+
+        /* Botón Lista de Mercados - Estilo similar al Generar */
+        .btn-mercados {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--gradient-primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .btn-mercados:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary-glow);
+        }
+
+        .btn-mercados-icon {
+            font-size: 1rem;
+        }
+
+        /* Controles */
+        .header-controls {
+            display: flex;
+            gap: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .control-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Selector Regional - Estilo botones V2 */
+        .regional-selector {
+            display: flex;
+            background: var(--bg-dark);
+            padding: 0.25rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            gap: 0.25rem;
+        }
+
+        .reg-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .reg-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+
+        .reg-btn.active {
+            background: var(--gradient-primary);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        /* Selector Semanas - Estilo day-chips */
+        .week-selector {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .week-btn {
+            padding: 0.5rem 0.875rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .week-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .week-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        /* ============================================
+           VISOR - Estilo table-container
+           ============================================ */
+        .viewer-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.5s ease 0.1s both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .viewer-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .toolbar-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toolbar-badge {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient-primary);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            animation: logoPulse 2s ease-in-out infinite;
+        }
+
+        .toolbar-text h2 {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .toolbar-text span {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .tool-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--primary);
+        }
+
+        /* Área de Imagen */
+        .image-stage {
+            position: relative;
+            background: var(--bg-dark);
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .image-wrapper {
+            position: relative;
+            max-width: 100%;
+            max-height: 700px;
+            padding: 1.5rem;
+        }
+
+        .minuta-image {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: scale(0.95);
+            border: 1px solid var(--border);
+        }
+
+        .minuta-image.loaded {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .minuta-image:hover {
+            transform: scale(1.02);
+            border-color: var(--primary-light);
+        }
+
+        /* Navegación */
+        .nav-arrows {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 1rem;
+            pointer-events: none;
+        }
+
+        .nav-arrow {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+            pointer-events: all;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-arrow:hover {
+            background: var(--primary-transparent);
+            border-color: var(--primary);
+            color: var(--primary-light);
+            transform: scale(1.1);
+        }
+
+        /* Indicadores */
+        .stage-indicators {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border-light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .indicator-dot:hover {
+            background: var(--text-secondary);
+            transform: scale(1.2);
+        }
+
+        .indicator-dot.active {
+            background: var(--accent);
+            transform: scale(1.3);
+        }
+
+        /* Estados */
+        .loading-state, .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.5;
+        }
+
+        /* Miniaturas */
+        .thumbnails-panel {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-dark);
+            border-top: 1px solid var(--border);
+            overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .thumbnails-panel::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .thumbnails-panel::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .thumb {
+            flex-shrink: 0;
+            width: 100px;
+            height: 70px;
+            border-radius: 0.5rem;
+            border: 2px solid var(--border);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-card);
+            position: relative;
+        }
+
+        .thumb:hover {
+            border-color: var(--border-light);
+            transform: translateY(-2px);
+        }
+
+        .thumb.active {
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .thumb:hover img, .thumb.active img {
+            opacity: 1;
+        }
+
+        .thumb-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            font-size: 0.625rem;
+            font-weight: 600;
+            padding: 0.25rem;
+            text-align: center;
+        }
+
+        /* Footer info */
+        .viewer-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--bg-dark);
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.75rem;
+            }
+
+            .header-main {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .header-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .regional-selector, .week-selector {
+                justify-content: center;
+            }
+
+            .image-stage {
+                min-height: 400px;
+            }
+
+            .nav-arrow {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .thumb {
+                width: 80px;
+                height: 56px;
+            }
+        }
+
+        /* Fullscreen */
+        .fullscreen .viewer-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            border-radius: 0;
+        }
+
+        .fullscreen .image-stage {
+            height: calc(100vh - 160px);
+        }
+    </style>
+</head>
+<body data-regional="neiva">
+    <div class="bg-pattern"></div>
+    
+    <div class="container">
+        <!-- HEADER UNIFICADO -->
+        <div class="top-bar">
+            <div class="header-main">
+                <div class="brand">
+                    <div class="brand-icon" id="brandIcon">🏔️</div>
+                    <div class="brand-text">
+                        <h1>Visualizador de Minutas</h1>
+                        <p id="brandSubtitle">Regional Neiva • Preparaciones semanales</p>
+                    </div>
+                </div>
+                
+                <a href="https://afkril.github.io/LISTA_MERCADO_V2.html" class="btn-mercados" target="_blank" rel="noopener noreferrer">
+                    <span class="btn-mercados-icon">🛒</span>
+                    <span>Lista de Mercados</span>
+                </a>
+            </div>
+
+            <div class="header-controls">
+                <div class="control-section">
+                    <span class="control-label">Regional</span>
+                    <div class="regional-selector">
+                        <button class="reg-btn active" onclick="cambiarRegional('neiva')" id="btnNeiva">
+                            🏔️ Neiva
+                        </button>
+                        <button class="reg-btn" onclick="cambiarRegional('gaitana')" id="btnGaitana">
+                            🌿 Gaitana
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <span class="control-label">Semana</span>
+                    <div class="week-selector">
+                        <button class="week-btn" onclick="cambiarSemana(1)">S1</button>
+                        <button class="week-btn" onclick="cambiarSemana(2)">S2</button>
+                        <button class="week-btn" onclick="cambiarSemana(3)">S3</button>
+                        <button class="week-btn" onclick="cambiarSemana(4)">S4</button>
+                        <button class="week-btn active" onclick="cambiarSemana(5)">S5</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISOR -->
+        <div class="viewer-container" id="viewerContainer">
+            <div class="viewer-toolbar">
+                <div class="toolbar-info">
+                    <div class="toolbar-badge" id="toolbarBadge">📋</div>
+                    <div class="toolbar-text">
+                        <h2 id="toolbarTitle">Minuta Regional Neiva</h2>
+                        <span id="toolbarSubtitle">Semana 5 • Menús 21-25</span>
+                    </div>
+                </div>
+                <div class="toolbar-actions">
+                    <button class="tool-btn" onclick="descargarImagen()" title="Descargar">💾</button>
+                    <button class="tool-btn" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
+                </div>
+            </div>
+
+            <div class="image-stage">
+                <div class="loading-state" id="loadingState">
+                    <div class="spinner"></div>
+                    <p>Cargando minuta...</p>
+                </div>
+
+                <div class="error-state" id="errorState" style="display: none;">
+                    <div class="error-icon">📷</div>
+                    <h3>Imagen no encontrada</h3>
+                    <p id="errorText">neiva_s5.jpg</p>
+                </div>
+
+                <div class="image-wrapper" id="imageWrapper" style="display: none;">
+                    <img class="minuta-image" id="minutaImage" src="" alt="Minuta">
+                </div>
+
+                <div class="nav-arrows">
+                    <button class="nav-arrow" onclick="semanaAnterior()">‹</button>
+                    <button class="nav-arrow" onclick="semanaSiguiente()">›</button>
+                </div>
+
+                <div class="stage-indicators" id="stageIndicators"></div>
+            </div>
+
+            <div class="thumbnails-panel" id="thumbnailsPanel"></div>
+
+            <div class="viewer-footer">
+                <span id="footerInfo">0 productos visibles</span>
+                <span id="footerTime">--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const estado = {
+            regional: 'neiva',
+            semana: 5,
+            cargando: false
+        };
+
+        const configSemanas = {
+            1: 'Menús 1-5', 2: 'Menús 6-10', 3: 'Menús 11-15',
+            4: 'Menús 16-20', 5: 'Menús 21-25'
+        };
+
+        const regionalesData = {
+            neiva: { icon: '🏔️', name: 'Regional Neiva' },
+            gaitana: { icon: '🌿', name: 'Regional Gaitana' }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            crearIndicadores();
+            crearThumbnails();
+            cargarImagen();
+            actualizarHora();
+            setInterval(actualizarHora, 60000);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') semanaAnterior();
+                if (e.key === 'ArrowRight') semanaSiguiente();
+                if (e.key === 'Escape' && document.fullscreenElement) toggleFullscreen();
+            });
+        });
+
+        function cambiarRegional(regional) {
+            if (estado.regional === regional) return;
+            estado.regional = regional;
+
+            document.body.setAttribute('data-regional', regional);
+            
+            document.getElementById('btnNeiva').classList.toggle('active', regional === 'neiva');
+            document.getElementById('btnGaitana').classList.toggle('active', regional === 'gaitana');
+
+            const data = regionalesData[regional];
+            document.getElementById('brandIcon').textContent = data.icon;
+            document.getElementById('brandSubtitle').textContent = `${data.name} • Preparaciones semanales`;
+            document.getElementById('toolbarBadge').textContent = data.icon;
+            document.getElementById('toolbarTitle').textContent = `Minuta ${data.name}`;
+
+            cargarImagen();
+            crearThumbnails();
+        }
+
+        function cambiarSemana(semana) {
+            if (estado.semana === semana) return;
+            estado.semana = semana;
+
+            document.querySelectorAll('.week-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', idx + 1 === semana);
+            });
+
+            actualizarIndicadores();
+            cargarImagen();
+        }
+
+        function cargarImagen() {
+            if (estado.cargando) return;
+            estado.cargando = true;
+
+            const archivo = `${estado.regional}_s${estado.semana}.jpg`;
+            const ruta = `./minutas/${archivo}`;
+
+            document.getElementById('loadingState').style.display = 'flex';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('imageWrapper').style.display = 'none';
+
+            const img = new Image();
+            img.onload = () => {
+                const minuta = document.getElementById('minutaImage');
+                minuta.src = ruta;
+                minuta.classList.remove('loaded');
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('imageWrapper').style.display = 'block';
+                
+                setTimeout(() => minuta.classList.add('loaded'), 50);
+
+                document.getElementById('toolbarSubtitle').textContent = 
+                    `Semana ${estado.semana} • ${configSemanas[estado.semana]}`;
+                document.getElementById('footerInfo').textContent = `Viendo: ${archivo}`;
+
+                estado.cargando = false;
+                actualizarThumbnails();
+            };
+
+            img.onerror = () => {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'flex';
+                document.getElementById('errorText').textContent = archivo;
+                estado.cargando = false;
+            };
+
+            img.src = ruta;
+        }
+
+        function semanaAnterior() {
+            cambiarSemana(estado.semana > 1 ? estado.semana - 1 : 5);
+        }
+
+        function semanaSiguiente() {
+            cambiarSemana(estado.semana < 5 ? estado.semana + 1 : 1);
+        }
+
+        function crearIndicadores() {
+            const container = document.getElementById('stageIndicators');
+            container.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                const dot = document.createElement('div');
+                dot.className = `indicator-dot ${i === estado.semana ? 'active' : ''}`;
+                dot.onclick = () => cambiarSemana(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function actualizarIndicadores() {
+            document.querySelectorAll('.indicator-dot').forEach((dot, idx) => {
+                dot.classList.toggle('active', idx + 1 === estado.semana);
+            });
+        }
+
+        function crearThumbnails() {
+            const container = document.getElementById('thumbnailsPanel');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= 5; i++) {
+                const thumb = document.createElement('div');
+                thumb.className = `thumb ${i === estado.semana ? 'active' : ''}`;
+                thumb.onclick = () => cambiarSemana(i);
+
+                const img = document.createElement('img');
+                img.src = `./minutas/${estado.regional}_s${i}.jpg`;
+                img.onerror = () => { thumb.style.opacity = '0.3'; };
+
+                const label = document.createElement('div');
+                label.className = 'thumb-label';
+                label.textContent = `S${i}`;
+
+                thumb.appendChild(img);
+                thumb.appendChild(label);
+                container.appendChild(thumb);
+            }
+        }
+
+        function actualizarThumbnails() {
+            document.querySelectorAll('.thumb').forEach((thumb, idx) => {
+                thumb.classList.toggle('active', idx + 1 === estado.semana);
+            });
+        }
+
+        function descargarImagen() {
+            const link = document.createElement('a');
+            link.href = `./minutas/${estado.regional}_s${estado.semana}.jpg`;
+            link.download = `${estado.regional}_s${estado.semana}.jpg`;
+            link.click();
+        }
+
+        function toggleFullscreen() {
+            const container = document.getElementById('viewerContainer');
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().then(() => document.body.classList.add('fullscreen'));
+            } else {
+                document.exitFullscreen().then(() => document.body.classList.remove('fullscreen'));
+            }
+        }
+
+        function actualizarHora() {
+            const now = new Date();
+            document.getElementById('footerTime').textContent = 
+                now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+        }
+    </script>
+</body>
+</html>
