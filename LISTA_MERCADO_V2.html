@@ -1,9 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minutas HCB</title>
+    <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTWludXRhcyBIQ0IiLCJzaG9ydF9uYW1lIjoiTUlOVVRBUyIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMGYxNzJhIiwidGhlbWVfY29sb3IiOiIjMjU2M2ViIn0=">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,6 +24,7 @@
             --warning: #f59e0b;
             --danger: #ef4444;
             --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --pattern-opacity: 0.03;
         }
 
         [data-theme="light"] {
@@ -31,7 +35,23 @@
             --text-secondary: #64748b;
             --border: #e2e8f0;
             --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            --pattern-opacity: 0.05;
         }
+
+        /* Tema Dinámico Neiva - Cálido */
+        body.reg-neiva {
+			--gradient-primary: linear-gradient(135deg, #0369a1 0%, #06b6d4 100%);
+			--pattern-color: rgba(6, 182, 212, var(--pattern-opacity));
+			--accent-warm: #0891b2;
+		}
+
+        /* Tema Dinámico Gaitana - Frío/Andino */
+        body.reg-gaitana {
+			--gradient-primary: linear-gradient(135deg, #047857 0%, #10b981 100%);
+			--pattern-color: rgba(16, 185, 129, var(--pattern-opacity));
+			--accent-warm: #34d399;
+			--glow-color: rgba(4, 120, 87, 0.3);
+		}
 
         * {
             margin: 0;
@@ -47,6 +67,29 @@
             overflow-x: hidden;
             transition: background 0.3s, color 0.3s;
             font-size: 13px;
+            position: relative;
+        }
+
+        /* Patrón geométrico de fondo */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 25% 25%, var(--pattern-color) 2px, transparent 2px),
+                radial-gradient(circle at 75% 75%, var(--pattern-color) 2px, transparent 2px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+            animation: patternFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes patternFloat {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(10px, 10px); }
         }
 
         /* Mobile Header */
@@ -63,6 +106,7 @@
             justify-content: space-between;
             padding: 0 1rem;
             z-index: 100;
+            backdrop-filter: blur(10px);
         }
 
         .hamburger {
@@ -157,16 +201,18 @@
         .logo-icon {
             width: 32px;
             height: 32px;
-            background: linear-gradient(135deg, var(--primary-neiva), #3b82f6);
+            background: var(--gradient-primary);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1rem;
+            animation: logoPulse 2s ease-in-out infinite;
         }
 
-        .reg-gaitana .logo-icon {
-            background: linear-gradient(135deg, var(--primary-gaitana), #10b981);
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px 5px rgba(37, 99, 235, 0.2); }
         }
 
         .nav-section {
@@ -204,6 +250,7 @@
         .nav-item:hover {
             background: var(--bg-hover);
             color: var(--text-primary);
+            transform: translateX(4px);
         }
 
         .nav-item.active {
@@ -239,12 +286,9 @@
         }
 
         .reg-btn.active {
-            background: var(--primary-neiva);
+            background: var(--gradient-primary);
             color: white;
-        }
-
-        .reg-gaitana .reg-btn.active {
-            background: var(--primary-gaitana);
+            transform: scale(1.02);
         }
 
         /* Theme Toggle en Sidebar */
@@ -303,6 +347,8 @@
             max-width: 1200px;
             margin-left: auto;
             margin-right: auto;
+            position: relative;
+            z-index: 1;
         }
 
         /* Config Panel Compacto */
@@ -312,6 +358,12 @@
             border-radius: 0.5rem;
             padding: 0.75rem;
             margin-bottom: 0.75rem;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .config-row {
@@ -343,6 +395,13 @@
             color: var(--text-primary);
             font-size: 0.8125rem;
             height: 32px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-neiva);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .days-selector {
@@ -369,14 +428,10 @@
         }
 
         .day-chip input:checked + .day-label {
-            background: var(--primary-neiva);
-            border-color: var(--primary-neiva);
+            background: var(--gradient-primary);
+            border-color: transparent;
             color: white;
-        }
-
-        .reg-gaitana .day-chip input:checked + .day-label {
-            background: var(--primary-gaitana);
-            border-color: var(--primary-gaitana);
+            transform: scale(1.05);
         }
 
         .btn {
@@ -394,12 +449,13 @@
         }
 
         .btn-primary {
-            background: var(--primary-neiva);
+            background: var(--gradient-primary);
             color: white;
         }
 
-        .reg-gaitana .btn-primary {
-            background: var(--primary-gaitana);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
 
         .btn-secondary {
@@ -408,65 +464,164 @@
             border: 1px solid var(--border);
         }
 
-        /* Category Filters */
-        .category-filters {
+        /* Toggle Modo Vista */
+        .view-toggle {
             display: flex;
-            gap: 0.375rem;
-            flex-wrap: wrap;
-            margin-bottom: 0.75rem;
-            align-items: center;
-            padding: 0.5rem;
-            background: var(--bg-card);
+            gap: 0.25rem;
+            background: var(--bg-dark);
+            padding: 0.25rem;
             border-radius: 0.5rem;
             border: 1px solid var(--border);
         }
 
-        .filter-label {
-            font-size: 0.65rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-right: 0.375rem;
-        }
-
-        .filter-chip {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.625rem;
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 1rem;
+        .view-btn {
+            padding: 0.375rem 0.75rem;
+            border: none;
+            border-radius: 0.375rem;
             cursor: pointer;
             font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
+            background: transparent;
+            color: var(--text-secondary);
             transition: all 0.2s;
-            user-select: none;
         }
 
-        .filter-chip.active {
-            background: rgba(37, 99, 235, 0.15);
+        .view-btn.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Buscador */
+        .search-container {
+            position: relative;
+            margin-bottom: 0.75rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
             border-color: var(--primary-neiva);
-            color: var(--primary-neiva);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .reg-gaitana .filter-chip.active {
-            background: rgba(5, 150, 105, 0.15);
-            border-color: var(--primary-gaitana);
-            color: var(--primary-gaitana);
+        .search-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
         }
 
-        .filter-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
+        /* Category Cards */
+        .category-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
         }
 
-        .dot-granos { background: #f59e0b; }
-        .dot-proteinas { background: #ef4444; }
-        .dot-lacteos { background: #3b82f6; }
-        .dot-panaderia { background: #8b5cf6; }
-        .dot-verduras { background: #10b981; }
-        .dot-frutas { background: #ec4899; }
+        .category-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--card-color);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .category-card.active {
+            border-color: var(--card-color);
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--card-color) 100%);
+            background-size: 100% 200%;
+        }
+
+        .category-card.active::before {
+            opacity: 0.1;
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+            z-index: 1;
+            transition: transform 0.3s;
+        }
+
+        .category-card:hover .category-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .category-name {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            z-index: 1;
+            color: var(--text-secondary);
+        }
+
+        .category-card.active .category-name {
+            color: var(--text-primary);
+        }
+
+        .category-count {
+            position: absolute;
+            top: 0.25rem;
+            right: 0.25rem;
+            background: var(--card-color);
+            color: white;
+            font-size: 0.625rem;
+            font-weight: 700;
+            padding: 0.125rem 0.375rem;
+            border-radius: 1rem;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s;
+        }
+
+        .category-card.active .category-count {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Colores por categoría */
+        .cat-granos { --card-color: #f59e0b; }
+        .cat-proteinas { --card-color: #ef4444; }
+        .cat-lacteos { --card-color: #3b82f6; }
+        .cat-verduras { --card-color: #10b981; }
+        .cat-frutas { --card-color: #ec4899; }
+        .cat-panaderia { --card-color: #8b5cf6; }
 
         /* Table Ultra Compacta */
         .table-container {
@@ -508,6 +663,13 @@
             align-items: center;
             justify-content: center;
             font-size: 0.8125rem;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            transform: scale(1.1);
         }
 
         table {
@@ -538,6 +700,29 @@
             vertical-align: middle;
         }
 
+        tr {
+            opacity: 0;
+            animation: fadeInRow 0.5s ease forwards;
+        }
+
+        /* Animación escalonada */
+        tr:nth-child(1) { animation-delay: 0ms; }
+        tr:nth-child(2) { animation-delay: 50ms; }
+        tr:nth-child(3) { animation-delay: 100ms; }
+        tr:nth-child(4) { animation-delay: 150ms; }
+        tr:nth-child(5) { animation-delay: 200ms; }
+        tr:nth-child(6) { animation-delay: 250ms; }
+        tr:nth-child(7) { animation-delay: 300ms; }
+        tr:nth-child(8) { animation-delay: 350ms; }
+        tr:nth-child(9) { animation-delay: 400ms; }
+        tr:nth-child(10) { animation-delay: 450ms; }
+        tr:nth-child(n+11) { animation-delay: 500ms; }
+
+        @keyframes fadeInRow {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
         tr:hover {
             background: rgba(255, 255, 255, 0.02);
         }
@@ -551,7 +736,7 @@
             align-items: center;
             gap: 0.5rem;
             font-weight: 500;
-            font-size: 0.8125rem;
+            font-size: 0.9rem;
         }
 
         .category-badge {
@@ -609,11 +794,28 @@
             color: var(--text-primary);
             font-size: 0.75rem;
             height: 24px;
+            transition: all 0.2s;
         }
 
         .input-entrega:focus {
             outline: none;
-            border-color: var(--primary-neiva);
+            border-color: var(--success);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        .input-entrega.saved {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        /* Vista Compacta */
+        .compact-view .amount-badge,
+        .compact-view .suggested-amount,
+        .compact-view th:nth-child(2),
+        .compact-view td:nth-child(2),
+        .compact-view th:nth-child(4),
+        .compact-view td:nth-child(4) {
+            display: none;
         }
 
         /* Modals */
@@ -673,6 +875,12 @@
             color: var(--text-secondary);
             font-size: 1.25rem;
             cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg);
+            color: var(--text-primary);
         }
 
         .modal-body {
@@ -726,16 +934,24 @@
             font-weight: 600;
             text-align: center;
             height: 36px;
+            transition: all 0.2s;
         }
 
         .matrix-input:focus {
             outline: none;
             border-color: var(--primary-neiva);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .matrix-input.changed {
             border-color: var(--warning);
             background: rgba(245, 158, 11, 0.05);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            50% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
         }
 
         .matrix-label {
@@ -766,6 +982,12 @@
         .change-indicator.has-changes {
             color: var(--warning);
             font-weight: 600;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         /* Snapshots */
@@ -783,6 +1005,12 @@
             background: var(--bg-dark);
             border-radius: 0.5rem;
             border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .snapshot-item:hover {
+            transform: translateX(4px);
+            border-color: var(--primary-neiva);
         }
 
         .snapshot-info h4 {
@@ -819,6 +1047,23 @@
             gap: 0.5rem;
             animation: slideIn 0.3s ease;
             font-size: 0.8125rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toast::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--success);
+            animation: progress 3s linear forwards;
+        }
+
+        @keyframes progress {
+            from { width: 100%; }
+            to { width: 0%; }
         }
 
         @keyframes slideIn {
@@ -830,12 +1075,47 @@
             text-align: center;
             padding: 2rem;
             color: var(--text-secondary);
+            animation: fadeIn 0.5s ease;
         }
 
         .empty-icon {
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
             opacity: 0.5;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .btn-primary.loading .spinner {
+            display: inline-block;
+        }
+
+        .btn-primary.loading .btn-text {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         @media print {
@@ -844,6 +1124,7 @@
             body { background: white; color: black; font-size: 11px; }
             .table-container { box-shadow: none; border: 1px solid #ddd; }
             td { height: 20px; padding: 0.125rem 0.375rem; }
+            tr { animation: none !important; opacity: 1 !important; }
         }
 
         @media (min-width: 1024px) {
@@ -864,6 +1145,28 @@
             .overlay {
                 display: none !important;
             }
+            .category-filters {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        /* Scrollbar estilizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-hover);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
         }
     </style>
 </head>
@@ -966,41 +1269,60 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary" onclick="generar()">
-                    <span>🚀</span> Generar
+                <button class="btn btn-primary" onclick="generar()" id="btnGenerar">
+                    <span class="spinner"></span>
+                    <span class="btn-text"><span>🚀</span> Generar</span>
                 </button>
             </div>
         </div>
 
+        <!-- Toggle Vista -->
+        <div class="view-toggle no-print" id="viewToggle" style="display: none; margin-bottom: 0.75rem;">
+            <button class="view-btn active" onclick="cambiarVista('detallada')">
+                <span>📋</span> Detallada
+            </button>
+            <button class="view-btn" onclick="cambiarVista('compacta')">
+                <span>📄</span> Compacta
+            </button>
+        </div>
+
+        <!-- Buscador -->
+        <div class="search-container no-print" id="searchContainer" style="display: none;">
+            <span class="search-icon">🔍</span>
+            <input type="search" class="search-input" id="buscador" placeholder="Buscar producto..." oninput="filtrarBusqueda(this.value)">
+        </div>
+
+        <!-- Category Cards -->
         <div class="category-filters no-print" id="catFilters" style="display: none;">
-            <span class="filter-label">Mostrar:</span>
-            <div class="filter-chip active" onclick="toggleCategory(this, 'all')">
-                <span class="filter-dot" style="background: currentColor;"></span>
-                Todos
+            <div class="category-card cat-granos active" onclick="toggleCategory(this, 'granos')">
+                <span class="category-icon">🌾</span>
+                <span class="category-name">Granos</span>
+                <span class="category-count" id="count-granos">0</span>
             </div>
-            <div class="filter-chip" onclick="toggleCategory(this, 'granos')">
-                <span class="filter-dot dot-granos"></span>
-                Granos
+            <div class="category-card cat-proteinas active" onclick="toggleCategory(this, 'proteinas')">
+                <span class="category-icon">🥩</span>
+                <span class="category-name">Proteínas</span>
+                <span class="category-count" id="count-proteinas">0</span>
             </div>
-            <div class="filter-chip" onclick="toggleCategory(this, 'proteinas')">
-                <span class="filter-dot dot-proteinas"></span>
-                Proteínas
+            <div class="category-card cat-lacteos active" onclick="toggleCategory(this, 'lacteos')">
+                <span class="category-icon">🥛</span>
+                <span class="category-name">Lácteos</span>
+                <span class="category-count" id="count-lacteos">0</span>
             </div>
-            <div class="filter-chip" onclick="toggleCategory(this, 'lacteos')">
-                <span class="filter-dot dot-lacteos"></span>
-                Lácteos
+            <div class="category-card cat-verduras active" onclick="toggleCategory(this, 'verduras')">
+                <span class="category-icon">🥬</span>
+                <span class="category-name">Verduras</span>
+                <span class="category-count" id="count-verduras">0</span>
             </div>
-            <div class="filter-chip" onclick="toggleCategory(this, 'verduras')">
-                <span class="filter-dot dot-verduras"></span>
-                Verduras
+            <div class="category-card cat-frutas active" onclick="toggleCategory(this, 'frutas')">
+                <span class="category-icon">🍎</span>
+                <span class="category-name">Frutas</span>
+                <span class="category-count" id="count-frutas">0</span>
             </div>
-            <div class="filter-chip" onclick="toggleCategory(this, 'frutas')">
-                <span class="filter-dot dot-frutas"></span>
-                Frutas
-            </div>
-            <div class="filter-chip" onclick="toggleCategory(this, 'panaderia')">
-                <span class="filter-dot dot-panaderia"></span>
-                Panadería
+            <div class="category-card cat-panaderia active" onclick="toggleCategory(this, 'panaderia')">
+                <span class="category-icon">🥖</span>
+                <span class="category-name">Panadería</span>
+                <span class="category-count" id="count-panaderia">0</span>
             </div>
         </div>
 
@@ -1298,10 +1620,13 @@
         let regionales = JSON.parse(JSON.stringify(baseDatabase));
         let currentRegional = 'neiva';
         let currentData = null;
-        let activeFilters = new Set(['all']);
+        let filteredData = null;
+        let activeFilters = new Set(['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
         let savedLists = JSON.parse(localStorage.getItem('smartMenu_savedLists')) || [];
         let snapshots = JSON.parse(localStorage.getItem('smartMenu_snapshots')) || {};
         let hasUnsavedChanges = false;
+        let currentView = 'detallada';
+        let searchTerm = '';
 
         // Theme Toggle
         function toggleTheme() {
@@ -1337,51 +1662,113 @@
             
             document.getElementById('resultContainer').style.display = 'none';
             document.getElementById('catFilters').style.display = 'none';
+            document.getElementById('viewToggle').style.display = 'none';
+            document.getElementById('searchContainer').style.display = 'none';
+        }
+
+        // Cambiar Vista
+        function cambiarVista(vista) {
+            currentView = vista;
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.view-btn').classList.add('active');
+            
+            const container = document.getElementById('resultContainer');
+            if (vista === 'compacta') {
+                container.classList.add('compact-view');
+            } else {
+                container.classList.remove('compact-view');
+            }
+        }
+
+        // Buscador
+        function filtrarBusqueda(term) {
+            searchTerm = term.toLowerCase();
+            if (currentData) {
+                applyFilters();
+            }
         }
 
         // Generation
         function generar() {
-            const sem = parseInt(document.getElementById('sem').value);
-            const personas = parseInt(document.getElementById('num-p').value) || 0;
-            const checks = document.querySelectorAll('.d-ch:checked');
+            const btn = document.getElementById('btnGenerar');
+            btn.classList.add('loading');
             
-            if(checks.length === 0) {
-                showToast('Selecciona al menos un día', 'error');
-                return;
-            }
+            setTimeout(() => {
+                const sem = parseInt(document.getElementById('sem').value);
+                const personas = parseInt(document.getElementById('num-p').value) || 0;
+                const checks = document.querySelectorAll('.d-ch:checked');
+                
+                if(checks.length === 0) {
+                    showToast('Selecciona al menos un día', 'error');
+                    btn.classList.remove('loading');
+                    return;
+                }
 
-            const db = regionales[currentRegional].db;
-            let resumen = {};
+                const db = regionales[currentRegional].db;
+                let resumen = {};
 
-            checks.forEach(ch => {
-                const mId = `m${((sem - 1) * 5) + parseInt(ch.value)}`;
-                db.forEach(p => {
-                    const baseIndividual = (p.g[mId] || 0);
-                    const cantTotal = baseIndividual * personas;
-                    if(cantTotal > 0) {
-                        if(!resumen[p.n]) {
-                            resumen[p.n] = { 
-                                qTotal: 0, 
-                                qIndividual: 0, 
-                                u: p.u, 
-                                c: p.c
-                            };
+                checks.forEach(ch => {
+                    const mId = `m${((sem - 1) * 5) + parseInt(ch.value)}`;
+                    db.forEach(p => {
+                        const baseIndividual = (p.g[mId] || 0);
+                        const cantTotal = baseIndividual * personas;
+                        if(cantTotal > 0) {
+                            if(!resumen[p.n]) {
+                                resumen[p.n] = { 
+                                    qTotal: 0, 
+                                    qIndividual: 0, 
+                                    u: p.u, 
+                                    c: p.c
+                                };
+                            }
+                            resumen[p.n].qTotal += cantTotal;
+                            resumen[p.n].qIndividual += baseIndividual;
                         }
-                        resumen[p.n].qTotal += cantTotal;
-                        resumen[p.n].qIndividual += baseIndividual;
-                    }
+                    });
                 });
-            });
 
-            currentData = resumen;
-            renderTable(resumen);
+                currentData = resumen;
+                updateCategoryCounts(resumen);
+                applyFilters();
+                
+                document.getElementById('resultContainer').style.display = 'block';
+                document.getElementById('catFilters').style.display = 'grid';
+                document.getElementById('viewToggle').style.display = 'flex';
+                document.getElementById('searchContainer').style.display = 'block';
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                
+                btn.classList.remove('loading');
+                showToast('Lista generada', 'success');
+            }, 500);
+        }
+
+        function updateCategoryCounts(data) {
+            const counts = { granos: 0, proteinas: 0, lacteos: 0, verduras: 0, frutas: 0, panaderia: 0 };
+            Object.values(data).forEach(item => {
+                if (counts[item.c] !== undefined) counts[item.c]++;
+            });
             
-            document.getElementById('resultContainer').style.display = 'block';
-            document.getElementById('catFilters').style.display = 'flex';
-            document.getElementById('totalItems').textContent = Object.keys(resumen).length;
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            Object.keys(counts).forEach(cat => {
+                const el = document.getElementById(`count-${cat}`);
+                if (el) el.textContent = counts[cat];
+            });
+        }
+
+        function applyFilters() {
+            if (!currentData) return;
             
-            showToast('Lista generada', 'success');
+            filteredData = {};
+            Object.entries(currentData).forEach(([name, item]) => {
+                const matchesCategory = activeFilters.has(item.c);
+                const matchesSearch = name.toLowerCase().includes(searchTerm);
+                
+                if (matchesCategory && matchesSearch) {
+                    filteredData[name] = item;
+                }
+            });
+            
+            renderTable(filteredData);
+            document.getElementById('totalItems').textContent = Object.keys(filteredData).length;
         }
 
         function renderTable(data) {
@@ -1401,13 +1788,11 @@
                 </thead>
                 <tbody>`;
 
-            sorted.forEach(([name, item]) => {
-                if (!activeFilters.has('all') && !activeFilters.has(item.c)) return;
-                
+            sorted.forEach(([name, item], index) => {
                 const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
                 const valorPrevio = localStorage.getItem(`entrega_${idRef}`) || "";
                 
-                html += `<tr>
+                html += `<tr style="animation-delay: ${index * 50}ms">
                     <td>
                         <div class="product-name">
                             <div class="category-badge badge-${item.c}"></div>
@@ -1418,8 +1803,8 @@
                     <td><strong>${item.qTotal.toFixed(2)} ${item.u}</strong></td>
                     <td><span class="suggested-amount">${redondearComercial(item.qTotal, item.u)}</span></td>
                     <td>
-                        <input type="text" class="input-entrega" value="${valorPrevio}" 
-                               oninput="localStorage.setItem('entrega_${idRef}', this.value)"
+                        <input type="text" class="input-entrega ${valorPrevio ? 'saved' : ''}" value="${valorPrevio}" 
+                               oninput="guardarEntrega('${idRef}', this.value, this)"
                                placeholder="...">
                     </td>
                 </tr>`;
@@ -1429,6 +1814,15 @@
             document.getElementById('resultado').innerHTML = html;
         }
 
+        function guardarEntrega(idRef, valor, input) {
+            localStorage.setItem(`entrega_${idRef}`, valor);
+            if (valor) {
+                input.classList.add('saved');
+            } else {
+                input.classList.remove('saved');
+            }
+        }
+
         const ORDER_CATEGORIES = { 
             "granos": 1, "lacteos": 2, "proteinas": 3, 
             "verduras": 4, "frutas": 5, "panaderia": 6 
@@ -1436,7 +1830,6 @@
 
         function redondearComercial(gramos, unidad) {
             if (unidad !== 'gr') {
-                // Para huevos y otras unidades, redondear al entero superior
                 if (unidad === 'und') return Math.ceil(gramos) + " und";
                 return Math.ceil(gramos) + " " + unidad;
             }
@@ -1452,32 +1845,21 @@
             return `${libras.toFixed(2)} Lb`;
         }
 
-        // Multi-Select Filter
-        function toggleCategory(btn, cat) {
-            if (cat === 'all') {
-                activeFilters = new Set(['all']);
-                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-                btn.classList.add('active');
+        // Multi-Select Filter con Cards
+        function toggleCategory(card, cat) {
+            card.classList.toggle('active');
+            
+            if (card.classList.contains('active')) {
+                activeFilters.add(cat);
             } else {
-                if (activeFilters.has('all')) {
-                    activeFilters.delete('all');
-                    document.querySelectorAll('.filter-chip')[0].classList.remove('active');
-                }
-                
-                if (activeFilters.has(cat)) {
-                    activeFilters.delete(cat);
-                    btn.classList.remove('active');
-                    if (activeFilters.size === 0) {
-                        activeFilters.add('all');
-                        document.querySelectorAll('.filter-chip')[0].classList.add('active');
-                    }
-                } else {
-                    activeFilters.add(cat);
-                    btn.classList.add('active');
-                }
+                activeFilters.delete(cat);
             }
             
-            if (currentData) renderTable(currentData);
+            applyFilters();
+            
+            // Animación de feedback
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => card.style.transform = '', 150);
         }
 
         // Gramaje Editor
@@ -1693,20 +2075,26 @@
             cambiarRegional(l.regional);
             document.getElementById('sem').value = l.semana;
             document.getElementById('num-p').value = l.personas;
-            activeFilters = new Set(l.filters || ['all']);
+            activeFilters = new Set(l.filters || ['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
             currentData = l.data;
             
-            document.querySelectorAll('.filter-chip').forEach((chip, idx) => {
-                chip.classList.remove('active');
-                if (idx === 0 && activeFilters.has('all')) chip.classList.add('active');
-                else if (idx > 0 && activeFilters.has(['all','granos','proteinas','lacteos','verduras','frutas','panaderia'][idx])) {
-                    chip.classList.add('active');
+            // Actualizar UI de filtros
+            document.querySelectorAll('.category-card').forEach(card => {
+                const cat = card.classList[1].replace('cat-', '');
+                if (activeFilters.has(cat)) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
                 }
             });
             
-            renderTable(currentData);
+            updateCategoryCounts(currentData);
+            applyFilters();
+            
             document.getElementById('resultContainer').style.display = 'block';
-            document.getElementById('catFilters').style.display = 'flex';
+            document.getElementById('catFilters').style.display = 'grid';
+            document.getElementById('viewToggle').style.display = 'flex';
+            document.getElementById('searchContainer').style.display = 'block';
             
             closeModal('saved');
             showToast('Lista cargada', 'success');
@@ -1727,50 +2115,43 @@
             document.querySelectorAll('.d-ch').forEach(ch => ch.checked = true);
             document.getElementById('resultContainer').style.display = 'none';
             document.getElementById('catFilters').style.display = 'none';
-            activeFilters = new Set(['all']);
+            activeFilters = new Set(['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
             currentData = null;
+            searchTerm = '';
+            document.getElementById('buscador').value = '';
             showToast('Formulario reiniciado', 'success');
         }
 
         function exportExcel() {
-			if (!currentData) return;
-			
-			// Filtrar datos según los filtros activos (igual que en renderTable)
-			const filteredEntries = Object.entries(currentData).filter(([name, item]) => {
-				// Si "Todos" está activo, incluir todo
-				if (activeFilters.has('all')) return true;
-				// Si no, verificar si la categoría del item está en los filtros activos
-				return activeFilters.has(item.c);
-			});
-			
-			// Si no hay datos después de filtrar, mostrar advertencia
-			if (filteredEntries.length === 0) {
-				showToast('No hay productos en las categorías seleccionadas', 'error');
-				return;
-			}
-			
-			// Mapear solo los datos filtrados
-			const data = filteredEntries.map(([name, item]) => ({
-				Producto: name,
-				Categoría: item.c,
-				Porción: `${item.qIndividual.toFixed(2)} ${item.u}`,
-				Cantidad: `${item.qTotal.toFixed(2)} ${item.u}`,
-				Sugerencia: redondearComercial(item.qTotal, item.u)
-			}));
+            if (!filteredData || Object.keys(filteredData).length === 0) {
+                showToast('No hay productos para exportar', 'error');
+                return;
+            }
+            
+            const data = Object.entries(filteredData).map(([name, item]) => ({
+                Producto: name,
+                Categoría: item.c,
+                Porción: `${item.qIndividual.toFixed(2)} ${item.u}`,
+                Cantidad: `${item.qTotal.toFixed(2)} ${item.u}`,
+                Sugerencia: redondearComercial(item.qTotal, item.u)
+            }));
 
-			const ws = XLSX.utils.json_to_sheet(data);
-			const wb = XLSX.utils.book_new();
-			XLSX.utils.book_append_sheet(wb, ws, "Lista");
-			
-			// Incluir info de filtros en el nombre del archivo
-			const semana = document.getElementById('sem').value;
-			let filtrosTexto = activeFilters.has('all') ? 'Todos' : Array.from(activeFilters).join('-');
-			XLSX.writeFile(wb, `Lista_${currentRegional}_S${semana}_${filtrosTexto}.xlsx`);
-			
-			showToast(`Excel exportado: ${filteredEntries.length} productos`, 'success');
-		}
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Lista");
+            
+            const semana = document.getElementById('sem').value;
+            const filtros = Array.from(activeFilters).join('-');
+            XLSX.writeFile(wb, `Lista_${currentRegional}_S${semana}_${filtros}.xlsx`);
+            showToast(`Excel exportado: ${data.length} productos`, 'success');
+        }
 
         function exportPDF() {
+            if (!filteredData || Object.keys(filteredData).length === 0) {
+                showToast('No hay productos para exportar', 'error');
+                return;
+            }
+            
             const element = document.getElementById('resultContainer');
             html2pdf().set({
                 margin: 10,
@@ -1802,12 +2183,38 @@
             const toast = document.createElement('div');
             toast.className = 'toast';
             if (type === 'error') toast.style.borderLeftColor = 'var(--danger)';
+            if (type === 'warning') toast.style.borderLeftColor = 'var(--warning)';
             
-            const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+            const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
             toast.innerHTML = `<span>${icons[type]}</span> ${message}`;
             
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                self.addEventListener('install', e => {
+                    e.waitUntil(self.skipWaiting());
+                });
+                self.addEventListener('activate', e => {
+                    e.waitUntil(self.clients.claim());
+                });
+                self.addEventListener('fetch', e => {
+                    e.respondWith(fetch(e.request).catch(() => {
+                        return new Response('Offline');
+                    }));
+                });
+            `)).then(() => {
+                console.log('Service Worker registrado');
+            }).catch(err => {
+                console.log('SW no registrado:', err);
+            });
         }
 
         // Init
