@@ -1,0 +1,2506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZAN|Tabla_Valores</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #0a0a0c;
+            --bg-card: rgba(30, 30, 35, 0.95);
+            --primary-gold: #d4af37;
+            --accent-cyan: #00f2ff;
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --danger: #ff4655;
+            --success: #00ff88;
+            --border-color: rgba(212, 175, 55, 0.3);
+            --warning: #ffaa00;
+            --sidebar-width: 280px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-body);
+            background-image: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #0a0a0c 100%);
+            color: var(--text-main);
+            font-size: 11px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, rgba(20,20,25,0.98) 0%, rgba(15,15,20,0.99) 100%);
+            border-right: 1px solid var(--border-color);
+            z-index: 3000;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed { transform: translateX(-100%); }
+        .sidebar.open { transform: translateX(0); }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-gold);
+            letter-spacing: 1px;
+        }
+
+        .nav-section {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-section-title {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 0 20px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-left-color: var(--primary-gold);
+        }
+
+        .nav-item i {
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+            color: var(--primary-gold);
+        }
+
+        .nav-item.danger { color: var(--danger); }
+        .nav-item.danger:hover {
+            background: rgba(255, 70, 85, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.2);
+        }
+
+        .user-mini-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-gold), var(--accent-cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+            font-size: 12px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-main);
+        }
+
+        .sync-status {
+            font-size: 9px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sync-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 5px var(--success);
+        }
+
+        .sync-dot.unsaved {
+            background: var(--danger);
+            box-shadow: 0 0 5px var(--danger);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .sidebar.collapsed + .main-wrapper { margin-left: 0; }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            background: var(--bg-card);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--accent-cyan);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .contract-info {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			background: rgba(0,0,0,0.3);
+			padding: 8px 15px;
+			border-radius: 20px;
+			border: 1px solid rgba(212, 175, 55, 0.3);
+		}
+
+        .contract-info select, .contract-info input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 12px;
+            outline: none;
+        }
+		.contract-info select option {
+			background-color: #1a1a2e !important;
+			color: #e2e8f0 !important;
+			padding: 8px;
+		}
+
+        .contract-info input {
+            width: 200px;
+            border-left: 1px solid rgba(255,255,255,0.1);
+            padding-left: 10px;
+        }
+
+        .week-selector {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			background: rgba(0,0,0,0.3);
+			padding: 5px 10px;
+			border-radius: 15px;
+		}
+
+		.week-selector select {
+			background-color: #1a1a2e !important;
+			color: var(--accent-cyan) !important;
+			border: 1px solid var(--accent-cyan);
+			border-radius: 6px;
+			padding: 4px 8px;
+			font-size: 12px;
+			font-weight: bold;
+			outline: none;
+			cursor: pointer;
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+			background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+			background-repeat: no-repeat;
+			background-position: right 6px center;
+			background-size: 14px;
+			padding-right: 25px;
+		}
+
+		.week-selector select option {
+			background-color: #1a1a2e !important;
+			color: #e2e8f0 !important;
+			padding: 8px;
+		}
+
+        /* ===== CONTENT ===== */
+        #app-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 15px;
+        }
+
+        /* ===== SEMANA CARD ===== */
+        .semana-card {
+            background: var(--bg-card);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .semana-card.excedido {
+            border: 2px solid var(--danger);
+            box-shadow: 0 0 15px rgba(255, 70, 85, 0.3);
+        }
+
+        .semana-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .btn-collapse {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .collapsed-btn { transform: rotate(-90deg); }
+
+        .semana-content {
+            max-height: 3000px;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+
+        .semana-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+
+        .semana-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .semana-info input {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #444;
+            color: white;
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        .presupuesto-display {
+            grid-column: span 2;
+            font-size: 1.4em;
+            text-align: center;
+            color: var(--success);
+            background: rgba(0,0,0,0.3);
+            padding: 8px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        /* ===== PROVIDER SECTIONS ===== */
+        .provider-section {
+            margin-bottom: 12px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .provider-header {
+            padding: 8px 12px;
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .provider-content {
+            padding: 8px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .provider-content.collapsed { display: none; }
+
+        .provider-total {
+            font-size: 10px;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-family: monospace;
+        }
+
+        /* ===== TABLAS DE PRODUCTOS ===== */
+        .product-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 3px;
+            font-size: 10px;
+        }
+
+        .product-table th {
+            padding: 4px 2px;
+            background: rgba(255,255,255,0.05);
+            font-size: 8px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            text-align: left;
+        }
+
+        .product-table td {
+            padding: 4px 2px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 3px;
+            vertical-align: top;
+        }
+
+        .product-table input {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #444;
+            color: white;
+            padding: 4px;
+            border-radius: 3px;
+            width: 100%;
+            font-size: 10px;
+        }
+
+        .col-factura { width: 20%; }
+        .col-producto { width: 40%; }
+        .col-cantidad { width: 15%; }
+        .col-total { width: 25%; }
+
+        .product-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .product-name { font-weight: 500; line-height: 1.2; }
+
+        .product-badges {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 7px;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-cl {
+            background: rgba(0, 242, 255, 0.2);
+            color: var(--accent-cyan);
+        }
+
+        .badge-sigla {
+            font-size: 8px;
+            padding: 2px 6px;
+        }
+
+        .total-input {
+            font-weight: bold;
+            text-align: right;
+            color: var(--accent-cyan) !important;
+            background: rgba(0, 242, 255, 0.05) !important;
+            border: 1px solid rgba(0, 242, 255, 0.2) !important;
+            font-size: 11px !important;
+        }
+
+        .distribuidora-row {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(212,175,55,0.1);
+            border-radius: 8px;
+            border: 1px solid var(--primary-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .distribuidora-value {
+            font-size: 1.2em;
+            color: var(--primary-gold);
+            font-weight: bold;
+            background: transparent;
+            border: none;
+            text-align: right;
+            width: 150px;
+        }
+
+        /* ===== DRAWERS ===== */
+        .drawer {
+            position: fixed;
+            top: 0;
+            width: 90%;
+            max-width: 450px;
+            height: 100%;
+            background: var(--bg-card);
+            z-index: 2000;
+            transition: 0.4s;
+            padding: 20px;
+            overflow-y: auto;
+            right: -500px;
+        }
+
+        .drawer.open { right: 0; }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            z-index: 1999;
+        }
+
+        /* ===== MODALS ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-container {
+            background: #151518;
+            width: 95%;
+            max-width: 700px;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--primary-gold);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-title {
+            color: var(--primary-gold);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ===== BOTONES ===== */
+        .btn {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+            font-size: 9px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-gold { background: var(--primary-gold); color: black; }
+        .btn-cyan { background: var(--accent-cyan); color: black; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-sm { padding: 4px 8px; font-size: 8px; }
+        .btn-block { width: 100%; justify-content: center; }
+
+        /* ===== CONFIGURACIÓN PROVEEDORES ===== */
+        .providers-list { margin-bottom: 20px; }
+
+        .provider-config-item {
+            display: grid;
+            grid-template-columns: 30px 1fr 40px 40px 35px;
+            gap: 8px;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid;
+        }
+
+        .provider-order {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .order-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .order-btn:hover { background: rgba(255,255,255,0.2); }
+        .order-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .provider-color-input {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .provider-name-input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            color: white;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .sigla-preview {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+            padding: 4px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .delete-btn {
+            background: rgba(255,70,85,0.1);
+            color: var(--danger);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 6px;
+        }
+
+        /* ===== CONFIGURACIÓN PRODUCTOS ===== */
+        .product-config-item {
+            display: grid;
+            grid-template-columns: 2fr 80px 120px 30px 35px;
+            gap: 8px;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid;
+        }
+
+        .product-config-item input, .product-config-item select {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            color: white;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+
+        .cl-checkbox {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 8px;
+            color: var(--text-dim);
+        }
+
+        /* ===== RESUMEN MEJORADO ===== */
+        .resumen-proveedor {
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .resumen-proveedor-header {
+            padding: 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .resumen-proveedor-content {
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .producto-resumen {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 10px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            align-items: center;
+        }
+
+        .producto-resumen:last-child { border-bottom: none; }
+
+        .cl-indicator {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 10px;
+        }
+
+        .cl-yes { background: rgba(0,255,136,0.2); color: var(--success); }
+        .cl-no { background: rgba(255,70,85,0.2); color: var(--danger); }
+
+        /* ===== AUTH ===== */
+        #auth-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-body);
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-box {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--primary-gold);
+            width: 90%;
+            max-width: 340px;
+            text-align: center;
+        }
+
+        .auth-box input {
+            width: 100%;
+            margin: 8px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            color: white;
+            border-radius: 6px;
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-wrapper { margin-left: 0; }
+            .grid-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- AUTH SCREEN -->
+    <!-- AUTH SCREEN -->
+	<div id="auth-screen">
+		<div class="auth-box" id="login-form">
+			<!-- LOGO AQUÍ -->
+			<div style="text-align: center; margin-bottom: 20px;">
+				<img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));">
+			</div>
+			
+			<h2 style="color:var(--primary-gold); margin-bottom:20px;">INGRESAR</h2>
+			<input type="text" id="user-login" placeholder="Usuario">
+			<input type="password" id="pass-login" placeholder="Contraseña">
+			<button class="btn btn-gold btn-block" style="margin-top:15px;" onclick="handleAuth('login')">
+				<i class="fa-solid fa-right-to-bracket"></i> INGRESAR
+			</button>
+			<p onclick="toggleAuth(true)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--accent-cyan);">
+				¿No tiene cuenta? Registrese aquí
+			</p>
+		</div>
+		
+		<div class="auth-box hidden" id="reg-form">
+			<!-- LOGO AQUÍ TAMBIÉN -->
+			<div style="text-align: center; margin-bottom: 20px;">
+				<img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));">
+			</div>
+			
+			<h2 style="color:var(--accent-cyan); margin-bottom:20px;">NUEVO REGISTRO</h2>
+			<input type="text" id="user-reg" placeholder="Usuario">
+			<input type="password" id="pass-reg" placeholder="Contraseña">
+			<button class="btn btn-cyan btn-block" style="margin-top:15px;" onclick="handleAuth('register')">
+				<i class="fa-solid fa-user-plus"></i> CREAR CUENTA
+			</button>
+			<p onclick="toggleAuth(false)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--primary-gold);">
+				Volver al login
+			</p>
+		</div>
+	</div>
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+			<img src="Logo/ZAN.png" alt="ZAN" style="width: 35px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));">
+			<span class="sidebar-title">|Tabla Valores</span>
+		</div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Gestión de Datos</div>
+            <a class="nav-item" onclick="guardarFirebase(); toggleSidebarMobile();">
+                <i class="fa-solid fa-cloud"></i>
+                <span>Guardar</span>
+            </a>
+            <a class="nav-item" onclick="toggleDrawer('archivo'); toggleSidebarMobile();">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Cargar</span>
+            </a>
+            <a class="nav-item" onclick="exportarCompleto(); toggleSidebarMobile();">
+                <i class="fa-solid fa-file-csv"></i>
+                <span>Exportar Excel</span>
+            </a>
+            <a class="nav-item" onclick="document.getElementById('import-input').click(); toggleSidebarMobile();">
+                <i class="fa-solid fa-file-import"></i>
+                <span>Importar Excel</span>
+            </a>
+            <input type="file" id="import-input" class="hidden" accept=".csv, .xlsx, .xls" onchange="importarExcel(this)">
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Configuración</div>
+            <a class="nav-item" onclick="toggleModal('modal-proveedores'); toggleSidebarMobile();">
+                <i class="fa-solid fa-truck-field"></i>
+                <span>Gestionar Proveedores</span>
+            </a>
+            <a class="nav-item" onclick="toggleModal('modal-productos'); toggleSidebarMobile();">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Listado de Productos</span>
+            </a>
+            <a class="nav-item" onclick="toggleDrawer('resumen'); toggleSidebarMobile();">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Resumen y Gráficos</span>
+            </a>
+            <a class="nav-item" onclick="toggleDrawer('contabilidad'); toggleSidebarMobile();">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Exportar Contabilidad</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Acciones</div>
+            <a class="nav-item danger" onclick="limpiarTodo(); toggleSidebarMobile();">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Limpiar Todo</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-mini-profile">
+                <div class="user-avatar" id="user-avatar">U</div>
+                <div>
+                    <div class="user-name" id="sidebar-username">Usuario</div>
+                    <div class="sync-status">
+                        <span class="sync-dot" id="sync-dot"></span>
+                        <span id="sync-text">Sincronizado</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-danger btn-block" onclick="cerrarSesion()">
+                <i class="fa-solid fa-right-from-bracket"></i> CERRAR SESIÓN
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-wrapper">
+        <div class="drawer-overlay" id="overlay" onclick="closeAllDrawers()"></div>
+        
+        <!-- TOP BAR -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                    <span>Menú</span>
+                </button>
+				
+				<img src="Logo/ZAN.png" alt="ZAN Logo" style="height: 30px; width: auto; filter: drop-shadow(0 0 5px var(--accent-cyan)); margin-right: 10px;">
+                
+                <div class="contract-info">
+                    <select id="main-mes" onchange="marcarCambio()">
+                        <option>Enero</option><option>Febrero</option><option>Marzo</option>
+                        <option>Abril</option><option>Mayo</option><option>Junio</option>
+                        <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+                        <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+                    </select>
+                    <input type="text" id="main-contrato" placeholder="ID Contrato" oninput="marcarCambio()">
+                </div>
+            </div>
+
+            <div class="week-selector">
+                <small>Semanas:</small>
+                <select id="num-semanas" onchange="cambiarSemanas()">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+        </header>
+
+        <div id="app-content">
+            <div id="main-grid" class="grid-container"></div>
+        </div>
+    </div>
+
+    <!-- DRAWERS -->
+    <div class="drawer" id="drawer-resumen" style="border-left: 2px solid var(--accent-cyan);">
+        <h3 style="color: var(--accent-cyan); margin-bottom: 15px;">
+            <i class="fa-solid fa-chart-pie"></i> ANÁLISIS DETALLADO
+        </h3>
+        <div id="summary-content"></div>
+        <canvas id="chartGasto" style="margin-top:20px; max-height: 200px;"></canvas>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+            <button class="btn btn-cyan" onclick="exportarCompleto()">
+                <i class="fa-solid fa-download"></i> EXCEL
+            </button>
+            <button class="btn btn-gold" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> IMPRIMIR
+            </button>
+        </div>
+    </div>
+
+    <div class="drawer" id="drawer-archivo" style="border-left: 2px solid var(--primary-gold);">
+        <h3 style="color: var(--primary-gold); margin-bottom: 15px;">
+            <i class="fa-solid fa-folder-open"></i> REGISTROS EN NUBE
+        </h3>
+        <div id="lista-archivos"></div>
+    </div>
+
+    <div class="drawer" id="drawer-contabilidad" style="border-left: 2px solid var(--success);">
+        <h3 style="color: var(--success); margin-bottom: 15px;">
+            <i class="fa-solid fa-calculator"></i> EXPORTACIÓN CONTABLE
+        </h3>
+        <div id="accounting-content"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+            <button class="btn btn-cyan" onclick="exportarContabilidadCSV()">
+                <i class="fa-solid fa-file-csv"></i> CSV
+            </button>
+            <button class="btn btn-gold" onclick="exportarContabilidadExcel()">
+                <i class="fa-solid fa-file-excel"></i> EXCEL
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: GESTIÓN DE PROVEEDORES -->
+    <div class="modal" id="modal-proveedores">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-truck-field"></i> GESTIÓN DE PROVEEDORES
+                </div>
+                <button class="btn btn-sm" onclick="toggleModal('modal-proveedores')" style="background:#333;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                <label style="font-size: 10px; color: var(--accent-cyan);">VALOR RACIÓN HCB ($):</label>
+                <input type="number" id="cfg-valor-cupo" value="8094" onchange="marcarCambio()" 
+                    style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; margin-top: 5px;">
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-size: 11px; color: var(--text-dim);">Ordene los proveedores:</span>
+                <button class="btn btn-cyan btn-sm" onclick="agregarProveedor()">
+                    <i class="fa-solid fa-plus"></i> NUEVO PROVEEDOR
+                </button>
+            </div>
+
+            <div class="providers-list" id="lista-proveedores"></div>
+
+            <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; margin: 15px 0; font-size: 9px; color: var(--text-dim);">
+                <i class="fa-solid fa-circle-info"></i> 
+                Las siglas se generan automáticamente. Use las flechas para reordenar. 
+                El orden se reflejará en las tablas y resúmenes.
+            </div>
+
+            <button class="btn btn-gold btn-block" onclick="guardarProveedores()">
+                <i class="fa-solid fa-check"></i> GUARDAR Y APLICAR CAMBIOS
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: LISTADO DE PRODUCTOS -->
+    <div class="modal" id="modal-productos">
+        <div class="modal-container" style="max-width: 800px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-list-check"></i> LISTADO DE PRODUCTOS BASE
+                </div>
+                <button class="btn btn-sm" onclick="toggleModal('modal-productos')" style="background:#333;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-size: 11px; color: var(--text-dim);">
+                    Total: <span id="total-productos" style="color: var(--accent-cyan); font-weight: bold;">0</span> productos
+                </span>
+                <button class="btn btn-cyan btn-sm" onclick="agregarProducto()">
+                    <i class="fa-solid fa-plus"></i> AGREGAR PRODUCTO
+                </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 80px 1.5fr 30px 35px; gap: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; margin-bottom: 8px; font-size: 8px; text-transform: uppercase; color: var(--text-dim); font-weight: bold;">
+                <span>Producto</span>
+                <span>Precio</span>
+                <span>Proveedor</span>
+                <span class="text-center">CL</span>
+                <span></span>
+            </div>
+
+            <div id="lista-productos-config" style="max-height: 400px; overflow-y: auto;"></div>
+
+            <button class="btn btn-gold btn-block" style="margin-top: 15px;" onclick="guardarProductos()">
+                <i class="fa-solid fa-check"></i> GUARDAR Y REGENERAR TABLAS
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIGURACIÓN FIREBASE =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyBlbJPanxmKNq0NK3R6mzhMpBxOzA_qP7E",
+            authDomain: "tabla-valores.firebaseapp.com",
+            databaseURL: "https://tabla-valores-default-rtdb.firebaseio.com",
+            projectId: "tabla-valores",
+            storageBucket: "tabla-valores.firebasestorage.app",
+            messagingSenderId: "880909110728",
+            appId: "1:880909110728:web:b3c12dd212022825ab04fd"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // ===== VARIABLES GLOBALES - INICIALIZACIÓN DINÁMICA =====
+        let currentUser = "";
+        let valorCupoBase = 8094;
+        let chartInstance = null;
+        let sidebarOpen = window.innerWidth > 768;
+
+        // PROVEEDORES - Array vacío inicial, se carga desde localStorage o se inicializa
+        let proveedores = [];
+
+        // PRODUCTOS - Array vacío inicial
+        let productosBase = [];
+
+        const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+
+        // ===== DATOS INICIALES (solo si no hay datos guardados) =====
+        const PROVEEDORES_INICIALES = [
+            { id: 'prov_1', nombre: 'Carnes Canaima', color: '#ff6b6b', orden: 0 },
+            { id: 'prov_2', nombre: 'Surcolac', color: '#4ecdc4', orden: 1 },
+            { id: 'prov_3', nombre: 'La granjita', color: '#ffe66d', orden: 2 },
+            { id: 'prov_4', nombre: 'Panaderia Pan al Piso', color: '#95e1d3', orden: 3 }
+        ];
+
+        const PRODUCTOS_INICIALES = [
+            { nombre: "Pollo Libra", precio: 9000, cl: true, proveedor: 'prov_3' },
+            { nombre: "Huevo Und", precio: 470, cl: true, proveedor: 'prov_3' },
+            { nombre: "Molleja Libra", precio: 7000, cl: true, proveedor: 'prov_3' },
+            { nombre: "Queso Libra", precio: 13000, cl: false, proveedor: 'prov_3' },
+            { nombre: "Carne Cerdo Kilo", precio: 20000, cl: true, proveedor: 'prov_1' },
+            { nombre: "Carne Res Kilo", precio: 26000, cl: true, proveedor: 'prov_1' },
+            { nombre: "Higado Kilo", precio: 18000, cl: true, proveedor: 'prov_1' },
+            { nombre: "Tilapia Kilo", precio: 24000, cl: true, proveedor: 'prov_1' },
+            { nombre: "Leche Litro", precio: 3792, cl: true, proveedor: 'prov_2' },
+            { nombre: "Yogurt Litro", precio: 5900, cl: true, proveedor: 'prov_2' },
+            { nombre: "Pan Und", precio: 600, cl: false, proveedor: 'prov_4' }
+        ];
+
+        // ===== UTILIDADES =====
+        function limpiarNum(t) {
+            return parseFloat(t.toString().replace(/[$.,]/g, "").replace(/[^0-9.-]+/g, "")) || 0;
+        }
+
+        function generarSigla(nombre) {
+            if (!nombre) return 'XXX';
+            const palabrasIgnorar = ['de', 'del', 'la', 'el', 'los', 'las', 'y', 'en', 'un', 'una', 'al'];
+            const palabras = nombre.toUpperCase()
+                .replace(/[^A-ZÁÉÍÓÚÜÑ\s]/g, '')
+                .split(/\s+/)
+                .filter(p => p.length > 0 && !palabrasIgnorar.includes(p.toLowerCase()));
+            
+            if (palabras.length === 0) return 'XXX';
+            if (palabras.length === 1) return palabras[0].substring(0, 3);
+            
+            let sigla = '';
+            for (let i = 0; i < Math.min(3, palabras.length); i++) {
+                sigla += palabras[i][0];
+            }
+            return sigla;
+        }
+
+        function getProveedoresOrdenados() {
+            return [...proveedores].sort((a, b) => a.orden - b.orden);
+        }
+
+        function getProveedorById(id) {
+            return proveedores.find(p => p.id === id);
+        }
+
+        function getProductosByProveedor(provId) {
+            return productosBase.filter(p => p.proveedor === provId);
+        }
+
+        function marcarCambio() {
+            const dot = document.getElementById('sync-dot');
+            const text = document.getElementById('sync-text');
+            if (dot) {
+                dot.classList.add('unsaved');
+                text.textContent = "Cambios pendientes";
+            }
+            guardarLocal();
+        }
+
+        function marcarSincronizado() {
+            const dot = document.getElementById('sync-dot');
+            const text = document.getElementById('sync-text');
+            if (dot) {
+                dot.classList.remove('unsaved');
+                text.textContent = "Sincronizado";
+            }
+        }
+
+        // ===== INICIALIZACIÓN =====
+        window.onload = () => {
+            const session = localStorage.getItem('elite_user');
+            if (session) iniciarApp(session);
+        };
+
+        // ===== AUTENTICACIÓN =====
+        function handleAuth(type) {
+            const uInput = document.getElementById(type === 'login' ? 'user-login' : 'user-reg');
+            const pInput = document.getElementById(type === 'login' ? 'pass-login' : 'pass-reg');
+            const u = uInput.value.trim().toLowerCase();
+            const p = pInput.value;
+
+            if (!u || !p) {
+                alert("Por favor ingrese usuario y contraseña");
+                return;
+            }
+
+            if (type === 'register') {
+                db.ref('users/' + u).once('value', s => {
+                    if (s.exists()) {
+                        alert("El usuario ya existe");
+                    } else {
+                        db.ref('users/' + u).set({ password: p });
+                        alert("Usuario registrado exitosamente");
+                        toggleAuth(false);
+                    }
+                });
+            } else {
+                db.ref('users/' + u).once('value', s => {
+                    if (s.exists() && s.val().password === p) {
+                        localStorage.setItem('elite_user', u);
+                        iniciarApp(u);
+                    } else {
+                        alert("Credenciales incorrectas");
+                    }
+                });
+            }
+        }
+
+        function iniciarApp(u) {
+            currentUser = u;
+            document.getElementById('sidebar-username').textContent = u.toUpperCase();
+            document.getElementById('user-avatar').textContent = u.charAt(0).toUpperCase();
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.add('collapsed');
+                sidebarOpen = false;
+            }
+
+            // Inicializar datos
+            inicializarDatos();
+        }
+
+        function inicializarDatos() {
+            const saved = localStorage.getItem(`elite_draft_${currentUser}`);
+            
+            if (saved) {
+                const data = JSON.parse(saved);
+                proveedores = data.proveedores || [];
+                productosBase = data.productosBase || [];
+                valorCupoBase = data.valorCupo || 8094;
+            } else {
+                // Primera vez: usar datos iniciales
+                proveedores = JSON.parse(JSON.stringify(PROVEEDORES_INICIALES));
+                productosBase = JSON.parse(JSON.stringify(PRODUCTOS_INICIALES));
+            }
+
+            // Verificar integridad: productos sin proveedor válido se asignan al primero
+            productosBase.forEach(p => {
+                if (!getProveedorById(p.proveedor)) {
+                    const primerProv = getProveedoresOrdenados()[0];
+                    if (primerProv) p.proveedor = primerProv.id;
+                }
+            });
+
+            cargarLocal();
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('elite_user');
+            location.reload();
+        }
+
+        function toggleAuth(toReg) {
+            document.getElementById('login-form').classList.toggle('hidden', toReg);
+            document.getElementById('reg-form').classList.toggle('hidden', !toReg);
+        }
+
+        // ===== SIDEBAR =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebarOpen = !sidebarOpen;
+
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open', sidebarOpen);
+                sidebar.classList.remove('collapsed');
+            } else {
+                sidebar.classList.toggle('collapsed', !sidebarOpen);
+                sidebar.classList.remove('open');
+            }
+        }
+
+        function toggleSidebarMobile() {
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('open');
+                sidebarOpen = false;
+            }
+        }
+
+        // ===== MODALES =====
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            const isOpen = modal.style.display === 'flex';
+            modal.style.display = isOpen ? 'none' : 'flex';
+
+            if (!isOpen) {
+                if (id === 'modal-proveedores') renderizarProveedores();
+                if (id === 'modal-productos') renderizarProductos();
+            }
+        }
+
+        // ===== PROVEEDORES =====
+        function renderizarProveedores() {
+            const cont = document.getElementById('lista-proveedores');
+            const ordenados = getProveedoresOrdenados();
+
+            cont.innerHTML = ordenados.map((p, idx) => {
+                const sigla = generarSigla(p.nombre);
+                const esPrimero = idx === 0;
+                const esUltimo = idx === ordenados.length - 1;
+
+                return `
+                    <div class="provider-config-item" style="border-color: ${p.color}" data-id="${p.id}">
+                        <div class="provider-order">
+                            <button class="order-btn" onclick="moverProveedor('${p.id}', -1)" ${esPrimero ? 'disabled' : ''}>
+                                <i class="fa-solid fa-chevron-up"></i>
+                            </button>
+                            <button class="order-btn" onclick="moverProveedor('${p.id}', 1)" ${esUltimo ? 'disabled' : ''}>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <input type="text" class="provider-name-input" value="${p.nombre}" 
+                            onchange="actualizarNombreProveedor('${p.id}', this.value)" placeholder="Nombre proveedor">
+                        <input type="color" class="provider-color-input" value="${p.color}" 
+                            onchange="actualizarColorProveedor('${p.id}', this.value)">
+                        <div class="sigla-preview" style="color: ${p.color}">${sigla}</div>
+                        <button class="delete-btn" onclick="eliminarProveedor('${p.id}')" title="Eliminar proveedor">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('cfg-valor-cupo').value = valorCupoBase;
+        }
+
+        function moverProveedor(id, direccion) {
+            const prov = proveedores.find(p => p.id === id);
+            const ordenados = getProveedoresOrdenados();
+            const idx = ordenados.findIndex(p => p.id === id);
+
+            if (direccion === -1 && idx > 0) {
+                const prev = ordenados[idx - 1];
+                const temp = prov.orden;
+                prov.orden = prev.orden;
+                prev.orden = temp;
+            } else if (direccion === 1 && idx < ordenados.length - 1) {
+                const next = ordenados[idx + 1];
+                const temp = prov.orden;
+                prov.orden = next.orden;
+                next.orden = temp;
+            }
+
+            renderizarProveedores();
+        }
+
+        function actualizarNombreProveedor(id, nuevoNombre) {
+            const prov = proveedores.find(p => p.id === id);
+            if (prov) {
+                const viejoNombre = prov.nombre;
+                prov.nombre = nuevoNombre;
+                
+                // Actualizar en tiempo real para mostrar nueva sigla
+                renderizarProveedores();
+                
+                // Nota: Los productos mantienen el ID del proveedor, no el nombre
+                // Así que no necesitan actualización
+            }
+        }
+
+        function actualizarColorProveedor(id, nuevoColor) {
+            const prov = proveedores.find(p => p.id === id);
+            if (prov) {
+                prov.color = nuevoColor;
+                renderizarProveedores();
+            }
+        }
+
+        function agregarProveedor() {
+            const colores = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#aa96da', '#fcbad3', '#a8e6cf', '#ffd93d', '#6bcb77'];
+            const colorRandom = colores[Math.floor(Math.random() * colores.length)];
+            const maxOrden = proveedores.length > 0 ? Math.max(...proveedores.map(p => p.orden)) : -1;
+
+            const nuevoId = 'prov_' + Date.now();
+            proveedores.push({
+                id: nuevoId,
+                nombre: 'Nuevo Proveedor',
+                color: colorRandom,
+                orden: maxOrden + 1
+            });
+
+            renderizarProveedores();
+        }
+
+        function eliminarProveedor(id) {
+            const prov = proveedores.find(p => p.id === id);
+            if (!prov) return;
+
+            // Verificar si tiene productos asignados
+            const productosAsignados = productosBase.filter(p => p.proveedor === id).length;
+            
+            let mensaje = productosAsignados > 0 
+                ? `¿Eliminar "${prov.nombre}"? Tiene ${productosAsignados} productos asignados que quedarán sin proveedor.`
+                : `¿Eliminar "${prov.nombre}"?`;
+
+            if (!confirm(mensaje)) return;
+
+            // Reasignar productos al primer proveedor restante o marcar como null
+            const proveedoresRestantes = proveedores.filter(p => p.id !== id);
+            const nuevoProveedorId = proveedoresRestantes.length > 0 ? proveedoresRestantes[0].id : null;
+
+            productosBase.forEach(p => {
+                if (p.proveedor === id) {
+                    p.proveedor = nuevoProveedorId;
+                }
+            });
+
+            // Eliminar proveedor
+            proveedores = proveedores.filter(p => p.id !== id);
+
+            // Reordenar
+            getProveedoresOrdenados().forEach((p, i) => p.orden = i);
+
+            renderizarProveedores();
+            renderizarProductos(); // Actualizar lista de productos si está abierta
+        }
+
+        function guardarProveedores() {
+            valorCupoBase = parseFloat(document.getElementById('cfg-valor-cupo').value) || 8094;
+            toggleModal('modal-proveedores');
+            initGrid(true);
+            marcarCambio();
+            alert('Proveedores guardados correctamente');
+        }
+
+        // ===== PRODUCTOS =====
+        function renderizarProductos() {
+            const cont = document.getElementById('lista-productos-config');
+            const provs = getProveedoresOrdenados();
+
+            if (provs.length === 0) {
+                cont.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:20px;">Primero debe crear al menos un proveedor</div>';
+                document.getElementById('total-productos').textContent = 0;
+                return;
+            }
+
+            cont.innerHTML = productosBase.map((p, i) => {
+                const prov = getProveedorById(p.proveedor);
+                const colorProv = prov ? prov.color : '#666';
+                
+                return `
+                    <div class="product-config-item" style="border-color: ${colorProv}">
+                        <input type="text" value="${p.nombre}" onchange="productosBase[${i}].nombre = this.value" placeholder="Nombre producto">
+                        <input type="number" value="${p.precio}" onchange="productosBase[${i}].precio = parseFloat(this.value) || 0" placeholder="Precio">
+                        <select onchange="productosBase[${i}].proveedor = this.value; renderizarProductos()" style="font-size: 9px;">
+                            ${provs.map(pr => `<option value="${pr.id}" ${p.proveedor === pr.id ? 'selected' : ''}>${generarSigla(pr.nombre)} - ${pr.nombre}</option>`).join('')}
+                        </select>
+                        <label class="cl-checkbox">
+                            <input type="checkbox" ${p.cl ? 'checked' : ''} onchange="productosBase[${i}].cl = this.checked">
+                            <span>CL</span>
+                        </label>
+                        <button class="delete-btn" onclick="eliminarProducto(${i})">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('total-productos').textContent = productosBase.length;
+        }
+
+        function agregarProducto() {
+            const provs = getProveedoresOrdenados();
+            const provDefault = provs.length > 0 ? provs[0].id : null;
+
+            productosBase.push({
+                nombre: 'Nuevo Producto',
+                precio: 0,
+                cl: false,
+                proveedor: provDefault
+            });
+            renderizarProductos();
+        }
+
+        function eliminarProducto(index) {
+            if (!confirm('¿Eliminar este producto?')) return;
+            productosBase.splice(index, 1);
+            renderizarProductos();
+        }
+
+        function guardarProductos() {
+            toggleModal('modal-productos');
+            initGrid(true);
+            marcarCambio();
+            alert('Productos guardados correctamente');
+        }
+
+        // ===== GRID PRINCIPAL =====
+        function initGrid(preservarDatos = false) {
+            if (preservarDatos) guardarLocal();
+
+            const grid = document.getElementById('main-grid');
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+
+            grid.innerHTML = '';
+
+            for (let s = 1; s <= semanas; s++) {
+                let providersHTML = '';
+                const provsOrdenados = getProveedoresOrdenados();
+
+                provsOrdenados.forEach(prov => {
+                    const productosProv = getProductosByProveedor(prov.id);
+                    if (productosProv.length === 0) return;
+
+                    const sigla = generarSigla(prov.nombre);
+                    const productosHTML = productosProv.map(p => {
+                        const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
+                        return `
+                            <tr>
+                                <td class="col-factura">
+                                    <input type="text" id="fac-${s}-${globalIdx}" placeholder="Factura" onchange="marcarCambio()">
+                                </td>
+                                <td class="col-producto">
+                                    <div class="product-info">
+                                        <span class="product-name">${p.nombre}</span>
+                                        <div class="product-badges">
+                                            ${p.cl ? '<span class="badge badge-cl">CL</span>' : ''}
+                                            <span class="badge badge-sigla" style="background: ${prov.color}30; color: ${prov.color};">${sigla}</span>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="punit-${s}-${globalIdx}" value="${p.precio}">
+                                </td>
+                                <td class="col-cantidad">
+                                    <input type="number" id="cant-${s}-${globalIdx}" placeholder="0" oninput="calcular(${s})" onchange="marcarCambio()">
+                                </td>
+                                <td class="col-total">
+                                    <input type="text" id="val-${s}-${globalIdx}" class="total-input" placeholder="$0" 
+                                        oninput="ajustarPrecioInverso(${s}, ${globalIdx})" onchange="marcarCambio()">
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+
+                    providersHTML += `
+                        <div class="provider-section" style="border-color: ${prov.color}30;">
+                            <div class="provider-header" style="background: linear-gradient(90deg, ${prov.color}20, ${prov.color}05); color: ${prov.color}; border-left: 3px solid ${prov.color};" 
+                                onclick="toggleProvider('${s}-${prov.id}')">
+                                <span>${prov.nombre} <small style="opacity:0.7;">(${sigla})</small></span>
+                                <span class="provider-total" id="prov-total-${s}-${prov.id}">$0</span>
+                            </div>
+                            <div class="provider-content" id="prov-content-${s}-${prov.id}">
+                                <table class="product-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-factura">FACTURA</th>
+                                            <th class="col-producto">PRODUCTO</th>
+                                            <th class="col-cantidad">CANT</th>
+                                            <th class="col-total">TOTAL</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${productosHTML}</tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                grid.innerHTML += `
+                    <div class="semana-card" id="card-${s}">
+                        <div class="semana-header">
+                            <button class="btn-collapse" id="btn-col-${s}" onclick="toggleWeek(${s})">
+                                <i class="fa-solid fa-chevron-down" id="icon-col-${s}"></i>
+                            </button>
+                            <div class="semana-title-group">
+                                <h3 style="color:var(--primary-gold); margin:0; font-size:14px;">SEMANA ${s}</h3>
+                            </div>
+                            <button class="btn btn-sm btn-danger" onclick="limpiarSemana(${s})" style="background:rgba(255,70,85,0.1);">
+                                <i class="fa-solid fa-broom"></i>
+                            </button>
+                        </div>
+
+                        <div id="content-${s}" class="semana-content">
+                            <div class="semana-info">
+                                <input type="number" id="dias-${s}" placeholder="Días" oninput="calcular(${s})" onchange="marcarCambio()">
+                                <input type="number" id="cupos-${s}" placeholder="Cupos" oninput="calcular(${s})" onchange="marcarCambio()">
+                                <div class="presupuesto-display" id="pres-${s}">$0</div>
+                            </div>
+
+                            ${providersHTML}
+
+                            <div class="distribuidora-row">
+                                <span class="distribuidora-value" style="color:var(--primary-gold); font-weight:bold;">DISTRIBUIDORA</span>
+                                <input type="text" id="dist-${s}" class="distribuidora-value" readonly value="$0">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (preservarDatos) {
+                const saved = localStorage.getItem(`elite_draft_${currentUser}`);
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    for (let s = 1; s <= semanas; s++) {
+                        if (!data.semanas || !data.semanas[s]) {
+                            calcular(s);
+                            continue;
+                        }
+
+                        const semData = data.semanas[s];
+                        if (document.getElementById(`dias-${s}`)) document.getElementById(`dias-${s}`).value = semData.d || "";
+                        if (document.getElementById(`cupos-${s}`)) document.getElementById(`cupos-${s}`).value = semData.c || "";
+
+                        productosBase.forEach((pb, i) => {
+                            const item = semData.items ? semData.items[pb.nombre] : null;
+                            if (item) {
+                                if (document.getElementById(`fac-${s}-${i}`)) document.getElementById(`fac-${s}-${i}`).value = item.f || "";
+                                if (document.getElementById(`cant-${s}-${i}`)) document.getElementById(`cant-${s}-${i}`).value = item.q || "";
+                                if (document.getElementById(`punit-${s}-${i}`)) document.getElementById(`punit-${s}-${i}`).value = item.p || pb.precio;
+                            }
+                        });
+                        calcular(s);
+                    }
+                }
+            } else {
+                actualizarResumen();
+            }
+        }
+
+        function cambiarSemanas() {
+            initGrid(true);
+            marcarCambio();
+        }
+
+        function toggleWeek(s) {
+            const content = document.getElementById(`content-${s}`);
+            const btn = document.getElementById(`btn-col-${s}`);
+            const icon = document.getElementById(`icon-col-${s}`);
+
+            const isCollapsed = content.classList.contains('collapsed');
+            if (isCollapsed) {
+                content.classList.remove('collapsed');
+                btn.classList.remove('collapsed-btn');
+                icon.className = "fa-solid fa-chevron-down";
+            } else {
+                content.classList.add('collapsed');
+                btn.classList.add('collapsed-btn');
+                icon.className = "fa-solid fa-chevron-right";
+            }
+        }
+
+        function toggleProvider(id) {
+            const content = document.getElementById(`prov-content-${id}`);
+            if (content) content.classList.toggle('collapsed');
+        }
+
+        function ajustarPrecioInverso(s, i) {
+            const totalIngresado = limpiarNum(document.getElementById(`val-${s}-${i}`).value);
+            const cantidad = parseFloat(document.getElementById(`cant-${s}-${i}`).value) || 0;
+            if (cantidad > 0) {
+                document.getElementById(`punit-${s}-${i}`).value = totalIngresado / cantidad;
+            }
+            calcular(s, false);
+        }
+
+        function calcular(s, formatear = true) {
+            const d = parseFloat(document.getElementById(`dias-${s}`).value) || 0;
+            const c = parseFloat(document.getElementById(`cupos-${s}`).value) || 0;
+            const pres = d * c * valorCupoBase;
+
+            const presElem = document.getElementById(`pres-${s}`);
+            if (presElem) presElem.textContent = formatter.format(pres);
+
+            let sumaProd = 0;
+
+            getProveedoresOrdenados().forEach(prov => {
+                const productosProv = getProductosByProveedor(prov.id);
+                let totalProv = 0;
+
+                productosProv.forEach(p => {
+                    const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
+                    if (globalIdx === -1) return;
+
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${globalIdx}`)?.value) || 0;
+                    const pUnit = parseFloat(document.getElementById(`punit-${s}-${globalIdx}`)?.value) || 0;
+                    const total = cant * pUnit;
+
+                    if (formatear) {
+                        const valInput = document.getElementById(`val-${s}-${globalIdx}`);
+                        if (valInput) valInput.value = formatter.format(total);
+                    }
+
+                    totalProv += total;
+                    sumaProd += total;
+                });
+
+                const provTotalElem = document.getElementById(`prov-total-${s}-${prov.id}`);
+                if (provTotalElem) provTotalElem.textContent = formatter.format(totalProv);
+            });
+
+            const dist = pres - sumaProd;
+            const distElem = document.getElementById(`dist-${s}`);
+            if (distElem) distElem.value = formatter.format(dist);
+
+            const card = document.getElementById(`card-${s}`);
+            if (card) card.classList.toggle('excedido', dist < 0);
+
+            actualizarResumen();
+        }
+
+        // ===== RESUMEN MEJORADO CON DETALLE POR PRODUCTO =====
+        function actualizarResumen() {
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            
+            // Estructura: { productoNombre: { cantidadTotal, valorTotal, cl, proveedorId } }
+            let resumenProductos = {};
+            
+            // Inicializar todos los productos
+            productosBase.forEach(p => {
+                resumenProductos[p.nombre] = {
+                    cantidad: 0,
+                    valor: 0,
+                    cl: p.cl,
+                    proveedor: p.proveedor,
+                    unidad: detectarUnidad(p.nombre)
+                };
+            });
+
+            let tPres = 0, tProdCL = 0, tProdOtros = 0;
+
+            // Recolectar datos de todas las semanas
+            for (let s = 1; s <= semanas; s++) {
+                const pVal = document.getElementById(`pres-${s}`);
+                if (pVal) tPres += limpiarNum(pVal.textContent);
+
+                productosBase.forEach((p, i) => {
+                    const cantInput = document.getElementById(`cant-${s}-${i}`);
+                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    
+                    if (!cantInput || !valInput) return;
+
+                    const cant = parseFloat(cantInput.value) || 0;
+                    const val = limpiarNum(valInput.value);
+
+                    if (cant > 0) {
+                        resumenProductos[p.nombre].cantidad += cant;
+                        resumenProductos[p.nombre].valor += val;
+
+                        if (p.cl) tProdCL += val;
+                        else tProdOtros += val;
+                    }
+                });
+            }
+
+            const tDist = tPres - tProdCL - tProdOtros;
+            const porcCL = tPres > 0 ? (tProdCL / tPres) * 100 : 0;
+            const ledColor = porcCL >= 30 ? 'var(--success)' : 'var(--danger)';
+
+            // Generar HTML por proveedor con detalle de productos
+            let htmlProveedores = '';
+            const provsOrdenados = getProveedoresOrdenados();
+
+            provsOrdenados.forEach(prov => {
+                const productosDelProv = Object.entries(resumenProductos)
+                    .filter(([nombre, datos]) => datos.proveedor === prov.id && (datos.cantidad > 0 || datos.valor > 0))
+                    .sort((a, b) => b[1].valor - a[1].valor); // Ordenar por valor descendente
+
+                if (productosDelProv.length === 0) return;
+
+                const totalProv = productosDelProv.reduce((sum, [_, datos]) => sum + datos.valor, 0);
+
+                htmlProveedores += `
+                    <div class="resumen-proveedor" style="border-color: ${prov.color}30;">
+                        <div class="resumen-proveedor-header" style="background: linear-gradient(90deg, ${prov.color}20, ${prov.color}05); color: ${prov.color}; border-left: 3px solid ${prov.color};"
+                            onclick="toggleResumenProv('resumen-prov-${prov.id}')">
+                            <span>${prov.nombre} (${generarSigla(prov.nombre)})</span>
+                            <span style="font-size:12px;">${formatter.format(totalProv)}</span>
+                        </div>
+                        <div class="resumen-proveedor-content" id="resumen-prov-${prov.id}">
+                            ${productosDelProv.map(([nombre, datos]) => `
+                                <div class="producto-resumen">
+                                    <span style="font-weight:500;">${nombre}</span>
+                                    <span style="color:var(--text-dim); font-size:10px;">
+                                        ${datos.cantidad.toLocaleString()} ${datos.unidad}
+                                    </span>
+                                    <span class="cl-indicator ${datos.cl ? 'cl-yes' : 'cl-no'}">
+                                        ${datos.cl ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>'}
+                                    </span>
+                                    <span style="color:var(--primary-gold); font-weight:bold; font-size:11px;">
+                                        ${formatter.format(datos.valor)}
+                                    </span>
+                                </div>
+                            `).join('')}
+                            <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1); text-align:right; font-size:11px; color:${prov.color};">
+                                Total ${generarSigla(prov.nombre)}: <strong>${formatter.format(totalProv)}</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const sumCont = document.getElementById('summary-content');
+            if (sumCont) {
+                sumCont.innerHTML = `
+                    <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid ${ledColor};">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <small style="color:var(--text-dim);">% COMPRAS LOCALES (CL)</small>
+                                <div style="font-size:1.3em; color:${ledColor}; font-weight:bold;">${porcCL.toFixed(1)}%</div>
+                            </div>
+                            <div style="width:15px; height:15px; background:${ledColor}; border-radius:50%; box-shadow:0 0 10px ${ledColor};"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:15px;">
+                        <small style="color:var(--text-dim); display:block; margin-bottom:8px; font-size:10px; text-transform:uppercase;">
+                            Detalle por Proveedor y Producto:
+                        </small>
+                        ${htmlProveedores}
+                    </div>
+
+                    <div style="background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; margin-top:15px;">
+                        <table style="width:100%; font-size:10px;">
+                            <tr style="color:var(--accent-cyan);">
+                                <td><b>TOTAL COMPRAS LOCALES (CL)</b></td>
+                                <td style="text-align:right;"><b>${formatter.format(tProdCL)}</b></td>
+                            </tr>
+                            <tr style="color:var(--text-dim);">
+                                <td>OTROS PRODUCTOS</td>
+                                <td style="text-align:right;">${formatter.format(tProdOtros)}</td>
+                            </tr>
+                            <tr style="color:var(--success);">
+                                <td><b>DISTRIBUIDORA</b></td>
+                                <td style="text-align:right;"><b>${formatter.format(tDist)}</b></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:10px;">
+                        <small style="color:var(--text-dim);">PRESUPUESTO TOTAL MES</small>
+                        <div style="font-size:1.5em; color:var(--primary-gold); font-weight:bold;">${formatter.format(tPres)}</div>
+                    </div>
+                `;
+            }
+
+            // Datos para gráfico
+            const datosGrafico = Object.entries(resumenProductos)
+                .filter(([_, datos]) => datos.valor > 0)
+                .map(([nombre, datos]) => ({
+                    nombre,
+                    valor: datos.valor,
+                    color: getProveedorById(datos.proveedor)?.color || '#666',
+                    provId: datos.proveedor
+                }));
+
+            renderChart(datosGrafico, tDist);
+        }
+
+        function detectarUnidad(nombreProducto) {
+            const nombre = nombreProducto.toLowerCase();
+            if (nombre.includes('kilo')) return 'kg';
+            if (nombre.includes('libra')) return 'lb';
+            if (nombre.includes('litro')) return 'lt';
+            if (nombre.includes('und') || nombre.includes('unidad')) return 'und';
+            return 'und';
+        }
+
+        function toggleResumenProv(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('collapsed');
+        }
+
+        function renderChart(datos, distVal) {
+            const canvas = document.getElementById('chartGasto');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            // Agrupar por proveedor para el gráfico
+            let porProveedor = {};
+            datos.forEach(d => {
+                if (!porProveedor[d.provId]) {
+                    porProveedor[d.provId] = 0;
+                }
+                porProveedor[d.provId] += d.valor;
+            });
+
+            const labels = Object.keys(porProveedor).map(id => generarSigla(getProveedorById(id)?.nombre || 'OTR'));
+            const data = Object.values(porProveedor);
+            const colors = Object.keys(porProveedor).map(id => getProveedorById(id)?.color || '#666');
+
+            if (distVal > 0) {
+                labels.push('DIST');
+                data.push(distVal);
+                colors.push('#00ff88');
+            }
+
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data, backgroundColor: colors }] },
+                options: {
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#fff', font: { size: 9 }, boxWidth: 10 } }
+                    }
+                }
+            });
+        }
+
+        // ===== EXPORTACIÓN COMPLETA MEJORADA =====
+        function exportarCompleto() {
+            const mes = document.getElementById('main-mes').value;
+            const contrato = document.getElementById('main-contrato').value;
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+
+            // Crear workbook
+            const wb = XLSX.utils.book_new();
+
+            // HOJA 1: DATOS GENERALES Y CONFIGURACIÓN
+            const wsConfig = [
+                ["ZAN - TABLA DE VALORES"],
+                ["Fecha exportación:", new Date().toLocaleString('es-CO')],
+                ["Mes:", mes],
+                ["Contrato:", contrato],
+                ["Semanas ejecutadas:", semanas],
+                ["Valor cupo HCB:", valorCupoBase],
+                [],
+                ["PROVEEDORES CONFIGURADOS"],
+                ["ID", "Nombre", "Sigla", "Color", "Orden"]
+            ];
+
+            getProveedoresOrdenados().forEach(p => {
+                wsConfig.push([p.id, p.nombre, generarSigla(p.nombre), p.color, p.orden]);
+            });
+
+            wsConfig.push([], ["PRODUCTOS CONFIGURADOS"], ["Nombre", "Precio", "ProveedorID", "Proveedor", "CL", "Unidad"]);
+            productosBase.forEach(p => {
+                const prov = getProveedorById(p.proveedor);
+                wsConfig.push([p.nombre, p.precio, p.proveedor, prov ? prov.nombre : 'SIN PROV', p.cl ? 'SI' : 'NO', detectarUnidad(p.nombre)]);
+            });
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsConfig), "Configuración");
+
+            // HOJA 2: DATOS POR SEMANA
+            const wsData = [["SEMANA", "DÍAS", "CUPOS", "PRESUPUESTO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "CL", "DISTRIBUIDORA"]];
+
+            for (let s = 1; s <= semanas; s++) {
+                const dias = document.getElementById(`dias-${s}`)?.value || "0";
+                const cupos = document.getElementById(`cupos-${s}`)?.value || "0";
+                const presupuesto = limpiarNum(document.getElementById(`pres-${s}`)?.textContent || "0");
+                const distribuidora = limpiarNum(document.getElementById(`dist-${s}`)?.value || "0");
+
+                getProveedoresOrdenados().forEach(prov => {
+                    const productosProv = getProductosByProveedor(prov.id);
+                    productosProv.forEach(p => {
+                        const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
+                        const fac = document.getElementById(`fac-${s}-${globalIdx}`)?.value || "";
+                        const cant = parseFloat(document.getElementById(`cant-${s}-${globalIdx}`)?.value) || 0;
+                        const valUnit = parseFloat(document.getElementById(`punit-${s}-${globalIdx}`)?.value) || p.precio;
+                        const valTotal = limpiarNum(document.getElementById(`val-${s}-${globalIdx}`)?.value || "0");
+
+                        if (cant > 0 || fac) {
+                            wsData.push([
+                                s, dias, cupos, presupuesto,
+                                prov.nombre, generarSigla(prov.nombre), fac, p.nombre,
+                                cant, valUnit, valTotal, p.cl ? 'SI' : 'NO',
+                                distribuidora
+                            ]);
+                        }
+                    });
+                });
+            }
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Datos Semanales");
+
+            // HOJA 3: RESUMEN POR PROVEEDOR
+            const wsResumen = [["PROVEEDOR", "SIGLA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "CL", "% DEL TOTAL"]];
+            
+            const totalesPorProducto = calcularTotalesPorProducto(semanas);
+            const totalGeneral = Object.values(totalesPorProducto).reduce((sum, p) => sum + p.valor, 0);
+
+            getProveedoresOrdenados().forEach(prov => {
+                const productosProv = Object.entries(totalesPorProducto)
+                    .filter(([_, datos]) => datos.proveedor === prov.id && datos.cantidad > 0);
+
+                productosProv.forEach(([nombre, datos]) => {
+                    const porcentaje = totalGeneral > 0 ? (datos.valor / totalGeneral * 100).toFixed(2) : 0;
+                    wsResumen.push([
+                        prov.nombre,
+                        generarSigla(prov.nombre),
+                        nombre,
+                        datos.unidad,
+                        datos.cantidad,
+                        datos.valor,
+                        datos.cl ? 'SI' : 'NO',
+                        porcentaje + '%'
+                    ]);
+                });
+            });
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumen), "Resumen por Producto");
+
+            XLSX.writeFile(wb, `ZAN_Completo_${mes}_${contrato}.xlsx`);
+        }
+
+        function calcularTotalesPorProducto(semanas) {
+            let totales = {};
+            
+            productosBase.forEach(p => {
+                totales[p.nombre] = {
+                    cantidad: 0,
+                    valor: 0,
+                    cl: p.cl,
+                    proveedor: p.proveedor,
+                    unidad: detectarUnidad(p.nombre)
+                };
+            });
+
+            for (let s = 1; s <= semanas; s++) {
+                productosBase.forEach((p, i) => {
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+                    
+                    if (cant > 0) {
+                        totales[p.nombre].cantidad += cant;
+                        totales[p.nombre].valor += val;
+                    }
+                });
+            }
+
+            return totales;
+        }
+
+        // ===== EXPORTACIÓN CONTABILIDAD =====
+        function exportarContabilidadCSV() {
+            const datos = generarDatosContabilidad();
+            
+            let csv = "FECHA;MES;CONTRATO;SEMANA;PROVEEDOR;SIGLA;FACTURA;PRODUCTO;UNIDAD;CANTIDAD;VALOR_UNITARIO;VALOR_TOTAL;COMPRA_LOCAL\n";
+            const fecha = new Date().toLocaleDateString('es-CO');
+
+            datos.facturas.forEach(f => {
+                csv += `${fecha};${datos.mes};${datos.contrato};${f.semana};${f.proveedor};${f.sigla};${f.factura};${f.producto};${f.unidad};${f.cantidad};${f.valorUnitario};${f.valorTotal};${f.compraLocal}\n`;
+            });
+
+            csv += "\nRESUMEN POR PROVEEDOR\n";
+            csv += "PROVEEDOR;SIGLA;TOTAL_FACTURAS;CANTIDAD_ITEMS;MONTO_TOTAL\n";
+            
+            for (let provId in datos.porProveedor) {
+                const prov = datos.porProveedor[provId];
+                if (prov.total > 0) {
+                    csv += `${prov.nombre};${prov.sigla};${prov.facturas.size};${prov.items};${prov.total}\n`;
+                }
+            }
+
+            csv += `\nTOTAL GENERAL;;;${datos.totalItems};${datos.montoTotal}\n`;
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Contabilidad_${datos.mes}_${datos.contrato}.csv`;
+            link.click();
+        }
+
+        function exportarContabilidadExcel() {
+            const datos = generarDatosContabilidad();
+            const wb = XLSX.utils.book_new();
+
+            // Hoja 1: Detalle
+            const wsData = [["FECHA", "MES", "CONTRATO", "SEMANA", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "UNIDAD", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "COMPRA_LOCAL"]];
+            const fecha = new Date().toLocaleDateString('es-CO');
+            
+            datos.facturas.forEach(f => {
+                wsData.push([fecha, datos.mes, datos.contrato, f.semana, f.proveedor, f.sigla, f.factura, f.producto, f.unidad, f.cantidad, f.valorUnitario, f.valorTotal, f.compraLocal]);
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Detalle");
+
+            // Hoja 2: Resumen por proveedor
+            const wsRes = [["PROVEEDOR", "SIGLA", "TOTAL_FACTURAS", "CANTIDAD_ITEMS", "MONTO_TOTAL"]];
+            for (let provId in datos.porProveedor) {
+                const prov = datos.porProveedor[provId];
+                if (prov.total > 0) wsRes.push([prov.nombre, prov.sigla, prov.facturas.size, prov.items, prov.total]);
+            }
+            wsRes.push(["TOTAL GENERAL", "", "", datos.totalItems, datos.montoTotal]);
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsRes), "Resumen");
+
+            // Hoja 3: Resumen por producto
+            const wsProd = [["PROVEEDOR", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "CL"]];
+            datos.porProducto.forEach(p => {
+                wsProd.push([p.proveedor, p.producto, p.unidad, p.cantidad, p.valor, p.cl]);
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsProd), "Por Producto");
+
+            XLSX.writeFile(wb, `Contabilidad_${datos.mes}_${datos.contrato}.xlsx`);
+        }
+
+        function generarDatosContabilidad() {
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            const mes = document.getElementById('main-mes').value;
+            const contrato = document.getElementById('main-contrato').value;
+
+            let datos = {
+                mes, contrato, totalFacturas: 0, montoTotal: 0, totalItems: 0,
+                porProveedor: {}, porProducto: [], facturas: []
+            };
+
+            getProveedoresOrdenados().forEach(prov => {
+                datos.porProveedor[prov.id] = {
+                    nombre: prov.nombre,
+                    sigla: generarSigla(prov.nombre),
+                    total: 0,
+                    facturas: new Set(),
+                    items: 0
+                };
+            });
+
+            // Recolectar datos
+            for (let s = 1; s <= semanas; s++) {
+                productosBase.forEach((p, i) => {
+                    const fac = document.getElementById(`fac-${s}-${i}`)?.value?.trim();
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+
+                    if (fac && cant > 0) {
+                        datos.totalFacturas++;
+                        datos.totalItems += cant;
+                        datos.montoTotal += val;
+
+                        const prov = datos.porProveedor[p.proveedor];
+                        if (prov) {
+                            prov.total += val;
+                            prov.facturas.add(fac);
+                            prov.items += cant;
+                        }
+
+                        datos.facturas.push({
+                            semana: s,
+                            proveedor: getProveedorById(p.proveedor)?.nombre || 'SIN PROV',
+                            sigla: generarSigla(getProveedorById(p.proveedor)?.nombre || 'SIN'),
+                            factura: fac,
+                            producto: p.nombre,
+                            unidad: detectarUnidad(p.nombre),
+                            cantidad: cant,
+                            valorUnitario: p.precio,
+                            valorTotal: val,
+                            compraLocal: p.cl ? 'SI' : 'NO'
+                        });
+                    }
+                });
+            }
+
+            // Totales por producto
+            let prodMap = {};
+            productosBase.forEach(p => {
+                prodMap[p.nombre] = {
+                    producto: p.nombre,
+                    proveedor: getProveedorById(p.proveedor)?.nombre || 'SIN PROV',
+                    unidad: detectarUnidad(p.nombre),
+                    cantidad: 0,
+                    valor: 0,
+                    cl: p.cl ? 'SI' : 'NO'
+                };
+            });
+
+            for (let s = 1; s <= semanas; s++) {
+                productosBase.forEach((p, i) => {
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+                    if (cant > 0) {
+                        prodMap[p.nombre].cantidad += cant;
+                        prodMap[p.nombre].valor += val;
+                    }
+                });
+            }
+
+            datos.porProducto = Object.values(prodMap).filter(p => p.cantidad > 0);
+
+            return datos;
+        }
+
+        // ===== IMPORTACIÓN MEJORADA =====
+        function importarExcel(input) {
+            if (!input.files[0]) return;
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
+
+                    // Buscar hoja de configuración
+                    const wsConfig = workbook.Sheets["Configuración"];
+                    if (wsConfig) {
+                        const configData = XLSX.utils.sheet_to_json(wsConfig, { header: 1 });
+
+                        // Leer proveedores (buscar sección PROVEEDORES CONFIGURADOS)
+                        let enProveedores = false;
+                        let enProductos = false;
+                        let nuevosProveedores = [];
+                        let nuevosProductos = [];
+
+                        configData.forEach((fila, idx) => {
+                            if (!fila || fila.length === 0) {
+                                enProveedores = false;
+                                enProductos = false;
+                                return;
+                            }
+
+                            const primeraCelda = String(fila[0]).toUpperCase();
+
+                            if (primeraCelda.includes("PROVEEDORES CONFIGURADOS")) {
+                                enProveedores = true;
+                                return;
+                            }
+                            if (primeraCelda.includes("PRODUCTOS CONFIGURADOS")) {
+                                enProveedores = false;
+                                enProductos = true;
+                                return;
+                            }
+
+                            if (enProveedores && fila[0] && fila[0] !== "ID") {
+                                // [ID, Nombre, Sigla, Color, Orden]
+                                nuevosProveedores.push({
+                                    id: fila[0],
+                                    nombre: fila[1],
+                                    color: fila[3] || '#666',
+                                    orden: parseInt(fila[4]) || 0
+                                });
+                            }
+
+                            if (enProductos && fila[0] && fila[0] !== "Nombre") {
+                                // [Nombre, Precio, ProveedorID, Proveedor, CL, Unidad]
+                                nuevosProductos.push({
+                                    nombre: fila[0],
+                                    precio: parseFloat(fila[1]) || 0,
+                                    proveedor: fila[2], // ID del proveedor
+                                    cl: fila[4] === 'SI'
+                                });
+                            }
+
+                            // Leer datos generales
+                            if (primeraCelda === "MES:") {
+                                document.getElementById('main-mes').value = fila[1];
+                            }
+                            if (primeraCelda === "CONTRATO:") {
+                                document.getElementById('main-contrato').value = fila[1];
+                            }
+                            if (primeraCelda === "SEMANAS EJECUTADAS:") {
+                                document.getElementById('num-semanas').value = fila[1];
+                            }
+                            if (primeraCelda === "VALOR CUPO HCB:") {
+                                valorCupoBase = parseFloat(fila[1]) || 8094;
+                            }
+                        });
+
+                        // Aplicar configuración si se encontró
+                        if (nuevosProveedores.length > 0) {
+                            proveedores = nuevosProveedores;
+                        }
+                        if (nuevosProductos.length > 0) {
+                            productosBase = nuevosProductos;
+                        }
+                    }
+
+                    // Leer datos semanales (hoja "Datos Semanales" o primera hoja)
+                    const wsData = workbook.Sheets["Datos Semanales"] || workbook.Sheets[workbook.SheetNames[0]];
+                    if (wsData) {
+                        const rows = XLSX.utils.sheet_to_json(wsData, { header: 1 });
+
+                        let maxSem = 0;
+                        rows.forEach(fila => {
+                            if (fila[0] && !isNaN(fila[0])) {
+                                maxSem = Math.max(maxSem, parseInt(fila[0]));
+                            }
+                        });
+
+                        if (maxSem > 0) {
+                            document.getElementById('num-semanas').value = maxSem;
+                            initGrid(false);
+                        }
+
+                        // Procesar filas
+                        rows.forEach(fila => {
+                            if (!fila || fila.length < 8) return;
+                            
+                            const semana = parseInt(fila[0]);
+                            if (!semana) return;
+
+                            // Actualizar días y cupos si están disponibles
+                            if (fila[1]) document.getElementById(`dias-${semana}`).value = fila[1];
+                            if (fila[2]) document.getElementById(`cupos-${semana}`).value = fila[2];
+
+                            // Buscar producto por nombre
+                            const nombreProducto = fila[7]; // Columna PRODUCTO
+                            if (nombreProducto) {
+                                const prodIdx = productosBase.findIndex(p => 
+                                    p.nombre.toLowerCase() === nombreProducto.toLowerCase()
+                                );
+
+                                if (prodIdx !== -1) {
+                                    if (fila[6]) document.getElementById(`fac-${semana}-${prodIdx}`).value = fila[6]; // FACTURA
+                                    if (fila[8]) document.getElementById(`cant-${semana}-${prodIdx}`).value = fila[8]; // CANTIDAD
+                                    
+                                    // Si hay valor total, calcular precio unitario inverso
+                                    if (fila[10]) {
+                                        document.getElementById(`val-${semana}-${prodIdx}`).value = fila[10];
+                                        ajustarPrecioInverso(semana, prodIdx);
+                                    }
+                                }
+                            }
+                        });
+
+                        for (let s = 1; s <= maxSem; s++) calcular(s);
+                    }
+
+                    alert('Importación completada. Se actualizaron proveedores, productos y datos.');
+                    marcarCambio();
+
+                } catch (err) {
+                    console.error(err);
+                    alert('Error al importar: ' + err.message);
+                }
+            };
+            reader.readAsBinaryString(input.files[0]);
+        }
+
+        // ===== LIMPIAR =====
+        function limpiarSemana(s) {
+            if (!confirm(`¿Borrar datos de la SEMANA ${s}?`)) return;
+            productosBase.forEach((p, i) => {
+                const fac = document.getElementById(`fac-${s}-${i}`);
+                const cant = document.getElementById(`cant-${s}-${i}`);
+                if (fac) fac.value = "";
+                if (cant) cant.value = "";
+            });
+            calcular(s);
+            marcarCambio();
+        }
+
+        function limpiarTodo() {
+            if (!confirm('¿Borrar TODAS las semanas?')) return;
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            for (let s = 1; s <= semanas; s++) {
+                productosBase.forEach((p, i) => {
+                    const fac = document.getElementById(`fac-${s}-${i}`);
+                    const cant = document.getElementById(`cant-${s}-${i}`);
+                    if (fac) fac.value = "";
+                    if (cant) cant.value = "";
+                });
+                calcular(s);
+            }
+            marcarCambio();
+        }
+
+        // ===== LOCAL STORAGE =====
+        function guardarLocal() {
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            const data = {
+                mes: document.getElementById('main-mes').value,
+                contrato: document.getElementById('main-contrato').value,
+                numSemanas: semanas,
+                valorCupo: valorCupoBase,
+                productosBase,
+                proveedores,
+                semanas: {}
+            };
+
+            for (let s = 1; s <= semanas; s++) {
+                data.semanas[s] = {
+                    d: document.getElementById(`dias-${s}`)?.value || "",
+                    c: document.getElementById(`cupos-${s}`)?.value || "",
+                    items: {}
+                };
+                productosBase.forEach((p, i) => {
+                    data.semanas[s].items[p.nombre] = {
+                        f: document.getElementById(`fac-${s}-${i}`)?.value || "",
+                        q: document.getElementById(`cant-${s}-${i}`)?.value || "",
+                        p: document.getElementById(`punit-${s}-${i}`)?.value || p.precio
+                    };
+                });
+            }
+
+            localStorage.setItem(`elite_draft_${currentUser}`, JSON.stringify(data));
+        }
+
+        function cargarLocal() {
+            const saved = localStorage.getItem(`elite_draft_${currentUser}`);
+            if (saved) restaurar(JSON.parse(saved));
+            else initGrid();
+        }
+
+        function restaurar(data) {
+            // Los datos ya se cargaron en inicializarDatos
+            document.getElementById('main-mes').value = data.mes || "Enero";
+            document.getElementById('main-contrato').value = data.contrato || "";
+            document.getElementById('num-semanas').value = data.numSemanas || 4;
+
+            initGrid();
+
+            for (let s = 1; s <= (data.numSemanas || 4); s++) {
+                if (!data.semanas || !data.semanas[s]) continue;
+                
+                if (document.getElementById(`dias-${s}`)) 
+                    document.getElementById(`dias-${s}`).value = data.semanas[s].d || "";
+                if (document.getElementById(`cupos-${s}`)) 
+                    document.getElementById(`cupos-${s}`).value = data.semanas[s].c || "";
+
+                if (data.semanas[s].items) {
+                    productosBase.forEach((pb, i) => {
+                        const item = data.semanas[s].items[pb.nombre];
+                        if (item) {
+                            if (document.getElementById(`fac-${s}-${i}`)) 
+                                document.getElementById(`fac-${s}-${i}`).value = item.f || "";
+                            if (document.getElementById(`cant-${s}-${i}`)) 
+                                document.getElementById(`cant-${s}-${i}`).value = item.q || "";
+                            if (document.getElementById(`punit-${s}-${i}`)) 
+                                document.getElementById(`punit-${s}-${i}`).value = item.p || pb.precio;
+                        }
+                    });
+                }
+                calcular(s);
+            }
+            marcarSincronizado();
+        }
+
+        // ===== FIREBASE =====
+        async function guardarFirebase() {
+            const id = `${document.getElementById('main-mes').value}_${document.getElementById('main-contrato').value}`.replace(/\s+/g, '_');
+            const data = JSON.parse(localStorage.getItem(`elite_draft_${currentUser}`));
+            await db.ref(`files/${currentUser}/${id}`).set(data);
+            alert("Guardado en la nube exitosamente");
+            marcarSincronizado();
+        }
+
+        async function listarCloud() {
+            const cont = document.getElementById('lista-archivos');
+            const snap = await db.ref(`files/${currentUser}`).once('value');
+            cont.innerHTML = "";
+
+            snap.forEach(child => {
+                const v = child.val();
+                const div = document.createElement('div');
+                div.style = "background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;";
+                div.innerHTML = `
+                    <div onclick="cargarArchivo('${child.key}')" style="cursor:pointer; flex:1;">
+                        <b style="color:var(--primary-gold);">${v.mes}</b> - ${v.contrato}
+                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="borrarArchivo('${child.key}')" style="margin-left:10px;">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                cont.appendChild(div);
+            });
+        }
+
+        async function cargarArchivo(k) {
+            const snap = await db.ref(`files/${currentUser}/${k}`).once('value');
+            const data = snap.val();
+            
+            // Restaurar todo incluyendo proveedores y productos
+            if (data.proveedores) proveedores = data.proveedores;
+            if (data.productosBase) productosBase = data.productosBase;
+            if (data.valorCupo) valorCupoBase = data.valorCupo;
+            
+            restaurar(data);
+            closeAllDrawers();
+        }
+
+        async function borrarArchivo(k) {
+            if (!confirm("¿Eliminar este registro?")) return;
+            await db.ref(`files/${currentUser}/${k}`).remove();
+            listarCloud();
+        }
+
+        // ===== DRAWERS =====
+        function toggleDrawer(id) {
+            const drawer = document.getElementById(`drawer-${id}`);
+            const overlay = document.getElementById('overlay');
+            const isOpen = drawer.classList.contains('open');
+
+            document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
+
+            if (!isOpen) {
+                drawer.classList.add('open');
+                overlay.style.display = 'block';
+                if (id === 'archivo') listarCloud();
+                if (id === 'resumen') actualizarResumen();
+                if (id === 'contabilidad') actualizarVistaContabilidad();
+            } else {
+                overlay.style.display = 'none';
+            }
+        }
+
+        function closeAllDrawers() {
+            document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function actualizarVistaContabilidad() {
+            const datos = generarDatosContabilidad();
+            const cont = document.getElementById('accounting-content');
+
+            let html = `
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center;">
+                        <div style="font-size:9px; color:var(--text-dim);">FACTURAS</div>
+                        <div style="font-size:16px; color:var(--accent-cyan); font-weight:bold;">${datos.totalFacturas}</div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; text-align:center;">
+                        <div style="font-size:9px; color:var(--text-dim);">MONTO TOTAL</div>
+                        <div style="font-size:16px; color:var(--primary-gold); font-weight:bold;">${formatter.format(datos.montoTotal)}</div>
+                    </div>
+                </div>
+            `;
+
+            for (let provId in datos.porProveedor) {
+                const prov = datos.porProveedor[provId];
+                if (prov.total === 0) continue;
+
+                const provInfo = getProveedorById(provId);
+                
+                html += `
+                    <div style="background:rgba(255,255,255,0.03); padding:10px; border-radius:8px; margin-bottom:10px; border-left:3px solid ${provInfo?.color || '#666'};">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span style="font-weight:bold; color:${provInfo?.color || '#fff'};">${prov.nombre} (${prov.sigla})</span>
+                            <span style="font-size:10px; background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:10px;">${prov.facturas.size} facturas</span>
+                        </div>
+                        <div style="font-size:14px; color:var(--primary-gold); font-weight:bold; margin-bottom:8px;">${formatter.format(prov.total)}</div>
+                    </div>
+                `;
+            }
+
+            cont.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
