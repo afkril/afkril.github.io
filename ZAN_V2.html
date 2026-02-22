@@ -10,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ===== VARIABLES Y ESTILOS BASE ===== */
         :root {
             --bg-body: #0a0a0c;
             --bg-card: rgba(30, 30, 35, 0.95);
@@ -20,7 +21,6 @@
             --danger: #ff4655;
             --success: #00ff88;
             --border-color: rgba(212, 175, 55, 0.3);
-            --warning: #ffaa00;
             --sidebar-width: 280px;
         }
 
@@ -36,7 +36,408 @@
             overflow-x: hidden;
         }
 
-        /* ===== SIDEBAR ===== */
+        /* ===== SISTEMA DE TUTORIAL ===== */
+        
+        /* Overlay del tutorial */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 9998;
+            display: none;
+            backdrop-filter: blur(3px);
+        }
+
+        .tutorial-overlay.active { display: block; }
+
+        /* Spotlight - ilumina el elemento activo */
+        .tutorial-spotlight {
+            position: absolute;
+            border: 3px solid var(--primary-gold);
+            border-radius: 12px;
+            box-shadow: 0 0 30px var(--primary-gold), inset 0 0 20px rgba(212,175,55,0.2);
+            z-index: 9999;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: pulse-spotlight 2s infinite;
+        }
+
+        @keyframes pulse-spotlight {
+            0%, 100% { box-shadow: 0 0 30px var(--primary-gold), inset 0 0 20px rgba(212,175,55,0.2); }
+            50% { box-shadow: 0 0 50px var(--primary-gold), inset 0 0 30px rgba(212,175,55,0.4); }
+        }
+
+        /* Tooltip del tutorial */
+        .tutorial-tooltip {
+            position: absolute;
+            background: linear-gradient(135deg, var(--bg-card) 0%, #1a1a2e 100%);
+            border: 2px solid var(--primary-gold);
+            border-radius: 16px;
+            padding: 25px;
+            z-index: 10000;
+            max-width: 380px;
+            min-width: 300px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(212,175,55,0.1);
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .tutorial-tooltip.active { display: block; }
+
+        .tutorial-tooltip::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 12px solid transparent;
+        }
+
+        /* Flecha del tooltip según posición */
+        .tutorial-tooltip.top::before {
+            bottom: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-top-color: var(--primary-gold);
+        }
+
+        .tutorial-tooltip.bottom::before {
+            top: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-color: var(--primary-gold);
+        }
+
+        .tutorial-tooltip.left::before {
+            right: -26px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left-color: var(--primary-gold);
+        }
+
+        .tutorial-tooltip.right::before {
+            left: -26px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-right-color: var(--primary-gold);
+        }
+
+        /* Header del tooltip */
+        .tutorial-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(212,175,55,0.3);
+        }
+
+        .tutorial-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary-gold), var(--accent-cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+
+        .tutorial-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tutorial-step {
+            font-size: 11px;
+            color: var(--accent-cyan);
+            background: rgba(0,242,255,0.1);
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+
+        /* Contenido del tooltip */
+        .tutorial-content {
+            color: var(--text-main);
+            line-height: 1.7;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+
+        .tutorial-content strong {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .tutorial-content ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .tutorial-content li {
+            margin: 8px 0;
+            color: var(--text-dim);
+        }
+
+        .tutorial-content li::marker {
+            color: var(--primary-gold);
+        }
+
+        /* Tip especial */
+        .tutorial-tip {
+            background: rgba(0,255,136,0.1);
+            border-left: 3px solid var(--success);
+            padding: 12px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+            font-size: 11px;
+            color: var(--success);
+        }
+
+        .tutorial-tip i {
+            margin-right: 8px;
+        }
+
+        /* Controles del tutorial */
+        .tutorial-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tutorial-btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tutorial-btn-primary {
+            background: linear-gradient(135deg, var(--primary-gold), #b8941f);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+
+        .tutorial-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212,175,55,0.4);
+        }
+
+        .tutorial-btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .tutorial-btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .tutorial-btn-skip {
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 10px;
+            text-decoration: underline;
+        }
+
+        /* Indicador de progreso */
+        .tutorial-progress {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .tutorial-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+
+        .tutorial-dot.active {
+            background: var(--primary-gold);
+            box-shadow: 0 0 10px var(--primary-gold);
+            transform: scale(1.3);
+        }
+
+        .tutorial-dot.completed {
+            background: var(--success);
+        }
+
+        /* Botón flotante de ayuda (siempre visible) */
+        .help-button {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, var(--primary-gold), var(--accent-cyan));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 8px 25px rgba(212,175,55,0.4);
+            transition: all 0.3s;
+            font-size: 24px;
+            color: #000;
+            border: 3px solid rgba(255,255,255,0.1);
+        }
+
+        .help-button:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 12px 35px rgba(212,175,55,0.5);
+        }
+
+        .help-button.pulse {
+            animation: helpPulse 2s infinite;
+        }
+
+        @keyframes helpPulse {
+            0%, 100% { box-shadow: 0 8px 25px rgba(212,175,55,0.4); }
+            50% { box-shadow: 0 8px 35px rgba(212,175,55,0.8), 0 0 20px rgba(0,242,255,0.3); }
+        }
+
+        /* Menú de ayuda contextual */
+        .help-menu {
+            position: fixed;
+            bottom: 90px;
+            right: 25px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 15px;
+            z-index: 999;
+            display: none;
+            min-width: 250px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+        }
+
+        .help-menu.active { display: block; animation: slideUp 0.3s ease; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .help-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .help-menu-item:hover {
+            background: rgba(212,175,55,0.1);
+        }
+
+        .help-menu-item i {
+            width: 30px;
+            height: 30px;
+            background: rgba(212,175,55,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-gold);
+            font-size: 14px;
+        }
+
+        .help-menu-item span {
+            font-size: 12px;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        /* Tooltips informativos permanentes (modo ayuda activo) */
+        .info-badge {
+            position: absolute;
+            background: var(--danger);
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: help;
+            z-index: 100;
+            animation: bounce 1s infinite;
+            box-shadow: 0 2px 10px rgba(255,70,85,0.4);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .info-badge:hover::after {
+            content: attr(data-info);
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: var(--text-main);
+            white-space: nowrap;
+            z-index: 101;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+        }
+
+        /* Modo demo/anotaciones */
+        .demo-annotation {
+            position: absolute;
+            background: linear-gradient(135deg, rgba(212,175,55,0.9), rgba(0,242,255,0.9));
+            color: #000;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        /* ===== RESTO DE ESTILOS ORIGINALES ===== */
         .sidebar {
             position: fixed;
             left: 0;
@@ -94,6 +495,7 @@
             transition: all 0.2s;
             cursor: pointer;
             border-left: 3px solid transparent;
+            position: relative;
         }
 
         .nav-item:hover {
@@ -168,7 +570,7 @@
             box-shadow: 0 0 5px var(--danger);
         }
 
-        /* ===== MAIN CONTENT ===== */
+        /* MAIN CONTENT */
         .main-wrapper {
             margin-left: var(--sidebar-width);
             transition: margin-left 0.3s ease;
@@ -177,7 +579,6 @@
 
         .sidebar.collapsed + .main-wrapper { margin-left: 0; }
 
-        /* ===== TOP BAR ===== */
         .top-bar {
             background: var(--bg-card);
             padding: 12px 20px;
@@ -210,30 +611,31 @@
         }
 
         .contract-info {
-			display: flex;
-			align-items: center;
-			gap: 10px;
-			background: rgba(0,0,0,0.3);
-			padding: 8px 15px;
-			border-radius: 20px;
-			border: 1px solid rgba(212, 175, 55, 0.3);
-		}
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a1a2e;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--primary-gold);
+        }
 
-        .contract-info select, .contract-info input {
+        .contract-info select {
+            background-color: #1a1a2e !important;
+            color: #e2e8f0 !important;
+            border: none;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .contract-info input {
             background: transparent;
             border: none;
             color: var(--text-main);
             font-size: 12px;
             outline: none;
-        }
-		.contract-info select option {
-			background-color: #1a1a2e !important;
-			color: #e2e8f0 !important;
-			padding: 8px;
-		}
-
-        .contract-info input {
-            width: 200px;
+            width: 150px;
             border-left: 1px solid rgba(255,255,255,0.1);
             padding-left: 10px;
         }
@@ -272,8 +674,6 @@
 			color: #e2e8f0 !important;
 			padding: 8px;
 		}
-
-        /* ===== CONTENT ===== */
         #app-content {
             display: none;
             padding: 20px;
@@ -285,7 +685,7 @@
             gap: 15px;
         }
 
-        /* ===== SEMANA CARD ===== */
+        /* SEMANA CARD */
         .semana-card {
             background: var(--bg-card);
             padding: 12px;
@@ -355,7 +755,7 @@
             font-weight: bold;
         }
 
-        /* ===== PROVIDER SECTIONS ===== */
+        /* PROVIDER SECTIONS */
         .provider-section {
             margin-bottom: 12px;
             border-radius: 8px;
@@ -389,7 +789,7 @@
             font-family: monospace;
         }
 
-        /* ===== TABLAS DE PRODUCTOS ===== */
+        /* TABLAS */
         .product-table {
             width: 100%;
             border-collapse: separate;
@@ -490,7 +890,7 @@
             width: 150px;
         }
 
-        /* ===== DRAWERS ===== */
+        /* DRAWERS */
         .drawer {
             position: fixed;
             top: 0;
@@ -518,7 +918,7 @@
             z-index: 1999;
         }
 
-        /* ===== MODALS ===== */
+        /* MODALS */
         .modal {
             display: none;
             position: fixed;
@@ -560,7 +960,7 @@
             gap: 10px;
         }
 
-        /* ===== BOTONES ===== */
+        /* BOTONES */
         .btn {
             padding: 6px 12px;
             border-radius: 20px;
@@ -581,7 +981,7 @@
         .btn-sm { padding: 4px 8px; font-size: 8px; }
         .btn-block { width: 100%; justify-content: center; }
 
-        /* ===== CONFIGURACIÓN PROVEEDORES ===== */
+        /* CONFIGURACIÓN PROVEEDORES */
         .providers-list { margin-bottom: 20px; }
 
         .provider-config-item {
@@ -651,10 +1051,10 @@
             padding: 6px;
         }
 
-        /* ===== CONFIGURACIÓN PRODUCTOS ===== */
+        /* CONFIGURACIÓN PRODUCTOS */
         .product-config-item {
             display: grid;
-            grid-template-columns: 2fr 80px 120px 30px 35px;
+            grid-template-columns: 2fr 80px 140px 30px 35px;
             gap: 8px;
             align-items: center;
             padding: 10px;
@@ -682,7 +1082,7 @@
             color: var(--text-dim);
         }
 
-        /* ===== RESUMEN MEJORADO ===== */
+        /* RESUMEN MEJORADO */
         .resumen-proveedor {
             margin-bottom: 15px;
             border-radius: 8px;
@@ -728,7 +1128,7 @@
         .cl-yes { background: rgba(0,255,136,0.2); color: var(--success); }
         .cl-no { background: rgba(255,70,85,0.2); color: var(--danger); }
 
-        /* ===== AUTH ===== */
+        /* AUTH */
         #auth-screen {
             position: fixed;
             top: 0;
@@ -769,71 +1169,163 @@
             .sidebar.open { transform: translateX(0); }
             .main-wrapper { margin-left: 0; }
             .grid-container { grid-template-columns: 1fr; }
+            .tutorial-tooltip { max-width: 90%; min-width: 280px; }
         }
     </style>
 </head>
 <body>
 
+    <!-- ===== SISTEMA DE TUTORIAL ===== -->
+    
+    <!-- Overlay oscuro -->
+    <div class="tutorial-overlay" id="tutorialOverlay"></div>
+    
+    <!-- Spotlight que ilumina elementos -->
+    <div class="tutorial-spotlight" id="tutorialSpotlight"></div>
+    
+    <!-- Tooltip principal del tutorial -->
+    <div class="tutorial-tooltip" id="tutorialTooltip">
+        <div class="tutorial-header">
+            <div class="tutorial-icon" id="tutorialIcon">
+                <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <div>
+                <div class="tutorial-title" id="tutorialTitle">Bienvenido</div>
+            </div>
+            <div class="tutorial-step" id="tutorialStep">1/10</div>
+        </div>
+        
+        <div class="tutorial-content" id="tutorialContent">
+            Contenido del tutorial...
+        </div>
+        
+        <div class="tutorial-tip" id="tutorialTip" style="display: none;">
+            <i class="fa-solid fa-star"></i>
+            <span id="tutorialTipText">Tip especial aquí</span>
+        </div>
+        
+        <div class="tutorial-controls">
+            <button class="tutorial-btn tutorial-btn-secondary" onclick="tutorialPrev()" id="btnPrev">
+                <i class="fa-solid fa-chevron-left"></i> Anterior
+            </button>
+            
+            <button class="tutorial-btn tutorial-btn-skip" onclick="tutorialSkip()" id="btnSkip">
+                Saltar
+            </button>
+            
+            <button class="tutorial-btn tutorial-btn-primary" onclick="tutorialNext()" id="btnNext">
+                Siguiente <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            
+            <button class="tutorial-btn tutorial-btn-primary hidden" onclick="tutorialFinish()" id="btnFinish" style="background: var(--success);">
+                <i class="fa-solid fa-check"></i> Finalizar
+            </button>
+        </div>
+        
+        <div class="tutorial-progress" id="tutorialProgress"></div>
+    </div>
+
+    <!-- Botón flotante de ayuda -->
+    <div class="help-button pulse" id="helpButton" onclick="toggleHelpMenu()">
+        <i class="fa-solid fa-question"></i>
+    </div>
+    
+    <!-- Menú de ayuda contextual -->
+    <div class="help-menu" id="helpMenu">
+        <div class="help-menu-item" onclick="startTutorial('completo')">
+            <i class="fa-solid fa-play"></i>
+            <span>Tutorial completo</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('proveedores')">
+            <i class="fa-solid fa-truck-field"></i>
+            <span>Proveedores</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('productos')">
+            <i class="fa-solid fa-list-check"></i>
+            <span>Productos</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('cl')">
+            <i class="fa-solid fa-leaf"></i>
+            <span>¿Qué es CL?</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('resumen')">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Resumen y análisis</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('exportar')">
+            <i class="fa-solid fa-file-export"></i>
+            <span>Exportar datos</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('contabilidad')">
+            <i class="fa-solid fa-calculator"></i>
+            <span>Exportar contabilidad</span>
+        </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
+            <div class="help-menu-item" onclick="toggleHelpMenu()" style="color: var(--text-dim);">
+                <i class="fa-solid fa-xmark"></i>
+                <span>Cerrar menú</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== APLICACIÓN PRINCIPAL ===== -->
+
     <!-- AUTH SCREEN -->
-    <!-- AUTH SCREEN -->
-	<div id="auth-screen">
-		<div class="auth-box" id="login-form">
-			<!-- LOGO AQUÍ -->
+    <div id="auth-screen">
+        <div class="auth-box" id="login-form">
+            <!-- LOGO AQUÍ -->
 			<div style="text-align: center; margin-bottom: 20px;">
 				<img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));">
 			</div>
-			
-			<h2 style="color:var(--primary-gold); margin-bottom:20px;">INGRESAR</h2>
-			<input type="text" id="user-login" placeholder="Usuario">
-			<input type="password" id="pass-login" placeholder="Contraseña">
-			<button class="btn btn-gold btn-block" style="margin-top:15px;" onclick="handleAuth('login')">
-				<i class="fa-solid fa-right-to-bracket"></i> INGRESAR
-			</button>
-			<p onclick="toggleAuth(true)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--accent-cyan);">
-				¿No tiene cuenta? Registrese aquí
-			</p>
-		</div>
-		
-		<div class="auth-box hidden" id="reg-form">
+			<h2 style="color:var(--primary-gold); margin-bottom:20px;">ZAN TABLA VALORES</h2>
+            <input type="text" id="user-login" placeholder="Usuario">
+            <input type="password" id="pass-login" placeholder="Contraseña">
+            <button class="btn btn-gold btn-block" style="margin-top:15px;" onclick="handleAuth('login')">
+                <i class="fa-solid fa-right-to-bracket"></i> INGRESAR
+            </button>
+            <p onclick="toggleAuth(true)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--accent-cyan);">
+                ¿No tiene cuenta? Registrese aquí
+            </p>
+        </div>
+        <div class="auth-box hidden" id="reg-form">
 			<!-- LOGO AQUÍ TAMBIÉN -->
 			<div style="text-align: center; margin-bottom: 20px;">
 				<img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));">
 			</div>
-			
-			<h2 style="color:var(--accent-cyan); margin-bottom:20px;">NUEVO REGISTRO</h2>
-			<input type="text" id="user-reg" placeholder="Usuario">
-			<input type="password" id="pass-reg" placeholder="Contraseña">
-			<button class="btn btn-cyan btn-block" style="margin-top:15px;" onclick="handleAuth('register')">
-				<i class="fa-solid fa-user-plus"></i> CREAR CUENTA
-			</button>
-			<p onclick="toggleAuth(false)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--primary-gold);">
-				Volver al login
-			</p>
-		</div>
-	</div>
+            <h2 style="color:var(--accent-cyan); margin-bottom:20px;">NUEVO REGISTRO</h2>
+            <input type="text" id="user-reg" placeholder="Usuario">
+            <input type="password" id="pass-reg" placeholder="Contraseña">
+            <button class="btn btn-cyan btn-block" style="margin-top:15px;" onclick="handleAuth('register')">
+                <i class="fa-solid fa-user-plus"></i> CREAR CUENTA
+            </button>
+            <p onclick="toggleAuth(false)" style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--primary-gold);">
+                Volver al login
+            </p>
+        </div>
+    </div>
 
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
 			<img src="Logo/ZAN.png" alt="ZAN" style="width: 35px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));">
-			<span class="sidebar-title">|Tabla Valores</span>
-		</div>
+            <span class="sidebar-title">|Tabla Valores</span>
+        </div>
 
         <div class="nav-section">
             <div class="nav-section-title">Gestión de Datos</div>
-            <a class="nav-item" onclick="guardarFirebase(); toggleSidebarMobile();">
+            <a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
                 <i class="fa-solid fa-cloud"></i>
                 <span>Guardar</span>
             </a>
-            <a class="nav-item" onclick="toggleDrawer('archivo'); toggleSidebarMobile();">
+            <a class="nav-item" id="nav-cargar" onclick="toggleDrawer('archivo'); toggleSidebarMobile();">
                 <i class="fa-solid fa-folder-open"></i>
                 <span>Cargar</span>
             </a>
-            <a class="nav-item" onclick="exportarCompleto(); toggleSidebarMobile();">
+            <a class="nav-item" id="nav-exportar" onclick="exportarCompleto(); toggleSidebarMobile();">
                 <i class="fa-solid fa-file-csv"></i>
                 <span>Exportar Excel</span>
             </a>
-            <a class="nav-item" onclick="document.getElementById('import-input').click(); toggleSidebarMobile();">
+            <a class="nav-item" id="nav-importar" onclick="document.getElementById('import-input').click(); toggleSidebarMobile();">
                 <i class="fa-solid fa-file-import"></i>
                 <span>Importar Excel</span>
             </a>
@@ -842,19 +1334,19 @@
 
         <div class="nav-section">
             <div class="nav-section-title">Configuración</div>
-            <a class="nav-item" onclick="toggleModal('modal-proveedores'); toggleSidebarMobile();">
+            <a class="nav-item" id="nav-proveedores" onclick="toggleModal('modal-proveedores'); toggleSidebarMobile();">
                 <i class="fa-solid fa-truck-field"></i>
                 <span>Gestionar Proveedores</span>
             </a>
-            <a class="nav-item" onclick="toggleModal('modal-productos'); toggleSidebarMobile();">
+            <a class="nav-item" id="nav-productos" onclick="toggleModal('modal-productos'); toggleSidebarMobile();">
                 <i class="fa-solid fa-list-check"></i>
                 <span>Listado de Productos</span>
             </a>
-            <a class="nav-item" onclick="toggleDrawer('resumen'); toggleSidebarMobile();">
+            <a class="nav-item" id="nav-resumen" onclick="toggleDrawer('resumen'); toggleSidebarMobile();">
                 <i class="fa-solid fa-chart-pie"></i>
                 <span>Resumen y Gráficos</span>
             </a>
-            <a class="nav-item" onclick="toggleDrawer('contabilidad'); toggleSidebarMobile();">
+            <a class="nav-item" id="nav-contabilidad" onclick="toggleDrawer('contabilidad'); toggleSidebarMobile();">
                 <i class="fa-solid fa-calculator"></i>
                 <span>Exportar Contabilidad</span>
             </a>
@@ -896,10 +1388,8 @@
                     <i class="fa-solid fa-bars"></i>
                     <span>Menú</span>
                 </button>
-				
-				<img src="Logo/ZAN.png" alt="ZAN Logo" style="height: 30px; width: auto; filter: drop-shadow(0 0 5px var(--accent-cyan)); margin-right: 10px;">
-                
-                <div class="contract-info">
+                <img src="Logo/ZAN.png" alt="ZAN Logo" style="height: 30px; width: auto; filter: drop-shadow(0 0 5px var(--accent-cyan)); margin-right: 10px;">
+                <div class="contract-info" id="contract-info">
                     <select id="main-mes" onchange="marcarCambio()">
                         <option>Enero</option><option>Febrero</option><option>Marzo</option>
                         <option>Abril</option><option>Mayo</option><option>Junio</option>
@@ -910,7 +1400,7 @@
                 </div>
             </div>
 
-            <div class="week-selector">
+            <div class="week-selector" id="week-selector">
                 <small>Semanas:</small>
                 <select id="num-semanas" onchange="cambiarSemanas()">
                     <option value="1">1</option>
@@ -966,7 +1456,7 @@
         </div>
     </div>
 
-    <!-- MODAL: GESTIÓN DE PROVEEDORES -->
+    <!-- MODAL: PROVEEDORES -->
     <div class="modal" id="modal-proveedores">
         <div class="modal-container">
             <div class="modal-header">
@@ -993,19 +1483,13 @@
 
             <div class="providers-list" id="lista-proveedores"></div>
 
-            <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; margin: 15px 0; font-size: 9px; color: var(--text-dim);">
-                <i class="fa-solid fa-circle-info"></i> 
-                Las siglas se generan automáticamente. Use las flechas para reordenar. 
-                El orden se reflejará en las tablas y resúmenes.
-            </div>
-
             <button class="btn btn-gold btn-block" onclick="guardarProveedores()">
                 <i class="fa-solid fa-check"></i> GUARDAR Y APLICAR CAMBIOS
             </button>
         </div>
     </div>
 
-    <!-- MODAL: LISTADO DE PRODUCTOS -->
+    <!-- MODAL: PRODUCTOS -->
     <div class="modal" id="modal-productos">
         <div class="modal-container" style="max-width: 800px;">
             <div class="modal-header">
@@ -1024,14 +1508,6 @@
                 <button class="btn btn-cyan btn-sm" onclick="agregarProducto()">
                     <i class="fa-solid fa-plus"></i> AGREGAR PRODUCTO
                 </button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 2fr 80px 1.5fr 30px 35px; gap: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 6px; margin-bottom: 8px; font-size: 8px; text-transform: uppercase; color: var(--text-dim); font-weight: bold;">
-                <span>Producto</span>
-                <span>Precio</span>
-                <span>Proveedor</span>
-                <span class="text-center">CL</span>
-                <span></span>
             </div>
 
             <div id="lista-productos-config" style="max-height: 400px; overflow-y: auto;"></div>
@@ -1056,26 +1532,21 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // ===== VARIABLES GLOBALES - INICIALIZACIÓN DINÁMICA =====
+        // ===== VARIABLES GLOBALES =====
         let currentUser = "";
         let valorCupoBase = 8094;
         let chartInstance = null;
         let sidebarOpen = window.innerWidth > 768;
+		let tutorialEnCurso = false;
 
-        // PROVEEDORES - Array vacío inicial, se carga desde localStorage o se inicializa
         let proveedores = [];
-
-        // PRODUCTOS - Array vacío inicial
         let productosBase = [];
 
-        const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-
-        // ===== DATOS INICIALES (solo si no hay datos guardados) =====
         const PROVEEDORES_INICIALES = [
             { id: 'prov_1', nombre: 'Carnes Canaima', color: '#ff6b6b', orden: 0 },
             { id: 'prov_2', nombre: 'Surcolac', color: '#4ecdc4', orden: 1 },
             { id: 'prov_3', nombre: 'La granjita', color: '#ffe66d', orden: 2 },
-            { id: 'prov_4', nombre: 'Panaderia Pan al Piso', color: '#95e1d3', orden: 3 }
+            { id: 'prov_4', nombre: 'Panaderia', color: '#95e1d3', orden: 3 }
         ];
 
         const PRODUCTOS_INICIALES = [
@@ -1091,6 +1562,525 @@
             { nombre: "Yogurt Litro", precio: 5900, cl: true, proveedor: 'prov_2' },
             { nombre: "Pan Und", precio: 600, cl: false, proveedor: 'prov_4' }
         ];
+
+        const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+
+        // ===== SISTEMA DE TUTORIAL - CONFIGURACIÓN =====
+        
+        const TUTORIAL_STEPS = {
+            completo: [
+                {
+                    id: 'bienvenida',
+                    title: '¡Bienvenido a ZAN!',
+                    icon: 'fa-hand-wave',
+                    content: 'Este es el sistema de gestión de compras y presupuestos. Te guiaré paso a paso por todas las funcionalidades principales.',
+                    tip: 'Puedes acceder a este tutorial en cualquier momento desde el botón de ayuda (?) en la esquina inferior derecha.',
+                    position: 'center'
+                },
+                {
+                    id: 'semanas',
+                    target: 'week-selector',
+                    title: 'Configuración de Semanas',
+                    icon: 'fa-calendar-week',
+                    content: 'Aquí seleccionas cuántas semanas trabajarás en el mes. Puedes elegir entre 1 y 5 semanas según tu necesidad.',
+                    tip: 'Cada semana es independiente y tiene su propio presupuesto calculado automáticamente.',
+                    position: 'bottom'
+                },
+                {
+                    id: 'mes-contrato',
+                    target: 'contract-info',
+                    title: 'Mes y Contrato',
+                    icon: 'fa-file-contract',
+                    content: 'Selecciona el mes de trabajo e ingresa el ID del contrato. Estos datos aparecerán en todos los reportes exportados.',
+                    position: 'bottom'
+                },
+                {
+                    id: 'tabla-semanal',
+                    target: 'main-grid',
+                    title: 'Tablas Semanales',
+                    icon: 'fa-table',
+                    content: 'Cada semana muestra los proveedores y sus productos. Ingresa: <strong>Factura</strong>, <strong>Cantidad</strong> y el sistema calcula el <strong>Total</strong> automáticamente.',
+                    tip: 'Los badges muestran: CL (Compra Local) y las siglas del proveedor.',
+                    position: 'top'
+                },
+                {
+                    id: 'proveedores',
+                    target: 'nav-proveedores',
+                    title: 'Gestionar Proveedores',
+                    icon: 'fa-truck-field',
+                    content: 'Crea, edita y organiza tus proveedores. Puedes:<br>• Cambiar nombres y colores<br>• Reordenar con flechas<br>• Eliminar proveedores no usados',
+                    tip: 'El orden de proveedores aquí se refleja en las tablas semanales.',
+                    position: 'right',
+                    action: () => toggleModal('modal-proveedores')
+                },
+                {
+                    id: 'productos',
+                    target: 'lista-productos-config',
+                    title: 'Listado de Productos',
+                    icon: 'fa-list-check',
+                    content: 'Administra todos los productos disponibles. Cada producto debe tener:<br>• <strong>Nombre</strong> (ej: Pollo Libra)<br>• <strong>Precio</strong> unitario<br>• <strong>Proveedor</strong> asignado<br>• Indicador <strong>CL</strong> (Compra Local)',
+                    tip: 'Los productos aparecerán automáticamente en las tablas de su proveedor asignado.',
+                    position: 'left',
+                    action: () => { toggleModal('modal-proveedores'); setTimeout(() => toggleModal('modal-productos'), 100); }
+                },
+                {
+                    id: 'cl-explicacion',
+                    title: '¿Qué es CL (Compra Local)?',
+                    icon: 'fa-leaf',
+                    content: '<strong>CL = Compra Local</strong><br><br>Indica que el producto se adquiere dentro de la región/localidad, cumpliendo con requisitos de:<br>• Apoyo a productores locales<br>• Menor huella de carbono<br>• Frescura y trazabilidad<br><br>En el resumen se calcula el <strong>% de compras locales</strong> del total.',
+                    tip: 'Productos CL se marcan con check verde ✓ en los reportes.',
+                    position: 'center'
+                },
+                {
+                    id: 'resumen',
+                    target: 'nav-resumen',
+                    title: 'Resumen y Análisis',
+                    icon: 'fa-chart-pie',
+                    content: 'Visualiza el análisis completo de gastos:<br>• Total por proveedor y producto<br>• Cantidades acumuladas (kg, lb, und)<br>• Indicador CL por producto<br>• Gráfico de distribución<br>• % de compras locales',
+                    tip: 'Ideal para presentar reportes de gestión y tomar decisiones de compra.',
+                    position: 'right',
+                    action: () => toggleDrawer('resumen')
+                },
+                {
+                    id: 'exportar',
+                    target: 'nav-exportar',
+                    title: 'Exportar Datos',
+                    icon: 'fa-file-export',
+                    content: 'Exporta toda la información en formato Excel con 3 hojas:<br>1. <strong>Configuración</strong> (proveedores y productos)<br>2. <strong>Datos Semanales</strong> (todas las transacciones)<br>3. <strong>Resumen por Producto</strong> (consolidado)',
+                    tip: 'El archivo exportado incluye toda la configuración y puede importarse en otro dispositivo.',
+                    position: 'right'
+                },
+                {
+                    id: 'importar',
+                    target: 'nav-importar',
+                    title: 'Importar Datos',
+                    icon: 'fa-file-import',
+                    content: 'Restaura datos desde un archivo Excel exportado previamente. Se importa:<br>• Configuración de proveedores<br>• Listado de productos<br>• Todas las transacciones semanales<br>• Mes y contrato',
+                    tip: 'Útil para respaldar información o transferir entre dispositivos.',
+                    position: 'right'
+                },
+                {
+                    id: 'contabilidad',
+                    target: 'nav-contabilidad',
+                    title: 'Exportar Contabilidad',
+                    icon: 'fa-calculator',
+                    content: 'Formato especial para el área financiera:<br>• Detalle de facturas por proveedor<br>• Cantidades y valores totales<br>• Indicador de compra local (SI/NO)<br>• Resumen ejecutivo por proveedor',
+                    tip: 'Incluye tanto CSV (datos planos) como Excel (con formato).',
+                    position: 'right',
+                    action: () => toggleDrawer('contabilidad')
+                },
+                {
+                    id: 'final',
+                    title: '¡Tutorial Completado!',
+                    icon: 'fa-trophy',
+                    content: 'Ya conoces todas las funcionalidades de ZAN. Recuerda:<br><br>• El botón <strong>?</strong> siempre está disponible para volver a ver este tutorial<br>• Guarda en la nube periódicamente<br>• Exporta respaldos semanales<br><br>¡Empieza a gestionar tus compras de manera eficiente!',
+                    tip: '¿Tienes dudas? Revisa secciones específicas desde el menú de ayuda.',
+                    position: 'center'
+                }
+            ],
+            
+            // Tutoriales específicos por tema
+            proveedores: [
+                {
+                    id: 'prov-intro',
+                    title: 'Gestión de Proveedores',
+                    icon: 'fa-truck-field',
+                    content: 'Los proveedores son las empresas o personas que te venden productos. Cada producto debe estar asignado a un proveedor.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-proveedores',
+                    title: 'Acceder a Proveedores',
+                    icon: 'fa-arrow-pointer',
+                    content: 'Haz clic aquí para abrir el panel de gestión de proveedores.',
+                    position: 'right',
+                    action: () => toggleModal('modal-proveedores')
+                },
+                {
+                    target: 'lista-proveedores',
+                    title: 'Crear y Editar',
+                    icon: 'fa-pen-to-square',
+                    content: '• <strong>Nombre:</strong> Identificación del proveedor<br>• <strong>Color:</strong> Para visualización en tablas<br>• <strong>Orden:</strong> Usa las flechas para reorganizar<br>• <strong>Sigla:</strong> Se genera automáticamente',
+                    tip: 'Ejemplo: "Carnes Canaima" → sigla "CCA"',
+                    position: 'left'
+                },
+                {
+                    target: 'lista-proveedores',
+                    title: 'Eliminar Proveedores',
+                    icon: 'fa-trash',
+                    content: 'Al eliminar un proveedor, sus productos se reasignan al primer proveedor de la lista. Asegúrate de reasignarlos manualmente si es necesario.',
+                    position: 'left'
+                }
+            ],
+            
+            productos: [
+                {
+                    id: 'prod-intro',
+                    title: 'Gestión de Productos',
+                    icon: 'fa-list-check',
+                    content: 'Los productos son los ítems que compras a los proveedores. Cada uno debe tener precio, unidad y proveedor asignado.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-productos',
+                    title: 'Acceder a Productos',
+                    icon: 'fa-arrow-pointer',
+                    content: 'Haz clic aquí para gestionar tu catálogo de productos.',
+                    position: 'right',
+                    action: () => toggleModal('modal-productos')
+                },
+                {
+                    target: 'lista-productos-config',
+                    title: 'Configurar Producto',
+                    icon: 'fa-box',
+                    content: '• <strong>Nombre:</strong> Incluye la unidad (Libra, Kilo, Und)<br>• <strong>Precio:</strong> Valor unitario de compra<br>• <strong>Proveedor:</strong> Quién lo suministra<br>• <strong>CL:</strong> ¿Es compra local?',
+                    tip: 'La unidad se detecta automáticamente: kg, lb, lt, und',
+                    position: 'left'
+                }
+            ],
+            
+            cl: [
+                {
+                    id: 'cl-full',
+                    title: 'Compras Locales (CL)',
+                    icon: 'fa-leaf',
+                    content: '<strong>CL = Compra Local</strong><br><br>Es un indicador que identifica productos adquiridos dentro de la región, cumpliendo con políticas de:<br><br>🌱 <strong>Sostenibilidad:</strong> Menor transporte, menos emisiones<br>💚 <strong>Economía local:</strong> Apoyo a productores regionales<br>📋 <strong>Requisitos institucionales:</strong> Muchos contratos exigen % mínimo de CL<br><br>En el resumen se calcula automáticamente el porcentaje de compras locales.',
+                    tip: 'Productos CL se destacan con badge verde en todas las vistas.',
+                    position: 'center'
+                }
+            ],
+            
+            resumen: [
+                {
+                    id: 'res-intro',
+                    title: 'Análisis de Gastos',
+                    icon: 'fa-chart-pie',
+                    content: 'El resumen consolidado te muestra el panorama completo de tus compras del mes.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-resumen',
+                    title: 'Ver Resumen',
+                    icon: 'fa-arrow-pointer',
+                    content: 'Abre el panel de análisis desde aquí o desde el menú lateral.',
+                    position: 'right',
+                    action: () => toggleDrawer('resumen')
+                },
+                {
+                    target: 'summary-content',
+                    title: 'Detalle por Proveedor',
+                    icon: 'fa-list',
+                    content: 'Cada proveedor muestra:<br>• Productos comprados<br>• Cantidad total (suma de todas las semanas)<br>• Valor total gastado<br>• Indicador CL (✓ o ✗)',
+                    tip: 'Las cantidades se suman automáticamente: 100 huevos semana 1 + 150 semana 2 = 250 huevos total',
+                    position: 'left'
+                },
+                {
+                    target: 'chartGasto',
+                    title: 'Gráfico Visual',
+                    icon: 'fa-chart-simple',
+                    content: 'Visualiza la distribución de gastos por proveedor en un gráfico circular. El color corresponde a cada proveedor.',
+                    position: 'top'
+                }
+            ],
+            
+            exportar: [
+                {
+                    id: 'exp-intro',
+                    title: 'Exportar Datos',
+                    icon: 'fa-file-export',
+                    content: 'El sistema genera archivos Excel profesionales con toda tu información organizada.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-exportar',
+                    title: 'Exportar Completo',
+                    icon: 'fa-file-excel',
+                    content: 'Genera un archivo Excel con 3 hojas:<br><br>1. <strong>Configuración:</strong> Proveedores y productos base<br>2. <strong>Datos Semanales:</strong> Todas las facturas y cantidades<br>3. <strong>Resumen:</strong> Consolidado por producto',
+                    tip: 'Este archivo puede importarse posteriormente como respaldo completo.',
+                    position: 'right'
+                },
+                {
+                    target: 'nav-importar',
+                    title: 'Importar Datos',
+                    icon: 'fa-file-import',
+                    content: 'Restaura toda la configuración y datos desde un archivo Excel exportado previamente. Útil para:<br>• Respaldos<br>• Transferir entre dispositivos<br>• Recuperar información',
+                    position: 'right'
+                }
+            ],
+            
+            contabilidad: [
+                {
+                    id: 'cont-intro',
+                    title: 'Exportación Contable',
+                    icon: 'fa-calculator',
+                    content: 'Formato especial diseñado para el área financiera y contable de tu organización.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-contabilidad',
+                    title: 'Formato Contable',
+                    icon: 'fa-file-invoice-dollar',
+                    content: 'Incluye:<br>• Fecha, mes y contrato<br>• Proveedor y número de factura<br>• Producto, cantidad y valores<br>• Indicador CL (SI/NO)<br>• Resumen por proveedor',
+                    tip: 'Disponible en CSV (para sistemas contables) y Excel (para revisión humana).',
+                    position: 'right',
+                    action: () => toggleDrawer('contabilidad')
+                }
+            ]
+        };
+
+        let tutorialActivo = null;
+        let pasoActual = 0;
+
+        // ===== FUNCIONES DEL TUTORIAL =====
+
+        function toggleHelpMenu() {
+            const menu = document.getElementById('helpMenu');
+            menu.classList.toggle('active');
+            
+            // Cerrar si se hace clic fuera
+            if (menu.classList.contains('active')) {
+                setTimeout(() => {
+                    document.addEventListener('click', cerrarHelpMenu);
+                }, 100);
+            }
+        }
+
+        function cerrarHelpMenu(e) {
+            const menu = document.getElementById('helpMenu');
+            const btn = document.getElementById('helpButton');
+            
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.remove('active');
+                document.removeEventListener('click', cerrarHelpMenu);
+            }
+        }
+		// ===== Abrir sidebar para el tutorial =====
+		function abrirSidebarParaTutorial() {
+			const sidebar = document.getElementById('sidebar');
+			
+			if (window.innerWidth > 768) {
+				// Escritorio: quitar collapsed
+				sidebar.classList.remove('collapsed');
+				sidebarOpen = true;
+			} else {
+				// Móvil: agregar open
+				sidebar.classList.add('open');
+				sidebarOpen = true;
+			}
+		}
+
+        function startTutorial(tipo = 'completo') {
+            // Cerrar menú de ayuda
+            document.getElementById('helpMenu').classList.remove('active');
+				
+			tutorialEnCurso = true;
+			abrirSidebarParaTutorial();
+            
+            // Verificar si existe el tutorial
+            if (!TUTORIAL_STEPS[tipo]) {
+                console.error('Tutorial no encontrado:', tipo);
+                return;
+            }
+            
+            tutorialActivo = TUTORIAL_STEPS[tipo];
+            pasoActual = 0;
+            
+            // Mostrar overlay
+            document.getElementById('tutorialOverlay').classList.add('active');
+            
+            // Generar indicadores de progreso
+            generarProgreso();
+            
+            // Mostrar primer paso
+            mostrarPaso(0);
+            
+            // Pausar animación del botón de ayuda
+            document.getElementById('helpButton').classList.remove('pulse');
+        }
+
+        function generarProgreso() {
+            const cont = document.getElementById('tutorialProgress');
+            cont.innerHTML = tutorialActivo.map((_, i) => 
+                `<div class="tutorial-dot ${i === 0 ? 'active' : ''}" data-step="${i}"></div>`
+            ).join('');
+        }
+
+        function mostrarPaso(index) {
+            if (index < 0 || index >= tutorialActivo.length) return;
+            
+            pasoActual = index;
+            const paso = tutorialActivo[index];
+            
+			// Si el target es del sidebar, asegurar que esté abierto
+			if (paso.target && (
+				paso.target.includes('nav-') || 
+				paso.target === 'sidebar' ||
+				paso.target.includes('sidebar')
+			)) {
+				abrirSidebarParaTutorial();
+			}
+			
+            // Actualizar contenido
+            document.getElementById('tutorialIcon').innerHTML = `<i class="fa-solid ${paso.icon || 'fa-circle-info'}"></i>`;
+            document.getElementById('tutorialTitle').textContent = paso.title;
+            document.getElementById('tutorialStep').textContent = `${index + 1}/${tutorialActivo.length}`;
+            document.getElementById('tutorialContent').innerHTML = paso.content;
+            
+            // Tip opcional
+            const tipEl = document.getElementById('tutorialTip');
+            if (paso.tip) {
+                document.getElementById('tutorialTipText').textContent = paso.tip;
+                tipEl.style.display = 'block';
+            } else {
+                tipEl.style.display = 'none';
+            }
+            
+            // Actualizar botones
+            document.getElementById('btnPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
+            
+            if (index === tutorialActivo.length - 1) {
+                document.getElementById('btnNext').classList.add('hidden');
+                document.getElementById('btnFinish').classList.remove('hidden');
+                document.getElementById('btnSkip').style.visibility = 'hidden';
+            } else {
+                document.getElementById('btnNext').classList.remove('hidden');
+                document.getElementById('btnFinish').classList.add('hidden');
+                document.getElementById('btnSkip').style.visibility = 'visible';
+            }
+            
+            // Actualizar progreso visual
+            document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i < index) dot.classList.add('completed');
+                if (i === index) dot.classList.add('active');
+            });
+            
+            // Posicionar tooltip
+            posicionarTooltip(paso);
+            
+            // Ejecutar acción si existe (abrir modales, etc)
+            if (paso.action) {
+                setTimeout(() => paso.action(), 300);
+            }
+        }
+
+        function posicionarTooltip(paso) {
+            const tooltip = document.getElementById('tutorialTooltip');
+            const spotlight = document.getElementById('tutorialSpotlight');
+            
+            // Resetear clases de posición
+            tooltip.className = 'tutorial-tooltip active';
+            
+            if (paso.position === 'center' || !paso.target) {
+                // Centro de pantalla
+                tooltip.style.left = '50%';
+                tooltip.style.top = '50%';
+                tooltip.style.transform = 'translate(-50%, -50%)';
+                spotlight.style.display = 'none';
+                return;
+            }
+            
+            // Buscar elemento target
+            const target = document.getElementById(paso.target) || document.querySelector(paso.target);
+            if (!target) {
+                console.warn('Target no encontrado:', paso.target);
+                tooltip.style.left = '50%';
+                tooltip.style.top = '50%';
+                tooltip.style.transform = 'translate(-50%, -50%)';
+                return;
+            }
+            
+            // Scroll al elemento
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Obtener posición
+            const rect = target.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            
+            // Posicionar spotlight
+            spotlight.style.display = 'block';
+            spotlight.style.left = `${rect.left - 10}px`;
+            spotlight.style.top = `${rect.top - 10}px`;
+            spotlight.style.width = `${rect.width + 20}px`;
+            spotlight.style.height = `${rect.height + 20}px`;
+            
+            // Calcular posición del tooltip según preferencia
+            const margin = 20;
+            let left, top;
+            
+            switch(paso.position) {
+                case 'bottom':
+                    left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+                    top = rect.bottom + margin;
+                    tooltip.classList.add('top');
+                    break;
+                case 'top':
+                    left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+                    top = rect.top - tooltipRect.height - margin;
+                    tooltip.classList.add('bottom');
+                    break;
+                case 'left':
+                    left = rect.left - tooltipRect.width - margin;
+                    top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+                    tooltip.classList.add('right');
+                    break;
+                case 'right':
+                    left = rect.right + margin;
+                    top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+                    tooltip.classList.add('left');
+                    break;
+                default:
+                    left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+                    top = rect.bottom + margin;
+            }
+            
+            // Ajustar a límites de pantalla
+            left = Math.max(20, Math.min(left, window.innerWidth - tooltipRect.width - 20));
+            top = Math.max(20, Math.min(top, window.innerHeight - tooltipRect.height - 20));
+            
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+            tooltip.style.transform = 'none';
+        }
+
+        function tutorialNext() {
+            if (pasoActual < tutorialActivo.length - 1) {
+                mostrarPaso(pasoActual + 1);
+            }
+        }
+
+        function tutorialPrev() {
+            if (pasoActual > 0) {
+                mostrarPaso(pasoActual - 1);
+            }
+        }
+
+        function tutorialSkip() {
+            if (confirm('¿Saltar el tutorial? Puedes volver a verlo desde el botón de ayuda.')) {
+                tutorialEnCurso = false;
+				tutorialFinish();
+            }
+        }
+
+        function tutorialFinish() {
+            // Ocultar todo
+            document.getElementById('tutorialOverlay').classList.remove('active');
+            document.getElementById('tutorialTooltip').classList.remove('active');
+            document.getElementById('tutorialSpotlight').style.display = 'none';
+            
+            // Cerrar modales/drawers que pudieron abrirse
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
+            document.getElementById('overlay').style.display = 'none';
+			
+			tutorialEnCurso = false;
+            
+            // Restaurar animación del botón
+            document.getElementById('helpButton').classList.add('pulse');
+            
+            // Marcar como visto (opcional)
+            localStorage.setItem(`tutorial_visto_${currentUser}`, 'true');
+        }
 
         // ===== UTILIDADES =====
         function limpiarNum(t) {
@@ -1125,6 +2115,14 @@
 
         function getProductosByProveedor(provId) {
             return productosBase.filter(p => p.proveedor === provId);
+        }
+
+        function detectarUnidad(nombreProducto) {
+            const nombre = nombreProducto.toLowerCase();
+            if (nombre.includes('kilo')) return 'kg';
+            if (nombre.includes('libra')) return 'lb';
+            if (nombre.includes('litro')) return 'lt';
+            return 'und';
         }
 
         function marcarCambio() {
@@ -1198,8 +2196,17 @@
                 sidebarOpen = false;
             }
 
-            // Inicializar datos
             inicializarDatos();
+            
+            // Ofrecer tutorial si es primera vez
+            const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
+            if (!tutorialVisto) {
+                setTimeout(() => {
+                    if (confirm('¿Deseas ver el tutorial de bienvenida?')) {
+                        startTutorial('completo');
+                    }
+                }, 1000);
+            }
         }
 
         function inicializarDatos() {
@@ -1211,12 +2218,10 @@
                 productosBase = data.productosBase || [];
                 valorCupoBase = data.valorCupo || 8094;
             } else {
-                // Primera vez: usar datos iniciales
                 proveedores = JSON.parse(JSON.stringify(PROVEEDORES_INICIALES));
                 productosBase = JSON.parse(JSON.stringify(PRODUCTOS_INICIALES));
             }
 
-            // Verificar integridad: productos sin proveedor válido se asignan al primero
             productosBase.forEach(p => {
                 if (!getProveedorById(p.proveedor)) {
                     const primerProv = getProveedoresOrdenados()[0];
@@ -1237,19 +2242,54 @@
             document.getElementById('reg-form').classList.toggle('hidden', !toReg);
         }
 
-        // ===== SIDEBAR =====
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebarOpen = !sidebarOpen;
+		// ===== FUNCIÓN: Cerrar sidebar al hacer clic fuera =====
+		function setupSidebarAutoClose() {
+			const mainWrapper = document.querySelector('.main-wrapper');
+			const sidebar = document.getElementById('sidebar');
+			
+			// Al hacer clic en el área principal (tablas), cerrar sidebar
+			mainWrapper.addEventListener('click', function(e) {
+				// NUEVO: No cerrar si el tutorial está activo
+				if (tutorialEnCurso) return;
+				
+				// Solo si el sidebar está abierto y no estamos en móvil
+				if (window.innerWidth > 768) {
+					if (!sidebar.classList.contains('collapsed')) {
+						toggleSidebar();
+					}
+				} else {
+					// En móvil, si está abierto (clase 'open'), cerrarlo
+					if (sidebar.classList.contains('open')) {
+						sidebar.classList.remove('open');
+						sidebarOpen = false;
+					}
+				}
+			});
+		}
+		
+		function toggleSidebar() {
+			// Si el tutorial está activo y el target actual es del menú, no permitir cerrar
+			if (tutorialEnCurso && tutorialActivo && pasoActual < tutorialActivo.length) {
+				const pasoActual = tutorialActivo[pasoActual];
+				if (pasoActual && pasoActual.target && (
+					pasoActual.target.includes('nav-') || 
+					pasoActual.target.includes('sidebar')
+				)) {
+					return; // No permitir cerrar durante explicación del menú
+				}
+			}
+			
+			const sidebar = document.getElementById('sidebar');
+			sidebarOpen = !sidebarOpen;
 
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('open', sidebarOpen);
-                sidebar.classList.remove('collapsed');
-            } else {
-                sidebar.classList.toggle('collapsed', !sidebarOpen);
-                sidebar.classList.remove('open');
-            }
-        }
+			if (window.innerWidth <= 768) {
+				sidebar.classList.toggle('open', sidebarOpen);
+				sidebar.classList.remove('collapsed');
+			} else {
+				sidebar.classList.toggle('collapsed', !sidebarOpen);
+				sidebar.classList.remove('open');
+			}
+		}
 
         function toggleSidebarMobile() {
             if (window.innerWidth <= 768) {
@@ -1328,14 +2368,8 @@
         function actualizarNombreProveedor(id, nuevoNombre) {
             const prov = proveedores.find(p => p.id === id);
             if (prov) {
-                const viejoNombre = prov.nombre;
                 prov.nombre = nuevoNombre;
-                
-                // Actualizar en tiempo real para mostrar nueva sigla
                 renderizarProveedores();
-                
-                // Nota: Los productos mantienen el ID del proveedor, no el nombre
-                // Así que no necesitan actualización
             }
         }
 
@@ -1367,7 +2401,6 @@
             const prov = proveedores.find(p => p.id === id);
             if (!prov) return;
 
-            // Verificar si tiene productos asignados
             const productosAsignados = productosBase.filter(p => p.proveedor === id).length;
             
             let mensaje = productosAsignados > 0 
@@ -1376,7 +2409,6 @@
 
             if (!confirm(mensaje)) return;
 
-            // Reasignar productos al primer proveedor restante o marcar como null
             const proveedoresRestantes = proveedores.filter(p => p.id !== id);
             const nuevoProveedorId = proveedoresRestantes.length > 0 ? proveedoresRestantes[0].id : null;
 
@@ -1386,14 +2418,11 @@
                 }
             });
 
-            // Eliminar proveedor
             proveedores = proveedores.filter(p => p.id !== id);
-
-            // Reordenar
             getProveedoresOrdenados().forEach((p, i) => p.orden = i);
 
             renderizarProveedores();
-            renderizarProductos(); // Actualizar lista de productos si está abierta
+            renderizarProductos();
         }
 
         function guardarProveedores() {
@@ -1537,7 +2566,7 @@
                 });
 
                 grid.innerHTML += `
-                    <div class="semana-card" id="card-${s}">
+                    <div class="semana-card" id="card-${s}" onclick="cerrarSidebarSiAbierto()">
                         <div class="semana-header">
                             <button class="btn-collapse" id="btn-col-${s}" onclick="toggleWeek(${s})">
                                 <i class="fa-solid fa-chevron-down" id="icon-col-${s}"></i>
@@ -1567,7 +2596,16 @@
                     </div>
                 `;
             }
-
+			 if (!tutorialEnCurso) {
+				const sidebar = document.getElementById('sidebar');
+				if (window.innerWidth > 768) {
+					sidebar.classList.add('collapsed');
+					sidebarOpen = false;
+				} else {
+					sidebar.classList.remove('open');
+				}
+				sidebarOpen = false;
+			}
             if (preservarDatos) {
                 const saved = localStorage.getItem(`elite_draft_${currentUser}`);
                 if (saved) {
@@ -1599,9 +2637,20 @@
         }
 
         function cambiarSemanas() {
-            initGrid(true);
-            marcarCambio();
-        }
+			initGrid(true);
+			marcarCambio();
+			
+			// NUEVO: Solo cerrar si NO hay tutorial activo
+			if (!tutorialEnCurso) {
+				const sidebar = document.getElementById('sidebar');
+				if (window.innerWidth > 768) {
+					sidebar.classList.add('collapsed');
+				} else {
+					sidebar.classList.remove('open');
+				}
+				sidebarOpen = false;
+			}
+		}
 
         function toggleWeek(s) {
             const content = document.getElementById(`content-${s}`);
@@ -1679,14 +2728,12 @@
             actualizarResumen();
         }
 
-        // ===== RESUMEN MEJORADO CON DETALLE POR PRODUCTO =====
+        // ===== RESUMEN MEJORADO =====
         function actualizarResumen() {
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
             
-            // Estructura: { productoNombre: { cantidadTotal, valorTotal, cl, proveedorId } }
             let resumenProductos = {};
             
-            // Inicializar todos los productos
             productosBase.forEach(p => {
                 resumenProductos[p.nombre] = {
                     cantidad: 0,
@@ -1699,7 +2746,6 @@
 
             let tPres = 0, tProdCL = 0, tProdOtros = 0;
 
-            // Recolectar datos de todas las semanas
             for (let s = 1; s <= semanas; s++) {
                 const pVal = document.getElementById(`pres-${s}`);
                 if (pVal) tPres += limpiarNum(pVal.textContent);
@@ -1727,14 +2773,13 @@
             const porcCL = tPres > 0 ? (tProdCL / tPres) * 100 : 0;
             const ledColor = porcCL >= 30 ? 'var(--success)' : 'var(--danger)';
 
-            // Generar HTML por proveedor con detalle de productos
             let htmlProveedores = '';
             const provsOrdenados = getProveedoresOrdenados();
 
             provsOrdenados.forEach(prov => {
                 const productosDelProv = Object.entries(resumenProductos)
                     .filter(([nombre, datos]) => datos.proveedor === prov.id && (datos.cantidad > 0 || datos.valor > 0))
-                    .sort((a, b) => b[1].valor - a[1].valor); // Ordenar por valor descendente
+                    .sort((a, b) => b[1].valor - a[1].valor);
 
                 if (productosDelProv.length === 0) return;
 
@@ -1776,7 +2821,7 @@
                     <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid ${ledColor};">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div>
-                                <small style="color:var(--text-dim);">% COMPRAS LOCALES (CL)</small>
+                                <small style="color:var(--text-dim);">% COMPRAS LOCALES</small>
                                 <div style="font-size:1.3em; color:${ledColor}; font-weight:bold;">${porcCL.toFixed(1)}%</div>
                             </div>
                             <div style="width:15px; height:15px; background:${ledColor}; border-radius:50%; box-shadow:0 0 10px ${ledColor};"></div>
@@ -1814,7 +2859,6 @@
                 `;
             }
 
-            // Datos para gráfico
             const datosGrafico = Object.entries(resumenProductos)
                 .filter(([_, datos]) => datos.valor > 0)
                 .map(([nombre, datos]) => ({
@@ -1827,26 +2871,33 @@
             renderChart(datosGrafico, tDist);
         }
 
-        function detectarUnidad(nombreProducto) {
-            const nombre = nombreProducto.toLowerCase();
-            if (nombre.includes('kilo')) return 'kg';
-            if (nombre.includes('libra')) return 'lb';
-            if (nombre.includes('litro')) return 'lt';
-            if (nombre.includes('und') || nombre.includes('unidad')) return 'und';
-            return 'und';
-        }
-
         function toggleResumenProv(id) {
             const el = document.getElementById(id);
             if (el) el.classList.toggle('collapsed');
         }
+		function cerrarSidebarSiAbierto() {
+			if (tutorialEnCurso) return;
+			
+			const sidebar = document.getElementById('sidebar');
+			
+			if (window.innerWidth > 768) {
+				if (!sidebar.classList.contains('collapsed')) {
+					sidebar.classList.add('collapsed');
+					sidebarOpen = false;
+				}
+			} else {
+				if (sidebar.classList.contains('open')) {
+					sidebar.classList.remove('open');
+					sidebarOpen = false;
+				}
+			}
+		}
 
         function renderChart(datos, distVal) {
             const canvas = document.getElementById('chartGasto');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
-            // Agrupar por proveedor para el gráfico
             let porProveedor = {};
             datos.forEach(d => {
                 if (!porProveedor[d.provId]) {
@@ -1877,16 +2928,15 @@
             });
         }
 
-        // ===== EXPORTACIÓN COMPLETA MEJORADA =====
+        // ===== EXPORTACIONES =====
         function exportarCompleto() {
             const mes = document.getElementById('main-mes').value;
             const contrato = document.getElementById('main-contrato').value;
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
 
-            // Crear workbook
             const wb = XLSX.utils.book_new();
 
-            // HOJA 1: DATOS GENERALES Y CONFIGURACIÓN
+            // HOJA 1: CONFIGURACIÓN
             const wsConfig = [
                 ["ZAN - TABLA DE VALORES"],
                 ["Fecha exportación:", new Date().toLocaleString('es-CO')],
@@ -1911,7 +2961,7 @@
 
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsConfig), "Configuración");
 
-            // HOJA 2: DATOS POR SEMANA
+            // HOJA 2: DATOS SEMANALES
             const wsData = [["SEMANA", "DÍAS", "CUPOS", "PRESUPUESTO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "CL", "DISTRIBUIDORA"]];
 
             for (let s = 1; s <= semanas; s++) {
@@ -1943,7 +2993,7 @@
 
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Datos Semanales");
 
-            // HOJA 3: RESUMEN POR PROVEEDOR
+            // HOJA 3: RESUMEN
             const wsResumen = [["PROVEEDOR", "SIGLA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "CL", "% DEL TOTAL"]];
             
             const totalesPorProducto = calcularTotalesPorProducto(semanas);
@@ -1990,7 +3040,6 @@
                 productosBase.forEach((p, i) => {
                     const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
                     const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
-                    
                     if (cant > 0) {
                         totales[p.nombre].cantidad += cant;
                         totales[p.nombre].valor += val;
@@ -2001,7 +3050,6 @@
             return totales;
         }
 
-        // ===== EXPORTACIÓN CONTABILIDAD =====
         function exportarContabilidadCSV() {
             const datos = generarDatosContabilidad();
             
@@ -2035,7 +3083,6 @@
             const datos = generarDatosContabilidad();
             const wb = XLSX.utils.book_new();
 
-            // Hoja 1: Detalle
             const wsData = [["FECHA", "MES", "CONTRATO", "SEMANA", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "UNIDAD", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "COMPRA_LOCAL"]];
             const fecha = new Date().toLocaleDateString('es-CO');
             
@@ -2044,7 +3091,6 @@
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Detalle");
 
-            // Hoja 2: Resumen por proveedor
             const wsRes = [["PROVEEDOR", "SIGLA", "TOTAL_FACTURAS", "CANTIDAD_ITEMS", "MONTO_TOTAL"]];
             for (let provId in datos.porProveedor) {
                 const prov = datos.porProveedor[provId];
@@ -2053,7 +3099,6 @@
             wsRes.push(["TOTAL GENERAL", "", "", datos.totalItems, datos.montoTotal]);
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsRes), "Resumen");
 
-            // Hoja 3: Resumen por producto
             const wsProd = [["PROVEEDOR", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "CL"]];
             datos.porProducto.forEach(p => {
                 wsProd.push([p.proveedor, p.producto, p.unidad, p.cantidad, p.valor, p.cl]);
@@ -2083,7 +3128,6 @@
                 };
             });
 
-            // Recolectar datos
             for (let s = 1; s <= semanas; s++) {
                 productosBase.forEach((p, i) => {
                     const fac = document.getElementById(`fac-${s}-${i}`)?.value?.trim();
@@ -2118,7 +3162,6 @@
                 });
             }
 
-            // Totales por producto
             let prodMap = {};
             productosBase.forEach(p => {
                 prodMap[p.nombre] = {
@@ -2147,7 +3190,7 @@
             return datos;
         }
 
-        // ===== IMPORTACIÓN MEJORADA =====
+        // ===== IMPORTACIÓN =====
         function importarExcel(input) {
             if (!input.files[0]) return;
             const reader = new FileReader();
@@ -2157,12 +3200,10 @@
                     const data = e.target.result;
                     const workbook = XLSX.read(data, { type: 'binary' });
 
-                    // Buscar hoja de configuración
                     const wsConfig = workbook.Sheets["Configuración"];
                     if (wsConfig) {
                         const configData = XLSX.utils.sheet_to_json(wsConfig, { header: 1 });
 
-                        // Leer proveedores (buscar sección PROVEEDORES CONFIGURADOS)
                         let enProveedores = false;
                         let enProductos = false;
                         let nuevosProveedores = [];
@@ -2188,7 +3229,6 @@
                             }
 
                             if (enProveedores && fila[0] && fila[0] !== "ID") {
-                                // [ID, Nombre, Sigla, Color, Orden]
                                 nuevosProveedores.push({
                                     id: fila[0],
                                     nombre: fila[1],
@@ -2198,16 +3238,14 @@
                             }
 
                             if (enProductos && fila[0] && fila[0] !== "Nombre") {
-                                // [Nombre, Precio, ProveedorID, Proveedor, CL, Unidad]
                                 nuevosProductos.push({
                                     nombre: fila[0],
                                     precio: parseFloat(fila[1]) || 0,
-                                    proveedor: fila[2], // ID del proveedor
+                                    proveedor: fila[2],
                                     cl: fila[4] === 'SI'
                                 });
                             }
 
-                            // Leer datos generales
                             if (primeraCelda === "MES:") {
                                 document.getElementById('main-mes').value = fila[1];
                             }
@@ -2222,7 +3260,6 @@
                             }
                         });
 
-                        // Aplicar configuración si se encontró
                         if (nuevosProveedores.length > 0) {
                             proveedores = nuevosProveedores;
                         }
@@ -2231,7 +3268,6 @@
                         }
                     }
 
-                    // Leer datos semanales (hoja "Datos Semanales" o primera hoja)
                     const wsData = workbook.Sheets["Datos Semanales"] || workbook.Sheets[workbook.SheetNames[0]];
                     if (wsData) {
                         const rows = XLSX.utils.sheet_to_json(wsData, { header: 1 });
@@ -2248,41 +3284,57 @@
                             initGrid(false);
                         }
 
-                        // Procesar filas
+                        let semActual = 0;
                         rows.forEach(fila => {
-                            if (!fila || fila.length < 8) return;
-                            
-                            const semana = parseInt(fila[0]);
-                            if (!semana) return;
+                            if (!fila || fila.length === 0) return;
+                            const txtFila = fila.map(c => String(c).toUpperCase()).join(" ");
 
-                            // Actualizar días y cupos si están disponibles
-                            if (fila[1]) document.getElementById(`dias-${semana}`).value = fila[1];
-                            if (fila[2]) document.getElementById(`cupos-${semana}`).value = fila[2];
+                            if (txtFila.includes("SEMANA")) {
+                                const match = txtFila.match(/SEMANA\s+(\d+)/);
+                                if (match) semActual = parseInt(match[1]);
+                                return;
+                            }
 
-                            // Buscar producto por nombre
-                            const nombreProducto = fila[7]; // Columna PRODUCTO
-                            if (nombreProducto) {
-                                const prodIdx = productosBase.findIndex(p => 
-                                    p.nombre.toLowerCase() === nombreProducto.toLowerCase()
-                                );
-
-                                if (prodIdx !== -1) {
-                                    if (fila[6]) document.getElementById(`fac-${semana}-${prodIdx}`).value = fila[6]; // FACTURA
-                                    if (fila[8]) document.getElementById(`cant-${semana}-${prodIdx}`).value = fila[8]; // CANTIDAD
-                                    
-                                    // Si hay valor total, calcular precio unitario inverso
-                                    if (fila[10]) {
-                                        document.getElementById(`val-${semana}-${prodIdx}`).value = fila[10];
-                                        ajustarPrecioInverso(semana, prodIdx);
-                                    }
+                            if (semActual > 0) {
+                                if (!isNaN(fila[0]) && fila[0] !== "" && !txtFila.includes("FACTURA") && !txtFila.includes("DIAS")) {
+                                    const dInput = document.getElementById(`dias-${semActual}`);
+                                    const cInput = document.getElementById(`cupos-${semActual}`);
+                                    if (dInput) dInput.value = fila[0];
+                                    if (cInput) cInput.value = fila[1];
                                 }
+
+                                productosBase.forEach((p, i) => {
+                                    if (txtFila.includes(p.nombre.toUpperCase())) {
+                                        const facInput = document.getElementById(`fac-${semActual}-${i}`);
+                                        const cantInput = document.getElementById(`cant-${semActual}-${i}`);
+                                        const valInput = document.getElementById(`val-${semActual}-${i}`);
+
+                                        let factura = "", cantidad = 0, valor = 0;
+
+                                        for (let j = 0; j < fila.length; j++) {
+                                            const val = String(fila[j]).trim();
+                                            if (val && !val.includes(p.nombre) && isNaN(val) && j < 3) factura = val;
+                                            if (!isNaN(val) && val !== "") {
+                                                if (cantidad === 0) cantidad = parseFloat(val);
+                                                else valor = parseFloat(val);
+                                            }
+                                        }
+
+                                        if (facInput) facInput.value = factura;
+                                        if (cantInput) cantInput.value = cantidad || "";
+                                        if (valInput && valor) {
+                                            valInput.value = formatter.format(valor);
+                                            ajustarPrecioInverso(semActual, i);
+                                        }
+                                    }
+                                });
                             }
                         });
 
                         for (let s = 1; s <= maxSem; s++) calcular(s);
                     }
 
-                    alert('Importación completada. Se actualizaron proveedores, productos y datos.');
+                    alert('Importación completada exitosamente');
                     marcarCambio();
 
                 } catch (err) {
@@ -2359,7 +3411,10 @@
         }
 
         function restaurar(data) {
-            // Los datos ya se cargaron en inicializarDatos
+            if (data.proveedores) proveedores = data.proveedores;
+            if (data.productosBase) productosBase = data.productosBase;
+            if (data.valorCupo) valorCupoBase = data.valorCupo;
+
             document.getElementById('main-mes').value = data.mes || "Enero";
             document.getElementById('main-contrato').value = data.contrato || "";
             document.getElementById('num-semanas').value = data.numSemanas || 4;
@@ -2426,7 +3481,6 @@
             const snap = await db.ref(`files/${currentUser}/${k}`).once('value');
             const data = snap.val();
             
-            // Restaurar todo incluyendo proveedores y productos
             if (data.proveedores) proveedores = data.proveedores;
             if (data.productosBase) productosBase = data.productosBase;
             if (data.valorCupo) valorCupoBase = data.valorCupo;
