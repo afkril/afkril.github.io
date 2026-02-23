@@ -6,18 +6,32 @@
     <title>Reporte_Novedades|T3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <!-- Firebase SDK para Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <!-- Chart.js para estadísticas -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS para exportar Excel -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
-    <!-- jsPDF para exportar PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         
+		body.dark-mode #batchMenu {
+			background: #1e293b;
+			border: 1px solid #475569;
+		}
+
+		body.dark-mode #batchMenu button {
+			background: #1e293b;
+			color: #e2e8f0;
+		}
+
+		body.dark-mode #batchMenu button:hover {
+			background: #334155 !important;
+		}
+
+		body.dark-mode #batchMenu div {
+			background: #475569;
+		}
+
         body { 
             background-attachment: fixed; 
             background-size: cover; 
@@ -32,9 +46,7 @@
             background-color: #f1f5f9;
         }
 
-        body.dark-mode {
-            background-color: #0f172a;
-        }
+        body.dark-mode { background-color: #0f172a; }
 
         .glass-container { 
             background: rgba(255, 255, 255, 0.98); 
@@ -91,12 +103,238 @@
             box-shadow: 0 0 0 3px rgba(0,0,0,0.05); 
         }
 
-        .step-badge { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 0.9rem; }
+        .step-badge { 
+            width: 32px; height: 32px; 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 50%; color: white; font-weight: bold; font-size: 0.9rem; 
+        }
         
         .contract-668 .dynamic-bg { background-color: #2563EB; }
         .contract-668 .dynamic-text { color: #2563EB; }
         .contract-668 .dynamic-border { border-top-color: #2563EB; }
-        
+
+        /* ===== NUEVO: SISTEMA DE GRÁFICA OMS FLOTANTE ===== */
+        .grafica-trigger {
+			position: relative;
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			cursor: pointer;
+			padding: 8px 16px;
+			background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+			color: white;
+			border-radius: 50px;
+			font-weight: 700;
+			font-size: 13px;
+			transition: all 0.3s ease;
+			box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+			z-index: 100;
+		}
+
+        .grafica-trigger:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+		}
+
+        .grafica-tooltip {
+			position: fixed; /* Cambiado a fixed para evitar problemas de overflow */
+			width: 420px;
+			max-width: 90vw; /* Responsive */
+			max-height: 80vh; /* Evita que sea más alto que la pantalla */
+			background: white;
+			border-radius: 20px;
+			box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+			padding: 20px;
+			opacity: 0;
+			visibility: hidden;
+			transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+			z-index: 9999;
+			border: 3px solid;
+			overflow-y: auto; /* Scroll si es necesario */
+			
+			/* Posición inicial, se ajustará por JS */
+			top: 0;
+			left: 0;
+			
+			/* Escala inicial para animación */
+			transform: scale(0.95);
+		}
+
+        .grafica-tooltip::before {
+			content: '';
+			position: absolute;
+			width: 0;
+			height: 0;
+			border: 12px solid transparent;
+		}
+		
+		.grafica-tooltip.arrow-top::before {
+			top: -24px;
+			left: 50%;
+			transform: translateX(-50%);
+			border-bottom-color: inherit;
+		}
+
+		.grafica-tooltip.arrow-bottom::before {
+			bottom: -24px;
+			left: 50%;
+			transform: translateX(-50%);
+			border-top-color: inherit;
+		}
+		
+		.grafica-tooltip.arrow-left::before {
+			left: -24px;
+			top: 50%;
+			transform: translateY(-50%);
+			border-right-color: inherit;
+		}
+
+		.grafica-tooltip.arrow-right::before {
+			right: -24px;
+			top: 50%;
+			transform: translateY(-50%);
+			border-left-color: inherit;
+		}
+		
+
+        /* Borde según género */
+		/* Estados visibles */
+		.grafica-tooltip.visible {
+			opacity: 1;
+			visibility: visible;
+			transform: scale(1);
+		}
+
+		/* Borde según género */
+		.grafica-tooltip.boy {
+			border-color: #3b82f6;
+		}
+		.grafica-tooltip.boy.arrow-top::before { border-bottom-color: #3b82f6; }
+		.grafica-tooltip.boy.arrow-bottom::before { border-top-color: #3b82f6; }
+		.grafica-tooltip.boy.arrow-left::before { border-right-color: #3b82f6; }
+		.grafica-tooltip.boy.arrow-right::before { border-left-color: #3b82f6; }
+
+		.grafica-tooltip.girl {
+			border-color: #ec4899;
+		}
+		.grafica-tooltip.girl.arrow-top::before { border-bottom-color: #ec4899; }
+		.grafica-tooltip.girl.arrow-bottom::before { border-top-color: #ec4899; }
+		.grafica-tooltip.girl.arrow-left::before { border-right-color: #ec4899; }
+		.grafica-tooltip.girl.arrow-right::before { border-left-color: #ec4899; }
+		
+        .grafica-tooltip.boy::after {
+            border-top-color: #3b82f6;
+        }
+		
+       
+        .grafica-tooltip.girl::after {
+            border-top-color: #ec4899;
+        }
+
+        .grafica-trigger:hover .grafica-tooltip,
+        .grafica-tooltip.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+        }
+
+        /* Canvas de la gráfica */
+        .grafica-canvas-container {
+			position: relative;
+			width: 100%;
+			height: 300px;
+			background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+			border-radius: 12px;
+			overflow: hidden;
+			margin-top: 10px;
+		}
+
+        .grafica-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 10px;
+		}
+
+		.grafica-title {
+			font-size: 14px;
+			font-weight: 800;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+		}
+
+        .grafica-subtitle {
+			font-size: 11px;
+			color: #64748b;
+			font-weight: 600;
+		}
+
+		/* Leyenda de rangos */
+		.rangos-leyenda {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 6px;
+			margin-top: 12px;
+			font-size: 10px;
+		}
+
+        .rango-item {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			padding: 4px 8px;
+			border-radius: 6px;
+			font-weight: 600;
+		}
+
+		.rango-color {
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			flex-shrink: 0;
+		}
+
+        /* Estados nutricionales */
+        .estado-severo { background: #7f1d1d; color: #fecaca; }
+        .estado-moderado { background: #dc2626; color: white; }
+        .estado-riesgo-des { background: #f59e0b; color: #78350f; }
+        .estado-normal { background: #10b981; color: white; }
+        .estado-riesgo-ob { background: #fbbf24; color: #78350f; }
+        .estado-sobrepeso { background: #f97316; color: white; }
+        .estado-obesidad { background: #dc2626; color: white; }
+
+        /* Indicador del punto en la gráfica */
+        .punto-indicador {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #dc2626;
+            border: 3px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 10;
+            animation: pulse-punto 2s infinite;
+        }
+
+        @keyframes pulse-punto {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        .punto-label {
+            position: absolute;
+            background: #1e293b;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            transform: translate(-50%, -140%);
+            pointer-events: none;
+        }
+
         /* Toast Notifications */
         .toast-container {
             position: fixed;
@@ -151,7 +389,7 @@
         .admin-content {
             background: white;
             margin: 20px auto;
-            max-width: 1200px;
+            max-width: 1400px;
             border-radius: 20px;
             padding: 30px;
             min-height: calc(100vh - 40px);
@@ -398,6 +636,7 @@
         .export-excel { background: linear-gradient(135deg, #10b981, #059669); color: white; }
         .export-pdf { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
         .export-excel-full { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .export-danger { background: linear-gradient(135deg, #dc2626, #991b1b); color: white; }
 
         /* Bloqueo de Formulario Styles */
         .bloqueo-overlay {
@@ -484,13 +723,323 @@
             display: inline-block;
         }
 
-        /* Configuracion de Bloqueo en Admin */
+        /* Boton de acceso admin en bloqueo */
+        .bloqueo-admin-access {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #cbd5e1;
+            display: flex;
+            justify-content: center;
+        }
+
+        body.dark-mode .bloqueo-admin-access {
+            border-top-color: #475569;
+        }
+
+        .btn-casita-admin {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-casita-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .btn-casita-admin svg {
+            stroke: white;
+        }
+
+        .btn-casita-admin span {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Checkbox visual bonito para Cargado al CUENTAME */
+        .cuentame-check {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 3px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            position: relative;
+        }
+
+        .cuentame-check:hover {
+            border-color: #3b82f6;
+            transform: scale(1.1);
+        }
+
+        .cuentame-check.checked {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-color: #10b981;
+        }
+
+        .cuentame-check.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .cuentame-check.pending {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-color: #f59e0b;
+        }
+
+        .cuentame-check.pending::after {
+            content: '!';
+            font-size: 12px;
+        }
+
+        body.dark-mode .cuentame-check {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        /* Indicador de duplicado */
+        .duplicado-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            animation: pulse 2s infinite;
+        }
+
+        body.dark-mode .duplicado-badge {
+            background: #450a0a;
+            color: #fca5a5;
+            border-color: #7f1d1d;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Tooltip para duplicados */
+        .duplicado-tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .duplicado-tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 100;
+            margin-bottom: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Botón de archivar */
+        .btn-archivar {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-archivar:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-archivar:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Indicador de pendientes discreto */
+        .pendientes-indicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1001;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid white;
+        }
+
+        .pendientes-indicator:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .pendientes-indicator.zero {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        body.dark-mode .pendientes-indicator {
+            border-color: #1e293b;
+        }
+
+        .pendientes-count {
+            background: white;
+            color: #d97706;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .pendientes-indicator.zero .pendientes-count {
+            color: #059669;
+        }
+
+        /* Tabs para navegación Admin */
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        body.dark-mode .admin-tabs {
+            border-color: #475569;
+        }
+
+        .admin-tab {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f1f5f9;
+            color: #64748b;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.dark-mode .admin-tab {
+            background: #334155;
+            color: #94a3b8;
+        }
+
+        .admin-tab:hover {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .admin-tab.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estado archivado en tabla */
+        .archivado-row {
+            background: #f0fdf4 !important;
+            opacity: 0.8;
+        }
+
+        body.dark-mode .archivado-row {
+            background: #052e16 !important;
+        }
+
+        .archivado-row td {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+
+        body.dark-mode .archivado-row td {
+            color: #9ca3af;
+        }
+
+        /* Checkbox en tabla archivados */
+        .check-archivado {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #10b981;
+            color: white;
+            font-size: 12px;
+        }
+
+        /* Configuracion de Bloqueo en Admin - NUEVO DISEÑO */
         .config-bloqueo-card {
             background: linear-gradient(135deg, #fef3c7, #fde68a);
             border: 2px solid #f59e0b;
             border-radius: 16px;
             padding: 24px;
             margin-bottom: 24px;
+            max-width: 600px;
         }
 
         body.dark-mode .config-bloqueo-card {
@@ -587,50 +1136,148 @@
             transition: all 0.5s ease;
         }
 
-        /* Boton de acceso admin en bloqueo */
-        .bloqueo-admin-access {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px dashed #cbd5e1;
-            display: flex;
-            justify-content: center;
+        /* Stats grandes para Resumen */
+        .stat-big {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1;
         }
 
-        body.dark-mode .bloqueo-admin-access {
-            border-top-color: #475569;
+        .stat-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-top: 8px;
         }
 
-        .btn-casita-admin {
+        /* Selector de mes para resumen */
+        .mes-selector {
             display: flex;
-            flex-direction: column;
+            gap: 10px;
             align-items: center;
-            gap: 5px;
-            padding: 12px 24px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .mes-selector select {
+            padding: 8px 16px !important;
+            border-radius: 8px !important;
+            font-size: 14px !important;
+            min-width: 150px;
+        }
+
+        .btn-mes-actual {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
             border: none;
-            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-size: 12px;
             font-weight: 600;
+            font-size: 13px;
         }
 
-        .btn-casita-admin:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        .btn-mes-actual:hover {
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
         }
 
-        .btn-casita-admin svg {
-            stroke: white;
+        /* NUEVOS ESTILOS PARA SEGUIMIENTO NUTRICIONAL MEJORADO */
+        .nutricion-card {
+            background: linear-gradient(135deg, #fff7ed, #ffedd5);
+            border: 2px solid #f97316;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 20px;
         }
 
-        .btn-casita-admin span {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        body.dark-mode .nutricion-card {
+            background: linear-gradient(135deg, #431407, #7c2d12);
+            border-color: #ea580c;
         }
+
+        .nutricion-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #c2410c;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: space-between;
+        }
+
+        body.dark-mode .nutricion-title {
+            color: #fb923c;
+        }
+
+        /* Indicador de estado nutricional mejorado */
+        .nutricion-indicator {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+            border: 2px solid #fed7aa;
+            text-align: center;
+        }
+
+        body.dark-mode .nutricion-indicator {
+            background: #1e293b;
+            border-color: #7c2d12;
+        }
+
+        .nutricion-status {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .nutricion-details {
+            font-size: 13px;
+            color: #78716c;
+            margin-top: 8px;
+        }
+
+        body.dark-mode .nutricion-details {
+            color: #a8a29e;
+        }
+
+        /* Los 7 rangos nutricionales con colores específicos */
+        .rango-desnutricion-severa { background: #7f1d1d; color: #fecaca; }
+        .rango-desnutricion-moderada { background: #dc2626; color: white; }
+        .rango-riesgo-desnutricion { background: #f59e0b; color: #78350f; }
+        .rango-normal { background: #10b981; color: white; }
+        .rango-riesgo-sobrepeso { background: #fbbf24; color: #78350f; }
+        .rango-sobrepeso { background: #f97316; color: white; }
+        .rango-obesidad { background: #dc2626; color: white; }
+
+        .nutricion-legend {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 11px;
+            text-align: left;
+        }
+
+        .nutricion-legend-item {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+		@media (max-width: 480px) {
+			.grafica-tooltip {
+				width: 300px;
+				left: 10px !important; /* Forzar margen en móviles */
+				right: 10px !important;
+			}
+		}
 
         @media (max-width: 768px) {
             .glass-container { transform: scale(1); margin: 1rem; }
@@ -639,13 +1286,46 @@
             .chart-container { height: 200px; }
             .bloqueo-content { padding: 30px 20px; }
             .bloqueo-title { font-size: 24px; }
+            .pendientes-indicator {
+                top: 10px;
+                left: 10px;
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+            .admin-tabs { flex-wrap: wrap; }
+            .stat-big { font-size: 32px; }
+            .nutricion-legend { grid-template-columns: 1fr; }
+            
+            /* Responsive para gráfica flotante */
+            
+            .grafica-trigger:hover .grafica-tooltip,
+            .grafica-tooltip.active {
+                transform: translateX(0) scale(1);
+            }
+			
+			.grafica-tooltip {
+				width: 340px;
+				padding: 15px;
+			}
+					
+			.rangos-leyenda {
+				grid-template-columns: 1fr;
+			}
         }
     </style>
+<base target="_blank">
 </head>
 <body>
 
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Indicador de Pendientes -->
+    <div id="pendientesIndicator" class="pendientes-indicator" onclick="showPendientesView()" style="display: none;">
+        <span>⏳</span>
+        <span>Pendientes:</span>
+        <span class="pendientes-count" id="pendientesCount">0</span>
+    </div>
 
     <!-- Modal for View Details -->
     <div id="viewModal" class="modal-overlay" onclick="closeModal(event)">
@@ -807,11 +1487,11 @@
                         <input type="text" id="ingresoFullName" name="ingreso_nombre" placeholder="Nombres y Apellidos Completos" class="w-full rounded-lg">
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Nacimiento</label>
-                            <input type="date" id="ingresoDOB" name="ingreso_nacimiento" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateAgeRange()">
+                            <input type="date" id="ingresoDOB" name="ingreso_nacimiento" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateAgeRange(); calcularEstadoNutricional();">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
-                            <input type="date" id="ingresoDate" name="ingreso_fecha" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateDatesRealTime()">
+                            <input type="date" id="ingresoDate" name="ingreso_fecha" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateDatesRealTime(); calcularEstadoNutricional();">
                         </div>
                         <div class="md:col-span-2 space-y-1">
                             <label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
@@ -820,10 +1500,10 @@
                         <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
                             <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
                             <label class="text-sm font-bold flex items-center">
-                                <input type="radio" name="_ingresoGender" value="M" class="mr-1"> M
+                                <input type="radio" name="_ingresoGender" value="M" class="mr-1" onchange="calcularEstadoNutricional()"> M
                             </label>
                             <label class="text-sm font-bold flex items-center">
-                                <input type="radio" name="_ingresoGender" value="F" class="mr-1"> F
+                                <input type="radio" name="_ingresoGender" value="F" class="mr-1" onchange="calcularEstadoNutricional()"> F
                             </label>
                         </div>
                         <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección y Barrio" class="w-full rounded-lg">
@@ -850,6 +1530,85 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- NUEVO: SEGUIMIENTO NUTRICIONAL MEJORADO CON GRÁFICA FLOTANTE -->
+                <div class="nutricion-card">
+                    <div class="nutricion-title">
+                        <div class="flex items-center gap-2">
+                            <span>🍎</span>
+                            <span>Seguimiento Nutricional</span>
+							
+							<!-- ===== BOTÓN DE GRÁFICA OMS ===== -->
+							<div class="grafica-trigger" id="graficaTrigger">
+								<span>📊</span>
+								<span>Ver Gráfica OMS</span>
+								
+								<!-- TOOLTIP INTELIGENTE - Se posiciona automáticamente -->
+								<div class="grafica-tooltip" id="graficaTooltip">
+									<div class="grafica-header">
+										<div>
+											<div class="grafica-title" id="graficaTitle">Gráfica Peso/Talla OMS</div>
+											<div class="grafica-subtitle" id="graficaSubtitle">Pasa el cursor para ver posición</div>
+										</div>
+										<div class="text-2xl" id="graficaIcon">👶</div>
+									</div>
+									
+									<!-- Canvas de la gráfica -->
+									<div class="grafica-canvas-container" id="graficaContainer">
+										<canvas id="omsChart" width="380" height="280"></canvas>
+									</div>
+								</div>
+							</div>
+							
+                        </div>
+                        
+                        
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Fecha de Valoración Antropométrica *</label>
+                            <input type="date" id="nutricionFecha" name="nutricion_fecha" class="w-full rounded-lg" required onchange="calcularEstadoNutricional()">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Peso (kg) * <span class="text-[10px] font-normal">(5 - 30.5 kg)</span></label>
+                            <input type="number" id="nutricionPeso" name="nutricion_peso" placeholder="Ej: 12.5" 
+                                   class="w-full rounded-lg" step="0.1" min="5" max="30.5" required
+                                   oninput="validarRangoNutricion(this, 5, 30.5); calcularEstadoNutricional()">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Talla (cm) * <span class="text-[10px] font-normal">(50 - 130.5 cm)</span></label>
+                            <input type="number" id="nutricionTalla" name="nutricion_talla" placeholder="Ej: 85.0" 
+                                   class="w-full rounded-lg" step="0.1" min="50" max="130.5" required
+                                   oninput="validarRangoNutricion(this, 50, 130.5); calcularEstadoNutricional()">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Régimen</label>
+                            <select id="nutricionRegimen" name="nutricion_regimen" class="w-full rounded-lg">
+                                <option value="">Seleccione...</option>
+                                <option value="SUBSIDIADO">RÉGIMEN SUBSIDIADO</option>
+                                <option value="CONTRIBUTIVO">RÉGIMEN CONTRIBUTIVO</option>
+                                <option value="ESPECIAL">RÉGIMEN ESPECIAL</option>
+                                <option value="NO_AFILIADO">NO AFILIADO</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1 md:col-span-2">
+                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">EPS</label>
+                            <input type="text" id="nutricionEPS" name="nutricion_eps" placeholder="Nombre de la EPS" class="w-full rounded-lg">
+                        </div>
+                    </div>
+
+                    <!-- INDICADOR DE ESTADO NUTRICIONAL CON 7 RANGOS -->
+                    <div class="nutricion-indicator" id="nutricionIndicator" style="display: none;">
+                        <div class="nutricion-status" id="nutricionStatus">--</div>
+                        <div class="nutricion-details" id="nutricionDetails">Complete los datos para calcular el estado nutricional</div>
+                        
+                        <!-- Leyenda visual de rangos -->
+                        <div class="nutricion-legend" id="nutricionLegend">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <input type="hidden" name="REPORTE_DETALLADO" id="hiddenFormattedData">
@@ -862,7 +1621,7 @@
             <div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
             
             <footer class="mt-10 mb-2 text-[11px] font-black text-slate-400 tracking-[0.4em] text-center uppercase">
-                Asociación T3 • Neiva, Huila © 2026
+                Asociación T3 • Neiva, Huila • 2026
             </footer>
         </form>
     </main>
@@ -873,165 +1632,365 @@
             <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
                 <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Panel de Administración</h2>
                 <div class="flex gap-3 flex-wrap">
-                    <button onclick="exportToExcelCurrent()" class="export-btn export-excel">
-                        Exportar Vista Actual
-                    </button>
-                    <button onclick="exportToExcelFull()" class="export-btn export-excel-full">
-                        Exportar Completo
-                    </button>
-                    <button onclick="exportToPDF()" class="export-btn export-pdf">
-                        Exportar PDF
-                    </button>
                     <button onclick="closeAdminPanel()" class="px-4 py-2 bg-slate-600 text-white rounded-lg font-semibold hover:bg-slate-700 transition">
                         Cerrar
                     </button>
                 </div>
             </div>
 
-            <!-- Configuracion de Bloqueo de Formulario -->
-            <div class="config-bloqueo-card">
-                <h3 class="config-bloqueo-title">
-                    <span>🔒</span> Configuración de Cierre de Mes
-                </h3>
-                
-                <div class="config-row">
-                    <span class="config-label">Estado:</span>
-                    <div class="toggle-switch" id="toggleBloqueo" onclick="toggleBloqueoSistema()"></div>
-                    <span id="estadoBloqueoText" class="estado-inactivo">DESACTIVADO</span>
-                </div>
-
-                <div class="config-row">
-                    <span class="config-label">Fecha Inicio:</span>
-                    <input type="number" id="configFechaInicio" class="config-input" value="28" min="1" max="31" onchange="guardarConfigBloqueo()">
-                    <span>de cada mes</span>
-                </div>
-
-                <div class="config-row">
-                    <span class="config-label">Fecha Fin:</span>
-                    <input type="number" id="configFechaFin" class="config-input" value="30" min="1" max="31" onchange="guardarConfigBloqueo()">
-                    <span>de cada mes</span>
-                </div>
-
-                <div class="config-row" style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #f59e0b;">
-                    <span class="config-label">Periodo actual:</span>
-                    <strong id="periodoActualDisplay" style="color: #92400e; font-size: 16px;">28 - 30 de cada mes</strong>
-                </div>
-
-                <div style="margin-top: 15px; font-size: 12px; color: #78716c;">
-                    * Cuando está activado, el formulario se bloquea automáticamente durante estas fechas.
-                </div>
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchTab('activas')" id="tab-activas">
+                    📋 Novedades Activas
+                </button>
+                <button class="admin-tab" onclick="switchTab('archivadas')" id="tab-archivadas">
+                    🗃️ Archivados
+                </button>
+                <button class="admin-tab" onclick="switchTab('resumen')" id="tab-resumen">
+                    📊 Resumen
+                </button>
+                <button class="admin-tab" onclick="switchTab('configuracion')" id="tab-configuracion">
+                    ⚙️ Configuración
+                </button>
             </div>
 
-            <!-- Dashboard Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <!-- Sección Novedades Activas -->
+            <div id="section-activas" class="admin-section active">
+                <!-- Search and Filter - Compact -->
                 <div class="stats-card">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Hoy</h4>
-                    <p class="text-2xl font-black text-slate-800" id="statToday">0</p>
-                    <p class="text-xs text-slate-400 mt-1">Novedades</p>
-                </div>
-                <div class="stats-card">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Esta Semana</h4>
-                    <p class="text-2xl font-black text-slate-800" id="statWeek">0</p>
-                    <p class="text-xs text-slate-400 mt-1">Total</p>
-                </div>
-                <div class="stats-card">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Este Mes</h4>
-                    <p class="text-2xl font-black text-slate-800" id="statMonth">0</p>
-                    <p class="text-xs text-slate-400 mt-1">Total</p>
-                </div>
-                <div class="stats-card">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Retiros/Ingresos</h4>
-                    <div class="flex gap-3 mt-1">
-                        <div>
-                            <span class="text-xl font-black text-red-600" id="statRetiros">0</span>
-                            <span class="text-xs text-slate-400 block">Ret</span>
-                        </div>
-                        <div>
-                            <span class="text-xl font-black text-green-600" id="statIngresos">0</span>
-                            <span class="text-xs text-slate-400 block">Ing</span>
+                    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+                        <h4 class="text-sm font-bold text-slate-700">Búsqueda y Filtrado - Novedades Activas</h4>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="exportToExcelCurrent()" class="export-btn export-excel">
+                                Exportar Vista Actual
+                            </button>
+                            <button onclick="exportToExcelFull()" class="export-btn export-excel-full">
+                                Exportar Completo
+                            </button>
+                            <button onclick="exportToPDF()" class="export-btn export-pdf">
+                                Exportar PDF
+                            </button>
+							<!-- Reemplaza el botón anterior con este menú desplegable -->
+								<div style="position: relative; display: inline-block;">
+									<button onclick="toggleBatchMenu()" class="export-btn" style="background: linear-gradient(135deg, #64748b, #475569); color: white;">
+										⚡ Acciones Masivas ▼
+									</button>
+									<div id="batchMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); min-width: 220px; z-index: 100; overflow: hidden;">
+										<button onclick="marcarTodosCargados(); toggleBatchMenu();" style="width: 100%; padding: 12px 16px; text-align: left; border: none; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+											<span style="color: #10b981;">✓</span>
+											Marcar todos como cargados
+											<span id="countPendientesBadge" style="margin-left: auto; background: #f59e0b; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">0</span>
+										</button>
+										<div style="height: 1px; background: #e2e8f0;"></div>
+										<button onclick="archivarTodosCargados(); toggleBatchMenu();" style="width: 100%; padding: 12px 16px; text-align: left; border: none; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+											<span style="color: #8b5cf6;">🗃</span>
+											Archivar todos los cargados
+										</button>
+									</div>
+								</div>
                         </div>
                     </div>
+                    <div class="filter-grid">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="searchInput" placeholder="Buscar nombre o documento..." oninput="filterNovelties()">
+                        </div>
+                        <select id="filterType" onchange="filterNovelties()">
+                            <option value="">Todos los tipos</option>
+                            <option value="retiro">Solo Retiros</option>
+                            <option value="ingreso">Solo Ingresos</option>
+                            <option value="ambos">Solo Ambos</option>
+                        </select>
+                        <select id="filterMonth" onchange="filterNovelties()">
+                            <option value="">Todos los meses</option>
+                            <option value="0">Enero</option>
+                            <option value="1">Febrero</option>
+                            <option value="2">Marzo</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Mayo</option>
+                            <option value="5">Junio</option>
+                            <option value="6">Julio</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Septiembre</option>
+                            <option value="9">Octubre</option>
+                            <option value="10">Noviembre</option>
+                            <option value="11">Diciembre</option>
+                        </select>
+                        <select id="filterUDS" onchange="filterNovelties()">
+                            <option value="">Todas las UDS</option>
+                        </select>
+                        <select id="filterStatus" onchange="filterNovelties()">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente">Pendientes</option>
+                            <option value="cargado">Cargados al CUENTAME</option>
+                        </select>
+                        <input type="date" id="filterDate" onchange="filterNovelties()">
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>CUENTAME</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Fecha Movimiento</th>
+                                    <th>UDS</th>
+                                    <th>Tipo</th>
+                                    <th>Documento</th>
+                                    <th>Nombre</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="noveltiesTableBody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="pagination" class="flex justify-center gap-2 mt-4 flex-wrap">
+                        <!-- Pagination buttons -->
+                    </div>
                 </div>
             </div>
 
-            <!-- Charts -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- Sección Archivados -->
+            <div id="section-archivadas" class="admin-section">
                 <div class="stats-card">
-                    <h4 class="text-sm font-bold text-slate-700 mb-3">Novedades por Tipo</h4>
-                    <div class="chart-container">
-                        <canvas id="typeChart"></canvas>
+                    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+                        <h4 class="text-sm font-bold text-slate-700">🗃️ Novedades Archivadas</h4>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="exportArchivedToExcel()" class="export-btn export-excel">
+                                Exportar Archivados a Excel
+                            </button>
+                            <button onclick="eliminarTodosArchivados()" class="export-btn export-danger">
+                                🗑️ Eliminar TODOS los Archivados
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="stats-card">
-                    <h4 class="text-sm font-bold text-slate-700 mb-3">UDS con más movimiento</h4>
-                    <div class="chart-container">
-                        <canvas id="udsChart"></canvas>
+                    
+                    <div class="filter-grid">
+                        <div class="search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="searchInputArchivados" placeholder="Buscar nombre o documento..." oninput="filterArchivedNovelties()">
+                        </div>
+                        <select id="filterTypeArchivados" onchange="filterArchivedNovelties()">
+                            <option value="">Todos los tipos</option>
+                            <option value="retiro">Solo Retiros</option>
+                            <option value="ingreso">Solo Ingresos</option>
+                            <option value="ambos">Solo Ambos</option>
+                        </select>
+                        <select id="filterMonthArchivados" onchange="filterArchivedNovelties()">
+                            <option value="">Todos los meses</option>
+                            <option value="0">Enero</option>
+                            <option value="1">Febrero</option>
+                            <option value="2">Marzo</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Mayo</option>
+                            <option value="5">Junio</option>
+                            <option value="6">Julio</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Septiembre</option>
+                            <option value="9">Octubre</option>
+                            <option value="10">Noviembre</option>
+                            <option value="11">Diciembre</option>
+                        </select>
+                        <select id="filterUDSArchivados" onchange="filterArchivedNovelties()">
+                            <option value="">Todas las UDS</option>
+                        </select>
+                        <input type="date" id="filterDateArchivados" onchange="filterArchivedNovelties()">
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Estado</th>
+                                    <th>Fecha Archivo</th>
+                                    <th>Fecha Movimiento</th>
+                                    <th>UDS</th>
+                                    <th>Tipo</th>
+                                    <th>Documento</th>
+                                    <th>Nombre</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archivedTableBody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="paginationArchivados" class="flex justify-center gap-2 mt-4 flex-wrap">
+                        <!-- Pagination buttons -->
                     </div>
                 </div>
             </div>
 
-            <!-- Search and Filter - Compact -->
-            <div class="stats-card">
-                <h4 class="text-sm font-bold text-slate-700 mb-3">Búsqueda y Filtrado</h4>
-                <div class="filter-grid">
-                    <div class="search-box">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="searchInput" placeholder="Buscar nombre o documento..." oninput="filterNovelties()">
+            <!-- Sección Resumen (Estadísticas) -->
+            <div id="section-resumen" class="admin-section">
+                <!-- Selector de Mes -->
+                <div class="stats-card mb-4">
+                    <div class="mes-selector">
+                        <label class="font-bold text-slate-700">📅 Seleccionar Mes:</label>
+                        <select id="resumenMesSelector" onchange="cambiarMesResumen()">
+                            <option value="-1">Todos los meses</option>
+                            <option value="0">Enero</option>
+                            <option value="1">Febrero</option>
+                            <option value="2">Marzo</option>
+                            <option value="3">Abril</option>
+                            <option value="4">Mayo</option>
+                            <option value="5">Junio</option>
+                            <option value="6">Julio</option>
+                            <option value="7">Agosto</option>
+                            <option value="8">Septiembre</option>
+                            <option value="9">Octubre</option>
+                            <option value="10">Noviembre</option>
+                            <option value="11">Diciembre</option>
+                        </select>
+                        <select id="resumenAnioSelector" onchange="cambiarMesResumen()">
+                            <!-- Se llena dinámicamente -->
+                        </select>
+                        <button onclick="irMesActual()" class="btn-mes-actual">Ir al Mes Actual</button>
                     </div>
-                    <select id="filterType" onchange="filterNovelties()">
-                        <option value="">Todos los tipos</option>
-                        <option value="retiro">Solo Retiros</option>
-                        <option value="ingreso">Solo Ingresos</option>
-                        <option value="ambos">Solo Ambos</option>
-                    </select>
-                    <select id="filterMonth" onchange="filterNovelties()">
-                        <option value="">Todos los meses</option>
-                        <option value="0">Enero</option>
-                        <option value="1">Febrero</option>
-                        <option value="2">Marzo</option>
-                        <option value="3">Abril</option>
-                        <option value="4">Mayo</option>
-                        <option value="5">Junio</option>
-                        <option value="6">Julio</option>
-                        <option value="7">Agosto</option>
-                        <option value="8">Septiembre</option>
-                        <option value="9">Octubre</option>
-                        <option value="10">Noviembre</option>
-                        <option value="11">Diciembre</option>
-                    </select>
-                    <select id="filterUDS" onchange="filterNovelties()">
-                        <option value="">Todas las UDS</option>
-                    </select>
-                    <input type="date" id="filterDate" onchange="filterNovelties()">
+                    <div id="tituloResumenMes" class="text-lg font-bold text-slate-800 mt-2">
+                        Resumen de: <span id="nombreMesResumen">Todos los meses</span>
+                    </div>
                 </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Fecha Registro</th>
-                                <th>Fecha Movimiento</th>
-                                <th>UDS</th>
-                                <th>Tipo</th>
-                                <th>Documento</th>
-                                <th>Nombre</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="noveltiesTableBody">
+
+                <!-- Stats Cards Grandes -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="stats-card text-center">
+                        <div class="stat-big text-slate-800" id="statTotal">0</div>
+                        <div class="stat-label">Total Novedades</div>
+                    </div>
+                    <div class="stats-card text-center">
+                        <div class="stat-big text-amber-600" id="statPendientes">0</div>
+                        <div class="stat-label">Pendientes CUENTAME</div>
+                    </div>
+                    <div class="stats-card text-center">
+                        <div class="stat-big text-emerald-600" id="statCargados">0</div>
+                        <div class="stat-label">Cargados CUENTAME</div>
+                    </div>
+                    <div class="stats-card text-center">
+                        <div class="stat-big text-purple-600" id="statArchivados">0</div>
+                        <div class="stat-label">Total Archivados</div>
+                    </div>
+                </div>
+
+                <!-- Stats del Mes Actual vs Mes Seleccionado -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="stats-card">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Hoy</h4>
+                        <p class="text-2xl font-black text-slate-800" id="statToday">0</p>
+                        <p class="text-xs text-slate-400 mt-1">Novedades</p>
+                    </div>
+                    <div class="stats-card">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Esta Semana</h4>
+                        <p class="text-2xl font-black text-slate-800" id="statWeek">0</p>
+                        <p class="text-xs text-slate-400 mt-1">Total</p>
+                    </div>
+                    <div class="stats-card">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-1" id="labelMesSeleccionado">Este Mes</h4>
+                        <p class="text-2xl font-black text-slate-800" id="statMonth">0</p>
+                        <p class="text-xs text-slate-400 mt-1">Total</p>
+                    </div>
+                    <div class="stats-card">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase mb-1">Retiros/Ingresos</h4>
+                        <div class="flex gap-3 mt-1">
+                            <div>
+                                <span class="text-xl font-black text-red-600" id="statRetiros">0</span>
+                                <span class="text-xs text-slate-400 block">Ret</span>
+                            </div>
+                            <div>
+                                <span class="text-xl font-black text-green-600" id="statIngresos">0</span>
+                                <span class="text-xs text-slate-400 block">Ing</span>
+                            </div>
+                            <div>
+                                <span class="text-xl font-black text-purple-600" id="statAmbos">0</span>
+                                <span class="text-xs text-slate-400 block">Ambos</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="stats-card">
+                        <h4 class="text-sm font-bold text-slate-700 mb-3">Novedades por Tipo</h4>
+                        <div class="chart-container">
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <h4 class="text-sm font-bold text-slate-700 mb-3">UDS con más movimiento</h4>
+                        <div class="chart-container">
+                            <canvas id="udsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estadísticas adicionales -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="stats-card">
+                        <h4 class="text-sm font-bold text-slate-700 mb-3">Estado CUENTAME</h4>
+                        <div class="chart-container">
+                            <canvas id="cuentameChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <h4 class="text-sm font-bold text-slate-700 mb-3">Novedades por Mes</h4>
+                        <div class="chart-container">
+                            <canvas id="monthChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="stats-card">
+                        <h4 class="text-sm font-bold text-slate-700 mb-3">Top 5 UDS - Pendientes</h4>
+                        <div id="topUDSPendientes" class="space-y-2 mt-4">
                             <!-- Dynamic content -->
-                        </tbody>
-                    </table>
+                        </div>
+                    </div>
                 </div>
-                <div id="pagination" class="flex justify-center gap-2 mt-4 flex-wrap">
-                    <!-- Pagination buttons -->
+            </div>
+
+            <!-- Sección Configuración -->
+            <div id="section-configuracion" class="admin-section">
+                <div class="config-bloqueo-card">
+                    <h3 class="config-bloqueo-title">
+                        <span>🔒</span> Configuración de Cierre de Mes
+                    </h3>
+                    
+                    <div class="config-row">
+                        <span class="config-label">Estado:</span>
+                        <div class="toggle-switch" id="toggleBloqueo" onclick="toggleBloqueoSistema()"></div>
+                        <span id="estadoBloqueoText" class="estado-inactivo">DESACTIVADO</span>
+                    </div>
+
+                    <div class="config-row">
+                        <span class="config-label">Fecha Inicio:</span>
+                        <input type="number" id="configFechaInicio" class="config-input" value="28" min="1" max="31" onchange="guardarConfigBloqueo()">
+                        <span>de cada mes</span>
+                    </div>
+
+                    <div class="config-row">
+                        <span class="config-label">Fecha Fin:</span>
+                        <input type="number" id="configFechaFin" class="config-input" value="30" min="1" max="31" onchange="guardarConfigBloqueo()">
+                        <span>de cada mes</span>
+                    </div>
+
+                    <div class="config-row" style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #f59e0b;">
+                        <span class="config-label">Periodo actual:</span>
+                        <strong id="periodoActualDisplay" style="color: #92400e; font-size: 16px;">28 - 30 de cada mes</strong>
+                    </div>
+
+                    <div style="margin-top: 15px; font-size: 12px; color: #78716c;">
+                        * Cuando está activado, el formulario se bloquea automáticamente durante estas fechas.
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Firebase Configuration - Realtime Database para T3
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDX9mBXhGSx6vVqvrLgMLY0Stno4nI-jPw",
             authDomain: "moonbox-b997c.firebaseapp.com",
@@ -1043,11 +2002,10 @@
             measurementId: "G-10F98RC1Z0"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Datos UDS de T3 (Contrato 668)
+        // Datos UDS de T3
         const UDS_DATA = { 
             '668': [
                 ['BURBUJAS.', '-'], ['CAPERUCITA ROJA', '-'], ['CARIÑOSITOS', '-'], 
@@ -1064,19 +2022,15 @@
             'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' 
         };
 
-        // Admin password
         const ADMIN_PASSWORD = "ZAN";
-
-        // Charts instances
-        let typeChartInstance = null;
-        let udsChartInstance = null;
-
-        // Configuracion de bloqueo
-        let configBloqueo = {
-            activo: false,
-            fechaInicio: 28,
-            fechaFin: 30
-        };
+        let typeChartInstance = null, udsChartInstance = null, cuentameChartInstance = null, monthChartInstance = null;
+        let configBloqueo = { activo: false, fechaInicio: 28, fechaFin: 30 };
+        let currentNovelties = [], archivedNovelties = [];
+        let currentPage = 1, currentArchivedPage = 1;
+        const itemsPerPage = 10;
+        let resumenMesSeleccionado = -1, resumenAnioSeleccionado = new Date().getFullYear();
+        let todosLosDatosNovelties = [], todosLosDatosArchivados = [];
+        let omsChartInstance = null; // Instancia de la gráfica OMS
 
         // Update clock
         function updateClock() {
@@ -1089,27 +2043,16 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Toast Notification System
+        // Toast Notification
         function showToast(message, type = 'info', duration = 5000) {
             const container = document.getElementById('toastContainer');
             if (!container) return;
-            
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            
-            const icons = {
-                success: '✓',
-                error: '✕',
-                warning: '!',
-                info: 'i'
-            };
-            
+            const icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
             toast.innerHTML = `<span style="font-weight:bold">${icons[type]}</span><span>${message}</span>`;
             container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, duration);
+            setTimeout(() => toast.remove(), duration);
         }
 
         // Theme Toggle
@@ -1120,7 +2063,6 @@
             localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
         }
 
-        // Load saved theme
         if (localStorage.getItem('darkMode') === 'true') {
             document.body.classList.add('dark-mode');
             const toggle = document.getElementById('themeToggle');
@@ -1141,11 +2083,13 @@
         function openAdminPanel() {
             const panel = document.getElementById('adminPanel');
             if (panel) panel.style.display = 'block';
-            loadDashboardStats();
-            loadCharts();
             loadNoveltiesTable();
+            loadArchivedNovelties();
             cargarConfigBloqueo();
             populateUDSFilter();
+            updatePendientesIndicator();
+            inicializarSelectorMes();
+            loadResumenStats();
         }
 
         function closeAdminPanel() {
@@ -1153,20 +2097,43 @@
             if (panel) panel.style.display = 'none';
         }
 
-        function populateUDSFilter() {
-            const filterUDS = document.getElementById('filterUDS');
-            if (!filterUDS) return;
+        function switchTab(tab) {
+            document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            document.querySelectorAll('.admin-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`section-${tab}`).classList.add('active');
             
-            filterUDS.innerHTML = '<option value="">Todas las UDS</option>';
-            UDS_DATA['668']?.forEach(([name, code]) => {
-                const opt = document.createElement('option');
-                opt.value = name;
-                opt.textContent = name;
-                filterUDS.appendChild(opt);
-            });
+            if (tab === 'archivadas') loadArchivedNovelties();
+            else if (tab === 'activas') loadNoveltiesTable();
+            else if (tab === 'resumen') loadResumenStats();
         }
 
-        // FUNCIONES DE BLOQUEO DE FORMULARIO
+        function populateUDSFilter() {
+            const filterUDS = document.getElementById('filterUDS');
+            const filterUDSArchivados = document.getElementById('filterUDSArchivados');
+            
+            if (filterUDS) {
+                filterUDS.innerHTML = '<option value="">Todas las UDS</option>';
+                UDS_DATA['668']?.forEach(([name, code]) => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    filterUDS.appendChild(opt);
+                });
+            }
+            
+            if (filterUDSArchivados) {
+                filterUDSArchivados.innerHTML = '<option value="">Todas las UDS</option>';
+                UDS_DATA['668']?.forEach(([name, code]) => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    filterUDSArchivados.appendChild(opt);
+                });
+            }
+        }
+
+        // FUNCIONES DE BLOQUEO
         function cargarConfigBloqueo() {
             const configRef = database.ref('configBloqueo_T3');
             configRef.once('value', (snapshot) => {
@@ -1182,7 +2149,6 @@
         function guardarConfigBloqueo() {
             const fechaInicio = document.getElementById('configFechaInicio');
             const fechaFin = document.getElementById('configFechaFin');
-            
             if (!fechaInicio || !fechaFin) return;
             
             let inicio = parseInt(fechaInicio.value);
@@ -1204,14 +2170,11 @@
                     actualizarUIConfigBloqueo();
                     verificarBloqueo();
                 })
-                .catch((error) => {
-                    showToast("Error al guardar configuración: " + error.message, "error");
-                });
+                .catch((error) => showToast("Error al guardar: " + error.message, "error"));
         }
 
         function toggleBloqueoSistema() {
             configBloqueo.activo = !configBloqueo.activo;
-            
             const configRef = database.ref('configBloqueo_T3');
             configRef.set(configBloqueo)
                 .then(() => {
@@ -1219,9 +2182,7 @@
                     actualizarUIConfigBloqueo();
                     verificarBloqueo();
                 })
-                .catch((error) => {
-                    showToast("Error al cambiar estado: " + error.message, "error");
-                });
+                .catch((error) => showToast("Error: " + error.message, "error"));
         }
 
         function actualizarUIConfigBloqueo() {
@@ -1233,11 +2194,8 @@
             const bloqueoFechasDisplay = document.getElementById('bloqueoFechasDisplay');
             
             if (toggle) {
-                if (configBloqueo.activo) {
-                    toggle.classList.add('active');
-                } else {
-                    toggle.classList.remove('active');
-                }
+                if (configBloqueo.activo) toggle.classList.add('active');
+                else toggle.classList.remove('active');
             }
             
             if (estadoText) {
@@ -1270,7 +2228,6 @@
             
             const hoy = new Date();
             const diaActual = hoy.getDate();
-            
             const enPeriodoBloqueo = diaActual >= configBloqueo.fechaInicio && diaActual <= configBloqueo.fechaFin;
             
             if (enPeriodoBloqueo) {
@@ -1283,177 +2240,742 @@
         }
 
         function accesoAdminDesdeBloqueo() {
-            const password = prompt("🔒 ACCESO ADMINISTRADOR\n\nIngrese la contraseña para desactivar el bloqueo de cierre de mes:");
-            
+            const password = prompt("🔐 ACCESO ADMINISTRADOR\n\nIngrese la contraseña para desactivar el bloqueo:");
             if (password === null) return;
             
             if (password === ADMIN_PASSWORD) {
                 configBloqueo.activo = false;
-                
                 const configRef = database.ref('configBloqueo_T3');
                 configRef.set(configBloqueo)
                     .then(() => {
-                        showToast("✅ Bloqueo desactivado correctamente", "success");
+                        showToast("✅ Bloqueo desactivado", "success");
                         actualizarUIConfigBloqueo();
                         verificarBloqueo();
-                        
                         setTimeout(() => {
-                            const abrirPanel = confirm("¿Desea abrir el panel de administración?");
-                            if (abrirPanel) openAdminPanel();
+                            if (confirm("¿Desea abrir el panel de administración?")) openAdminPanel();
                         }, 500);
                     })
-                    .catch((error) => {
-                        showToast("❌ Error al desactivar bloqueo: " + error.message, "error");
-                    });
+                    .catch((error) => showToast("Error: " + error.message, "error"));
             } else {
                 showToast("❌ Contraseña incorrecta", "error");
             }
         }
 
         setInterval(verificarBloqueo, 3600000);
-        document.addEventListener('DOMContentLoaded', () => {
-            cargarConfigBloqueo();
+        document.addEventListener('DOMContentLoaded', () => cargarConfigBloqueo());
+
+        // ==========================================
+        // NUEVO: SISTEMA DE GRÁFICA OMS INTERACTIVA
+        // ==========================================
+
+        // Datos de referencia OMS simplificados (Peso para la Talla)
+        // Basados en las tablas oficiales de la OMS para niños 0-5 años
+        const OMS_REFERENCE_DATA = {
+            boys: {
+                // Talla (cm) -> [Peso -3DE, -2DE, -1DE, Mediana, +1DE, +2DE, +3DE]
+                50: [2.5, 2.9, 3.4, 3.9, 4.4, 5.1, 5.8],
+                55: [3.3, 3.8, 4.4, 5.0, 5.7, 6.5, 7.4],
+                60: [4.2, 4.9, 5.6, 6.4, 7.3, 8.3, 9.4],
+                65: [5.3, 6.1, 7.0, 8.0, 9.1, 10.3, 11.7],
+                70: [6.4, 7.4, 8.5, 9.7, 11.0, 12.5, 14.1],
+                75: [7.6, 8.8, 10.1, 11.5, 13.0, 14.7, 16.6],
+                80: [8.8, 10.2, 11.6, 13.2, 15.0, 16.9, 19.1],
+                85: [10.0, 11.5, 13.1, 14.9, 16.8, 19.0, 21.4],
+                90: [11.1, 12.7, 14.5, 16.4, 18.5, 20.9, 23.5],
+                95: [12.1, 13.9, 15.8, 17.9, 20.2, 22.8, 25.7],
+                100: [13.1, 15.0, 17.0, 19.2, 21.7, 24.4, 27.5],
+                105: [14.0, 16.0, 18.2, 20.6, 23.2, 26.1, 29.3],
+                110: [14.9, 17.0, 19.3, 21.8, 24.6, 27.7, 31.1],
+                115: [15.7, 18.0, 20.4, 23.1, 26.0, 29.2, 32.8],
+                120: [16.5, 18.9, 21.5, 24.3, 27.4, 30.8, 34.5],
+                125: [17.3, 19.8, 22.5, 25.5, 28.8, 32.3, 36.2],
+                130: [18.1, 20.7, 23.5, 26.7, 30.1, 33.8, 37.9]
+            },
+            girls: {
+                50: [2.4, 2.8, 3.3, 3.8, 4.3, 4.9, 5.6],
+                55: [3.2, 3.7, 4.3, 4.9, 5.6, 6.3, 7.2],
+                60: [4.1, 4.7, 5.4, 6.2, 7.0, 8.0, 9.1],
+                65: [5.1, 5.9, 6.7, 7.7, 8.7, 9.9, 11.2],
+                70: [6.2, 7.1, 8.1, 9.3, 10.5, 11.9, 13.5],
+                75: [7.3, 8.4, 9.6, 10.9, 12.4, 14.0, 15.8],
+                80: [8.5, 9.7, 11.1, 12.6, 14.3, 16.1, 18.2],
+                85: [9.6, 11.0, 12.5, 14.2, 16.1, 18.2, 20.5],
+                90: [10.7, 12.2, 13.9, 15.8, 17.8, 20.1, 22.7],
+                95: [11.7, 13.4, 15.2, 17.3, 19.5, 22.0, 24.8],
+                100: [12.7, 14.5, 16.5, 18.7, 21.1, 23.8, 26.8],
+                105: [13.6, 15.6, 17.7, 20.1, 22.7, 25.6, 28.8],
+                110: [14.5, 16.6, 18.9, 21.4, 24.2, 27.3, 30.7],
+                115: [15.4, 17.6, 20.0, 22.7, 25.7, 28.9, 32.5],
+                120: [16.2, 18.6, 21.1, 24.0, 27.1, 30.5, 34.3],
+                125: [17.0, 19.5, 22.2, 25.2, 28.5, 32.1, 36.0],
+                130: [17.8, 20.4, 23.2, 26.4, 29.8, 33.6, 37.7]
+            }
+        };
+
+        // Colores para cada línea de DE
+        const DE_COLORS = [
+            '#7f1d1d', // -3DE (Desnutrición severa)
+            '#dc2626', // -2DE (Desnutrición moderada)
+            '#f59e0b', // -1DE (Riesgo desnutrición)
+            '#10b981', // Mediana (Normal)
+            '#fbbf24', // +1DE (Riesgo sobrepeso)
+            '#f97316', // +2DE (Sobrepeso)
+            '#dc2626'  // +3DE (Obesidad)
+        ];
+
+        const DE_LABELS = ['-3DE', '-2DE', '-1DE', 'Mediana', '+1DE', '+2DE', '+3DE'];
+
+        function inicializarGraficaOMS() {
+            const canvas = document.getElementById('omsChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dibujar fondo de cuadrícula
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.lineWidth = 0.5;
+            
+            // Líneas horizontales (peso)
+            for (let i = 0; i <= 10; i++) {
+                const y = 30 + (i * 22);
+                ctx.beginPath();
+                ctx.moveTo(50, y);
+                ctx.lineTo(370, y);
+                ctx.stroke();
+            }
+            
+            // Líneas verticales (talla)
+            for (let i = 0; i <= 8; i++) {
+                const x = 50 + (i * 40);
+                ctx.beginPath();
+                ctx.moveTo(x, 30);
+                ctx.lineTo(x, 250);
+                ctx.stroke();
+            }
+            
+            // Ejes
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(50, 30);
+            ctx.lineTo(50, 250);
+            ctx.lineTo(370, 250);
+            ctx.stroke();
+            
+            // Etiquetas de ejes
+            ctx.fillStyle = '#374151';
+            ctx.font = 'bold 11px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Talla (cm)', 210, 270);
+            
+            ctx.save();
+            ctx.translate(15, 140);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Peso (kg)', 0, 0);
+            ctx.restore();
+            
+            // Etiquetas de valores
+            ctx.font = '10px Inter';
+            ctx.fillStyle = '#6b7280';
+            
+            // Talla: 50-130
+            for (let i = 0; i <= 8; i++) {
+                const talla = 50 + (i * 10);
+                const x = 50 + (i * 40);
+                ctx.fillText(talla.toString(), x, 265);
+            }
+            
+            // Peso: 2-32
+            for (let i = 0; i <= 10; i++) {
+                const peso = 2 + (i * 3);
+                const y = 250 - (i * 22);
+                ctx.textAlign = 'right';
+                ctx.fillText(peso.toString(), 45, y + 3);
+            }
+        }
+
+        function dibujarCurvasOMS(genero) {
+            const canvas = document.getElementById('omsChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const data = genero === 'M' ? OMS_REFERENCE_DATA.boys : OMS_REFERENCE_DATA.girls;
+            const tallas = Object.keys(data).map(Number).sort((a, b) => a - b);
+            
+            // Dibujar cada curva de DE
+            for (let deIndex = 0; deIndex < 7; deIndex++) {
+                ctx.strokeStyle = DE_COLORS[deIndex];
+                ctx.lineWidth = deIndex === 3 ? 3 : 2; // La mediana más gruesa
+                ctx.beginPath();
+                
+                let firstPoint = true;
+                tallas.forEach(talla => {
+                    const peso = data[talla][deIndex];
+                    const x = 50 + ((talla - 50) / 10) * 40;
+                    const y = 250 - ((peso - 2) / 3) * 22;
+                    
+                    if (firstPoint) {
+                        ctx.moveTo(x, y);
+                        firstPoint = false;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.stroke();
+                
+                // Etiqueta de la curva al final
+                const lastTalla = tallas[tallas.length - 1];
+                const lastPeso = data[lastTalla][deIndex];
+                const lastX = 50 + ((lastTalla - 50) / 10) * 40;
+                const lastY = 250 - ((lastPeso - 2) / 3) * 22;
+                
+                ctx.fillStyle = DE_COLORS[deIndex];
+                ctx.font = 'bold 9px Inter';
+                ctx.textAlign = 'left';
+                ctx.fillText(DE_LABELS[deIndex], lastX + 3, lastY + 3);
+            }
+        }
+
+        function dibujarPuntoEnGrafica(talla, peso, genero) {
+            const canvas = document.getElementById('omsChart');
+            if (!canvas || !talla || !peso) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Calcular posición
+            const x = 50 + ((talla - 50) / 10) * 40;
+            const y = 250 - ((peso - 2) / 3) * 22;
+            
+            // Validar límites
+            if (x < 50 || x > 370 || y < 30 || y > 250) {
+                console.log('Punto fuera de rango de visualización');
+                return;
+            }
+            
+            // Dibujar punto con efecto de pulso
+            ctx.fillStyle = '#dc2626';
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 3;
+            
+            // Círculo exterior (halo)
+            ctx.beginPath();
+            ctx.arc(x, y, 12, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(220, 38, 38, 0.3)';
+            ctx.fill();
+            
+            // Círculo principal
+            ctx.beginPath();
+            ctx.arc(x, y, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = '#dc2626';
+            ctx.fill();
+            ctx.stroke();
+            
+            // Etiqueta del punto
+            ctx.fillStyle = '#1f2937';
+            ctx.font = 'bold 10px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(`${peso}kg`, x, y - 15);
+            ctx.fillText(`${talla}cm`, x, y + 22);
+        }
+
+        function actualizarGraficaOMS() {
+            const pesoInput = document.getElementById('nutricionPeso');
+            const tallaInput = document.getElementById('nutricionTalla');
+            const generoInput = document.querySelector('input[name="_ingresoGender"]:checked');
+            const tooltip = document.getElementById('graficaTooltip');
+            const title = document.getElementById('graficaTitle');
+            const subtitle = document.getElementById('graficaSubtitle');
+            const icon = document.getElementById('graficaIcon');
+            
+            if (!pesoInput || !tallaInput || !generoInput) return;
+            
+            const peso = parseFloat(pesoInput.value);
+            const talla = parseFloat(tallaInput.value);
+            const genero = generoInput.value;
+            
+            // Actualizar apariencia según género
+            if (tooltip) {
+                tooltip.className = `grafica-tooltip ${genero === 'M' ? 'boy' : 'girl'}`;
+            }
+            if (title) {
+                title.textContent = `Gráfica Peso/Talla OMS - ${genero === 'M' ? 'NIÑOS' : 'NIÑAS'}`;
+            }
+            if (icon) {
+                icon.textContent = genero === 'M' ? '👦' : '👧';
+            }
+            
+            // Redibujar todo
+            inicializarGraficaOMS();
+            dibujarCurvasOMS(genero);
+            
+            // Si hay datos, dibujar el punto
+            if (peso && talla && !isNaN(peso) && !isNaN(talla)) {
+                dibujarPuntoEnGrafica(talla, peso, genero);
+                
+                // Calcular en qué rango cae para el subtítulo
+                const estado = calcularRangoOMS(talla, peso, genero);
+                if (subtitle) {
+                    subtitle.textContent = `Estado: ${estado.nombre} (${estado.de})`;
+                    subtitle.style.color = estado.color;
+                }
+            } else {
+                if (subtitle) {
+                    subtitle.textContent = 'Ingrese peso y talla para ver posición';
+                    subtitle.style.color = '#64748b';
+                }
+            }
+        }
+
+        // Calcular rango OMS basado en DE (desviaciones estándar)
+        function calcularRangoOMS(talla, peso, genero) {
+            const data = genero === 'M' ? OMS_REFERENCE_DATA.boys : OMS_REFERENCE_DATA.girls;
+            const tallas = Object.keys(data).map(Number).sort((a, b) => a - b);
+            
+            // Encontrar talla más cercana
+            let tallaRef = tallas[0];
+            let minDiff = Math.abs(talla - tallaRef);
+            
+            tallas.forEach(t => {
+                const diff = Math.abs(talla - t);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    tallaRef = t;
+                }
+            });
+            
+            const pesosRef = data[tallaRef];
+            const mediana = pesosRef[3];
+            
+            // Calcular DE aproximada (simplificado)
+            // Sabemos que -2DE es índice 1, +2DE es índice 5
+            const deNeg2 = pesosRef[1];
+            const dePos2 = pesosRef[5];
+            
+            // Calcular DE usando aproximación lineal
+            let de = 0;
+            if (peso < mediana) {
+                de = -2 * (mediana - peso) / (mediana - deNeg2);
+            } else {
+                de = 2 * (peso - mediana) / (dePos2 - mediana);
+            }
+            
+            // Determinar rango
+            if (de < -3) return { nombre: 'Desnutrición Aguda Severa', de: de.toFixed(1), color: '#7f1d1d', clase: 'rango-desnutricion-severa' };
+            if (de < -2) return { nombre: 'Desnutrición Aguda Moderada', de: de.toFixed(1), color: '#dc2626', clase: 'rango-desnutricion-moderada' };
+            if (de < -1) return { nombre: 'Riesgo de Desnutrición', de: de.toFixed(1), color: '#f59e0b', clase: 'rango-riesgo-desnutricion' };
+            if (de < 1) return { nombre: 'Peso Normal', de: de.toFixed(1), color: '#10b981', clase: 'rango-normal' };
+            if (de < 1.5) return { nombre: 'Riesgo de Sobrepeso', de: de.toFixed(1), color: '#fbbf24', clase: 'rango-riesgo-sobrepeso' };
+            if (de < 2) return { nombre: 'Sobrepeso', de: de.toFixed(1), color: '#f97316', clase: 'rango-sobrepeso' };
+            return { nombre: 'Obesidad', de: de.toFixed(1), color: '#dc2626', clase: 'rango-obesidad' };
+        }
+
+        // ==========================================
+        // SISTEMA NUTRICIONAL MEJORADO CON 7 RANGOS
+        // ==========================================
+
+        function validarRangoNutricion(input, min, max) {
+            const valor = parseFloat(input.value);
+            if (valor < min || valor > max) {
+                input.classList.add('input-error');
+                showToast(`El valor debe estar entre ${min} y ${max}`, 'warning');
+            } else {
+                input.classList.remove('input-error');
+            }
+        }
+
+        function calcularEstadoNutricional() {
+            const pesoInput = document.getElementById('nutricionPeso');
+            const tallaInput = document.getElementById('nutricionTalla');
+            const generoInput = document.querySelector('input[name="_ingresoGender"]:checked');
+            const indicator = document.getElementById('nutricionIndicator');
+            const statusEl = document.getElementById('nutricionStatus');
+            const detailsEl = document.getElementById('nutricionDetails');
+            const legendEl = document.getElementById('nutricionLegend');
+
+            if (!pesoInput || !tallaInput || !generoInput) return;
+            
+            const peso = parseFloat(pesoInput.value);
+            const talla = parseFloat(tallaInput.value);
+            const genero = generoInput.value;
+
+            if (!peso || !talla || isNaN(peso) || isNaN(talla)) {
+                if (indicator) indicator.style.display = 'none';
+                return;
+            }
+
+            // Calcular rango OMS
+            const estado = calcularRangoOMS(talla, peso, genero);
+            
+            // Mostrar indicador
+            if (indicator) {
+                indicator.style.display = 'block';
+                
+                // Actualizar status con color correspondiente
+                statusEl.textContent = estado.nombre.toUpperCase();
+                statusEl.className = `nutricion-status ${estado.clase}`;
+                
+                // Detalles
+                detailsEl.innerHTML = `
+                    <strong>DE (Desviación Estándar):</strong> ${estado.de}<br>
+                    <strong>Peso:</strong> ${peso} kg | <strong>Talla:</strong> ${talla} cm<br>
+                    <strong>Género:</strong> ${genero === 'M' ? 'Masculino' : 'Femenino'}<br>
+                    <em style="font-size: 10px; color: #9ca3af;">* Basado en tablas OMS 0-5 años</em>
+                `;
+                
+                // Leyenda de rangos
+                //const rangos = [
+                //   { nombre: 'Desnutrición Severa', clase: 'rango-desnutricion-severa', de: '< -3DE' },
+                //    { nombre: 'Desnutrición Moderada', clase: 'rango-desnutricion-moderada', de: '-3DE a -2DE' },
+                //    { nombre: 'Riesgo Desnutrición', clase: 'rango-riesgo-desnutricion', de: '-2DE a -1DE' },
+                //    { nombre: 'Peso Normal', clase: 'rango-normal', de: '-1DE a +1DE' },
+                //    { nombre: 'Riesgo Sobrepeso', clase: 'rango-riesgo-sobrepeso', de: '+1DE a +1.5DE' },
+                //    { nombre: 'Sobrepeso', clase: 'rango-sobrepeso', de: '+1.5DE a +2DE' },
+                //   { nombre: 'Obesidad', clase: 'rango-obesidad', de: '> +2DE' }
+                //];
+                
+                legendEl.innerHTML = rangos.map(r => `
+                    <div class="nutricion-legend-item ${r.clase}">
+                        <span>${r.nombre}</span>
+                        <span style="opacity: 0.8; font-size: 9px;">${r.de}</span>
+                    </div>
+                `).join('');
+            }
+
+            // Actualizar la gráfica flotante
+            actualizarGraficaOMS();
+        }
+
+        // Event listeners para la gráfica
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar gráfica vacía
+            setTimeout(() => {
+                inicializarGraficaOMS();
+            }, 100);
+            
+            // Actualizar gráfica cuando cambien los inputs
+            ['nutricionPeso', 'nutricionTalla'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', () => {
+                        actualizarGraficaOMS();
+                    });
+                }
+            });
+            
+            // Actualizar cuando cambie el género
+            const generoInputs = document.querySelectorAll('input[name="_ingresoGender"]');
+            generoInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    actualizarGraficaOMS();
+                });
+            });
         });
 
-        // Dashboard Statistics
-        function loadDashboardStats() {
-            const noveltiesRef = database.ref('novelties_T3');
-            noveltiesRef.once('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                const novelties = Object.values(data);
-                
-                const now = new Date();
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        // ==========================================
+        // RESTO DE FUNCIONES (mantenidas del original)
+        // ==========================================
 
-                let todayCount = 0, weekCount = 0, monthCount = 0, retiros = 0, ingresos = 0, ambos = 0;
+        function inicializarSelectorMes() {
+            const selectorAnio = document.getElementById('resumenAnioSelector');
+            const anioActual = new Date().getFullYear();
+            
+            for (let anio = 2024; anio <= anioActual + 1; anio++) {
+                const opt = document.createElement('option');
+                opt.value = anio;
+                opt.textContent = anio;
+                if (anio === anioActual) opt.selected = true;
+                selectorAnio.appendChild(opt);
+            }
+            
+            document.getElementById('resumenMesSelector').value = new Date().getMonth();
+        }
 
-                novelties.forEach(n => {
-                    const nDate = new Date(n.timestamp);
-                    if (nDate >= today) todayCount++;
-                    if (nDate >= weekAgo) weekCount++;
-                    if (nDate >= monthAgo) monthCount++;
-                    
-                    if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
-                        ambos++;
-                        retiros++;
-                        ingresos++;
-                    } else if (n.type === 'retiro') {
-                        retiros++;
-                    } else if (n.type === 'ingreso') {
-                        ingresos++;
-                    }
+        function irMesActual() {
+            const ahora = new Date();
+            document.getElementById('resumenMesSelector').value = ahora.getMonth();
+            document.getElementById('resumenAnioSelector').value = ahora.getFullYear();
+            cambiarMesResumen();
+        }
+
+        function cambiarMesResumen() {
+            resumenMesSeleccionado = parseInt(document.getElementById('resumenMesSelector').value);
+            resumenAnioSeleccionado = parseInt(document.getElementById('resumenAnioSelector').value);
+            
+            const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                                  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            const nombreMes = resumenMesSeleccionado === -1 ? 'Todos los meses' : 
+                             `${nombresMeses[resumenMesSeleccionado]} ${resumenAnioSeleccionado}`;
+            
+            document.getElementById('nombreMesResumen').textContent = nombreMes;
+            document.getElementById('labelMesSeleccionado').textContent = 
+                resumenMesSeleccionado === -1 ? 'Este Mes' : nombresMeses[resumenMesSeleccionado];
+            
+            calcularYMostrarEstadisticas();
+        }
+
+        function filtrarPorMes(novelties) {
+            if (resumenMesSeleccionado === -1) {
+                return novelties.filter(n => {
+                    const fecha = new Date(n.timestamp);
+                    return fecha.getFullYear() === resumenAnioSeleccionado;
                 });
-
-                const elToday = document.getElementById('statToday');
-                const elWeek = document.getElementById('statWeek');
-                const elMonth = document.getElementById('statMonth');
-                const elRetiros = document.getElementById('statRetiros');
-                const elIngresos = document.getElementById('statIngresos');
-
-                if (elToday) elToday.textContent = todayCount;
-                if (elWeek) elWeek.textContent = weekCount;
-                if (elMonth) elMonth.textContent = monthCount;
-                if (elRetiros) elRetiros.textContent = retiros;
-                if (elIngresos) elIngresos.textContent = ingresos;
+            }
+            
+            return novelties.filter(n => {
+                const fecha = new Date(n.timestamp);
+                return fecha.getMonth() === resumenMesSeleccionado && 
+                       fecha.getFullYear() === resumenAnioSeleccionado;
             });
         }
 
-        // Charts
-        function loadCharts() {
-            loadTypeChart();
-            loadUDSChart();
-        }
-
-        function loadTypeChart() {
+        function loadResumenStats() {
             const noveltiesRef = database.ref('novelties_T3');
-            noveltiesRef.once('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                const novelties = Object.values(data);
+            const archivedRef = database.ref('archived_T3');
+            
+            Promise.all([
+                noveltiesRef.once('value'),
+                archivedRef.once('value')
+            ]).then(([noveltiesSnap, archivedSnap]) => {
+                const noveltiesData = noveltiesSnap.val() || {};
+                const archivedData = archivedSnap.val() || {};
                 
-                const retirosCount = novelties.filter(n => n.type === 'retiro' || (n.hasRetiro && !n.hasIngreso)).length;
-                const ingresosCount = novelties.filter(n => n.type === 'ingreso' || (!n.hasRetiro && n.hasIngreso)).length;
-                const ambosCount = novelties.filter(n => n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)).length;
-
-                const ctx = document.getElementById('typeChart');
-                if (!ctx) return;
+                todosLosDatosNovelties = Object.entries(noveltiesData).map(([id, value]) => ({ id, ...value }));
+                todosLosDatosArchivados = Object.entries(archivedData).map(([id, value]) => ({ id, ...value }));
                 
-                if (typeChartInstance) typeChartInstance.destroy();
-
-                typeChartInstance = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Retiros', 'Ingresos', 'Ambos'],
-                        datasets: [{
-                            data: [retirosCount, ingresosCount, ambosCount],
-                            backgroundColor: ['#ef4444', '#10b981', '#8b5cf6'],
-                            borderWidth: 2,
-                            borderColor: '#ffffff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '60%',
-                        plugins: {
-                            legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 }, padding: 10 } }
-                        }
-                    }
-                });
+                calcularYMostrarEstadisticas();
+            }).catch(error => {
+                console.error('Error cargando datos:', error);
+                showToast('Error al cargar estadísticas: ' + error.message, 'error');
             });
         }
 
-        function loadUDSChart() {
-            const noveltiesRef = database.ref('novelties_T3');
-            noveltiesRef.once('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                const novelties = Object.values(data);
-                
-                const udsCounts = {};
-                
-                novelties.forEach(n => {
-                    udsCounts[n.udsName] = (udsCounts[n.udsName] || 0) + 1;
-                });
+        function calcularYMostrarEstadisticas() {
+            const novelties = todosLosDatosNovelties;
+            const archivados = todosLosDatosArchivados;
+            
+            const noveltiesFiltradas = filtrarPorMes(novelties);
+            const archivadosFiltrados = filtrarPorMes(archivados);
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            let todayCount = 0, weekCount = 0;
+            
+            novelties.forEach(n => {
+                const nDate = new Date(n.timestamp);
+                if (nDate >= today) todayCount++;
+                if (nDate >= weekAgo) weekCount++;
+            });
 
-                const sortedUDS = Object.entries(udsCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            let retiros = 0, ingresos = 0, ambos = 0;
+            let pendientes = 0, cargados = 0;
 
-                const ctx = document.getElementById('udsChart');
-                if (!ctx) return;
-                
-                if (udsChartInstance) udsChartInstance.destroy();
+            noveltiesFiltradas.forEach(n => {
+                if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                    ambos++;
+                    retiros++;
+                    ingresos++;
+                } else if (n.type === 'retiro') {
+                    retiros++;
+                } else if (n.type === 'ingreso') {
+                    ingresos++;
+                }
 
-                const colors = ['#2563EB', '#3b82f6', '#60a5fa', '#93c5fd', '#dbeafe', '#1d4ed8', '#1e40af', '#1e3a8a'];
+                if (n.cuentameStatus === 'cargado') {
+                    cargados++;
+                } else {
+                    pendientes++;
+                }
+            });
 
-                udsChartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: sortedUDS.map(([name]) => name.length > 20 ? name.substring(0, 20) + '...' : name),
-                        datasets: [{
-                            data: sortedUDS.map(([, count]) => count),
-                            backgroundColor: colors,
-                            borderRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.05)' } },
-                            x: { grid: { display: false } }
-                        }
+            animarNumero('statTotal', noveltiesFiltradas.length);
+            animarNumero('statPendientes', pendientes);
+            animarNumero('statCargados', cargados);
+            animarNumero('statArchivados', archivadosFiltrados.length);
+            animarNumero('statToday', todayCount);
+            animarNumero('statWeek', weekCount);
+            animarNumero('statMonth', noveltiesFiltradas.length);
+            animarNumero('statRetiros', retiros);
+            animarNumero('statIngresos', ingresos);
+            animarNumero('statAmbos', ambos);
+
+            loadTypeChart(noveltiesFiltradas);
+            loadUDSChart(noveltiesFiltradas);
+            loadCuentameChart(noveltiesFiltradas);
+            loadMonthChart(novelties);
+            loadTopUDSPendientes(noveltiesFiltradas);
+        }
+
+        function animarNumero(elementId, valor) {
+            const elemento = document.getElementById(elementId);
+            if (!elemento) return;
+            elemento.textContent = valor;
+            elemento.classList.add('animate__animated', 'animate__pulse');
+            setTimeout(() => {
+                elemento.classList.remove('animate__animated', 'animate__pulse');
+            }, 500);
+        }
+
+        function loadTypeChart(novelties) {
+            const ctx = document.getElementById('typeChart');
+            if (!ctx) return;
+            
+            const retiros = novelties.filter(n => n.type === 'retiro' && !n.hasIngreso).length;
+            const ingresos = novelties.filter(n => n.type === 'ingreso' && !n.hasRetiro).length;
+            const ambos = novelties.filter(n => n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)).length;
+
+            if (typeChartInstance) typeChartInstance.destroy();
+
+            typeChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Retiros', 'Ingresos', 'Ambos'],
+                    datasets: [{
+                        data: [retiros, ingresos, ambos],
+                        backgroundColor: ['#ef4444', '#10b981', '#8b5cf6'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
                     }
-                });
+                }
             });
         }
 
-        // Search and Filter
-        let currentNovelties = [];
-        let currentPage = 1;
-        const itemsPerPage = 10;
+        function loadUDSChart(novelties) {
+            const ctx = document.getElementById('udsChart');
+            if (!ctx) return;
+            
+            const udsCounts = {};
+            novelties.forEach(n => {
+                udsCounts[n.udsName] = (udsCounts[n.udsName] || 0) + 1;
+            });
+
+            const sorted = Object.entries(udsCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            if (udsChartInstance) udsChartInstance.destroy();
+
+            udsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(([name]) => name.length > 15 ? name.substring(0, 15) + '...' : name),
+                    datasets: [{
+                        label: 'Novedades',
+                        data: sorted.map(([, count]) => count),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                        x: { ticks: { font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        function loadCuentameChart(novelties) {
+            const ctx = document.getElementById('cuentameChart');
+            if (!ctx) return;
+            
+            const pendientes = novelties.filter(n => !n.cuentameStatus || n.cuentameStatus === 'pendiente').length;
+            const cargados = novelties.filter(n => n.cuentameStatus === 'cargado').length;
+
+            if (cuentameChartInstance) cuentameChartInstance.destroy();
+
+            cuentameChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pendientes', 'Cargados'],
+                    datasets: [{
+                        data: [pendientes, cargados],
+                        backgroundColor: ['#f59e0b', '#10b981'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        function loadMonthChart(novelties) {
+            const ctx = document.getElementById('monthChart');
+            if (!ctx) return;
+            
+            const monthCounts = new Array(12).fill(0);
+            novelties.forEach(n => {
+                const month = new Date(n.timestamp).getMonth();
+                monthCounts[month]++;
+            });
+
+            if (monthChartInstance) monthChartInstance.destroy();
+
+            monthChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                    datasets: [{
+                        data: monthCounts,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
+
+        function loadTopUDSPendientes(novelties) {
+            const container = document.getElementById('topUDSPendientes');
+            if (!container) return;
+
+            const udsPendientes = {};
+            novelties.filter(n => !n.cuentameStatus || n.cuentameStatus === 'pendiente').forEach(n => {
+                udsPendientes[n.udsName] = (udsPendientes[n.udsName] || 0) + 1;
+            });
+
+            const sorted = Object.entries(udsPendientes).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            
+            container.innerHTML = sorted.map(([uds, count], index) => `
+                <div class="flex justify-between items-center p-3 bg-amber-50 rounded-lg border border-amber-100">
+                    <div class="flex items-center gap-3">
+                        <span class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold">${index + 1}</span>
+                        <span class="font-semibold text-slate-700 text-sm">${uds}</span>
+                    </div>
+                    <span class="font-bold text-amber-600">${count} pendientes</span>
+                </div>
+            `).join('') || '<p class="text-slate-500 text-center py-4">No hay pendientes</p>';
+        }
 
         function loadNoveltiesTable() {
             const noveltiesRef = database.ref('novelties_T3');
@@ -1461,7 +2983,104 @@
                 const data = snapshot.val() || {};
                 currentNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
                 filterNovelties();
+                updatePendientesIndicator();
             });
+        }
+
+        function checkDuplicate(document, currentId) {
+            if (!document || document.length < 5) return null;
+            
+            const duplicateActive = currentNovelties.find(n => 
+                n.id !== currentId && (
+                    (n.document === document) || 
+                    (n.retiro && n.retiro.document === document) ||
+                    (n.ingreso && n.ingreso.document === document)
+                )
+            );
+            
+            const duplicateArchived = archivedNovelties.find(n => 
+                n.document === document || 
+                (n.retiro && n.retiro.document === document) ||
+                (n.ingreso && n.ingreso.document === document)
+            );
+            
+            if (duplicateActive) return { type: 'active', data: duplicateActive };
+            if (duplicateArchived) return { type: 'archived', data: duplicateArchived };
+            
+            return null;
+        }
+
+        function toggleCuentame(id) {
+            const novelty = currentNovelties.find(n => n.id === id);
+            if (!novelty) return;
+            
+            const newStatus = novelty.cuentameStatus === 'cargado' ? 'pendiente' : 'cargado';
+            
+            const noveltyRef = database.ref(`novelties_T3/${id}`);
+            noveltyRef.update({ 
+                cuentameStatus: newStatus,
+                cuentameDate: newStatus === 'cargado' ? new Date().toISOString() : null
+            })
+            .then(() => {
+                showToast(newStatus === 'cargado' ? '✓ Marcado como cargado al CUENTAME' : '⏳ Marcado como pendiente', 'success');
+                loadNoveltiesTable();
+                updatePendientesIndicator();
+            })
+            .catch((error) => showToast('Error al actualizar: ' + error.message, 'error'));
+        }
+
+        function archivarNovelty(id) {
+            const novelty = currentNovelties.find(n => n.id === id);
+            if (!novelty) return;
+            
+            if (novelty.cuentameStatus !== 'cargado') {
+                showToast('⚠️ Solo se pueden archivar novedades marcadas como "Cargado al CUENTAME"', 'warning');
+                return;
+            }
+            
+            if (!confirm('¿Está seguro de archivar esta novedad?\n\nLos archivados se mueven a una sección separada.')) return;
+            
+            const archivedData = {
+                ...novelty,
+                archivedDate: new Date().toISOString(),
+                originalId: id
+            };
+            
+            const archivedRef = database.ref('archived_T3').push();
+            archivedRef.set(archivedData)
+                .then(() => database.ref(`novelties_T3/${id}`).remove())
+                .then(() => {
+                    showToast('🗃️ Novedad archivada correctamente', 'success');
+                    loadNoveltiesTable();
+                    updatePendientesIndicator();
+                })
+                .catch((error) => showToast('Error al archivar: ' + error.message, 'error'));
+        }
+
+        function updatePendientesIndicator() {
+            const indicator = document.getElementById('pendientesIndicator');
+            const countEl = document.getElementById('pendientesCount');
+            
+            if (!indicator || !countEl) return;
+            
+            const pendientes = currentNovelties.filter(n => !n.cuentameStatus || n.cuentameStatus === 'pendiente').length;
+            
+            countEl.textContent = pendientes;
+            
+            if (pendientes === 0) {
+                indicator.classList.add('zero');
+                indicator.style.display = 'none';
+            } else {
+                indicator.classList.remove('zero');
+                indicator.style.display = 'flex';
+            }
+        }
+
+        function showPendientesView() {
+            openAdminPanel();
+            switchTab('activas');
+            document.getElementById('filterStatus').value = 'pendiente';
+            filterNovelties();
         }
 
         function filterNovelties() {
@@ -1470,6 +3089,179 @@
             const filterDate = document.getElementById('filterDate');
             const filterMonth = document.getElementById('filterMonth');
             const filterUDS = document.getElementById('filterUDS');
+            const filterStatus = document.getElementById('filterStatus');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const typeFilter = filterType ? filterType.value : '';
+            const dateFilter = filterDate ? filterDate.value : '';
+            const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
+            const statusFilter = filterStatus ? filterStatus.value : '';
+
+            let filtered = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+                
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+                
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
+
+                let matchesStatus = true;
+                if (statusFilter === 'pendiente') {
+                    matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+                } else if (statusFilter === 'cargado') {
+                    matchesStatus = n.cuentameStatus === 'cargado';
+                }
+
+                return matchesSearch && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus;
+            });
+
+            filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            renderTable(filtered);
+        }
+
+        function getFechaMovimiento(novelty) {
+            let fechas = [];
+            
+            if (novelty.type === 'retiro' || novelty.type === 'ambos' || novelty.hasRetiro) {
+                const fechaRetiro = novelty.retiro ? novelty.retiro.retiroDate : (novelty.retiroDate || null);
+                if (fechaRetiro) fechas.push('Ret: ' + fechaRetiro);
+            }
+            
+            if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
+                const fechaIngreso = novelty.ingreso ? novelty.ingreso.ingresoDate : (novelty.ingresoDate || null);
+                if (fechaIngreso) fechas.push('Ing: ' + fechaIngreso);
+            }
+            
+            if (fechas.length > 0) return fechas.join(' / ');
+            return novelty.date || '-';
+        }
+
+        function renderTable(novelties) {
+            const tbody = document.getElementById('noveltiesTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            const start = (currentPage - 1) * itemsPerPage;
+            const paginated = novelties.slice(start, start + itemsPerPage);
+
+            paginated.forEach(n => {
+                const fechaMovimiento = getFechaMovimiento(n);
+                
+                let tipoBadge = '';
+                if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                    tipoBadge = '<span class="badge badge-ambos">AMBOS</span>';
+                } else if (n.type === 'retiro') {
+                    tipoBadge = '<span class="badge badge-retiro">RETIRO</span>';
+                } else if (n.type === 'ingreso') {
+                    tipoBadge = '<span class="badge badge-ingreso">INGRESO</span>';
+                } else {
+                    tipoBadge = '<span class="badge">' + (n.type || 'N/A').toUpperCase() + '</span>';
+                }
+                
+                let docDisplay = n.document || '-';
+                let nameDisplay = n.name || '-';
+                let docsToCheck = [];
+                
+                if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                    const docRet = n.retiro ? n.retiro.document : (n.document || '-');
+                    const docIng = n.ingreso ? n.ingreso.document : '-';
+                    const nomRet = n.retiro ? n.retiro.name : (n.name || '-');
+                    const nomIng = n.ingreso ? n.ingreso.name : '-';
+                    
+                    docDisplay = docRet + ' / ' + docIng;
+                    nameDisplay = (nomRet.length > 15 ? nomRet.substring(0, 15) + '...' : nomRet) + ' / ' + (nomIng.length > 15 ? nomIng.substring(0, 15) + '...' : nomIng);
+                    
+                    if (n.retiro && n.retiro.document) docsToCheck.push(n.retiro.document);
+                    if (n.ingreso && n.ingreso.document) docsToCheck.push(n.ingreso.document);
+                } else if (n.type === 'retiro') {
+                    const retData = n.retiro || n;
+                    docDisplay = retData.document || '-';
+                    nameDisplay = retData.name ? (retData.name.length > 20 ? retData.name.substring(0, 20) + '...' : retData.name) : '-';
+                    if (retData.document) docsToCheck.push(retData.document);
+                } else if (n.type === 'ingreso') {
+                    const ingData = n.ingreso || n;
+                    docDisplay = ingData.document || '-';
+                    nameDisplay = ingData.name ? (ingData.name.length > 20 ? ingData.name.substring(0, 20) + '...' : ingData.name) : '-';
+                    if (ingData.document) docsToCheck.push(ingData.document);
+                }
+
+                let duplicadoHTML = '';
+                docsToCheck.forEach(doc => {
+                    const dup = checkDuplicate(doc, n.id);
+                    if (dup) {
+                        const tooltipText = dup.type === 'active' 
+                            ? `Duplicado en: ${dup.data.udsName} (${new Date(dup.data.timestamp).toLocaleDateString('es-CO')})`
+                            : `Ya archivado en: ${dup.data.udsName}`;
+                        duplicadoHTML += `<span class="duplicado-badge duplicado-tooltip" data-tooltip="${tooltipText}">⚠️ DUP</span> `;
+                    }
+                });
+                
+                const isCargado = n.cuentameStatus === 'cargado';
+                const cuentameClass = isCargado ? 'checked' : 'pending';
+                const cuentameTitle = isCargado ? 'Cargado al CUENTAME' : 'Pendiente por cargar';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="cuentame-check ${cuentameClass}" 
+                             onclick="toggleCuentame('${n.id}')" 
+                             title="${cuentameTitle}">
+                        </div>
+                    </td>
+                    <td>${isCargado ? '<span style="color: #10b981; font-weight: 600;">✓ Cargado</span>' : '<span style="color: #f59e0b; font-weight: 600;">⏳ Pendiente</span>'}</td>
+                    <td>${new Date(n.timestamp).toLocaleDateString('es-CO')}</td>
+                    <td><strong>${fechaMovimiento}</strong></td>
+                    <td>${n.udsName} ${duplicadoHTML}</td>
+                    <td>${tipoBadge}</td>
+                    <td>${docDisplay}</td>
+                    <td>${nameDisplay}</td>
+                    <td>
+                        <button onclick="viewNovelty('${n.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 bg-blue-50 px-2 py-1 rounded">Ver</button>
+                        ${isCargado ? `<button onclick="archivarNovelty('${n.id}')" class="btn-archivar" title="Archivar">🗃️</button>` : ''}
+                        <button onclick="deleteNovelty('${n.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold bg-red-50 px-2 py-1 rounded">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            renderPagination(novelties.length);
+        }
+
+        function loadArchivedNovelties() {
+            const archivedRef = database.ref('archived_T3');
+            archivedRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                archivedNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+                filterArchivedNovelties();
+            });
+        }
+
+        function filterArchivedNovelties() {
+            const searchInput = document.getElementById('searchInputArchivados');
+            const filterType = document.getElementById('filterTypeArchivados');
+            const filterDate = document.getElementById('filterDateArchivados');
+            const filterMonth = document.getElementById('filterMonthArchivados');
+            const filterUDS = document.getElementById('filterUDSArchivados');
             
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             const typeFilter = filterType ? filterType.value : '';
@@ -1477,7 +3269,7 @@
             const monthFilter = filterMonth ? filterMonth.value : '';
             const udsFilter = filterUDS ? filterUDS.value : '';
 
-            let filtered = currentNovelties.filter(n => {
+            let filtered = archivedNovelties.filter(n => {
                 const matchesSearch = !searchTerm || 
                     (n.name && n.name.toLowerCase().includes(searchTerm)) || 
                     (n.document && n.document.includes(searchTerm)) ||
@@ -1507,44 +3299,21 @@
                 return matchesSearch && matchesType && matchesDate && matchesMonth && matchesUDS;
             });
 
-            filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            renderTable(filtered);
+            filtered.sort((a, b) => new Date(b.archivedDate) - new Date(a.archivedDate));
+            renderArchivedTable(filtered);
         }
 
-        function getFechaMovimiento(novelty) {
-            let fechas = [];
-            
-            // Si tiene retiro
-            if (novelty.type === 'retiro' || novelty.type === 'ambos' || novelty.hasRetiro) {
-                const fechaRetiro = novelty.retiro ? novelty.retiro.retiroDate : (novelty.retiroDate || null);
-                if (fechaRetiro) fechas.push('Ret: ' + fechaRetiro);
-            }
-            
-            // Si tiene ingreso
-            if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
-                const fechaIngreso = novelty.ingreso ? novelty.ingreso.ingresoDate : (novelty.ingresoDate || null);
-                if (fechaIngreso) fechas.push('Ing: ' + fechaIngreso);
-            }
-            
-            if (fechas.length > 0) {
-                return fechas.join(' / ');
-            }
-            
-            return novelty.date || '-';
-        }
-
-        function renderTable(novelties) {
-            const tbody = document.getElementById('noveltiesTableBody');
+        function renderArchivedTable(novelties) {
+            const tbody = document.getElementById('archivedTableBody');
             if (!tbody) return;
             
             tbody.innerHTML = '';
-            const start = (currentPage - 1) * itemsPerPage;
+            const start = (currentArchivedPage - 1) * itemsPerPage;
             const paginated = novelties.slice(start, start + itemsPerPage);
 
             paginated.forEach(n => {
                 const fechaMovimiento = getFechaMovimiento(n);
                 
-                // Determinar el badge de tipo
                 let tipoBadge = '';
                 if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
                     tipoBadge = '<span class="badge badge-ambos">AMBOS</span>';
@@ -1556,11 +3325,9 @@
                     tipoBadge = '<span class="badge">' + (n.type || 'N/A').toUpperCase() + '</span>';
                 }
                 
-                // Determinar qué documento y nombre mostrar
                 let docDisplay = n.document || '-';
                 let nameDisplay = n.name || '-';
                 
-                // Si es ambos, mostrar info del retiro primero o indicar ambos
                 if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
                     const docRet = n.retiro ? n.retiro.document : (n.document || '-');
                     const docIng = n.ingreso ? n.ingreso.document : '-';
@@ -1570,42 +3337,213 @@
                     docDisplay = docRet + ' / ' + docIng;
                     nameDisplay = (nomRet.length > 15 ? nomRet.substring(0, 15) + '...' : nomRet) + ' / ' + (nomIng.length > 15 ? nomIng.substring(0, 15) + '...' : nomIng);
                 }
-                
+
                 const row = document.createElement('tr');
+                row.className = 'archivado-row';
                 row.innerHTML = `
-                    <td>${new Date(n.timestamp).toLocaleDateString('es-CO')}</td>
+                    <td><div class="check-archivado">✓</div></td>
+                    <td>${new Date(n.archivedDate).toLocaleDateString('es-CO')}</td>
                     <td><strong>${fechaMovimiento}</strong></td>
                     <td>${n.udsName}</td>
                     <td>${tipoBadge}</td>
                     <td>${docDisplay}</td>
                     <td>${nameDisplay}</td>
                     <td>
-                        <button onclick="viewNovelty('${n.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 bg-blue-50 px-2 py-1 rounded">Ver</button>
-                        <button onclick="deleteNovelty('${n.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold bg-red-50 px-2 py-1 rounded">Eliminar</button>
+                        <button onclick="viewArchivedNovelty('${n.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 bg-blue-50 px-2 py-1 rounded">Ver</button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
 
-            renderPagination(novelties.length);
+            renderArchivedPagination(novelties.length);
+        }
+
+        function viewArchivedNovelty(id) {
+            const novelty = archivedNovelties.find(n => n.id === id);
+            if (!novelty) return;
+            viewNoveltyDetails(novelty, true);
+        }
+
+        function eliminarTodosArchivados() {
+            const count = archivedNovelties.length;
+            if (count === 0) {
+                showToast('No hay archivados para eliminar', 'warning');
+                return;
+            }
+            
+            const confirmacion = prompt(`⚠️ ¡ATENCIÓN! ESTA ACCIÓN NO SE PUEDE DESHACER ⚠️\n\n` +
+                `Está a punto de eliminar PERMANENTEMENTE ${count} novedades archivadas.\n\n` +
+                `Para confirmar, escriba ELIMINAR en mayúsculas:`);
+            
+            if (confirmacion !== 'ELIMINAR') {
+                showToast('Operación cancelada', 'info');
+                return;
+            }
+            
+            const segundaConfirmacion = confirm(`Última confirmación:\n\n` +
+                `¿Está 100% seguro de eliminar ${count} registros archivados permanentemente?`);
+            
+            if (!segundaConfirmacion) {
+                showToast('Operación cancelada', 'info');
+                return;
+            }
+            
+            showToast('⏳ Eliminando todos los archivados...', 'info');
+            
+            const archivedRef = database.ref('archived_T3');
+            archivedRef.remove()
+                .then(() => {
+                    showToast(`🗑️ ${count} archivados eliminados permanentemente`, 'success');
+                    archivedNovelties = [];
+                    filterArchivedNovelties();
+                    loadResumenStats();
+                })
+                .catch((error) => showToast('Error al eliminar: ' + error.message, 'error'));
+        }
+		
+		function toggleBatchMenu() {
+			const menu = document.getElementById('batchMenu');
+			if (menu) {
+				const isVisible = menu.style.display === 'block';
+				menu.style.display = isVisible ? 'none' : 'block';
+				
+				// Actualizar contador
+				if (!isVisible) {
+					const pendientes = currentNovelties.filter(n => !n.cuentameStatus || n.cuentameStatus === 'pendiente');
+					const badge = document.getElementById('countPendientesBadge');
+					if (badge) badge.textContent = pendientes.length;
+				}
+			}
+		}
+
+		// Cerrar menú al hacer clic fuera
+		document.addEventListener('click', function(e) {
+			const menu = document.getElementById('batchMenu');
+			const btn = e.target.closest('button');
+			if (menu && menu.style.display === 'block' && !btn?.textContent?.includes('Acciones Masivas')) {
+				menu.style.display = 'none';
+			}
+		});
+
+        function renderArchivedPagination(totalItems) {
+            const container = document.getElementById('paginationArchivados');
+            if (!container) return;
+            
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            container.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = `px-3 py-1 rounded text-sm ${i === currentArchivedPage ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`;
+                btn.textContent = i;
+                btn.onclick = () => { currentArchivedPage = i; filterArchivedNovelties(); };
+                container.appendChild(btn);
+            }
+        }
+
+        function exportArchivedToExcel() {
+            if (archivedNovelties.length === 0) {
+                showToast("No hay archivados para exportar", "warning");
+                return;
+            }
+
+            const exportData = archivedNovelties.map(n => {
+                const fechaMovimiento = getFechaMovimiento(n);
+                let fechaNacimientoNiño = '';
+                let fechaNacimientoAcudiente = '';
+                let docRetiro = '', docIngreso = '';
+                let nombreRetiro = '', nombreIngreso = '';
+                let fechaRetiro = '', fechaIngreso = '';
+                
+                if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
+                    if (n.retiro) {
+                        docRetiro = n.retiro.document || '';
+                        nombreRetiro = n.retiro.name || '';
+                        fechaRetiro = n.retiro.retiroDate || '';
+                    }
+                    if (n.ingreso) {
+                        docIngreso = n.ingreso.document || '';
+                        nombreIngreso = n.ingreso.name || '';
+                        fechaIngreso = n.ingreso.ingresoDate || '';
+                        fechaNacimientoNiño = n.ingreso.dob || '';
+                        fechaNacimientoAcudiente = n.ingreso.acudienteDOB || '';
+                    }
+                } else if (n.type === 'retiro') {
+                    const retiroData = n.retiro || n;
+                    docRetiro = retiroData.document || '';
+                    nombreRetiro = retiroData.name || '';
+                    fechaRetiro = retiroData.retiroDate || n.retiroDate || '';
+                } else if (n.type === 'ingreso') {
+                    const ingresoData = n.ingreso || n;
+                    docIngreso = ingresoData.document || '';
+                    nombreIngreso = ingresoData.name || '';
+                    fechaIngreso = ingresoData.ingresoDate || n.ingresoDate || '';
+                    fechaNacimientoNiño = ingresoData.dob || n.ingresoDOB || '';
+                    fechaNacimientoAcudiente = ingresoData.acudienteDOB || n.acudienteDOB || '';
+                }
+
+                return {
+                    'Fecha Archivo': new Date(n.archivedDate).toLocaleString('es-CO'),
+                    'Fecha Registro Original': new Date(n.timestamp).toLocaleString('es-CO'),
+                    'Fecha Movimiento': fechaMovimiento,
+                    'Contrato': '668',
+                    'UDS Nombre': n.udsName,
+                    'Tipo Novedad': n.type ? n.type.toUpperCase() : '',
+                    'Documento Retiro': docRetiro,
+                    'Nombre Retiro': nombreRetiro,
+                    'Fecha Retiro': fechaRetiro,
+                    'Documento Ingreso': docIngreso,
+                    'Nombre Ingreso': nombreIngreso,
+                    'Fecha Ingreso': fechaIngreso,
+                    'Fecha Nacimiento Niño': fechaNacimientoNiño,
+                    'Edad al Ingreso': n.ingreso ? n.ingreso.age : n.age || '',
+                    'Dirección': n.ingreso ? n.ingreso.address : n.address || '',
+                    'Teléfono': n.ingreso ? n.ingreso.phone : n.phone || '',
+                    'Acudiente Nombre': n.ingreso ? n.ingreso.acudiente : n.acudiente || '',
+                    'Acudiente Documento': n.ingreso ? n.ingreso.acudienteDoc : n.acudienteDoc || '',
+                    'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente,
+                    'Fecha Valoración Nutricional': n.nutricion ? n.nutricion.fecha : '',
+                    'Peso (kg)': n.nutricion ? n.nutricion.peso : '',
+                    'Talla (cm)': n.nutricion ? n.nutricion.talla : '',
+                    'Régimen': n.nutricion ? n.nutricion.regimen : '',
+                    'EPS': n.nutricion ? n.nutricion.eps : '',
+                    'Estado Nutricional': n.nutricion ? n.nutricion.estadoNutricional : ''
+                };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Archivados');
+            XLSX.writeFile(wb, `Reporte_Archivados_T3_${new Date().toISOString().split('T')[0]}.xlsx`);
+            
+            showToast(`Exportados ${archivedNovelties.length} registros archivados`, "success");
         }
 
         function viewNovelty(id) {
             const novelty = currentNovelties.find(n => n.id === id);
             if (!novelty) return;
+            viewNoveltyDetails(novelty, false);
+        }
 
+        function viewNoveltyDetails(novelty, isArchived) {
             let formData = `=================================\n`;
             formData +=    ` REPORTE DE NOVEDADES - ASOCIACIÓN T3\n`;
             formData +=    `=================================\n\n`;
+            
+            if (isArchived) {
+                formData += `[ 🗃️ REGISTRO ARCHIVADO ]\n`;
+                formData += `> Fecha Archivo: ${new Date(novelty.archivedDate).toLocaleString('es-CO')}\n`;
+                formData += `------------------------------------------\n\n`;
+            }
             
             formData += `[ INFORMACIÓN GENERAL ]\n`;
             formData += `> CONTRATO:         668\n`;
             formData += `> UDS NOMBRE:       ${novelty.udsName || 'N/A'}\n`;
             formData += `> FECHA REGISTRO:   ${new Date(novelty.timestamp).toLocaleString('es-CO')}\n`;
             formData += `> TIPO DE NOVEDAD:  ${novelty.type === 'ambos' || (novelty.hasRetiro && novelty.hasIngreso) ? 'RETIRO + INGRESO (AMBOS)' : (novelty.type ? novelty.type.toUpperCase() : 'N/A')}\n`;
+            formData += `> ESTADO CUENTAME:  ${novelty.cuentameStatus === 'cargado' ? '✓ CARGADO' : '⏳ PENDIENTE'}\n`;
             formData += `------------------------------------------\n\n`;
 
-            // Mostrar RETIRO si existe
             if (novelty.type === 'retiro' || novelty.type === 'ambos' || novelty.hasRetiro) {
                 const retiroData = novelty.retiro || novelty;
                 formData += `[ DATOS DE RETIRO ]\n`;
@@ -1615,7 +3553,6 @@
                 formData += `  - Género:         ${retiroData.gender === 'M' ? 'Masculino' : retiroData.gender === 'F' ? 'Femenino' : 'N/A'}\n\n`;
             }
 
-            // Mostrar INGRESO si existe
             if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
                 const ingresoData = novelty.ingreso || novelty;
                 let fechaNacimientoNiño = ingresoData.dob || ingresoData.ingresoDOB || novelty.ingresoDOB || '-';
@@ -1635,6 +3572,17 @@
                 formData += `  - Nombre:         ${ingresoData.acudiente || novelty.acudiente || 'N/A'}\n`;
                 formData += `  - F. Nacimiento:  ${fechaNacimientoAcudiente}\n`;
                 formData += `  - Documento:      ${ingresoData.acudienteDoc || novelty.acudienteDoc || 'N/A'}\n`;
+
+                if (novelty.nutricion || ingresoData.nutricion) {
+                    const nutData = novelty.nutricion || ingresoData.nutricion || {};
+                    formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
+                    formData += `  - F. Valoración:   ${nutData.fecha || '-'}\n`;
+                    formData += `  - Peso:            ${nutData.peso ? nutData.peso + ' kg' : '-'}\n`;
+                    formData += `  - Talla:           ${nutData.talla ? nutData.talla + ' cm' : '-'}\n`;
+                    formData += `  - Régimen:         ${nutData.regimen || '-'}\n`;
+                    formData += `  - EPS:             ${nutData.eps || '-'}\n`;
+                    formData += `  - Estado Nutric.: ${nutData.estadoNutricional || 'No calculado'}\n`;
+                }
             }
 
             const modalBody = document.getElementById('modalBody');
@@ -1658,12 +3606,9 @@
                 .then(() => {
                     showToast('Registro eliminado correctamente', 'success');
                     loadNoveltiesTable();
-                    loadDashboardStats();
-                    loadCharts();
+                    updatePendientesIndicator();
                 })
-                .catch((error) => {
-                    showToast('Error al eliminar el registro: ' + error.message, 'error');
-                });
+                .catch((error) => showToast('Error al eliminar: ' + error.message, 'error'));
         }
 
         function renderPagination(totalItems) {
@@ -1693,12 +3638,14 @@
             const filterDate = document.getElementById('filterDate');
             const filterMonth = document.getElementById('filterMonth');
             const filterUDS = document.getElementById('filterUDS');
+            const filterStatus = document.getElementById('filterStatus');
             
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             const typeFilter = filterType ? filterType.value : '';
             const dateFilter = filterDate ? filterDate.value : '';
             const monthFilter = filterMonth ? filterMonth.value : '';
             const udsFilter = filterUDS ? filterUDS.value : '';
+            const statusFilter = filterStatus ? filterStatus.value : '';
 
             let filtered = currentNovelties.filter(n => {
                 const matchesSearch = !searchTerm || 
@@ -1727,7 +3674,14 @@
                     matchesMonth = nDate.getMonth() === parseInt(monthFilter);
                 }
 
-                return matchesSearch && matchesType && matchesDate && matchesMonth && matchesUDS;
+                let matchesStatus = true;
+                if (statusFilter === 'pendiente') {
+                    matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+                } else if (statusFilter === 'cargado') {
+                    matchesStatus = n.cuentameStatus === 'cargado';
+                }
+
+                return matchesSearch && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus;
             });
 
             if (filtered.length === 0) {
@@ -1749,7 +3703,6 @@
                 let fechaRetiro = '';
                 let fechaIngreso = '';
                 
-                // Procesar datos según tipo
                 if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
                     tipoNovedad = 'AMBOS (RETIRO + INGRESO)';
                     
@@ -1784,21 +3737,26 @@
                     fechaNacimientoAcudiente = ingresoData.acudienteDOB || n.acudienteDOB || '';
                 }
 
+                let nutricionData = {};
+                if (n.nutricion) {
+                    nutricionData = n.nutricion;
+                } else if (n.ingreso && n.ingreso.nutricion) {
+                    nutricionData = n.ingreso.nutricion;
+                }
+
                 return {
+                    'Estado CUENTAME': n.cuentameStatus === 'cargado' ? 'CARGADO' : 'PENDIENTE',
+                    'Fecha Cargado': n.cuentameDate ? new Date(n.cuentameDate).toLocaleString('es-CO') : '-',
                     'Fecha Registro': new Date(n.timestamp).toLocaleString('es-CO'),
                     'Fecha Movimiento': fechaMovimiento,
                     'Contrato': '668',
                     'UDS Nombre': n.udsName,
                     'Tipo Novedad': tipoNovedad,
-                    // Datos Retiro
-                    'Tipo Doc Retiro': n.retiro ? n.retiro.docType : (n.type === 'retiro' ? n.docType : ''),
-                    'Documento Retiro': docRetiro,
+                    'Doc Retiro': docRetiro,
                     'Nombre Retiro': nombreRetiro,
                     'Género Retiro': generoRetiro === 'M' ? 'Masculino' : generoRetiro === 'F' ? 'Femenino' : '',
                     'Fecha Retiro': fechaRetiro,
-                    // Datos Ingreso
-                    'Tipo Doc Ingreso': n.ingreso ? n.ingreso.docType : (n.type === 'ingreso' ? n.docType : ''),
-                    'Documento Ingreso': docIngreso,
+                    'Doc Ingreso': docIngreso,
                     'Nombre Ingreso': nombreIngreso,
                     'Género Ingreso': generoIngreso === 'M' ? 'Masculino' : generoIngreso === 'F' ? 'Femenino' : '',
                     'Fecha Nacimiento Niño': fechaNacimientoNiño,
@@ -1808,7 +3766,13 @@
                     'Teléfono': n.ingreso ? n.ingreso.phone : n.phone || '',
                     'Acudiente Nombre': n.ingreso ? n.ingreso.acudiente : n.acudiente || '',
                     'Acudiente Documento': n.ingreso ? n.ingreso.acudienteDoc : n.acudienteDoc || '',
-                    'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente
+                    'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente,
+                    'Fecha Valoración Nutricional': nutricionData.fecha || '',
+                    'Peso (kg)': nutricionData.peso || '',
+                    'Talla (cm)': nutricionData.talla || '',
+                    'Régimen': nutricionData.regimen || '',
+                    'EPS': nutricionData.eps || '',
+                    'Estado Nutricional': nutricionData.estadoNutricional || ''
                 };
             });
 
@@ -1837,7 +3801,6 @@
                 
                 const wb = XLSX.utils.book_new();
 
-                // Resumen
                 const resumenData = [
                     ['REPORTE COMPLETO DE NOVEDADES - ASOCIACIÓN T3'],
                     ['Generado:', new Date().toLocaleString('es-CO')],
@@ -1847,6 +3810,8 @@
                     ['Total Retiros:', retiros.length],
                     ['Total Ingresos:', ingresos.length],
                     ['Total Ambos (Retiro + Ingreso):', ambos.length],
+                    ['Pendientes CUENTAME:', novelties.filter(n => !n.cuentameStatus || n.cuentameStatus === 'pendiente').length],
+                    ['Cargados CUENTAME:', novelties.filter(n => n.cuentameStatus === 'cargado').length],
                 ];
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(resumenData), 'Resumen');
 
@@ -1854,11 +3819,12 @@
                     const fechaMovimiento = getFechaMovimiento(n);
                     let fechaNacimientoNiño = '';
                     let fechaNacimientoAcudiente = '';
-                    
-                    // Determinar datos según tipo
-                    let docRetiro = '', docIngreso = '';
-                    let nombreRetiro = '', nombreIngreso = '';
-                    let fechaRetiro = '', fechaIngreso = '';
+                    let docRetiro = '';
+                    let docIngreso = '';
+                    let nombreRetiro = '';
+                    let nombreIngreso = '';
+                    let fechaRetiro = '';
+                    let fechaIngreso = '';
                     
                     if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
                         if (n.retiro) {
@@ -1887,18 +3853,24 @@
                         fechaNacimientoAcudiente = ingresoData.acudienteDOB || n.acudienteDOB || '';
                     }
 
+                    let nutricionData = {};
+                    if (n.nutricion) {
+                        nutricionData = n.nutricion;
+                    } else if (n.ingreso && n.ingreso.nutricion) {
+                        nutricionData = n.ingreso.nutricion;
+                    }
+
                     return {
+                        'Estado CUENTAME': n.cuentameStatus === 'cargado' ? 'CARGADO' : 'PENDIENTE',
                         'ID': n.id,
                         'Fecha Registro': new Date(n.timestamp).toLocaleString('es-CO'),
                         'Fecha Movimiento': fechaMovimiento,
                         'Contrato': '668',
                         'UDS Nombre': n.udsName,
                         'Tipo': tipo,
-                        // Retiro
                         'Doc Retiro': docRetiro,
                         'Nombre Retiro': nombreRetiro,
                         'Fecha Retiro': fechaRetiro,
-                        // Ingreso
                         'Doc Ingreso': docIngreso,
                         'Nombre Ingreso': nombreIngreso,
                         'Fecha Ingreso': fechaIngreso,
@@ -1908,7 +3880,13 @@
                         'Teléfono': n.ingreso ? n.ingreso.phone : n.phone || '',
                         'Acudiente Nombre': n.ingreso ? n.ingreso.acudiente : n.acudiente || '',
                         'Acudiente Documento': n.ingreso ? n.ingreso.acudienteDoc : n.acudienteDoc || '',
-                        'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente
+                        'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente,
+                        'Fecha Valoración Nutricional': nutricionData.fecha || '',
+                        'Peso (kg)': nutricionData.peso || '',
+                        'Talla (cm)': nutricionData.talla || '',
+                        'Régimen': nutricionData.regimen || '',
+                        'EPS': nutricionData.eps || '',
+                        'Estado Nutricional': nutricionData.estadoNutricional || ''
                     };
                 };
 
@@ -1957,8 +3935,8 @@
                 doc.rect(10, y, 277, 10, 'F');
                 doc.setFontSize(9);
                 
-                const headers = ['Fecha Reg', 'Fecha Mov', 'UDS', 'Tipo', 'Doc Ret', 'Nom Ret', 'Doc Ing', 'Nom Ing'];
-                const colWidths = [25, 35, 40, 25, 30, 45, 30, 47];
+                const headers = ['Estado', 'Fecha Reg', 'Fecha Mov', 'UDS', 'Tipo', 'Doc Ret', 'Nom Ret', 'Doc Ing', 'Nom Ing'];
+                const colWidths = [25, 25, 35, 35, 25, 30, 45, 30, 47];
                 let x = 12;
                 
                 headers.forEach((header, i) => {
@@ -1987,8 +3965,8 @@
                     }
                     
                     const fechaMovimiento = getFechaMovimiento(n);
+                    const estadoText = n.cuentameStatus === 'cargado' ? '✓ CARGADO' : '⏳ PEND';
                     
-                    // Preparar datos según tipo
                     let tipoDisplay = n.type ? n.type.toUpperCase() : '';
                     let docRet = '';
                     let nomRet = '';
@@ -2017,6 +3995,7 @@
                     
                     x = 12;
                     const rowData = [
+                        estadoText,
                         new Date(n.timestamp).toLocaleDateString('es-CO'),
                         fechaMovimiento.length > 18 ? fechaMovimiento.substring(0, 18) : fechaMovimiento,
                         n.udsName ? (n.udsName.length > 18 ? n.udsName.substring(0, 18) + '...' : n.udsName) : '',
@@ -2027,10 +4006,9 @@
                         nomIng
                     ];
                     
-                    // Color según tipo
                     if (n.type === 'retiro') doc.setTextColor(220, 38, 38);
                     else if (n.type === 'ingreso') doc.setTextColor(16, 185, 129);
-                    else if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) doc.setTextColor(147, 51, 234); // Morado para ambos
+                    else if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) doc.setTextColor(147, 51, 234);
                     else doc.setTextColor(0, 0, 0);
                     
                     rowData.forEach((cell, i) => {
@@ -2051,24 +4029,31 @@
             });
         }
 
-        // Smart Validations
         function checkExistingBeneficiary(document, type) {
             if (document.length < 5) return;
             
-            const noveltiesRef = database.ref('novelties_T3');
-            noveltiesRef.once('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                const novelties = Object.values(data);
-                const existing = novelties.find(n => n.document === document);
-                
-                if (existing) {
-                    if (type === 'ingreso') {
-                        showToast(`Beneficiario ya existe en ${existing.udsName}`, "warning");
-                    } else if (type === 'retiro') {
-                        showToast(`Beneficiario encontrado en base de datos`, "info");
-                    }
+            const duplicateActive = currentNovelties.find(n => 
+                (n.document === document) || 
+                (n.retiro && n.retiro.document === document) ||
+                (n.ingreso && n.ingreso.document === document)
+            );
+            
+            const duplicateArchived = archivedNovelties.find(n => 
+                n.document === document || 
+                (n.retiro && n.retiro.document === document) ||
+                (n.ingreso && n.ingreso.document === document)
+            );
+            
+            const existing = duplicateActive || duplicateArchived;
+            
+            if (existing) {
+                const ubicacion = duplicateActive ? 'activas' : 'archivadas';
+                if (type === 'ingreso') {
+                    showToast(`⚠️ Beneficiario ya existe en ${existing.udsName} (${ubicacion})`, "warning");
+                } else if (type === 'retiro') {
+                    showToast(`ℹ️ Beneficiario encontrado en base de datos (${ubicacion})`, "info");
                 }
-            });
+            }
         }
 
         function validateAgeRange() {
@@ -2240,7 +4225,6 @@
             const checkRetiro = document.getElementById('checkRetiro');
             const checkIngreso = document.getElementById('checkIngreso');
             
-            // SECCIÓN RETIRO
             if (checkRetiro && checkRetiro.checked) {
                 const retiroDocType = document.getElementById('retiroDocType');
                 const retiroDocNumber = document.getElementById('retiroDocNumber');
@@ -2255,20 +4239,19 @@
                 formData += `  - Género:     ${retiroGender ? retiroGender.value : 'N/A'}\n\n`;
             }
 
-            // SECCIÓN INGRESO
             if (checkIngreso && checkIngreso.checked) {
                 const ingresoDocType = document.getElementById('ingresoDocType');
                 const ingresoDocNumber = document.getElementById('ingresoDocNumber');
                 const ingresoFullName = document.getElementById('ingresoFullName');
                 const displayAge = document.getElementById('displayAge');
                 const ingresoDOB = document.getElementById('ingresoDOB');
-                const ingresoDate = document.getElementById('ingresoDate');
                 const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
                 const ingresoAddress = document.getElementById('ingresoAddress');
                 const ingresoPhone = document.getElementById('ingresoPhone');
                 const acudienteName = document.getElementById('acudienteName');
                 const acudienteDoc = document.getElementById('acudienteDoc');
                 const acudienteDOB = document.getElementById('acudienteDOB');
+                const ingresoDate = document.getElementById('ingresoDate');
                 
                 formData += `[ DATOS DE INGRESO ]\n`;
                 formData += `  - Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
@@ -2284,6 +4267,23 @@
                 formData += `  - Nombre:     ${acudienteName ? acudienteName.value : ''}\n`;
                 formData += `  - F. Nacim:   ${acudienteDOB ? acudienteDOB.value : ''}\n`;
                 formData += `  - Documento:  ${acudienteDoc ? acudienteDoc.value : ''}\n`;
+
+                const nutricionFecha = document.getElementById('nutricionFecha');
+                const nutricionPeso = document.getElementById('nutricionPeso');
+                const nutricionTalla = document.getElementById('nutricionTalla');
+                const nutricionRegimen = document.getElementById('nutricionRegimen');
+                const nutricionEPS = document.getElementById('nutricionEPS');
+                const nutricionStatus = document.getElementById('nutricionStatus');
+
+                if (nutricionFecha && nutricionFecha.value) {
+                    formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
+                    formData += `  - F. Valoración:  ${nutricionFecha.value}\n`;
+                    formData += `  - Peso:           ${nutricionPeso ? nutricionPeso.value + ' kg' : ''}\n`;
+                    formData += `  - Talla:          ${nutricionTalla ? nutricionTalla.value + ' cm' : ''}\n`;
+                    formData += `  - Régimen:        ${nutricionRegimen ? nutricionRegimen.value : ''}\n`;
+                    formData += `  - EPS:            ${nutricionEPS ? nutricionEPS.value : ''}\n`;
+                    formData += `  - Estado Nutric.: ${nutricionStatus ? nutricionStatus.textContent : 'No calculado'}\n`;
+                }
             }
             
             formData += `\n------------------------------------------\n`;
@@ -2313,7 +4313,6 @@
                     const isRetiro = checkRetiro.checked;
                     const isIngreso = checkIngreso.checked;
 
-                    // Validations
                     if (isRetiro) {
                         const retiroDocNumber = document.getElementById('retiroDocNumber');
                         if (retiroDocNumber && (retiroDocNumber.value.length < 7 || retiroDocNumber.value.length > 10)) {
@@ -2326,6 +4325,38 @@
                         const ingresoDocNumber = document.getElementById('ingresoDocNumber');
                         if (ingresoDocNumber && (ingresoDocNumber.value.length < 7 || ingresoDocNumber.value.length > 10)) {
                             showToast("El documento de ingreso debe tener entre 7 y 10 dígitos.", "error");
+                            return;
+                        }
+
+                        const nutricionPeso = document.getElementById('nutricionPeso');
+                        const nutricionTalla = document.getElementById('nutricionTalla');
+                        const nutricionFecha = document.getElementById('nutricionFecha');
+
+                        if (!nutricionPeso || !nutricionPeso.value) {
+                            showToast("El campo PESO es obligatorio para el seguimiento nutricional.", "error");
+                            nutricionPeso.classList.add('input-error');
+                            return;
+                        }
+                        if (!nutricionTalla || !nutricionTalla.value) {
+                            showToast("El campo TALLA es obligatorio para el seguimiento nutricional.", "error");
+                            nutricionTalla.classList.add('input-error');
+                            return;
+                        }
+                        if (!nutricionFecha || !nutricionFecha.value) {
+                            showToast("La FECHA DE VALORACIÓN es obligatoria.", "error");
+                            nutricionFecha.classList.add('input-error');
+                            return;
+                        }
+
+                        const peso = parseFloat(nutricionPeso.value);
+                        const talla = parseFloat(nutricionTalla.value);
+
+                        if (peso < 5 || peso > 30.5) {
+                            showToast("El peso debe estar entre 5 y 30.5 kg.", "error");
+                            return;
+                        }
+                        if (talla < 50 || talla > 130.5) {
+                            showToast("La talla debe estar entre 50 y 130.5 cm.", "error");
                             return;
                         }
                     }
@@ -2373,17 +4404,16 @@
                         }
                     }
 
-                    // Preparar datos para Firebase
                     const udsName = uds.value.split(' - ')[0];
                     const noveltyData = {
                         contract: contract.value,
                         udsName: udsName,
                         udsFull: uds.value,
                         timestamp: new Date().toISOString(),
-                        date: new Date().toISOString().split('T')[0]
+                        date: new Date().toISOString().split('T')[0],
+                        cuentameStatus: 'pendiente'
                     };
 
-                    // Guardar información de ambos tipos si aplican
                     if (isRetiro && isIngreso) {
                         noveltyData.type = 'ambos';
                         noveltyData.hasRetiro = true;
@@ -2398,7 +4428,6 @@
                         noveltyData.hasIngreso = true;
                     }
 
-                    // Datos de RETIRO (si aplica)
                     if (isRetiro) {
                         const retiroDocType = document.getElementById('retiroDocType');
                         const retiroDocNumber = document.getElementById('retiroDocNumber');
@@ -2413,7 +4442,6 @@
                             gender: retiroGender ? retiroGender.value : '',
                             retiroDate: retiroDate ? retiroDate.value : ''
                         };
-                        // Mantener compatibilidad con estructura anterior
                         noveltyData.docType = noveltyData.retiro.docType;
                         noveltyData.document = noveltyData.retiro.document;
                         noveltyData.name = noveltyData.retiro.name;
@@ -2421,7 +4449,6 @@
                         noveltyData.retiroDate = noveltyData.retiro.retiroDate;
                     }
 
-                    // Datos de INGRESO (si aplica)
                     if (isIngreso) {
                         const ingresoDocType = document.getElementById('ingresoDocType');
                         const ingresoDocNumber = document.getElementById('ingresoDocNumber');
@@ -2450,7 +4477,6 @@
                             acudienteDOB: acudienteDOB ? acudienteDOB.value : '',
                             ingresoDate: ingresoDate ? ingresoDate.value : ''
                         };
-                        // Mantener compatibilidad con estructura anterior
                         noveltyData.ingresoDOB = noveltyData.ingreso.dob;
                         noveltyData.age = noveltyData.ingreso.age;
                         noveltyData.address = noveltyData.ingreso.address;
@@ -2459,7 +4485,23 @@
                         noveltyData.acudienteDoc = noveltyData.ingreso.acudienteDoc;
                         noveltyData.acudienteDOB = noveltyData.ingreso.acudienteDOB;
                         noveltyData.ingresoDate = noveltyData.ingreso.ingresoDate;
-                        // Si es solo ingreso, estos datos van al nivel raíz también
+                        
+                        const nutricionFecha = document.getElementById('nutricionFecha');
+                        const nutricionPeso = document.getElementById('nutricionPeso');
+                        const nutricionTalla = document.getElementById('nutricionTalla');
+                        const nutricionRegimen = document.getElementById('nutricionRegimen');
+                        const nutricionEPS = document.getElementById('nutricionEPS');
+                        const nutricionStatus = document.getElementById('nutricionStatus');
+
+                        noveltyData.nutricion = {
+                            fecha: nutricionFecha ? nutricionFecha.value : '',
+                            peso: nutricionPeso ? nutricionPeso.value : '',
+                            talla: nutricionTalla ? nutricionTalla.value : '',
+                            regimen: nutricionRegimen ? nutricionRegimen.value : '',
+                            eps: nutricionEPS ? nutricionEPS.value : '',
+                            estadoNutricional: nutricionStatus ? nutricionStatus.textContent : 'No calculado'
+                        };
+
                         if (!isRetiro) {
                             noveltyData.docType = noveltyData.ingreso.docType;
                             noveltyData.document = noveltyData.ingreso.document;
@@ -2468,14 +4510,12 @@
                         }
                     }
 
-                    // Preparar Formspree
                     const emailSubject = document.getElementById('emailSubject');
                     const hiddenFormattedData = document.getElementById('hiddenFormattedData');
                     
                     if (emailSubject) emailSubject.value = `Novedad UDS: ${udsName}`;
                     if (hiddenFormattedData) hiddenFormattedData.value = formatData();
 
-                    // Mostrar loading
                     if (btn) {
                         btn.disabled = true;
                         btn.innerHTML = '<span class="spinner"></span> ENVIANDO...';
@@ -2483,7 +4523,6 @@
 
                     let firebaseSaved = false;
 
-                    // Intentar guardar en Firebase
                     try {
                         const noveltiesRef = database.ref('novelties_T3');
                         await noveltiesRef.push(noveltyData);
@@ -2493,13 +4532,11 @@
                         console.warn('No se pudo guardar en Firebase:', firebaseError.message);
                     }
 
-                    // Enviar a Google Apps Script
                     try {
                         const fileInput = document.getElementById('fileInput');
                         const formData = new FormData(this);
                         const obj = Object.fromEntries(formData.entries());
 
-                        // Procesar archivo si existe
                         if (fileInput && fileInput.files.length > 0) {
                             const file = fileInput.files[0];
                             const reader = new FileReader();
@@ -2538,12 +4575,14 @@
 
                 showToast('✅ ¡Éxito! Reporte enviado correctamente.', 'success');
                 
-                // Resetear formulario
                 document.getElementById('noveltyForm').reset();
                 updateStyles();
                 document.getElementById('sectionRetiro').classList.add('hidden');
                 document.getElementById('sectionIngreso').classList.add('hidden');
                 document.getElementById('displayAge').value = "Esperando fechas...";
+                
+                const nutricionIndicator = document.getElementById('nutricionIndicator');
+                if (nutricionIndicator) nutricionIndicator.style.display = 'none';
 
             } catch (error) {
                 showToast("❌ Error de conexión con Google Apps Script.", "error");
