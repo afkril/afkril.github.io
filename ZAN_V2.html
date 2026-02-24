@@ -70,16 +70,18 @@
             50% { box-shadow: 0 0 50px var(--primary-gold), inset 0 0 30px rgba(212,175,55,0.4); }
         }
 
-        /* Tooltip del tutorial */
+        /* Tooltip del tutorial - CORREGIDO PARA NO CORTARSE */
         .tutorial-tooltip {
-            position: absolute;
+            position: fixed;
             background: linear-gradient(135deg, var(--bg-card) 0%, #1a1a2e 100%);
             border: 2px solid var(--primary-gold);
             border-radius: 16px;
-            padding: 25px;
+            padding: 20px;
             z-index: 10000;
-            max-width: 380px;
-            min-width: 300px;
+            max-width: 350px;
+            min-width: 280px;
+            max-height: 80vh;
+            overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(212,175,55,0.1);
             display: none;
             animation: slideIn 0.4s ease;
@@ -134,47 +136,50 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 15px;
-            padding-bottom: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid rgba(212,175,55,0.3);
         }
 
         .tutorial-icon {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             background: linear-gradient(135deg, var(--primary-gold), var(--accent-cyan));
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 18px;
             color: #000;
             box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+            flex-shrink: 0;
         }
 
         .tutorial-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
             color: var(--primary-gold);
             text-transform: uppercase;
             letter-spacing: 1px;
+            line-height: 1.2;
         }
 
         .tutorial-step {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--accent-cyan);
             background: rgba(0,242,255,0.1);
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 20px;
             margin-left: auto;
+            flex-shrink: 0;
         }
 
         /* Contenido del tooltip */
         .tutorial-content {
             color: var(--text-main);
-            line-height: 1.7;
-            font-size: 12px;
-            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 11px;
+            margin-bottom: 15px;
         }
 
         .tutorial-content strong {
@@ -183,12 +188,12 @@
         }
 
         .tutorial-content ul {
-            margin: 10px 0;
-            padding-left: 20px;
+            margin: 8px 0;
+            padding-left: 18px;
         }
 
         .tutorial-content li {
-            margin: 8px 0;
+            margin: 6px 0;
             color: var(--text-dim);
         }
 
@@ -200,37 +205,38 @@
         .tutorial-tip {
             background: rgba(0,255,136,0.1);
             border-left: 3px solid var(--success);
-            padding: 12px;
+            padding: 10px;
             border-radius: 0 8px 8px 0;
-            margin: 15px 0;
-            font-size: 11px;
+            margin: 12px 0;
+            font-size: 10px;
             color: var(--success);
         }
 
         .tutorial-tip i {
-            margin-right: 8px;
+            margin-right: 6px;
         }
 
         /* Controles del tutorial */
         .tutorial-controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: space-between;
             align-items: center;
+            margin-top: 15px;
         }
 
         .tutorial-btn {
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 8px 16px;
+            border-radius: 20px;
             border: none;
             cursor: pointer;
             font-weight: 700;
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
             transition: all 0.3s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .tutorial-btn-primary {
@@ -257,7 +263,7 @@
         .tutorial-btn-skip {
             background: transparent;
             color: var(--text-dim);
-            font-size: 10px;
+            font-size: 9px;
             text-decoration: underline;
         }
 
@@ -266,7 +272,7 @@
             display: flex;
             gap: 6px;
             justify-content: center;
-            margin-top: 15px;
+            margin-top: 12px;
         }
 
         .tutorial-dot {
@@ -292,9 +298,9 @@
             position: fixed;
             bottom: 25px;
             right: 25px;
-            width: 55px;
-            height: 55px;
-            background: linear-gradient(135deg, var(--primary-gold), var(--accent-cyan));
+            width: 40px;
+            height: 40px;
+            
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -304,7 +310,6 @@
             box-shadow: 0 8px 25px rgba(212,175,55,0.4);
             transition: all 0.3s;
             font-size: 24px;
-            color: #000;
             border: 3px solid rgba(255,255,255,0.1);
         }
 
@@ -348,7 +353,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px;
+            padding: 2px;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s;
@@ -375,66 +380,6 @@
             font-size: 12px;
             color: var(--text-main);
             font-weight: 500;
-        }
-
-        /* Tooltips informativos permanentes (modo ayuda activo) */
-        .info-badge {
-            position: absolute;
-            background: var(--danger);
-            color: white;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: help;
-            z-index: 100;
-            animation: bounce 1s infinite;
-            box-shadow: 0 2px 10px rgba(255,70,85,0.4);
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        .info-badge:hover::after {
-            content: attr(data-info);
-            position: absolute;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 11px;
-            color: var(--text-main);
-            white-space: nowrap;
-            z-index: 101;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-        }
-
-        /* Modo demo/anotaciones */
-        .demo-annotation {
-            position: absolute;
-            background: linear-gradient(135deg, rgba(212,175,55,0.9), rgba(0,242,255,0.9));
-            color: #000;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-            z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(-2deg); }
-            50% { transform: translateY(-10px) rotate(2deg); }
         }
 
         /* ===== RESTO DE ESTILOS ORIGINALES ===== */
@@ -489,7 +434,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 20px;
+            padding: 5px 20px;
             color: var(--text-main);
             text-decoration: none;
             transition: all 0.2s;
@@ -989,7 +934,7 @@
             grid-template-columns: 30px 1fr 40px 40px 35px;
             gap: 8px;
             align-items: center;
-            padding: 10px;
+            padding: 1px;
             background: rgba(255,255,255,0.03);
             border-radius: 8px;
             margin-bottom: 8px;
@@ -1057,11 +1002,11 @@
             grid-template-columns: 2fr 80px 140px 30px 35px;
             gap: 8px;
             align-items: center;
-            padding: 10px;
+            padding: 1px;
             background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border-left: 3px solid;
+            border-radius: 9px;
+            margin-bottom: 9px;
+            border-left: 4px solid;
         }
 
         .product-config-item input, .product-config-item select {
@@ -1082,7 +1027,7 @@
             color: var(--text-dim);
         }
 
-        /* RESUMEN MEJORADO */
+        /* RESUMEN MEJORADO - CON PLEGABLE */
         .resumen-proveedor {
             margin-bottom: 15px;
             border-radius: 8px;
@@ -1091,24 +1036,38 @@
         }
 
         .resumen-proveedor-header {
-            padding: 10px;
+            padding: 12px;
             font-weight: bold;
             display: flex;
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .resumen-proveedor-header:hover {
+            filter: brightness(1.1);
         }
 
         .resumen-proveedor-content {
             padding: 10px;
             background: rgba(0,0,0,0.2);
+            max-height: 2000px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .resumen-proveedor-content.collapsed {
+            max-height: 0;
+            padding: 0 10px;
+            opacity: 0;
         }
 
         .producto-resumen {
             display: grid;
-            grid-template-columns: 1fr auto auto auto;
+            grid-template-columns: 1fr auto auto auto auto;
             gap: 10px;
-            padding: 6px 0;
+            padding: 8px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
             align-items: center;
         }
@@ -1127,6 +1086,188 @@
 
         .cl-yes { background: rgba(0,255,136,0.2); color: var(--success); }
         .cl-no { background: rgba(255,70,85,0.2); color: var(--danger); }
+
+        /* NUEVOS ESTILOS PARA PORCENTAJES */
+        .porcentaje-cl {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+            background: rgba(0,255,136,0.15);
+            color: var(--success);
+        }
+
+        .porcentaje-cl.bajo {
+            background: rgba(255,70,85,0.15);
+            color: var(--danger);
+        }
+
+        .porcentaje-badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: rgba(212,175,55,0.2);
+            color: var(--primary-gold);
+            font-weight: bold;
+        }
+
+        /* PANEL DE VALORES DISTRIBUIDORA */
+        .semana-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .semana-checkbox:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: var(--primary-gold);
+        }
+
+        .semana-checkbox.selected {
+            background: rgba(212,175,55,0.1);
+            border-color: var(--primary-gold);
+        }
+
+        .semana-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-gold);
+        }
+
+        .total-distribuidora {
+            font-size: 24px;
+            color: var(--primary-gold);
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            background: rgba(212,175,55,0.1);
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 2px solid var(--primary-gold);
+        }
+
+        /* PANEL DE VALIDACIÓN DE FACTURAS - CORREGIDO */
+        .validacion-proveedor {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .validacion-proveedor-header {
+            padding: 12px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .validacion-proveedor-header:hover {
+            filter: brightness(1.1);
+        }
+
+        .validacion-proveedor-content {
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            max-height: 3000px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .validacion-proveedor-content.collapsed {
+            max-height: 0;
+            padding: 0 10px;
+            opacity: 0;
+        }
+
+        .factura-group {
+            margin-bottom: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .factura-header {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .factura-header:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .factura-content {
+            padding: 10px;
+            background: rgba(0,0,0,0.15);
+            max-height: 1000px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .factura-content.collapsed {
+            max-height: 0;
+            padding: 0 10px;
+            opacity: 0;
+        }
+
+        .factura-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            align-items: center;
+            font-size: 10px;
+        }
+
+        .factura-item:last-child {
+            border-bottom: none;
+        }
+
+        .factura-total {
+            font-size: 14px;
+            color: var(--primary-gold);
+            font-weight: bold;
+        }
+
+        .producto-factura {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .producto-nombre {
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .producto-unidad {
+            font-size: 9px;
+            color: var(--text-dim);
+        }
+
+        /* Icono de colapso */
+        .collapse-icon {
+            transition: transform 0.3s;
+            font-size: 12px;
+        }
+
+        .collapse-icon.collapsed {
+            transform: rotate(-90deg);
+        }
 
         /* AUTH */
         #auth-screen {
@@ -1169,7 +1310,11 @@
             .sidebar.open { transform: translateX(0); }
             .main-wrapper { margin-left: 0; }
             .grid-container { grid-template-columns: 1fr; }
-            .tutorial-tooltip { max-width: 90%; min-width: 280px; }
+            .tutorial-tooltip { 
+                max-width: 90%; 
+                min-width: 260px;
+                max-height: 70vh;
+            }
         }
     </style>
 </head>
@@ -1183,13 +1328,13 @@
     <!-- Spotlight que ilumina elementos -->
     <div class="tutorial-spotlight" id="tutorialSpotlight"></div>
     
-    <!-- Tooltip principal del tutorial -->
+    <!-- Tooltip principal del tutorial - CORREGIDO -->
     <div class="tutorial-tooltip" id="tutorialTooltip">
         <div class="tutorial-header">
             <div class="tutorial-icon" id="tutorialIcon">
                 <i class="fa-solid fa-lightbulb"></i>
             </div>
-            <div>
+            <div style="flex:1; min-width:0;">
                 <div class="tutorial-title" id="tutorialTitle">Bienvenido</div>
             </div>
             <div class="tutorial-step" id="tutorialStep">1/10</div>
@@ -1206,7 +1351,7 @@
         
         <div class="tutorial-controls">
             <button class="tutorial-btn tutorial-btn-secondary" onclick="tutorialPrev()" id="btnPrev">
-                <i class="fa-solid fa-chevron-left"></i> Anterior
+                <i class="fa-solid fa-chevron-left"></i> Ant
             </button>
             
             <button class="tutorial-btn tutorial-btn-skip" onclick="tutorialSkip()" id="btnSkip">
@@ -1214,11 +1359,11 @@
             </button>
             
             <button class="tutorial-btn tutorial-btn-primary" onclick="tutorialNext()" id="btnNext">
-                Siguiente <i class="fa-solid fa-chevron-right"></i>
+                Sig <i class="fa-solid fa-chevron-right"></i>
             </button>
             
             <button class="tutorial-btn tutorial-btn-primary hidden" onclick="tutorialFinish()" id="btnFinish" style="background: var(--success);">
-                <i class="fa-solid fa-check"></i> Finalizar
+                <i class="fa-solid fa-check"></i> Fin
             </button>
         </div>
         
@@ -1235,6 +1380,14 @@
         <div class="help-menu-item" onclick="startTutorial('completo')">
             <i class="fa-solid fa-play"></i>
             <span>Tutorial completo</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('plegable')">
+            <i class="fa-solid fa-folder-tree"></i>
+            <span>Sistema Plegable</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('precios')">
+            <i class="fa-solid fa-tags"></i>
+            <span>Precios por Semana</span>
         </div>
         <div class="help-menu-item" onclick="startTutorial('proveedores')">
             <i class="fa-solid fa-truck-field"></i>
@@ -1260,19 +1413,18 @@
             <i class="fa-solid fa-calculator"></i>
             <span>Exportar contabilidad</span>
         </div>
-		<!-- NUEVO: Opción para resetear -->
-		<div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
-			<div class="help-menu-item" onclick="resetTutorialVisto()" style="color: var(--text-dim); font-size: 10px;">
-				<i class="fa-solid fa-rotate-left"></i>
-				<span>Resetear tutorial (mostrar al reiniciar)</span>
-			</div>
-		</div>
         <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
-        <div class="help-menu-item" onclick="toggleHelpMenu()" style="color: var(--text-dim);">
-            <i class="fa-solid fa-xmark"></i>
-            <span>Cerrar menú</span>
+            <div class="help-menu-item" onclick="resetTutorialVisto()" style="color: var(--text-dim); font-size: 10px;">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>Resetear tutorial</span>
+            </div>
         </div>
-    </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
+            <div class="help-menu-item" onclick="toggleHelpMenu()" style="color: var(--text-dim);">
+                <i class="fa-solid fa-xmark"></i>
+                <span>Cerrar menú</span>
+            </div>
+        </div>
     </div>
 
     <!-- ===== APLICACIÓN PRINCIPAL ===== -->
@@ -1280,11 +1432,10 @@
     <!-- AUTH SCREEN -->
     <div id="auth-screen">
         <div class="auth-box" id="login-form">
-            <!-- LOGO AQUÍ -->
-			<div style="text-align: center; margin-bottom: 20px;">
-				<img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));">
-			</div>
-			<h2 style="color:var(--primary-gold); margin-bottom:20px;">ZAN TABLA VALORES</h2>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));">
+            </div>
+            <h2 style="color:var(--primary-gold); margin-bottom:20px;">ZAN TABLA VALORES</h2>
             <input type="text" id="user-login" placeholder="Usuario">
             <input type="password" id="pass-login" placeholder="Contraseña">
             <button class="btn btn-gold btn-block" style="margin-top:15px;" onclick="handleAuth('login')">
@@ -1295,10 +1446,9 @@
             </p>
         </div>
         <div class="auth-box hidden" id="reg-form">
-			<!-- LOGO AQUÍ TAMBIÉN -->
-			<div style="text-align: center; margin-bottom: 20px;">
-				<img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));">
-			</div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));">
+            </div>
             <h2 style="color:var(--accent-cyan); margin-bottom:20px;">NUEVO REGISTRO</h2>
             <input type="text" id="user-reg" placeholder="Usuario">
             <input type="password" id="pass-reg" placeholder="Contraseña">
@@ -1314,7 +1464,7 @@
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
-			<img src="Logo/ZAN.png" alt="ZAN" style="width: 35px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));">
+            <img src="Logo/ZAN.png" alt="ZAN" style="width: 35px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));">
             <span class="sidebar-title">|Tabla Valores</span>
         </div>
 
@@ -1357,10 +1507,22 @@
                 <i class="fa-solid fa-calculator"></i>
                 <span>Exportar Contabilidad</span>
             </a>
+            <a class="nav-item" id="nav-distribuidora" onclick="toggleDrawer('distribuidora'); toggleSidebarMobile();">
+                <i class="fa-solid fa-sack-dollar"></i>
+                <span>Valores Distribuidora</span>
+            </a>
+            <a class="nav-item" id="nav-facturas" onclick="toggleDrawer('facturas'); toggleSidebarMobile();">
+                <i class="fa-solid fa-file-invoice"></i>
+                <span>Validar Facturas</span>
+            </a>
         </div>
 
         <div class="nav-section">
             <div class="nav-section-title">Acciones</div>
+            <a class="nav-item" id="nav-tutorial" onclick="toggleHelpMenu(); toggleSidebarMobile();">
+                <i class="fa-solid fa-circle-question"></i>
+                <span>Ayuda / Tutorial</span>
+            </a>
             <a class="nav-item danger" onclick="limpiarTodo(); toggleSidebarMobile();">
                 <i class="fa-solid fa-trash-can"></i>
                 <span>Limpiar Todo</span>
@@ -1458,6 +1620,45 @@
                 <i class="fa-solid fa-file-csv"></i> CSV
             </button>
             <button class="btn btn-gold" onclick="exportarContabilidadExcel()">
+                <i class="fa-solid fa-file-excel"></i> EXCEL
+            </button>
+        </div>
+    </div>
+
+    <!-- PANEL DE VALORES DISTRIBUIDORA -->
+    <div class="drawer" id="drawer-distribuidora" style="border-left: 2px solid var(--primary-gold);">
+        <h3 style="color: var(--primary-gold); margin-bottom: 15px;">
+            <i class="fa-solid fa-sack-dollar"></i> VALORES DISTRIBUIDORA
+        </h3>
+        <p style="color: var(--text-dim); font-size: 11px; margin-bottom: 15px;">
+            Selecciona las semanas para sumar sus valores de distribuidora:
+        </p>
+        <div id="distribuidora-semanas"></div>
+        <div class="total-distribuidora" id="total-distribuidora">
+            $0
+        </div>
+        <div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+            <small style="color: var(--text-dim);">
+                <i class="fa-solid fa-info-circle"></i> 
+                La distribuidora es el valor restante del presupuesto después de compras
+            </small>
+        </div>
+    </div>
+
+    <!-- PANEL DE VALIDAR FACTURAS - CORREGIDO -->
+    <div class="drawer" id="drawer-facturas" style="border-left: 2px solid var(--accent-cyan);">
+        <h3 style="color: var(--accent-cyan); margin-bottom: 15px;">
+            <i class="fa-solid fa-file-invoice"></i> VALIDACIÓN DE FACTURAS
+        </h3>
+        <p style="color: var(--text-dim); font-size: 11px; margin-bottom: 15px;">
+            Resumen agrupado por proveedor, factura y productos:
+        </p>
+        <div id="facturas-content"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+            <button class="btn btn-cyan" onclick="exportarFacturasCSV()">
+                <i class="fa-solid fa-file-csv"></i> CSV
+            </button>
+            <button class="btn btn-gold" onclick="exportarFacturasExcel()">
                 <i class="fa-solid fa-file-excel"></i> EXCEL
             </button>
         </div>
@@ -1630,23 +1831,15 @@
 					tip: 'Los productos aparecerán automáticamente en las tablas de su proveedor asignado.',
 					position: 'left',
 					action: () => {
-						// Cerrar modal de proveedores si está abierto
 						document.getElementById('modal-proveedores').style.display = 'none';
-						
-						// Abrir modal de productos
 						toggleModal('modal-productos');
-						
-						// Forzar renderizado inmediato
 						renderizarProductos();
-						
-						// Retrasar el posicionamiento del tooltip
 						setTimeout(() => {
-							const tooltip = document.getElementById('tutorialTooltip');
 							const paso = tutorialActivo[pasoActual];
 							if (paso && paso.target) {
 								posicionarTooltip(paso);
 							}
-						}, 500); // 500ms de espera para asegurar renderizado
+						}, 500);
 					}
 				},
                 {
@@ -1657,10 +1850,8 @@
                     tip: 'Productos CL se marcan con check verde ✓ en los reportes.',
                     position: 'center',
 					action: () => {
-						// Cerrar modal de proveedores si está abierto
 						document.getElementById('modal-proveedores').style.display = 'none';
 						document.getElementById('modal-productos').style.display = 'none';
-						
 					}
                 },
                 {
@@ -1669,7 +1860,7 @@
                     title: 'Resumen y Análisis',
                     icon: 'fa-chart-pie',
                     content: 'Visualiza el análisis completo de gastos:<br>• Total por proveedor y producto<br>• Cantidades acumuladas (kg, lb, und)<br>• Indicador CL por producto<br>• Gráfico de distribución<br>• % de compras locales',
-                    tip: 'Ideal para presentar reportes de gestión y tomar decisiones de compra.',
+                    tip: 'Los paneles de proveedores son plegables. Haz clic en el encabezado para expandir/contraer.',
                     position: 'right',
                     action: () => toggleDrawer('resumen')
                 },
@@ -1707,6 +1898,94 @@
                     icon: 'fa-trophy',
                     content: 'Ya conoces todas las funcionalidades de ZAN. Recuerda:<br><br>• El botón <strong>?</strong> siempre está disponible para volver a ver este tutorial<br>• Guarda en la nube periódicamente<br>• Exporta respaldos semanales<br><br>¡Empieza a gestionar tus compras de manera eficiente!',
                     tip: '¿Tienes dudas? Revisa secciones específicas desde el menú de ayuda.',
+                    position: 'center'
+                }
+            ],
+            
+            // Tutorial de sistema plegable
+            plegable: [
+                {
+                    id: 'plegable-intro',
+                    title: 'Sistema de Paneles Plegables',
+                    icon: 'fa-folder-tree',
+                    content: 'ZAN utiliza un sistema de colapso para organizar la información de manera eficiente. Puedes expandir o contraer secciones según necesites.',
+                    position: 'center'
+                },
+                {
+                    target: 'main-grid',
+                    title: 'Colapsar Semanas',
+                    icon: 'fa-calendar-week',
+                    content: 'Cada tarjeta de semana tiene un botón <i class="fa-solid fa-chevron-down"></i> en la esquina superior izquierda. Haz clic para:<br>• <strong>Contraer</strong> la semana y ver solo el encabezado<br>• <strong>Expandir</strong> para ver todos los proveedores y productos',
+                    tip: 'Útil cuando trabajas con muchas semanas y quieres enfocarte en una específica.',
+                    position: 'top'
+                },
+                {
+                    target: 'main-grid',
+                    title: 'Colapsar Proveedores',
+                    icon: 'fa-truck-field',
+                    content: 'Dentro de cada semana, cada proveedor tiene su propio botón de colapso en el encabezado colorido. Haz clic en el nombre del proveedor para:<br>• Ocultar/mostrar sus productos<br>• Ver solo el total del proveedor',
+                    tip: 'Los colores de los proveedores ayudan a identificarlos rápidamente.',
+                    position: 'top'
+                },
+                {
+                    target: 'nav-resumen',
+                    title: 'Resumen Plegable',
+                    icon: 'fa-chart-pie',
+                    content: 'En el panel de resumen, los proveedores también son plegables. Esto te permite:<br>• Ver el total general primero<br>• Expandir solo los proveedores que te interesan revisar<br>• Navegar más rápido por muchos productos',
+                    tip: 'Los paneles del Análisis Detallado y Validación de Facturas son plegables.',
+                    position: 'right',
+                    action: () => toggleDrawer('resumen')
+                },
+                {
+                    id: 'plegable-final',
+                    title: '¡Navegación Eficiente!',
+                    icon: 'fa-check-circle',
+                    content: 'El sistema plegable te permite:<br><br>✓ Trabajar con menos desplazamiento<br>✓ Enfocarte en lo que necesitas<br>✓ Tener una vista general rápida<br>✓ Personalizar tu espacio de trabajo<br><br>Todos los estados de colapso se mantienen mientras trabajas.',
+                    tip: 'Práctica recomendada: Colapsa las semanas pasadas y mantén expandida solo la semana actual.',
+                    position: 'center',
+                    action: () => closeAllDrawers()
+                }
+            ],
+
+            // Tutorial de precios dinámicos por semana
+            precios: [
+                {
+                    id: 'precios-intro',
+                    title: 'Precios Variables por Semana',
+                    icon: 'fa-tags',
+                    content: 'Aunque cada producto tiene un precio base configurado, puedes modificar el precio de cualquier producto para una semana específica sin afectar las demás.',
+                    position: 'center'
+                },
+                {
+                    target: 'main-grid',
+                    title: 'Modificar Precio en Tabla',
+                    icon: 'fa-pen-to-square',
+                    content: 'Para cambiar el precio de un producto en una semana específica:<br><br>1. Ingresa la <strong>cantidad</strong> (ej: 1)<br>2. En la columna <strong>Total</strong>, escribe el valor real de la compra<br>3. El sistema calculará automáticamente el precio unitario',
+                    tip: 'Ejemplo: Si el huevo está a $470 pero esta semana pagaste $450, escribe cantidad 1 y total $450.',
+                    position: 'top'
+                },
+                {
+                    target: 'main-grid',
+                    title: 'Cálculo Inverso',
+                    icon: 'fa-calculator',
+                    content: 'El sistema detecta cuando modificas el valor total y recalcula el precio unitario:<br><br><strong>Fórmula:</strong> Precio Unitario = Total ÷ Cantidad<br><br>Esto se guarda solo para esa semana. Las demás semanas mantienen su precio original.',
+                    tip: 'El precio modificado se muestra en azul claro para indicar que es diferente al base.',
+                    position: 'top'
+                },
+                {
+                    id: 'precios-ejemplo',
+                    title: 'Ejemplo Práctico',
+                    icon: 'fa-lightbulb',
+                    content: '<strong>Escenario:</strong> Huevo base = $470/unidad<br><br><strong>Semana 1:</strong> Compras 100 unidades a $450<br>→ Cantidad: 100, Total: $45,000<br>→ Precio unitario se ajusta a $450<br><br><strong>Semana 2:</strong> Compras 100 unidades a $470<br>→ Cantidad: 100, Total: $47,000<br>→ Precio vuelve al base o lo ajustas<br><br>Cada semana es independiente.',
+                    tip: 'Esta función es útil cuando los precios fluctúan semanalmente.',
+                    position: 'center'
+                },
+                {
+                    id: 'precios-final',
+                    title: '¡Flexibilidad Total!',
+                    icon: 'fa-check-circle',
+                    content: 'Recuerda:<br><br>✓ Los precios base se configuran en "Listado de Productos"<br>✓ Los precios por semana se ajustan en las tablas<br>✓ Los cambios se guardan automáticamente en local<br>✓ Al exportar, se registran los precios reales de cada semana',
+                    tip: 'Si necesitas revertir al precio base, borra el valor total y vuelve a ingresar la cantidad.',
                     position: 'center'
                 }
             ],
@@ -1802,7 +2081,7 @@
                     target: 'summary-content',
                     title: 'Detalle por Proveedor',
                     icon: 'fa-list',
-                    content: 'Cada proveedor muestra:<br>• Productos comprados<br>• Cantidad total (suma de todas las semanas)<br>• Valor total gastado<br>• Indicador CL (✓ o ✗)',
+                    content: 'Cada proveedor muestra:<br>• Productos comprados<br>• Cantidad total (suma de todas las semanas)<br>• Valor total gastado<br>• Indicador CL (✓ o ✗)<br>• <strong>% de participación</strong> en el total<br><br><strong>NUEVO:</strong> Los paneles son plegables. Haz clic en el encabezado para expandir/contraer.',
                     tip: 'Las cantidades se suman automáticamente: 100 huevos semana 1 + 150 semana 2 = 250 huevos total',
                     position: 'left'
                 },
@@ -1827,7 +2106,7 @@
                     target: 'nav-exportar',
                     title: 'Exportar Completo',
                     icon: 'fa-file-excel',
-                    content: 'Genera un archivo Excel con 3 hojas:<br><br>1. <strong>Configuración:</strong> Proveedores y productos base<br>2. <strong>Datos Semanales:</strong> Todas las facturas y cantidades<br>3. <strong>Resumen:</strong> Consolidado por producto',
+                    content: 'Genera un archivo Excel con 3 hojas:<br><br>1. <strong>Configuración:</strong> Proveedores y productos base<br>2. <strong>Datos Semanales:</strong> Todas las facturas y cantidades<br>3. <strong>Resumen:</strong> Consolidado por producto con % CL',
                     tip: 'Este archivo puede importarse posteriormente como respaldo completo.',
                     position: 'right'
                 },
@@ -1869,55 +2148,12 @@
             const menu = document.getElementById('helpMenu');
             menu.classList.toggle('active');
             
-            // Cerrar si se hace clic fuera
             if (menu.classList.contains('active')) {
                 setTimeout(() => {
                     document.addEventListener('click', cerrarHelpMenu);
                 }, 100);
             }
         }
-		// ===== UTILIDAD: Esperar a que un elemento exista en el DOM =====
-function esperarElemento(selector, timeout = 2000) {
-    return new Promise((resolve, reject) => {
-        const startTime = Date.now();
-        
-        const checkElement = () => {
-            const element = document.querySelector(selector) || document.getElementById(selector);
-            
-            if (element) {
-                resolve(element);
-                return;
-            }
-            
-            if (Date.now() - startTime > timeout) {
-                reject(new Error(`Elemento ${selector} no encontrado`));
-                return;
-            }
-            
-            requestAnimationFrame(checkElement);
-        };
-        
-        checkElement();
-    });
-}
-
-		// ===== UTILIDAD: Abrir modal y esperar a que esté listo =====
-		async function abrirModalYEsperar(modalId, elementoEsperar) {
-			// Cerrar otros modales primero
-			document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-			
-			// Abrir el modal solicitado
-			toggleModal(modalId);
-			
-			// Esperar a que el elemento específico exista
-			try {
-				await esperarElemento(elementoEsperar, 1500);
-				return true;
-			} catch (err) {
-				console.warn('No se pudo encontrar el elemento:', err);
-				return false;
-			}
-		}
 
         function cerrarHelpMenu(e) {
             const menu = document.getElementById('helpMenu');
@@ -1928,29 +2164,23 @@ function esperarElemento(selector, timeout = 2000) {
                 document.removeEventListener('click', cerrarHelpMenu);
             }
         }
-		// ===== Abrir sidebar para el tutorial =====
-		function abrirSidebarParaTutorial() {
-			const sidebar = document.getElementById('sidebar');
-			
-			if (window.innerWidth > 768) {
-				// Escritorio: quitar collapsed
-				sidebar.classList.remove('collapsed');
-				sidebarOpen = true;
-			} else {
-				// Móvil: agregar open
-				sidebar.classList.add('open');
-				sidebarOpen = true;
-			}
-		}
+
+        function abrirSidebarParaTutorial() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('collapsed');
+                sidebarOpen = true;
+            } else {
+                sidebar.classList.add('open');
+                sidebarOpen = true;
+            }
+        }
 
         function startTutorial(tipo = 'completo') {
-            // Cerrar menú de ayuda
             document.getElementById('helpMenu').classList.remove('active');
-				
-			tutorialEnCurso = true;
-			abrirSidebarParaTutorial();
+            tutorialEnCurso = true;
+            abrirSidebarParaTutorial();
             
-            // Verificar si existe el tutorial
             if (!TUTORIAL_STEPS[tipo]) {
                 console.error('Tutorial no encontrado:', tipo);
                 return;
@@ -1959,16 +2189,9 @@ function esperarElemento(selector, timeout = 2000) {
             tutorialActivo = TUTORIAL_STEPS[tipo];
             pasoActual = 0;
             
-            // Mostrar overlay
             document.getElementById('tutorialOverlay').classList.add('active');
-            
-            // Generar indicadores de progreso
             generarProgreso();
-            
-            // Mostrar primer paso
             mostrarPaso(0);
-            
-            // Pausar animación del botón de ayuda
             document.getElementById('helpButton').classList.remove('pulse');
         }
 
@@ -1985,22 +2208,19 @@ function esperarElemento(selector, timeout = 2000) {
             pasoActual = index;
             const paso = tutorialActivo[index];
             
-			// Si el target es del sidebar, asegurar que esté abierto
-			if (paso.target && (
-				paso.target.includes('nav-') || 
-				paso.target === 'sidebar' ||
-				paso.target.includes('sidebar')
-			)) {
-				abrirSidebarParaTutorial();
-			}
-			
-            // Actualizar contenido
+            if (paso.target && (
+                paso.target.includes('nav-') || 
+                paso.target === 'sidebar' ||
+                paso.target.includes('sidebar')
+            )) {
+                abrirSidebarParaTutorial();
+            }
+            
             document.getElementById('tutorialIcon').innerHTML = `<i class="fa-solid ${paso.icon || 'fa-circle-info'}"></i>`;
             document.getElementById('tutorialTitle').textContent = paso.title;
             document.getElementById('tutorialStep').textContent = `${index + 1}/${tutorialActivo.length}`;
             document.getElementById('tutorialContent').innerHTML = paso.content;
             
-            // Tip opcional
             const tipEl = document.getElementById('tutorialTip');
             if (paso.tip) {
                 document.getElementById('tutorialTipText').textContent = paso.tip;
@@ -2009,7 +2229,6 @@ function esperarElemento(selector, timeout = 2000) {
                 tipEl.style.display = 'none';
             }
             
-            // Actualizar botones
             document.getElementById('btnPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
             
             if (index === tutorialActivo.length - 1) {
@@ -2022,37 +2241,26 @@ function esperarElemento(selector, timeout = 2000) {
                 document.getElementById('btnSkip').style.visibility = 'visible';
             }
             
-            // Actualizar progreso visual
             document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
                 dot.classList.remove('active', 'completed');
                 if (i < index) dot.classList.add('completed');
                 if (i === index) dot.classList.add('active');
             });
             
-            // Posicionar tooltip
             posicionarTooltip(paso);
             
-            // Ejecutar acción si existe (abrir modales, etc)
             if (paso.action) {
                 setTimeout(() => paso.action(), 300);
             }
-			if (paso.action && paso.id === 'productos') {
-				// El action manejará el posicionamiento con setTimeout
-				return;
-			}
-			
-			posicionarTooltip(paso);
         }
 
         function posicionarTooltip(paso) {
             const tooltip = document.getElementById('tutorialTooltip');
             const spotlight = document.getElementById('tutorialSpotlight');
             
-            // Resetear clases de posición
             tooltip.className = 'tutorial-tooltip active';
             
             if (paso.position === 'center' || !paso.target) {
-                // Centro de pantalla
                 tooltip.style.left = '50%';
                 tooltip.style.top = '50%';
                 tooltip.style.transform = 'translate(-50%, -50%)';
@@ -2060,63 +2268,60 @@ function esperarElemento(selector, timeout = 2000) {
                 return;
             }
             
-            // Buscar elemento target
             const target = document.getElementById(paso.target) || document.querySelector(paso.target);
             if (!target) {
-                console.warn('Target no encontrado:', paso.target);
                 tooltip.style.left = '50%';
                 tooltip.style.top = '50%';
                 tooltip.style.transform = 'translate(-50%, -50%)';
                 return;
             }
             
-            // Scroll al elemento
             target.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            // Obtener posición
             const rect = target.getBoundingClientRect();
-            const tooltipRect = tooltip.getBoundingClientRect();
             
-            // Posicionar spotlight
             spotlight.style.display = 'block';
             spotlight.style.left = `${rect.left - 10}px`;
             spotlight.style.top = `${rect.top - 10}px`;
             spotlight.style.width = `${rect.width + 20}px`;
             spotlight.style.height = `${rect.height + 20}px`;
             
-            // Calcular posición del tooltip según preferencia
             const margin = 20;
             let left, top;
             
+            // Ajustar posición para evitar que se corte
+            const tooltipWidth = 350;
+            const tooltipHeight = 400;
+            
             switch(paso.position) {
                 case 'bottom':
-                    left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+                    left = rect.left + rect.width / 2 - tooltipWidth / 2;
                     top = rect.bottom + margin;
                     tooltip.classList.add('top');
                     break;
                 case 'top':
-                    left = rect.left + rect.width / 2 - tooltipRect.width / 2;
-                    top = rect.top - tooltipRect.height - margin;
+                    left = rect.left + rect.width / 2 - tooltipWidth / 2;
+                    top = rect.top - tooltipHeight - margin;
                     tooltip.classList.add('bottom');
                     break;
                 case 'left':
-                    left = rect.left - tooltipRect.width - margin;
-                    top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+                    left = rect.left - tooltipWidth - margin;
+                    top = rect.top + rect.height / 2 - tooltipHeight / 2;
                     tooltip.classList.add('right');
                     break;
                 case 'right':
                     left = rect.right + margin;
-                    top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+                    top = rect.top + rect.height / 2 - tooltipHeight / 2;
                     tooltip.classList.add('left');
                     break;
                 default:
-                    left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+                    left = rect.left + rect.width / 2 - tooltipWidth / 2;
                     top = rect.bottom + margin;
             }
             
-            // Ajustar a límites de pantalla
-            left = Math.max(20, Math.min(left, window.innerWidth - tooltipRect.width - 20));
-            top = Math.max(20, Math.min(top, window.innerHeight - tooltipRect.height - 20));
+            // Ajustar a límites de pantalla con margen de seguridad
+            left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
+            top = Math.max(10, Math.min(top, window.innerHeight - tooltipHeight - 10));
             
             tooltip.style.left = `${left}px`;
             tooltip.style.top = `${top}px`;
@@ -2138,25 +2343,22 @@ function esperarElemento(selector, timeout = 2000) {
         function tutorialSkip() {
             if (confirm('¿Saltar el tutorial? Puedes volver a verlo desde el botón de ayuda.')) {
                 tutorialEnCurso = false;
-				tutorialFinish();
+                tutorialFinish();
             }
         }
 
         function tutorialFinish() {
-            // Ocultar todo
             document.getElementById('tutorialOverlay').classList.remove('active');
             document.getElementById('tutorialTooltip').classList.remove('active');
             document.getElementById('tutorialSpotlight').style.display = 'none';
             
-            // Cerrar modales/drawers que pudieron abrirse
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
             document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
             document.getElementById('overlay').style.display = 'none';
-			
-			tutorialEnCurso = false;
+            
+            tutorialEnCurso = false;
             cerrarSidebarSiAbierto();
-			marcarTutorialVisto();
-            // Restaurar animación del botón
+            marcarTutorialVisto();
             document.getElementById('helpButton').classList.add('pulse');
         }
 
@@ -2276,7 +2478,6 @@ function esperarElemento(selector, timeout = 2000) {
 
             inicializarDatos();
             
-            // Ofrecer tutorial si es primera vez
             const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
             if (!tutorialVisto) {
                 setTimeout(() => {
@@ -2285,7 +2486,6 @@ function esperarElemento(selector, timeout = 2000) {
                     }
                 }, 1000);
             }
-			
         }
 
         function inicializarDatos() {
@@ -2320,97 +2520,74 @@ function esperarElemento(selector, timeout = 2000) {
             document.getElementById('login-form').classList.toggle('hidden', toReg);
             document.getElementById('reg-form').classList.toggle('hidden', !toReg);
         }
-		// ===== VERIFICACIÓN DE TUTORIAL =====
-		function debeMostrarTutorial() {
-			// Si no hay usuario logueado, no mostrar
-			if (!currentUser) return false;
-			
-			// Verificar localStorage
-			const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
-			
-			// Si existe y es "true", no mostrar
-			if (tutorialVisto === 'true') {
-				console.log('Tutorial ya fue visto por:', currentUser);
-				return false;
-			}
-			
-			// Si no existe o es otro valor, mostrar tutorial
-			return true;
-		}
 
-		function marcarTutorialVisto() {
-			if (!currentUser) return;
-			
-			// Guardar en localStorage que ya se vio el tutorial
-			localStorage.setItem(`tutorial_visto_${currentUser}`, 'true');
-			tutorialYaVisto = true;
-			
-			console.log('Tutorial marcado como visto para:', currentUser);
-		}
+        function debeMostrarTutorial() {
+            if (!currentUser) return false;
+            const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
+            if (tutorialVisto === 'true') {
+                return false;
+            }
+            return true;
+        }
 
-		function resetTutorialVisto() {
-			if (!currentUser) return;
-			
-			// Opcional: función para resetear y volver a ver el tutorial
-			localStorage.removeItem(`tutorial_visto_${currentUser}`);
-			tutorialYaVisto = false;
-			
-			console.log('Tutorial reseteado para:', currentUser);
-			alert('Tutorial reseteado. Se mostrará en el próximo inicio.');
-		}
-		// ===== FUNCIÓN: Cerrar sidebar al hacer clic fuera =====
-		function setupSidebarAutoClose() {
-			const mainWrapper = document.querySelector('.main-wrapper');
-			const sidebar = document.getElementById('sidebar');
-			
-			// Al hacer clic en el área principal (tablas), cerrar sidebar
-			mainWrapper.addEventListener('click', function(e) {
-				// NUEVO: No cerrar si el tutorial está activo
-				if (tutorialEnCurso) return;
-				
-				// Solo si el sidebar está abierto y no estamos en móvil
-				if (window.innerWidth > 768) {
-					if (!sidebar.classList.contains('collapsed')) {
-						toggleSidebar();
-					}
-				} else {
-					// En móvil, si está abierto (clase 'open'), cerrarlo
-					if (sidebar.classList.contains('open')) {
-						sidebar.classList.remove('open');
-						sidebarOpen = false;
-					}
-				}
-			});
-		}
-		
-		function toggleSidebar() {
-			// Si el tutorial está activo y el target actual es del menú, no permitir cerrar
-			if (tutorialEnCurso && tutorialActivo && pasoActual < tutorialActivo.length) {
-				const pasoActual = tutorialActivo[pasoActual];
-				if (pasoActual && pasoActual.target && (
-					pasoActual.target.includes('nav-') || 
-					pasoActual.target.includes('sidebar')
-				)) {
-					return; // No permitir cerrar durante explicación del menú
-				}
-			}
-			
-			const sidebar = document.getElementById('sidebar');
-			sidebarOpen = !sidebarOpen;
+        function marcarTutorialVisto() {
+            if (!currentUser) return;
+            localStorage.setItem(`tutorial_visto_${currentUser}`, 'true');
+            tutorialYaVisto = true;
+        }
 
-			if (window.innerWidth <= 768) {
-				sidebar.classList.toggle('open', sidebarOpen);
-				sidebar.classList.remove('collapsed');
-			} else {
-				sidebar.classList.toggle('collapsed', !sidebarOpen);
-				sidebar.classList.remove('open');
-			}
-		}
+        function resetTutorialVisto() {
+            if (!currentUser) return;
+            localStorage.removeItem(`tutorial_visto_${currentUser}`);
+            tutorialYaVisto = false;
+            alert('Tutorial reseteado. Se mostrará en el próximo inicio.');
+        }
+
+        function toggleSidebar() {
+            if (tutorialEnCurso && tutorialActivo && pasoActual < tutorialActivo.length) {
+                const pasoActualObj = tutorialActivo[pasoActual];
+                if (pasoActualObj && pasoActualObj.target && (
+                    pasoActualObj.target.includes('nav-') || 
+                    pasoActualObj.target.includes('sidebar')
+                )) {
+                    return;
+                }
+            }
+            
+            const sidebar = document.getElementById('sidebar');
+            sidebarOpen = !sidebarOpen;
+
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open', sidebarOpen);
+                sidebar.classList.remove('collapsed');
+            } else {
+                sidebar.classList.toggle('collapsed', !sidebarOpen);
+                sidebar.classList.remove('open');
+            }
+        }
 
         function toggleSidebarMobile() {
             if (window.innerWidth <= 768) {
                 document.getElementById('sidebar').classList.remove('open');
                 sidebarOpen = false;
+            }
+        }
+
+        function cerrarSidebarSiAbierto() {
+            if (tutorialEnCurso) return;
+            
+            const sidebar = document.getElementById('sidebar');
+            
+            if (window.innerWidth > 768) {
+                if (!sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.add('collapsed');
+                    sidebarOpen = false;
+                }
+            } else {
+                if (sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                    sidebarOpen = false;
+                }
             }
         }
 
@@ -2712,16 +2889,18 @@ function esperarElemento(selector, timeout = 2000) {
                     </div>
                 `;
             }
-			 if (!tutorialEnCurso) {
-				const sidebar = document.getElementById('sidebar');
-				if (window.innerWidth > 768) {
-					sidebar.classList.add('collapsed');
-					sidebarOpen = false;
-				} else {
-					sidebar.classList.remove('open');
-				}
-				sidebarOpen = false;
-			}
+            
+            if (!tutorialEnCurso) {
+                const sidebar = document.getElementById('sidebar');
+                if (window.innerWidth > 768) {
+                    sidebar.classList.add('collapsed');
+                    sidebarOpen = false;
+                } else {
+                    sidebar.classList.remove('open');
+                }
+                sidebarOpen = false;
+            }
+            
             if (preservarDatos) {
                 const saved = localStorage.getItem(`elite_draft_${currentUser}`);
                 if (saved) {
@@ -2753,20 +2932,19 @@ function esperarElemento(selector, timeout = 2000) {
         }
 
         function cambiarSemanas() {
-			initGrid(true);
-			marcarCambio();
-			
-			// NUEVO: Solo cerrar si NO hay tutorial activo
-			if (!tutorialEnCurso) {
-				const sidebar = document.getElementById('sidebar');
-				if (window.innerWidth > 768) {
-					sidebar.classList.add('collapsed');
-				} else {
-					sidebar.classList.remove('open');
-				}
-				sidebarOpen = false;
-			}
-		}
+            initGrid(true);
+            marcarCambio();
+            
+            if (!tutorialEnCurso) {
+                const sidebar = document.getElementById('sidebar');
+                if (window.innerWidth > 768) {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('open');
+                }
+                sidebarOpen = false;
+            }
+        }
 
         function toggleWeek(s) {
             const content = document.getElementById(`content-${s}`);
@@ -2844,7 +3022,7 @@ function esperarElemento(selector, timeout = 2000) {
             actualizarResumen();
         }
 
-        // ===== RESUMEN MEJORADO =====
+        // ===== RESUMEN MEJORADO CON PLEGABLE =====
         function actualizarResumen() {
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
             
@@ -2900,31 +3078,44 @@ function esperarElemento(selector, timeout = 2000) {
                 if (productosDelProv.length === 0) return;
 
                 const totalProv = productosDelProv.reduce((sum, [_, datos]) => sum + datos.valor, 0);
+                const porcProv = tPres > 0 ? ((totalProv / tPres) * 100).toFixed(1) : 0;
 
                 htmlProveedores += `
                     <div class="resumen-proveedor" style="border-color: ${prov.color}30;">
                         <div class="resumen-proveedor-header" style="background: linear-gradient(90deg, ${prov.color}20, ${prov.color}05); color: ${prov.color}; border-left: 3px solid ${prov.color};"
                             onclick="toggleResumenProv('resumen-prov-${prov.id}')">
-                            <span>${prov.nombre} (${generarSigla(prov.nombre)})</span>
-                            <span style="font-size:12px;">${formatter.format(totalProv)}</span>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <i class="fa-solid fa-chevron-down collapse-icon" id="icon-resumen-${prov.id}"></i>
+                                <span>${prov.nombre} (${generarSigla(prov.nombre)})</span>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <span class="porcentaje-badge">${porcProv}% del total</span>
+                                <span style="font-size:12px;">${formatter.format(totalProv)}</span>
+                            </div>
                         </div>
                         <div class="resumen-proveedor-content" id="resumen-prov-${prov.id}">
-                            ${productosDelProv.map(([nombre, datos]) => `
-                                <div class="producto-resumen">
-                                    <span style="font-weight:500;">${nombre}</span>
-                                    <span style="color:var(--text-dim); font-size:10px;">
-                                        ${datos.cantidad.toLocaleString()} ${datos.unidad}
-                                    </span>
-                                    <span class="cl-indicator ${datos.cl ? 'cl-yes' : 'cl-no'}">
-                                        ${datos.cl ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>'}
-                                    </span>
-                                    <span style="color:var(--primary-gold); font-weight:bold; font-size:11px;">
-                                        ${formatter.format(datos.valor)}
-                                    </span>
-                                </div>
-                            `).join('')}
+                            ${productosDelProv.map(([nombre, datos]) => {
+                                const porcProd = tPres > 0 ? ((datos.valor / tPres) * 100).toFixed(2) : 0;
+                                return `
+                                    <div class="producto-resumen">
+                                        <span style="font-weight:500;">${nombre}</span>
+                                        <span style="color:var(--text-dim); font-size:10px;">
+                                            ${datos.cantidad.toLocaleString()} ${datos.unidad}
+                                        </span>
+                                        <span class="cl-indicator ${datos.cl ? 'cl-yes' : 'cl-no'}">
+                                            ${datos.cl ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-xmark"></i>'}
+                                        </span>
+                                        <span class="porcentaje-cl ${datos.cl ? '' : 'bajo'}">
+                                            ${porcProd}%
+                                        </span>
+                                        <span style="color:var(--primary-gold); font-weight:bold; font-size:11px;">
+                                            ${formatter.format(datos.valor)}
+                                        </span>
+                                    </div>
+                                `;
+                            }).join('')}
                             <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1); text-align:right; font-size:11px; color:${prov.color};">
-                                Total ${generarSigla(prov.nombre)}: <strong>${formatter.format(totalProv)}</strong>
+                                Total ${generarSigla(prov.nombre)}: <strong>${formatter.format(totalProv)}</strong> (${porcProv}%)
                             </div>
                         </div>
                     </div>
@@ -2946,7 +3137,7 @@ function esperarElemento(selector, timeout = 2000) {
 
                     <div style="margin-bottom:15px;">
                         <small style="color:var(--text-dim); display:block; margin-bottom:8px; font-size:10px; text-transform:uppercase;">
-                            Detalle por Proveedor y Producto:
+                            Detalle por Proveedor y Producto (clic para expandir/contraer):
                         </small>
                         ${htmlProveedores}
                     </div>
@@ -2956,14 +3147,17 @@ function esperarElemento(selector, timeout = 2000) {
                             <tr style="color:var(--accent-cyan);">
                                 <td><b>TOTAL COMPRAS LOCALES (CL)</b></td>
                                 <td style="text-align:right;"><b>${formatter.format(tProdCL)}</b></td>
+                                <td style="text-align:right; color:var(--success);"><b>${tPres > 0 ? ((tProdCL/tPres)*100).toFixed(1) : 0}%</b></td>
                             </tr>
                             <tr style="color:var(--text-dim);">
                                 <td>OTROS PRODUCTOS</td>
                                 <td style="text-align:right;">${formatter.format(tProdOtros)}</td>
+                                <td style="text-align:right;">${tPres > 0 ? ((tProdOtros/tPres)*100).toFixed(1) : 0}%</td>
                             </tr>
                             <tr style="color:var(--success);">
                                 <td><b>DISTRIBUIDORA</b></td>
                                 <td style="text-align:right;"><b>${formatter.format(tDist)}</b></td>
+                                <td style="text-align:right; color:var(--success);"><b>${tPres > 0 ? ((tDist/tPres)*100).toFixed(1) : 0}%</b></td>
                             </tr>
                         </table>
                     </div>
@@ -2971,6 +3165,9 @@ function esperarElemento(selector, timeout = 2000) {
                     <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:10px;">
                         <small style="color:var(--text-dim);">PRESUPUESTO TOTAL MES</small>
                         <div style="font-size:1.5em; color:var(--primary-gold); font-weight:bold;">${formatter.format(tPres)}</div>
+                        <div style="font-size:10px; color:var(--text-dim); margin-top:5px;">
+                            100% distribuido entre compras y distribuidora
+                        </div>
                     </div>
                 `;
             }
@@ -2989,25 +3186,12 @@ function esperarElemento(selector, timeout = 2000) {
 
         function toggleResumenProv(id) {
             const el = document.getElementById(id);
-            if (el) el.classList.toggle('collapsed');
+            const icon = document.getElementById(id.replace('resumen-prov-', 'icon-resumen-'));
+            if (el) {
+                el.classList.toggle('collapsed');
+                if (icon) icon.classList.toggle('collapsed');
+            }
         }
-		function cerrarSidebarSiAbierto() {
-			if (tutorialEnCurso) return;
-			
-			const sidebar = document.getElementById('sidebar');
-			
-			if (window.innerWidth > 768) {
-				if (!sidebar.classList.contains('collapsed')) {
-					sidebar.classList.add('collapsed');
-					sidebarOpen = false;
-				}
-			} else {
-				if (sidebar.classList.contains('open')) {
-					sidebar.classList.remove('open');
-					sidebarOpen = false;
-				}
-			}
-		}
 
         function renderChart(datos, distVal) {
             const canvas = document.getElementById('chartGasto');
@@ -3044,100 +3228,434 @@ function esperarElemento(selector, timeout = 2000) {
             });
         }
 
-        // ===== EXPORTACIONES =====
-        function exportarCompleto() {
-            const mes = document.getElementById('main-mes').value;
-            const contrato = document.getElementById('main-contrato').value;
+        // ===== PANEL DE VALORES DISTRIBUIDORA =====
+        function renderizarValoresDistribuidora() {
+            const cont = document.getElementById('distribuidora-semanas');
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
-
-            const wb = XLSX.utils.book_new();
-
-            // HOJA 1: CONFIGURACIÓN
-            const wsConfig = [
-                ["ZAN - TABLA DE VALORES"],
-                ["Fecha exportación:", new Date().toLocaleString('es-CO')],
-                ["Mes:", mes],
-                ["Contrato:", contrato],
-                ["Semanas ejecutadas:", semanas],
-                ["Valor cupo HCB:", valorCupoBase],
-                [],
-                ["PROVEEDORES CONFIGURADOS"],
-                ["ID", "Nombre", "Sigla", "Color", "Orden"]
-            ];
-
-            getProveedoresOrdenados().forEach(p => {
-                wsConfig.push([p.id, p.nombre, generarSigla(p.nombre), p.color, p.orden]);
-            });
-
-            wsConfig.push([], ["PRODUCTOS CONFIGURADOS"], ["Nombre", "Precio", "ProveedorID", "Proveedor", "CL", "Unidad"]);
-            productosBase.forEach(p => {
-                const prov = getProveedorById(p.proveedor);
-                wsConfig.push([p.nombre, p.precio, p.proveedor, prov ? prov.nombre : 'SIN PROV', p.cl ? 'SI' : 'NO', detectarUnidad(p.nombre)]);
-            });
-
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsConfig), "Configuración");
-
-            // HOJA 2: DATOS SEMANALES
-            const wsData = [["SEMANA", "DÍAS", "CUPOS", "PRESUPUESTO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "CL", "DISTRIBUIDORA"]];
-
+            
+            let html = '';
             for (let s = 1; s <= semanas; s++) {
-                const dias = document.getElementById(`dias-${s}`)?.value || "0";
-                const cupos = document.getElementById(`cupos-${s}`)?.value || "0";
-                const presupuesto = limpiarNum(document.getElementById(`pres-${s}`)?.textContent || "0");
-                const distribuidora = limpiarNum(document.getElementById(`dist-${s}`)?.value || "0");
+                const distVal = document.getElementById(`dist-${s}`)?.value || '$0';
+                html += `
+                    <div class="semana-checkbox" id="dist-check-${s}" onclick="toggleSeleccionDistribuidora(${s})">
+                        <input type="checkbox" id="dist-checkbox-${s}" onchange="calcularTotalDistribuidora()">
+                        <div style="flex:1;">
+                            <div style="font-weight:bold; color:var(--primary-gold);">Semana ${s}</div>
+                            <div style="font-size:10px; color:var(--text-dim);">Distribuidora: ${distVal}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            cont.innerHTML = html;
+            calcularTotalDistribuidora();
+        }
 
-                getProveedoresOrdenados().forEach(prov => {
-                    const productosProv = getProductosByProveedor(prov.id);
-                    productosProv.forEach(p => {
-                        const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
-                        const fac = document.getElementById(`fac-${s}-${globalIdx}`)?.value || "";
-                        const cant = parseFloat(document.getElementById(`cant-${s}-${globalIdx}`)?.value) || 0;
-                        const valUnit = parseFloat(document.getElementById(`punit-${s}-${globalIdx}`)?.value) || p.precio;
-                        const valTotal = limpiarNum(document.getElementById(`val-${s}-${globalIdx}`)?.value || "0");
+        function toggleSeleccionDistribuidora(s) {
+            const checkbox = document.getElementById(`dist-checkbox-${s}`);
+            const container = document.getElementById(`dist-check-${s}`);
+            
+            checkbox.checked = !checkbox.checked;
+            container.classList.toggle('selected', checkbox.checked);
+            
+            calcularTotalDistribuidora();
+        }
 
-                        if (cant > 0 || fac) {
-                            wsData.push([
-                                s, dias, cupos, presupuesto,
-                                prov.nombre, generarSigla(prov.nombre), fac, p.nombre,
-                                cant, valUnit, valTotal, p.cl ? 'SI' : 'NO',
-                                distribuidora
-                            ]);
+        function calcularTotalDistribuidora() {
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            let total = 0;
+            let seleccionadas = 0;
+            
+            for (let s = 1; s <= semanas; s++) {
+                const checkbox = document.getElementById(`dist-checkbox-${s}`);
+                if (checkbox && checkbox.checked) {
+                    const val = limpiarNum(document.getElementById(`dist-${s}`)?.value || "0");
+                    total += val;
+                    seleccionadas++;
+                }
+            }
+            
+            document.getElementById('total-distribuidora').innerHTML = `
+                ${formatter.format(total)}
+                <div style="font-size:12px; color:var(--text-dim); margin-top:5px;">
+                    ${seleccionadas} semana${seleccionadas !== 1 ? 's' : ''} seleccionada${seleccionadas !== 1 ? 's' : ''}
+                </div>
+            `;
+        }
+
+        // ===== VALIDACIÓN DE FACTURAS - CORREGIDO Y MEJORADO =====
+        function renderizarValidadorFacturas() {
+            const cont = document.getElementById('facturas-content');
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            
+            // Agrupar por proveedor primero, luego por factura
+            let datosPorProveedor = {};
+            
+            // Inicializar estructura para cada proveedor
+            getProveedoresOrdenados().forEach(prov => {
+                datosPorProveedor[prov.id] = {
+                    proveedor: prov,
+                    facturas: {}
+                };
+            });
+            
+            // Recolectar datos
+            for (let s = 1; s <= semanas; s++) {
+                productosBase.forEach((p, i) => {
+                    const facInput = document.getElementById(`fac-${s}-${i}`);
+                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    const cantInput = document.getElementById(`cant-${s}-${i}`);
+                    
+                    if (!facInput || !valInput || !cantInput) return;
+                    
+                    const numFactura = facInput.value?.trim();
+                    const valor = limpiarNum(valInput.value);
+                    const cantidad = parseFloat(cantInput.value) || 0;
+                    
+                    if (numFactura && valor > 0) {
+                        const provId = p.proveedor;
+                        
+                        if (!datosPorProveedor[provId].facturas[numFactura]) {
+                            datosPorProveedor[provId].facturas[numFactura] = {
+                                numero: numFactura,
+                                productos: {},
+                                total: 0,
+                                semanas: new Set()
+                            };
                         }
-                    });
+                        
+                        const factura = datosPorProveedor[provId].facturas[numFactura];
+                        
+                        // Agrupar por producto dentro de la factura
+                        if (!factura.productos[p.nombre]) {
+                            factura.productos[p.nombre] = {
+                                nombre: p.nombre,
+                                unidad: detectarUnidad(p.nombre),
+                                cantidadTotal: 0,
+                                valorTotal: 0,
+                                detalle: []
+                            };
+                        }
+                        
+                        factura.productos[p.nombre].cantidadTotal += cantidad;
+                        factura.productos[p.nombre].valorTotal += valor;
+                        factura.productos[p.nombre].detalle.push({
+                            semana: s,
+                            cantidad: cantidad,
+                            valor: valor
+                        });
+                        
+                        factura.total += valor;
+                        factura.semanas.add(s);
+                    }
                 });
             }
-
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Datos Semanales");
-
-            // HOJA 3: RESUMEN
-            const wsResumen = [["PROVEEDOR", "SIGLA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "CL", "% DEL TOTAL"]];
             
-            const totalesPorProducto = calcularTotalesPorProducto(semanas);
-            const totalGeneral = Object.values(totalesPorProducto).reduce((sum, p) => sum + p.valor, 0);
-
-            getProveedoresOrdenados().forEach(prov => {
-                const productosProv = Object.entries(totalesPorProducto)
-                    .filter(([_, datos]) => datos.proveedor === prov.id && datos.cantidad > 0);
-
-                productosProv.forEach(([nombre, datos]) => {
-                    const porcentaje = totalGeneral > 0 ? (datos.valor / totalGeneral * 100).toFixed(2) : 0;
-                    wsResumen.push([
-                        prov.nombre,
-                        generarSigla(prov.nombre),
-                        nombre,
-                        datos.unidad,
-                        datos.cantidad,
-                        datos.valor,
-                        datos.cl ? 'SI' : 'NO',
-                        porcentaje + '%'
-                    ]);
+            // Verificar si hay datos
+            const tieneDatos = Object.values(datosPorProveedor).some(
+                prov => Object.keys(prov.facturas).length > 0
+            );
+            
+            if (!tieneDatos) {
+                cont.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:20px;">No hay facturas registradas</div>';
+                return;
+            }
+            
+            // Generar HTML
+            let html = '';
+            
+            Object.entries(datosPorProveedor).forEach(([provId, datosProv]) => {
+                const facturas = Object.values(datosProv.facturas);
+                if (facturas.length === 0) return;
+                
+                const prov = datosProv.proveedor;
+                const color = prov.color;
+                const totalProv = facturas.reduce((sum, f) => sum + f.total, 0);
+                
+                html += `
+                    <div class="validacion-proveedor" style="border-color: ${color}30;">
+                        <div class="validacion-proveedor-header" style="background: linear-gradient(90deg, ${color}20, ${color}05); color: ${color}; border-left: 3px solid ${color};"
+                            onclick="toggleValidacionProv('validacion-prov-${provId}')">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <i class="fa-solid fa-chevron-down collapse-icon" id="icon-validacion-${provId}"></i>
+                                <span>${prov.nombre} (${generarSigla(prov.nombre)})</span>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <span style="font-size:10px; background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:10px;">${facturas.length} factura${facturas.length !== 1 ? 's' : ''}</span>
+                                <span style="font-weight:bold;">${formatter.format(totalProv)}</span>
+                            </div>
+                        </div>
+                        <div class="validacion-proveedor-content" id="validacion-prov-${provId}">
+                `;
+                
+                // Mostrar cada factura del proveedor
+                facturas.forEach(factura => {
+                    const semanasArray = [...factura.semanas].sort((a,b) => a-b);
+                    const productos = Object.values(factura.productos);
+                    
+                    html += `
+                        <div class="factura-group" style="margin-bottom:10px;">
+                            <div class="factura-header" onclick="toggleFacturaGroup('factura-detalle-${provId}-${factura.numero.replace(/\s+/g, '-')}')">
+                                <div>
+                                    <div style="font-weight:bold; color:var(--text-main);">${factura.numero}</div>
+                                    <div style="font-size:9px; color:var(--text-dim);">Semanas: ${semanasArray.join(', ')}</div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fa-solid fa-chevron-down collapse-icon" id="icon-factura-${provId}-${factura.numero.replace(/\s+/g, '-')}"></i>
+                                    <span class="factura-total">${formatter.format(factura.total)}</span>
+                                </div>
+                            </div>
+                            <div class="factura-content" id="factura-detalle-${provId}-${factura.numero.replace(/\s+/g, '-')}">
+                    `;
+                    
+                    // Mostrar cada producto de la factura
+                    productos.forEach(prod => {
+                        html += `
+                            <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                                    <div class="producto-factura">
+                                        <span class="producto-nombre">${prod.nombre}</span>
+                                        <span class="producto-unidad">Total: ${prod.cantidadTotal} ${prod.unidad}</span>
+                                    </div>
+                                    <span style="color:var(--primary-gold); font-weight:bold; font-size:12px;">
+                                        ${formatter.format(prod.valorTotal)}
+                                    </span>
+                                </div>
+                                <div style="font-size:9px; color:var(--text-dim); padding-left:10px;">
+                                    ${prod.detalle.map(d => `
+                                        <div style="display:flex; justify-content:space-between; padding:2px 0;">
+                                            <span>Semana ${d.semana}: ${d.cantidad} ${prod.unidad}</span>
+                                            <span>${formatter.format(d.valor)}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                                <div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.1); text-align:right;">
+                                    <small style="color:var(--text-dim);">Total factura:</small>
+                                    <strong style="color:${color}; margin-left:10px; font-size:14px;">${formatter.format(factura.total)}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
             });
-
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumen), "Resumen por Producto");
-
-            XLSX.writeFile(wb, `ZAN_Completo_${mes}_${contrato}.xlsx`);
+            
+            cont.innerHTML = html;
         }
+
+        function toggleValidacionProv(id) {
+            const el = document.getElementById(id);
+            const iconId = id.replace('validacion-prov-', 'icon-validacion-');
+            const icon = document.getElementById(iconId);
+            if (el) {
+                el.classList.toggle('collapsed');
+                if (icon) icon.classList.toggle('collapsed');
+            }
+        }
+
+        function toggleFacturaGroup(id) {
+            const el = document.getElementById(id);
+            const iconId = id.replace('factura-detalle-', 'icon-factura-');
+            const icon = document.getElementById(iconId);
+            if (el) {
+                el.classList.toggle('collapsed');
+                if (icon) icon.classList.toggle('collapsed');
+            }
+        }
+
+        // ===== EXPORTACIONES MEJORADAS =====
+        function exportarCompleto() {
+    const mes = document.getElementById('main-mes').value;
+    const contrato = document.getElementById('main-contrato').value;
+    const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+
+    const wb = XLSX.utils.book_new();
+
+    // ===== CORREGIDO: Calcular totales correctamente =====
+    let tPresTotal = 0;        // Total del presupuesto (base para porcentajes)
+    let tProdCL = 0;           // Total compras locales
+    let tProdOtros = 0;        // Total otros productos
+    let tDistTotal = 0;        // Total distribuidora
+    let totalesPorProducto = {};
+    
+    productosBase.forEach(p => {
+        totalesPorProducto[p.nombre] = {
+            cantidad: 0,
+            valor: 0,
+            cl: p.cl,
+            proveedor: p.proveedor,
+            unidad: detectarUnidad(p.nombre)
+        };
+    });
+
+    for (let s = 1; s <= semanas; s++) {
+        const pVal = document.getElementById(`pres-${s}`);
+        if (pVal) tPresTotal += limpiarNum(pVal.textContent);
+
+        const distVal = document.getElementById(`dist-${s}`);
+        if (distVal) tDistTotal += limpiarNum(distVal.value || "0");
+
+        productosBase.forEach((p, i) => {
+            const cantInput = document.getElementById(`cant-${s}-${i}`);
+            const valInput = document.getElementById(`val-${s}-${i}`);
+            
+            if (!cantInput || !valInput) return;
+
+            const cant = parseFloat(cantInput.value) || 0;
+            const val = limpiarNum(valInput.value);
+
+            if (cant > 0) {
+                totalesPorProducto[p.nombre].cantidad += cant;
+                totalesPorProducto[p.nombre].valor += val;
+
+                if (p.cl) tProdCL += val;
+                else tProdOtros += val;
+            }
+        });
+    }
+
+    // ✅ CORRECTO: El total general es el PRESUPUESTO TOTAL (incluye distribuidora)
+    const totalGeneral = tPresTotal;
+
+    // Calcular porcentajes sobre el presupuesto total
+    const porcCLTotal = totalGeneral > 0 ? (tProdCL / totalGeneral * 100).toFixed(2) : 0;
+    const porcOtrosTotal = totalGeneral > 0 ? (tProdOtros / totalGeneral * 100).toFixed(2) : 0;
+    const porcDistTotal = totalGeneral > 0 ? (tDistTotal / totalGeneral * 100).toFixed(2) : 0;
+
+    // HOJA 1: CONFIGURACIÓN
+    const wsConfig = [
+        ["ZAN - TABLA DE VALORES"],
+        ["Fecha exportación:", new Date().toLocaleString('es-CO')],
+        ["Mes:", mes],
+        ["Contrato:", contrato],
+        ["Semanas ejecutadas:", semanas],
+        ["Valor cupo HCB:", valorCupoBase],
+        [],
+        ["TOTALES RESUMEN"],
+        ["Presupuesto Total Mes:", totalGeneral, "100%"],
+        ["Compras Locales (CL):", tProdCL, porcCLTotal + "%"],
+        ["Otros Productos:", tProdOtros, porcOtrosTotal + "%"],
+        ["Distribuidora:", tDistTotal, porcDistTotal + "%"],
+        ["Suma Verificación:", tProdCL + tProdOtros + tDistTotal, "Debe ser igual al Presupuesto"],
+        [],
+        ["PROVEEDORES CONFIGURADOS"],
+        ["ID", "Nombre", "Sigla", "Color", "Orden"]
+    ];
+
+    getProveedoresOrdenados().forEach(p => {
+        wsConfig.push([p.id, p.nombre, generarSigla(p.nombre), p.color, p.orden]);
+    });
+
+    wsConfig.push([], ["PRODUCTOS CONFIGURADOS"], ["Nombre", "Precio", "ProveedorID", "Proveedor", "CL", "Unidad"]);
+    productosBase.forEach(p => {
+        const prov = getProveedorById(p.proveedor);
+        wsConfig.push([p.nombre, p.precio, p.proveedor, prov ? prov.nombre : 'SIN PROV', p.cl ? 'SI' : 'NO', detectarUnidad(p.nombre)]);
+    });
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsConfig), "Configuración");
+
+    // HOJA 2: DATOS SEMANALES
+    const wsData = [["SEMANA", "DÍAS", "CUPOS", "PRESUPUESTO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "CL", "%_DEL_PRESUPUESTO_SEMANA", "DISTRIBUIDORA"]];
+
+    for (let s = 1; s <= semanas; s++) {
+        const dias = document.getElementById(`dias-${s}`)?.value || "0";
+        const cupos = document.getElementById(`cupos-${s}`)?.value || "0";
+        const presupuesto = limpiarNum(document.getElementById(`pres-${s}`)?.textContent || "0");
+        const distribuidora = limpiarNum(document.getElementById(`dist-${s}`)?.value || "0");
+
+        getProveedoresOrdenados().forEach(prov => {
+            const productosProv = getProductosByProveedor(prov.id);
+            productosProv.forEach(p => {
+                const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
+                const fac = document.getElementById(`fac-${s}-${globalIdx}`)?.value || "";
+                const cant = parseFloat(document.getElementById(`cant-${s}-${globalIdx}`)?.value) || 0;
+                const valUnit = parseFloat(document.getElementById(`punit-${s}-${globalIdx}`)?.value) || p.precio;
+                const valTotal = limpiarNum(document.getElementById(`val-${s}-${globalIdx}`)?.value || "0");
+
+                if (cant > 0 || fac) {
+                    // ✅ CORREGIDO: % sobre el presupuesto DE LA SEMANA (no del total)
+                    const porcDelPresupuesto = presupuesto > 0 ? ((valTotal / presupuesto) * 100).toFixed(2) : 0;
+                    
+                    wsData.push([
+                        s, dias, cupos, presupuesto,
+                        prov.nombre, generarSigla(prov.nombre), fac, p.nombre,
+                        cant, valUnit, valTotal, p.cl ? 'SI' : 'NO',
+                        porcDelPresupuesto + '%', distribuidora
+                    ]);
+                }
+            });
+        });
+    }
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Datos Semanales");
+
+    // HOJA 3: RESUMEN POR PRODUCTO (CORREGIDO)
+    const wsResumen = [["PROVEEDOR", "SIGLA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "CL", "%_DEL_PRESUPUESTO_TOTAL", "%_CL_ACUMULADO"]];
+    
+    let acumuladoCL = 0;
+
+    getProveedoresOrdenados().forEach(prov => {
+        const productosProv = Object.entries(totalesPorProducto)
+            .filter(([_, datos]) => datos.proveedor === prov.id && datos.cantidad > 0)
+            .sort((a, b) => b[1].valor - a[1].valor);
+
+        productosProv.forEach(([nombre, datos]) => {
+            // ✅ CORREGIDO: % sobre PRESUPUESTO TOTAL MES (incluye distribuidora)
+            const porcentaje = totalGeneral > 0 ? (datos.valor / totalGeneral * 100).toFixed(2) : 0;
+            
+            if (datos.cl) {
+                acumuladoCL += parseFloat(porcentaje);
+            }
+            
+            wsResumen.push([
+                prov.nombre,
+                generarSigla(prov.nombre),
+                nombre,
+                datos.unidad,
+                datos.cantidad,
+                datos.valor,
+                datos.cl ? 'SI' : 'NO',
+                porcentaje + '%',
+                datos.cl ? acumuladoCL.toFixed(2) + '%' : 'N/A'
+            ]);
+        });
+    });
+
+    // ✅ AGREGAR FILA DE DISTRIBUIDORA
+    wsResumen.push([
+        'DISTRIBUIDORA',
+        'DIST',
+        'Valor no asignado a productos',
+        'N/A',
+        0,
+        tDistTotal,
+        'NO',
+        porcDistTotal + '%',
+        'N/A'
+    ]);
+
+    wsResumen.push([]);
+    wsResumen.push(["TOTALES", "", "", "", "", totalGeneral, "", "100%", porcCLTotal + "%"]);
+    wsResumen.push(["", "", "", "", "", "", "", "", ""]);
+    wsResumen.push(["DESGLOSE", "VALOR", "% DEL TOTAL", "", "", "", "", "", ""]);
+    wsResumen.push(["Compras Locales (CL)", tProdCL, porcCLTotal + "%", "", "", "", "", "", ""]);
+    wsResumen.push(["Otros Productos", tProdOtros, porcOtrosTotal + "%", "", "", "", "", "", ""]);
+    wsResumen.push(["Distribuidora", tDistTotal, porcDistTotal + "%", "", "", "", "", "", ""]);
+    wsResumen.push(["TOTAL VERIFICACIÓN", tProdCL + tProdOtros + tDistTotal, (parseFloat(porcCLTotal) + parseFloat(porcOtrosTotal) + parseFloat(porcDistTotal)).toFixed(2) + "%", "", "", "", "", "", ""]);
+
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumen), "Resumen por Producto");
+
+    XLSX.writeFile(wb, `ZAN_Completo_${mes}_${contrato}.xlsx`);
+}
 
         function calcularTotalesPorProducto(semanas) {
             let totales = {};
@@ -3166,6 +3684,7 @@ function esperarElemento(selector, timeout = 2000) {
             return totales;
         }
 
+        // ===== EXPORTACIONES CONTABLES =====
         function exportarContabilidadCSV() {
             const datos = generarDatosContabilidad();
             
@@ -3222,6 +3741,188 @@ function esperarElemento(selector, timeout = 2000) {
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsProd), "Por Producto");
 
             XLSX.writeFile(wb, `Contabilidad_${datos.mes}_${datos.contrato}.xlsx`);
+        }
+
+        // ===== EXPORTAR FACTURAS =====
+        function exportarFacturasCSV() {
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            const mes = document.getElementById('main-mes').value;
+            const contrato = document.getElementById('main-contrato').value;
+            
+            let datosPorProveedor = {};
+            
+            getProveedoresOrdenados().forEach(prov => {
+                datosPorProveedor[prov.id] = {
+                    proveedor: prov,
+                    facturas: {}
+                };
+            });
+            
+            for (let s = 1; s <= semanas; s++) {
+                productosBase.forEach((p, i) => {
+                    const facInput = document.getElementById(`fac-${s}-${i}`);
+                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    
+                    if (!facInput || !valInput) return;
+                    
+                    const numFactura = facInput.value?.trim();
+                    const valor = limpiarNum(valInput.value);
+                    const cantidad = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    
+                    if (numFactura && valor > 0) {
+                        const provId = p.proveedor;
+                        
+                        if (!datosPorProveedor[provId].facturas[numFactura]) {
+                            datosPorProveedor[provId].facturas[numFactura] = {
+                                numero: numFactura,
+                                productos: {},
+                                total: 0,
+                                semanas: new Set()
+                            };
+                        }
+                        
+                        const factura = datosPorProveedor[provId].facturas[numFactura];
+                        
+                        if (!factura.productos[p.nombre]) {
+                            factura.productos[p.nombre] = {
+                                nombre: p.nombre,
+                                unidad: detectarUnidad(p.nombre),
+                                cantidadTotal: 0,
+                                valorTotal: 0
+                            };
+                        }
+                        
+                        factura.productos[p.nombre].cantidadTotal += cantidad;
+                        factura.productos[p.nombre].valorTotal += valor;
+                        factura.total += valor;
+                        factura.semanas.add(s);
+                    }
+                });
+            }
+            
+            let csv = "MES;CONTRATO;PROVEEDOR;SIGLA;FACTURA;PRODUCTO;UNIDAD;CANTIDAD_TOTAL;VALOR_TOTAL;SEMANAS\n";
+            
+            Object.entries(datosPorProveedor).forEach(([provId, datosProv]) => {
+                Object.entries(datosProv.facturas).forEach(([numFactura, factura]) => {
+                    const prov = datosProv.proveedor;
+                    const semanasUnicas = [...factura.semanas].sort((a,b) => a-b).join('-');
+                    
+                    Object.values(factura.productos).forEach(prod => {
+                        csv += `${mes};${contrato};${prov.nombre};${generarSigla(prov.nombre)};${numFactura};${prod.nombre};${prod.unidad};${prod.cantidadTotal};${prod.valorTotal};${semanasUnicas}\n`;
+                    });
+                });
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `Facturas_${mes}_${contrato}.csv`;
+            link.click();
+        }
+
+        function exportarFacturasExcel() {
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            const mes = document.getElementById('main-mes').value;
+            const contrato = document.getElementById('main-contrato').value;
+            
+            const wb = XLSX.utils.book_new();
+            
+            // Hoja de resumen por factura
+            const wsResumen = [["MES", "CONTRATO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "SEMANAS"]];
+            
+            let datosPorProveedor = {};
+            
+            getProveedoresOrdenados().forEach(prov => {
+                datosPorProveedor[prov.id] = {
+                    proveedor: prov,
+                    facturas: {}
+                };
+            });
+            
+            for (let s = 1; s <= semanas; s++) {
+                productosBase.forEach((p, i) => {
+                    const facInput = document.getElementById(`fac-${s}-${i}`);
+                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    
+                    if (!facInput || !valInput) return;
+                    
+                    const numFactura = facInput.value?.trim();
+                    const valor = limpiarNum(valInput.value);
+                    const cantidad = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    
+                    if (numFactura && valor > 0) {
+                        const provId = p.proveedor;
+                        
+                        if (!datosPorProveedor[provId].facturas[numFactura]) {
+                            datosPorProveedor[provId].facturas[numFactura] = {
+                                numero: numFactura,
+                                productos: {},
+                                total: 0,
+                                semanas: new Set()
+                            };
+                        }
+                        
+                        const factura = datosPorProveedor[provId].facturas[numFactura];
+                        
+                        if (!factura.productos[p.nombre]) {
+                            factura.productos[p.nombre] = {
+                                nombre: p.nombre,
+                                unidad: detectarUnidad(p.nombre),
+                                cantidadTotal: 0,
+                                valorTotal: 0
+                            };
+                        }
+                        
+                        factura.productos[p.nombre].cantidadTotal += cantidad;
+                        factura.productos[p.nombre].valorTotal += valor;
+                        factura.total += valor;
+                        factura.semanas.add(s);
+                    }
+                });
+            }
+            
+            Object.entries(datosPorProveedor).forEach(([provId, datosProv]) => {
+                Object.entries(datosProv.facturas).forEach(([numFactura, factura]) => {
+                    const prov = datosProv.proveedor;
+                    const semanasUnicas = [...factura.semanas].sort((a,b) => a-b).join(', ');
+                    
+                    Object.values(factura.productos).forEach(prod => {
+                        wsResumen.push([
+                            mes, contrato, prov.nombre, generarSigla(prov.nombre),
+                            numFactura, prod.nombre, prod.unidad,
+                            prod.cantidadTotal, prod.valorTotal, semanasUnicas
+                        ]);
+                    });
+                });
+            });
+            
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumen), "Resumen Facturas");
+
+            // Hoja detalle por semana
+            const wsDetalle = [["PROVEEDOR", "FACTURA", "PRODUCTO", "SEMANA", "CANTIDAD", "VALOR"]];
+            
+            for (let s = 1; s <= semanas; s++) {
+                productosBase.forEach((p, i) => {
+                    const fac = document.getElementById(`fac-${s}-${i}`)?.value?.trim();
+                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    
+                    if (fac && val > 0) {
+                        wsDetalle.push([
+                            getProveedorById(p.proveedor)?.nombre || 'N/A',
+                            fac,
+                            p.nombre,
+                            s,
+                            cant,
+                            val
+                        ]);
+                    }
+                });
+            }
+            
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsDetalle), "Detalle por Semana");
+            
+            XLSX.writeFile(wb, `Facturas_${mes}_${contrato}.xlsx`);
         }
 
         function generarDatosContabilidad() {
@@ -3625,6 +4326,8 @@ function esperarElemento(selector, timeout = 2000) {
                 if (id === 'archivo') listarCloud();
                 if (id === 'resumen') actualizarResumen();
                 if (id === 'contabilidad') actualizarVistaContabilidad();
+                if (id === 'distribuidora') renderizarValoresDistribuidora();
+                if (id === 'facturas') renderizarValidadorFacturas();
             } else {
                 overlay.style.display = 'none';
             }
@@ -3674,4 +4377,3 @@ function esperarElemento(selector, timeout = 2000) {
     </script>
 </body>
 </html>
-
