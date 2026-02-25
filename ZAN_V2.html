@@ -300,7 +300,6 @@
             right: 25px;
             width: 40px;
             height: 40px;
-            
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -1305,6 +1304,43 @@
 
         .hidden { display: none !important; }
 
+        /* ESTILOS PARA RESUMEN DE RACIONES */
+        .raciones-resumen {
+            background: rgba(0, 242, 255, 0.05);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .raciones-semana {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .raciones-semana:last-child {
+            border-bottom: none;
+        }
+
+        .raciones-total {
+            background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(0,242,255,0.1));
+            border: 2px solid var(--primary-gold);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .raciones-total-valor {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-gold);
+            text-shadow: 0 0 10px rgba(212,175,55,0.3);
+        }
+
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }
@@ -1432,10 +1468,12 @@
     <!-- AUTH SCREEN -->
     <div id="auth-screen">
         <div class="auth-box" id="login-form">
-            <div style="text-align: center; margin-bottom: 20px;">
+		
+			<div style="text-align: center; margin-bottom: 20px;">
                 <img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));">
             </div>
-            <h2 style="color:var(--primary-gold); margin-bottom:20px;">ZAN TABLA VALORES</h2>
+            <h2 style="color:var(--primary-gold); margin-bottom:20px;">ZAN TABLA DE VALORES</h2>
+		
             <input type="text" id="user-login" placeholder="Usuario">
             <input type="password" id="pass-login" placeholder="Contraseña">
             <button class="btn btn-gold btn-block" style="margin-top:15px;" onclick="handleAuth('login')">
@@ -1447,9 +1485,9 @@
         </div>
         <div class="auth-box hidden" id="reg-form">
             <div style="text-align: center; margin-bottom: 20px;">
-                <img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));">
+                <img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));">
             </div>
-            <h2 style="color:var(--accent-cyan); margin-bottom:20px;">NUEVO REGISTRO</h2>
+            <h2 style="color:var(--primary-gold); margin-bottom:20px;">NUEVO REGISTRO</h2>
             <input type="text" id="user-reg" placeholder="Usuario">
             <input type="password" id="pass-reg" placeholder="Contraseña">
             <button class="btn btn-cyan btn-block" style="margin-top:15px;" onclick="handleAuth('register')">
@@ -1463,11 +1501,12 @@
 
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
+        
+		<div class="sidebar-header">
             <img src="Logo/ZAN.png" alt="ZAN" style="width: 35px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));">
             <span class="sidebar-title">|Tabla Valores</span>
         </div>
-
+		
         <div class="nav-section">
             <div class="nav-section-title">Gestión de Datos</div>
             <a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
@@ -1557,7 +1596,7 @@
                     <i class="fa-solid fa-bars"></i>
                     <span>Menú</span>
                 </button>
-                <img src="Logo/ZAN.png" alt="ZAN Logo" style="height: 30px; width: auto; filter: drop-shadow(0 0 5px var(--accent-cyan)); margin-right: 10px;">
+				<img src="Logo/ZAN.png" alt="ZAN Logo" style="height: 30px; width: auto; filter: drop-shadow(0 0 5px var(--accent-cyan)); margin-right: 10px;">
                 <div class="contract-info" id="contract-info">
                     <select id="main-mes" onchange="marcarCambio()">
                         <option>Enero</option><option>Febrero</option><option>Marzo</option>
@@ -1859,7 +1898,7 @@
                     target: 'nav-resumen',
                     title: 'Resumen y Análisis',
                     icon: 'fa-chart-pie',
-                    content: 'Visualiza el análisis completo de gastos:<br>• Total por proveedor y producto<br>• Cantidades acumuladas (kg, lb, und)<br>• Indicador CL por producto<br>• Gráfico de distribución<br>• % de compras locales',
+                    content: 'Visualiza el análisis completo de gastos:<br>• Total por proveedor y producto<br>• Cantidades acumuladas (kg, lb, und)<br>• Indicador CL por producto<br>• Gráfico de distribución<br>• % de compras locales<br>• <strong>Raciones totales por semana</strong>',
                     tip: 'Los paneles de proveedores son plegables. Haz clic en el encabezado para expandir/contraer.',
                     position: 'right',
                     action: () => toggleDrawer('resumen')
@@ -1869,7 +1908,7 @@
                     target: 'nav-exportar',
                     title: 'Exportar Datos',
                     icon: 'fa-file-export',
-                    content: 'Exporta toda la información en formato Excel con 3 hojas:<br>1. <strong>Configuración</strong> (proveedores y productos)<br>2. <strong>Datos Semanales</strong> (todas las transacciones)<br>3. <strong>Resumen por Producto</strong> (consolidado)',
+                    content: 'Exporta toda la información en formato Excel con 5 hojas:<br>1. <strong>Configuración</strong> (proveedores y productos)<br>2. <strong>Datos Semanales</strong> (todas las transacciones)<br>3. <strong>Resumen por Producto</strong> (consolidado)<br>4. <strong>Resumen de Raciones</strong><br>5. <strong>Validación de Facturas</strong>',
                     tip: 'El archivo exportado incluye toda la configuración y puede importarse en otro dispositivo.',
                     position: 'right'
                 },
@@ -1878,7 +1917,7 @@
                     target: 'nav-importar',
                     title: 'Importar Datos',
                     icon: 'fa-file-import',
-                    content: 'Restaura datos desde un archivo Excel exportado previamente. Se importa:<br>• Configuración de proveedores<br>• Listado de productos<br>• Todas las transacciones semanales<br>• Mes y contrato',
+                    content: 'Restaura datos desde un archivo Excel exportado previamente. Se importa:<br>• Configuración de proveedores<br>• Listado de productos<br>• Todas las transacciones semanales<br>• Mes y contrato<br>• Valor de ración HCB',
                     tip: 'Útil para respaldar información o transferir entre dispositivos.',
                     position: 'right'
                 },
@@ -2106,7 +2145,7 @@
                     target: 'nav-exportar',
                     title: 'Exportar Completo',
                     icon: 'fa-file-excel',
-                    content: 'Genera un archivo Excel con 3 hojas:<br><br>1. <strong>Configuración:</strong> Proveedores y productos base<br>2. <strong>Datos Semanales:</strong> Todas las facturas y cantidades<br>3. <strong>Resumen:</strong> Consolidado por producto con % CL',
+                    content: 'Genera un archivo Excel con 5 hojas:<br><br>1. <strong>Configuración:</strong> Proveedores y productos base<br>2. <strong>Datos Semanales:</strong> Todas las facturas y cantidades<br>3. <strong>Resumen:</strong> Consolidado por producto con % CL<br>4. <strong>Raciones:</strong> Resumen de raciones por semana<br>5. <strong>Facturas:</strong> Validación de facturas',
                     tip: 'Este archivo puede importarse posteriormente como respaldo completo.',
                     position: 'right'
                 },
@@ -2343,7 +2382,9 @@
         function tutorialSkip() {
             if (confirm('¿Saltar el tutorial? Puedes volver a verlo desde el botón de ayuda.')) {
                 tutorialEnCurso = false;
+				marcarTutorialVisto();
                 tutorialFinish();
+				
             }
         }
 
@@ -2364,7 +2405,14 @@
 
         // ===== UTILIDADES =====
         function limpiarNum(t) {
-            return parseFloat(t.toString().replace(/[$.,]/g, "").replace(/[^0-9.-]+/g, "")) || 0;
+            if (t === null || t === undefined) return 0;
+            if (typeof t === 'number') return t;
+            let limpio = String(t)
+                .replace(/\$/g, "")
+                .replace(/\./g, "")
+                .replace(/,/g, ".")
+                .replace(/[^0-9.-]+/g, "");
+            return parseFloat(limpio) || 0;
         }
 
         function generarSigla(nombre) {
@@ -2479,13 +2527,17 @@
             inicializarDatos();
             
             const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
-            if (!tutorialVisto) {
-                setTimeout(() => {
-                    if (confirm('¿Deseas ver el tutorial de bienvenida?')) {
-                        startTutorial('completo');
-                    }
-                }, 1000);
-            }
+            if (tutorialVisto !== 'true') {
+				setTimeout(() => {
+					// Pequeña confirmación en lugar de alert intrusivo
+					if (confirm('¿Deseas ver el tutorial de bienvenida?\n\n(Puedes volver a verlo desde el botón ? en cualquier momento)')) {
+						startTutorial('completo');
+					} else {
+						// Si el usuario dice "No", marcar como visto para no volver a preguntar
+						marcarTutorialVisto();
+					}
+				}, 1000);
+			}
         }
 
         function inicializarDatos() {
@@ -2531,17 +2583,20 @@
         }
 
         function marcarTutorialVisto() {
-            if (!currentUser) return;
-            localStorage.setItem(`tutorial_visto_${currentUser}`, 'true');
-            tutorialYaVisto = true;
-        }
+			if (!currentUser) return;
+			localStorage.setItem(`tutorial_visto_${currentUser}`, 'true');
+			tutorialYaVisto = true;
+			console.log(`Tutorial marcado como visto para usuario: ${currentUser}`);
+		}
 
         function resetTutorialVisto() {
-            if (!currentUser) return;
-            localStorage.removeItem(`tutorial_visto_${currentUser}`);
-            tutorialYaVisto = false;
-            alert('Tutorial reseteado. Se mostrará en el próximo inicio.');
-        }
+			if (!currentUser) return;
+			if (confirm('¿Estás seguro de que deseas ver el tutorial de nuevo?\n\nSe mostrará al siguiente inicio de sesión.')) {
+				localStorage.removeItem(`tutorial_visto_${currentUser}`);
+				tutorialYaVisto = false;
+				alert('Tutorial reseteado. Se mostrará en el próximo inicio de sesión.');
+			}
+		}
 
         function toggleSidebar() {
             if (tutorialEnCurso && tutorialActivo && pasoActual < tutorialActivo.length) {
@@ -2790,7 +2845,26 @@
 
         // ===== GRID PRINCIPAL =====
         function initGrid(preservarDatos = false) {
-            if (preservarDatos) guardarLocal();
+            // Guardar datos actuales antes de regenerar
+            let datosActuales = {};
+            if (preservarDatos) {
+                const semanasActuales = parseInt(document.getElementById('num-semanas').value) || 4;
+                for (let s = 1; s <= semanasActuales; s++) {
+                    datosActuales[s] = {
+                        dias: document.getElementById(`dias-${s}`)?.value || "",
+                        cupos: document.getElementById(`cupos-${s}`)?.value || "",
+                        items: {}
+                    };
+                    productosBase.forEach((p, i) => {
+                        datosActuales[s].items[i] = {
+                            f: document.getElementById(`fac-${s}-${i}`)?.value || "",
+                            q: document.getElementById(`cant-${s}-${i}`)?.value || "",
+                            p: document.getElementById(`punit-${s}-${i}`)?.value || p.precio,
+                            v: document.getElementById(`val-${s}-${i}`)?.value || ""
+                        };
+                    });
+                }
+            }
 
             const grid = document.getElementById('main-grid');
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
@@ -2901,30 +2975,30 @@
                 sidebarOpen = false;
             }
             
-            if (preservarDatos) {
-                const saved = localStorage.getItem(`elite_draft_${currentUser}`);
-                if (saved) {
-                    const data = JSON.parse(saved);
-                    for (let s = 1; s <= semanas; s++) {
-                        if (!data.semanas || !data.semanas[s]) {
-                            calcular(s);
-                            continue;
+            // Restaurar datos si se preservaron
+            if (preservarDatos && Object.keys(datosActuales).length > 0) {
+                for (let s = 1; s <= semanas; s++) {
+                    if (!datosActuales[s]) continue;
+                    
+                    if (document.getElementById(`dias-${s}`)) 
+                        document.getElementById(`dias-${s}`).value = datosActuales[s].dias;
+                    if (document.getElementById(`cupos-${s}`)) 
+                        document.getElementById(`cupos-${s}`).value = datosActuales[s].cupos;
+                        
+                    productosBase.forEach((p, i) => {
+                        const item = datosActuales[s].items[i];
+                        if (item) {
+                            if (document.getElementById(`fac-${s}-${i}`)) 
+                                document.getElementById(`fac-${s}-${i}`).value = item.f;
+                            if (document.getElementById(`cant-${s}-${i}`)) 
+                                document.getElementById(`cant-${s}-${i}`).value = item.q;
+                            if (document.getElementById(`punit-${s}-${i}`)) 
+                                document.getElementById(`punit-${s}-${i}`).value = item.p;
+                            if (document.getElementById(`val-${s}-${i}`)) 
+                                document.getElementById(`val-${s}-${i}`).value = item.v;
                         }
-
-                        const semData = data.semanas[s];
-                        if (document.getElementById(`dias-${s}`)) document.getElementById(`dias-${s}`).value = semData.d || "";
-                        if (document.getElementById(`cupos-${s}`)) document.getElementById(`cupos-${s}`).value = semData.c || "";
-
-                        productosBase.forEach((pb, i) => {
-                            const item = semData.items ? semData.items[pb.nombre] : null;
-                            if (item) {
-                                if (document.getElementById(`fac-${s}-${i}`)) document.getElementById(`fac-${s}-${i}`).value = item.f || "";
-                                if (document.getElementById(`cant-${s}-${i}`)) document.getElementById(`cant-${s}-${i}`).value = item.q || "";
-                                if (document.getElementById(`punit-${s}-${i}`)) document.getElementById(`punit-${s}-${i}`).value = item.p || pb.precio;
-                            }
-                        });
-                        calcular(s);
-                    }
+                    });
+                    calcular(s);
                 }
             } else {
                 actualizarResumen();
@@ -3022,7 +3096,7 @@
             actualizarResumen();
         }
 
-        // ===== RESUMEN MEJORADO CON PLEGABLE =====
+        // ===== RESUMEN MEJORADO CON RACIONES =====
         function actualizarResumen() {
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
             
@@ -3039,10 +3113,23 @@
             });
 
             let tPres = 0, tProdCL = 0, tProdOtros = 0;
+            let racionesPorSemana = {};
+            let totalRacionesMes = 0;
 
             for (let s = 1; s <= semanas; s++) {
                 const pVal = document.getElementById(`pres-${s}`);
                 if (pVal) tPres += limpiarNum(pVal.textContent);
+
+                // Calcular raciones de esta semana
+                const dias = parseFloat(document.getElementById(`dias-${s}`)?.value) || 0;
+                const cupos = parseFloat(document.getElementById(`cupos-${s}`)?.value) || 0;
+                const racionesSemana = dias * cupos;
+                racionesPorSemana[s] = {
+                    dias: dias,
+                    cupos: cupos,
+                    raciones: racionesSemana
+                };
+                totalRacionesMes += racionesSemana;
 
                 productosBase.forEach((p, i) => {
                     const cantInput = document.getElementById(`cant-${s}-${i}`);
@@ -3066,6 +3153,22 @@
             const tDist = tPres - tProdCL - tProdOtros;
             const porcCL = tPres > 0 ? (tProdCL / tPres) * 100 : 0;
             const ledColor = porcCL >= 30 ? 'var(--success)' : 'var(--danger)';
+
+            // Generar HTML de raciones
+            let htmlRaciones = '';
+            for (let s = 1; s <= semanas; s++) {
+                const r = racionesPorSemana[s];
+                if (r.dias > 0 || r.cupos > 0) {
+                    htmlRaciones += `
+                        <div class="raciones-semana">
+                            <span style="color: var(--text-dim);">Semana ${s}:</span>
+                            <span style="color: var(--accent-cyan); font-weight: bold;">
+                                ${r.dias} días × ${r.cupos} cupos = <span style="color: var(--primary-gold);">${r.raciones.toLocaleString()} raciones</span>
+                            </span>
+                        </div>
+                    `;
+                }
+            }
 
             let htmlProveedores = '';
             const provsOrdenados = getProveedoresOrdenados();
@@ -3125,6 +3228,8 @@
             const sumCont = document.getElementById('summary-content');
             if (sumCont) {
                 sumCont.innerHTML = `
+                    
+
                     <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid ${ledColor};">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div>
@@ -3161,6 +3266,21 @@
                             </tr>
                         </table>
                     </div>
+					<!-- SECCIÓN DE RACIONES -->
+                    <div class="raciones-resumen">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                            <i class="fa-solid fa-utensils" style="color: var(--accent-cyan); font-size: 18px;"></i>
+                            <span style="font-size: 14px; font-weight: bold; color: var(--accent-cyan);">CANTIDADES RACIONES</span>
+                        </div>
+                        ${htmlRaciones || '<div style="color: var(--text-dim); text-align: center; padding: 1px;">No hay datos de días/cupos ingresados</div>'}
+                        <div class="raciones-total">
+                            <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 5px;">TOTAL RACIONES DEL MES</div>
+                            <div class="raciones-total-valor">${totalRacionesMes.toLocaleString()}</div>
+                            <div style="font-size: 10px; color: var(--text-dim); margin-top: 5px;">
+                                ${Object.values(racionesPorSemana).filter(r => r.raciones > 0).length} semanas con datos
+                            </div>
+                        </div>
+                    </div>
 
                     <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:10px;">
                         <small style="color:var(--text-dim);">PRESUPUESTO TOTAL MES</small>
@@ -3186,7 +3306,8 @@
 
         function toggleResumenProv(id) {
             const el = document.getElementById(id);
-            const icon = document.getElementById(id.replace('resumen-prov-', 'icon-resumen-'));
+            const iconId = id.replace('resumen-prov-', 'icon-resumen-');
+            const icon = document.getElementById(iconId);
             if (el) {
                 el.classList.toggle('collapsed');
                 if (icon) icon.classList.toggle('collapsed');
@@ -3283,15 +3404,13 @@
             `;
         }
 
-        // ===== VALIDACIÓN DE FACTURAS - CORREGIDO Y MEJORADO =====
+        // ===== VALIDACIÓN DE FACTURAS =====
         function renderizarValidadorFacturas() {
             const cont = document.getElementById('facturas-content');
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
             
-            // Agrupar por proveedor primero, luego por factura
             let datosPorProveedor = {};
             
-            // Inicializar estructura para cada proveedor
             getProveedoresOrdenados().forEach(prov => {
                 datosPorProveedor[prov.id] = {
                     proveedor: prov,
@@ -3299,18 +3418,16 @@
                 };
             });
             
-            // Recolectar datos
             for (let s = 1; s <= semanas; s++) {
                 productosBase.forEach((p, i) => {
                     const facInput = document.getElementById(`fac-${s}-${i}`);
                     const valInput = document.getElementById(`val-${s}-${i}`);
-                    const cantInput = document.getElementById(`cant-${s}-${i}`);
                     
-                    if (!facInput || !valInput || !cantInput) return;
+                    if (!facInput || !valInput) return;
                     
                     const numFactura = facInput.value?.trim();
                     const valor = limpiarNum(valInput.value);
-                    const cantidad = parseFloat(cantInput.value) || 0;
+                    const cantidad = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
                     
                     if (numFactura && valor > 0) {
                         const provId = p.proveedor;
@@ -3326,7 +3443,6 @@
                         
                         const factura = datosPorProveedor[provId].facturas[numFactura];
                         
-                        // Agrupar por producto dentro de la factura
                         if (!factura.productos[p.nombre]) {
                             factura.productos[p.nombre] = {
                                 nombre: p.nombre,
@@ -3351,7 +3467,6 @@
                 });
             }
             
-            // Verificar si hay datos
             const tieneDatos = Object.values(datosPorProveedor).some(
                 prov => Object.keys(prov.facturas).length > 0
             );
@@ -3361,7 +3476,6 @@
                 return;
             }
             
-            // Generar HTML
             let html = '';
             
             Object.entries(datosPorProveedor).forEach(([provId, datosProv]) => {
@@ -3388,7 +3502,6 @@
                         <div class="validacion-proveedor-content" id="validacion-prov-${provId}">
                 `;
                 
-                // Mostrar cada factura del proveedor
                 facturas.forEach(factura => {
                     const semanasArray = [...factura.semanas].sort((a,b) => a-b);
                     const productos = Object.values(factura.productos);
@@ -3408,7 +3521,6 @@
                             <div class="factura-content" id="factura-detalle-${provId}-${factura.numero.replace(/\s+/g, '-')}">
                     `;
                     
-                    // Mostrar cada producto de la factura
                     productos.forEach(prod => {
                         html += `
                             <div style="margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
@@ -3474,194 +3586,23 @@
 
         // ===== EXPORTACIONES MEJORADAS =====
         function exportarCompleto() {
-    const mes = document.getElementById('main-mes').value;
-    const contrato = document.getElementById('main-contrato').value;
-    const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            const mes = document.getElementById('main-mes').value;
+            const contrato = document.getElementById('main-contrato').value;
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
 
-    const wb = XLSX.utils.book_new();
+            const wb = XLSX.utils.book_new();
 
-    // ===== CORREGIDO: Calcular totales correctamente =====
-    let tPresTotal = 0;        // Total del presupuesto (base para porcentajes)
-    let tProdCL = 0;           // Total compras locales
-    let tProdOtros = 0;        // Total otros productos
-    let tDistTotal = 0;        // Total distribuidora
-    let totalesPorProducto = {};
-    
-    productosBase.forEach(p => {
-        totalesPorProducto[p.nombre] = {
-            cantidad: 0,
-            valor: 0,
-            cl: p.cl,
-            proveedor: p.proveedor,
-            unidad: detectarUnidad(p.nombre)
-        };
-    });
-
-    for (let s = 1; s <= semanas; s++) {
-        const pVal = document.getElementById(`pres-${s}`);
-        if (pVal) tPresTotal += limpiarNum(pVal.textContent);
-
-        const distVal = document.getElementById(`dist-${s}`);
-        if (distVal) tDistTotal += limpiarNum(distVal.value || "0");
-
-        productosBase.forEach((p, i) => {
-            const cantInput = document.getElementById(`cant-${s}-${i}`);
-            const valInput = document.getElementById(`val-${s}-${i}`);
-            
-            if (!cantInput || !valInput) return;
-
-            const cant = parseFloat(cantInput.value) || 0;
-            const val = limpiarNum(valInput.value);
-
-            if (cant > 0) {
-                totalesPorProducto[p.nombre].cantidad += cant;
-                totalesPorProducto[p.nombre].valor += val;
-
-                if (p.cl) tProdCL += val;
-                else tProdOtros += val;
-            }
-        });
-    }
-
-    // ✅ CORRECTO: El total general es el PRESUPUESTO TOTAL (incluye distribuidora)
-    const totalGeneral = tPresTotal;
-
-    // Calcular porcentajes sobre el presupuesto total
-    const porcCLTotal = totalGeneral > 0 ? (tProdCL / totalGeneral * 100).toFixed(2) : 0;
-    const porcOtrosTotal = totalGeneral > 0 ? (tProdOtros / totalGeneral * 100).toFixed(2) : 0;
-    const porcDistTotal = totalGeneral > 0 ? (tDistTotal / totalGeneral * 100).toFixed(2) : 0;
-
-    // HOJA 1: CONFIGURACIÓN
-    const wsConfig = [
-        ["ZAN - TABLA DE VALORES"],
-        ["Fecha exportación:", new Date().toLocaleString('es-CO')],
-        ["Mes:", mes],
-        ["Contrato:", contrato],
-        ["Semanas ejecutadas:", semanas],
-        ["Valor cupo HCB:", valorCupoBase],
-        [],
-        ["TOTALES RESUMEN"],
-        ["Presupuesto Total Mes:", totalGeneral, "100%"],
-        ["Compras Locales (CL):", tProdCL, porcCLTotal + "%"],
-        ["Otros Productos:", tProdOtros, porcOtrosTotal + "%"],
-        ["Distribuidora:", tDistTotal, porcDistTotal + "%"],
-        ["Suma Verificación:", tProdCL + tProdOtros + tDistTotal, "Debe ser igual al Presupuesto"],
-        [],
-        ["PROVEEDORES CONFIGURADOS"],
-        ["ID", "Nombre", "Sigla", "Color", "Orden"]
-    ];
-
-    getProveedoresOrdenados().forEach(p => {
-        wsConfig.push([p.id, p.nombre, generarSigla(p.nombre), p.color, p.orden]);
-    });
-
-    wsConfig.push([], ["PRODUCTOS CONFIGURADOS"], ["Nombre", "Precio", "ProveedorID", "Proveedor", "CL", "Unidad"]);
-    productosBase.forEach(p => {
-        const prov = getProveedorById(p.proveedor);
-        wsConfig.push([p.nombre, p.precio, p.proveedor, prov ? prov.nombre : 'SIN PROV', p.cl ? 'SI' : 'NO', detectarUnidad(p.nombre)]);
-    });
-
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsConfig), "Configuración");
-
-    // HOJA 2: DATOS SEMANALES
-    const wsData = [["SEMANA", "DÍAS", "CUPOS", "PRESUPUESTO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "CL", "%_DEL_PRESUPUESTO_SEMANA", "DISTRIBUIDORA"]];
-
-    for (let s = 1; s <= semanas; s++) {
-        const dias = document.getElementById(`dias-${s}`)?.value || "0";
-        const cupos = document.getElementById(`cupos-${s}`)?.value || "0";
-        const presupuesto = limpiarNum(document.getElementById(`pres-${s}`)?.textContent || "0");
-        const distribuidora = limpiarNum(document.getElementById(`dist-${s}`)?.value || "0");
-
-        getProveedoresOrdenados().forEach(prov => {
-            const productosProv = getProductosByProveedor(prov.id);
-            productosProv.forEach(p => {
-                const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
-                const fac = document.getElementById(`fac-${s}-${globalIdx}`)?.value || "";
-                const cant = parseFloat(document.getElementById(`cant-${s}-${globalIdx}`)?.value) || 0;
-                const valUnit = parseFloat(document.getElementById(`punit-${s}-${globalIdx}`)?.value) || p.precio;
-                const valTotal = limpiarNum(document.getElementById(`val-${s}-${globalIdx}`)?.value || "0");
-
-                if (cant > 0 || fac) {
-                    // ✅ CORREGIDO: % sobre el presupuesto DE LA SEMANA (no del total)
-                    const porcDelPresupuesto = presupuesto > 0 ? ((valTotal / presupuesto) * 100).toFixed(2) : 0;
-                    
-                    wsData.push([
-                        s, dias, cupos, presupuesto,
-                        prov.nombre, generarSigla(prov.nombre), fac, p.nombre,
-                        cant, valUnit, valTotal, p.cl ? 'SI' : 'NO',
-                        porcDelPresupuesto + '%', distribuidora
-                    ]);
-                }
-            });
-        });
-    }
-
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Datos Semanales");
-
-    // HOJA 3: RESUMEN POR PRODUCTO (CORREGIDO)
-    const wsResumen = [["PROVEEDOR", "SIGLA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "CL", "%_DEL_PRESUPUESTO_TOTAL", "%_CL_ACUMULADO"]];
-    
-    let acumuladoCL = 0;
-
-    getProveedoresOrdenados().forEach(prov => {
-        const productosProv = Object.entries(totalesPorProducto)
-            .filter(([_, datos]) => datos.proveedor === prov.id && datos.cantidad > 0)
-            .sort((a, b) => b[1].valor - a[1].valor);
-
-        productosProv.forEach(([nombre, datos]) => {
-            // ✅ CORREGIDO: % sobre PRESUPUESTO TOTAL MES (incluye distribuidora)
-            const porcentaje = totalGeneral > 0 ? (datos.valor / totalGeneral * 100).toFixed(2) : 0;
-            
-            if (datos.cl) {
-                acumuladoCL += parseFloat(porcentaje);
-            }
-            
-            wsResumen.push([
-                prov.nombre,
-                generarSigla(prov.nombre),
-                nombre,
-                datos.unidad,
-                datos.cantidad,
-                datos.valor,
-                datos.cl ? 'SI' : 'NO',
-                porcentaje + '%',
-                datos.cl ? acumuladoCL.toFixed(2) + '%' : 'N/A'
-            ]);
-        });
-    });
-
-    // ✅ AGREGAR FILA DE DISTRIBUIDORA
-    wsResumen.push([
-        'DISTRIBUIDORA',
-        'DIST',
-        'Valor no asignado a productos',
-        'N/A',
-        0,
-        tDistTotal,
-        'NO',
-        porcDistTotal + '%',
-        'N/A'
-    ]);
-
-    wsResumen.push([]);
-    wsResumen.push(["TOTALES", "", "", "", "", totalGeneral, "", "100%", porcCLTotal + "%"]);
-    wsResumen.push(["", "", "", "", "", "", "", "", ""]);
-    wsResumen.push(["DESGLOSE", "VALOR", "% DEL TOTAL", "", "", "", "", "", ""]);
-    wsResumen.push(["Compras Locales (CL)", tProdCL, porcCLTotal + "%", "", "", "", "", "", ""]);
-    wsResumen.push(["Otros Productos", tProdOtros, porcOtrosTotal + "%", "", "", "", "", "", ""]);
-    wsResumen.push(["Distribuidora", tDistTotal, porcDistTotal + "%", "", "", "", "", "", ""]);
-    wsResumen.push(["TOTAL VERIFICACIÓN", tProdCL + tProdOtros + tDistTotal, (parseFloat(porcCLTotal) + parseFloat(porcOtrosTotal) + parseFloat(porcDistTotal)).toFixed(2) + "%", "", "", "", "", "", ""]);
-
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumen), "Resumen por Producto");
-
-    XLSX.writeFile(wb, `ZAN_Completo_${mes}_${contrato}.xlsx`);
-}
-
-        function calcularTotalesPorProducto(semanas) {
-            let totales = {};
+            // Calcular totales
+            let tPresTotal = 0;
+            let tProdCL = 0;
+            let tProdOtros = 0;
+            let tDistTotal = 0;
+            let totalesPorProducto = {};
+            let racionesPorSemana = {};
+            let totalRacionesMes = 0;
             
             productosBase.forEach(p => {
-                totales[p.nombre] = {
+                totalesPorProducto[p.nombre] = {
                     cantidad: 0,
                     valor: 0,
                     cl: p.cl,
@@ -3671,17 +3612,248 @@
             });
 
             for (let s = 1; s <= semanas; s++) {
+                const pVal = document.getElementById(`pres-${s}`);
+                if (pVal) tPresTotal += limpiarNum(pVal.textContent);
+
+                const distVal = document.getElementById(`dist-${s}`);
+                if (distVal) tDistTotal += limpiarNum(distVal.value || "0");
+
+                // Calcular raciones
+                const dias = parseFloat(document.getElementById(`dias-${s}`)?.value) || 0;
+                const cupos = parseFloat(document.getElementById(`cupos-${s}`)?.value) || 0;
+                const racionesSemana = dias * cupos;
+                racionesPorSemana[s] = {
+                    dias: dias,
+                    cupos: cupos,
+                    raciones: racionesSemana,
+                    presupuesto: dias * cupos * valorCupoBase
+                };
+                totalRacionesMes += racionesSemana;
+
                 productosBase.forEach((p, i) => {
-                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
-                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+                    const cantInput = document.getElementById(`cant-${s}-${i}`);
+                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    
+                    if (!cantInput || !valInput) return;
+
+                    const cant = parseFloat(cantInput.value) || 0;
+                    const val = limpiarNum(valInput.value);
+
                     if (cant > 0) {
-                        totales[p.nombre].cantidad += cant;
-                        totales[p.nombre].valor += val;
+                        totalesPorProducto[p.nombre].cantidad += cant;
+                        totalesPorProducto[p.nombre].valor += val;
+
+                        if (p.cl) tProdCL += val;
+                        else tProdOtros += val;
                     }
                 });
             }
 
-            return totales;
+            const totalGeneral = tPresTotal;
+            const porcCLTotal = totalGeneral > 0 ? (tProdCL / totalGeneral * 100).toFixed(2) : 0;
+            const porcOtrosTotal = totalGeneral > 0 ? (tProdOtros / totalGeneral * 100).toFixed(2) : 0;
+            const porcDistTotal = totalGeneral > 0 ? (tDistTotal / totalGeneral * 100).toFixed(2) : 0;
+
+            // HOJA 1: CONFIGURACIÓN
+            const wsConfig = [
+                ["ZAN - TABLA DE VALORES"],
+                ["Fecha exportación:", new Date().toLocaleString('es-CO')],
+                ["Mes:", mes],
+                ["Contrato:", contrato],
+                ["Semanas ejecutadas:", semanas],
+                ["Valor cupo HCB:", valorCupoBase],
+                [],
+                ["TOTALES RESUMEN"],
+                ["Presupuesto Total Mes:", totalGeneral, "100%"],
+                ["Compras Locales (CL):", tProdCL, porcCLTotal + "%"],
+                ["Otros Productos:", tProdOtros, porcOtrosTotal + "%"],
+                ["Distribuidora:", tDistTotal, porcDistTotal + "%"],
+                ["Total Raciones Mes:", totalRacionesMes],
+                ["Suma Verificación:", tProdCL + tProdOtros + tDistTotal, "Debe ser igual al Presupuesto"],
+                [],
+                ["PROVEEDORES CONFIGURADOS"],
+                ["ID", "Nombre", "Sigla", "Color", "Orden"]
+            ];
+
+            getProveedoresOrdenados().forEach(p => {
+                wsConfig.push([p.id, p.nombre, generarSigla(p.nombre), p.color, p.orden]);
+            });
+
+            wsConfig.push([], ["PRODUCTOS CONFIGURADOS"], ["Nombre", "Precio", "ProveedorID", "Proveedor", "CL", "Unidad"]);
+            productosBase.forEach(p => {
+                const prov = getProveedorById(p.proveedor);
+                wsConfig.push([p.nombre, p.precio, p.proveedor, prov ? prov.nombre : 'SIN PROV', p.cl ? 'SI' : 'NO', detectarUnidad(p.nombre)]);
+            });
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsConfig), "Configuración");
+
+            // HOJA 2: DATOS SEMANALES
+            const wsData = [["SEMANA", "DÍAS", "CUPOS", "RACIONES", "PRESUPUESTO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "CL", "%_DEL_PRESUPUESTO_SEMANA", "DISTRIBUIDORA"]];
+
+            for (let s = 1; s <= semanas; s++) {
+                const dias = document.getElementById(`dias-${s}`)?.value || "0";
+                const cupos = document.getElementById(`cupos-${s}`)?.value || "0";
+                const raciones = parseFloat(dias) * parseFloat(cupos);
+                const presupuesto = limpiarNum(document.getElementById(`pres-${s}`)?.textContent || "0");
+                const distribuidora = limpiarNum(document.getElementById(`dist-${s}`)?.value || "0");
+
+                getProveedoresOrdenados().forEach(prov => {
+                    const productosProv = getProductosByProveedor(prov.id);
+                    productosProv.forEach(p => {
+                        const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
+                        const fac = document.getElementById(`fac-${s}-${globalIdx}`)?.value || "";
+                        const cant = parseFloat(document.getElementById(`cant-${s}-${globalIdx}`)?.value) || 0;
+                        const valUnit = parseFloat(document.getElementById(`punit-${s}-${globalIdx}`)?.value) || p.precio;
+                        const valTotal = limpiarNum(document.getElementById(`val-${s}-${globalIdx}`)?.value || "0");
+
+                        if (cant > 0 || fac) {
+                            const porcDelPresupuesto = presupuesto > 0 ? ((valTotal / presupuesto) * 100).toFixed(2) : 0;
+                            
+                            wsData.push([
+                                s, dias, cupos, raciones, presupuesto,
+                                prov.nombre, generarSigla(prov.nombre), fac, p.nombre,
+                                cant, valUnit, valTotal, p.cl ? 'SI' : 'NO',
+                                porcDelPresupuesto + '%', distribuidora
+                            ]);
+                        }
+                    });
+                });
+            }
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsData), "Datos Semanales");
+
+            // HOJA 3: RESUMEN POR PRODUCTO
+            const wsResumen = [["PROVEEDOR", "SIGLA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "CL", "%_DEL_PRESUPUESTO_TOTAL", "%_CL_ACUMULADO"]];
+            
+            let acumuladoCL = 0;
+
+            getProveedoresOrdenados().forEach(prov => {
+                const productosProv = Object.entries(totalesPorProducto)
+                    .filter(([_, datos]) => datos.proveedor === prov.id && datos.cantidad > 0)
+                    .sort((a, b) => b[1].valor - a[1].valor);
+
+                productosProv.forEach(([nombre, datos]) => {
+                    const porcentaje = totalGeneral > 0 ? (datos.valor / totalGeneral * 100).toFixed(2) : 0;
+                    
+                    if (datos.cl) {
+                        acumuladoCL += parseFloat(porcentaje);
+                    }
+                    
+                    wsResumen.push([
+                        prov.nombre,
+                        generarSigla(prov.nombre),
+                        nombre,
+                        datos.unidad,
+                        datos.cantidad,
+                        datos.valor,
+                        datos.cl ? 'SI' : 'NO',
+                        porcentaje + '%',
+                        datos.cl ? acumuladoCL.toFixed(2) + '%' : 'N/A'
+                    ]);
+                });
+            });
+
+            wsResumen.push([
+                'DISTRIBUIDORA',
+                'DIST',
+                'Valor no asignado a productos',
+                'N/A',
+                0,
+                tDistTotal,
+                'NO',
+                porcDistTotal + '%',
+                'N/A'
+            ]);
+
+            wsResumen.push([]);
+            wsResumen.push(["TOTALES", "", "", "", "", totalGeneral, "", "100%", porcCLTotal + "%"]);
+            wsResumen.push(["", "", "", "", "", "", "", "", ""]);
+            wsResumen.push(["DESGLOSE", "VALOR", "% DEL TOTAL", "RACIONES", "", "", "", "", ""]);
+            wsResumen.push(["Compras Locales (CL)", tProdCL, porcCLTotal + "%", "", "", "", "", "", ""]);
+            wsResumen.push(["Otros Productos", tProdOtros, porcOtrosTotal + "%", "", "", "", "", "", ""]);
+            wsResumen.push(["Distribuidora", tDistTotal, porcDistTotal + "%", "", "", "", "", "", ""]);
+            wsResumen.push(["Total Raciones Mes", "", "", totalRacionesMes, "", "", "", "", ""]);
+            wsResumen.push(["TOTAL VERIFICACIÓN", tProdCL + tProdOtros + tDistTotal, (parseFloat(porcCLTotal) + parseFloat(porcOtrosTotal) + parseFloat(porcDistTotal)).toFixed(2) + "%", "", "", "", "", "", ""]);
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumen), "Resumen por Producto");
+
+            // HOJA 4: RESUMEN DE RACIONES
+            const wsRaciones = [["SEMANA", "DÍAS", "CUPOS", "RACIONES", "PRESUPUESTO", "VALOR_CUPO_HCB"]];
+            
+            for (let s = 1; s <= semanas; s++) {
+                const r = racionesPorSemana[s] || { dias: 0, cupos: 0, raciones: 0, presupuesto: 0 };
+                wsRaciones.push([s, r.dias, r.cupos, r.raciones, r.presupuesto, valorCupoBase]);
+            }
+            
+            wsRaciones.push([]);
+            wsRaciones.push(["TOTALES", "", "", totalRacionesMes, tPresTotal, ""]);
+            wsRaciones.push(["Promedio raciones/semana", "", "", semanas > 0 ? (totalRacionesMes / semanas).toFixed(2) : 0, "", ""]);
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsRaciones), "Resumen Raciones");
+
+            // HOJA 5: VALIDACIÓN DE FACTURAS
+            const wsFacturas = [["PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "SEMANAS"]];
+            
+            let datosPorProveedor = {};
+            getProveedoresOrdenados().forEach(prov => {
+                datosPorProveedor[prov.id] = { proveedor: prov, facturas: {} };
+            });
+            
+            for (let s = 1; s <= semanas; s++) {
+                productosBase.forEach((p, i) => {
+                    const fac = document.getElementById(`fac-${s}-${i}`)?.value?.trim();
+                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    
+                    if (fac && val > 0) {
+                        const provId = p.proveedor;
+                        if (!datosPorProveedor[provId].facturas[fac]) {
+                            datosPorProveedor[provId].facturas[fac] = {
+                                numero: fac,
+                                productos: {},
+                                semanas: new Set()
+                            };
+                        }
+                        
+                        if (!datosPorProveedor[provId].facturas[fac].productos[p.nombre]) {
+                            datosPorProveedor[provId].facturas[fac].productos[p.nombre] = {
+                                nombre: p.nombre,
+                                unidad: detectarUnidad(p.nombre),
+                                cantidad: 0,
+                                valor: 0
+                            };
+                        }
+                        
+                        datosPorProveedor[provId].facturas[fac].productos[p.nombre].cantidad += cant;
+                        datosPorProveedor[provId].facturas[fac].productos[p.nombre].valor += val;
+                        datosPorProveedor[provId].facturas[fac].semanas.add(s);
+                    }
+                });
+            }
+            
+            Object.entries(datosPorProveedor).forEach(([provId, datosProv]) => {
+                Object.entries(datosProv.facturas).forEach(([numFactura, factura]) => {
+                    const prov = datosProv.proveedor;
+                    const semanasUnicas = [...factura.semanas].sort((a,b) => a-b).join(', ');
+                    
+                    Object.values(factura.productos).forEach(prod => {
+                        wsFacturas.push([
+                            prov.nombre,
+                            generarSigla(prov.nombre),
+                            numFactura,
+                            prod.nombre,
+                            prod.unidad,
+                            prod.cantidad,
+                            prod.valor,
+                            semanasUnicas
+                        ]);
+                    });
+                });
+            });
+
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsFacturas), "Validación Facturas");
+
+            XLSX.writeFile(wb, `ZAN_Completo_${mes}_${contrato}.xlsx`);
         }
 
         // ===== EXPORTACIONES CONTABLES =====
@@ -3827,7 +3999,6 @@
             
             const wb = XLSX.utils.book_new();
             
-            // Hoja de resumen por factura
             const wsResumen = [["MES", "CONTRATO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "SEMANAS"]];
             
             let datosPorProveedor = {};
@@ -3898,7 +4069,6 @@
             
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumen), "Resumen Facturas");
 
-            // Hoja detalle por semana
             const wsDetalle = [["PROVEEDOR", "FACTURA", "PRODUCTO", "SEMANA", "CANTIDAD", "VALOR"]];
             
             for (let s = 1; s <= semanas; s++) {
@@ -4007,187 +4177,311 @@
             return datos;
         }
 
-        // ===== IMPORTACIÓN =====
+        // ===== IMPORTACIÓN COMPLETA =====
         function importarExcel(input) {
             if (!input.files[0]) return;
+            
             const reader = new FileReader();
-
+            
             reader.onload = function(e) {
                 try {
                     const data = e.target.result;
                     const workbook = XLSX.read(data, { type: 'binary' });
-
+                    
+                    console.log("Hojas disponibles:", workbook.SheetNames);
+                    
+                    // ===== 1. CARGAR CONFIGURACIÓN =====
                     const wsConfig = workbook.Sheets["Configuración"];
                     if (wsConfig) {
-                        const configData = XLSX.utils.sheet_to_json(wsConfig, { header: 1 });
-
-                        let enProveedores = false;
-                        let enProductos = false;
+                        const configData = XLSX.utils.sheet_to_json(wsConfig, { 
+                            header: 1, 
+                            defval: "",
+                            raw: true 
+                        });
+                        
+                        console.log("Datos de configuración:", configData);
+                        
                         let nuevosProveedores = [];
                         let nuevosProductos = [];
-
+                        let enSeccionProveedores = false;
+                        let enSeccionProductos = false;
+                        let filaHeadersProveedores = -1;
+                        let filaHeadersProductos = -1;
+                        
+                        // Buscar secciones por encabezados específicos
                         configData.forEach((fila, idx) => {
-                            if (!fila || fila.length === 0) {
-                                enProveedores = false;
-                                enProductos = false;
+                            if (!fila || fila.length === 0) return;
+                            
+                            const primeraCelda = String(fila[0] || "").toUpperCase().trim();
+                            
+                            // Detectar inicio de sección de proveedores
+                            if (primeraCelda.includes("PROVEEDORES CONFIGURADOS") || 
+                                primeraCelda === "ID" && fila[1] === "Nombre") {
+                                enSeccionProveedores = true;
+                                enSeccionProductos = false;
+                                filaHeadersProveedores = idx;
                                 return;
                             }
-
-                            const primeraCelda = String(fila[0]).toUpperCase();
-
-                            if (primeraCelda.includes("PROVEEDORES CONFIGURADOS")) {
-                                enProveedores = true;
+                            
+                            // Detectar inicio de sección de productos
+                            if (primeraCelda.includes("PRODUCTOS CONFIGURADOS") ||
+                                (primeraCelda === "Nombre" && fila[1] === "Precio")) {
+                                enSeccionProveedores = false;
+                                enSeccionProductos = true;
+                                filaHeadersProductos = idx;
                                 return;
                             }
-                            if (primeraCelda.includes("PRODUCTOS CONFIGURADOS")) {
-                                enProveedores = false;
-                                enProductos = true;
-                                return;
+                            
+                            // Detectar metadatos del contrato
+                            if (primeraCelda === "MES:" || primeraCelda === "MES") {
+                                const valorMes = fila[1];
+                                if (valorMes) document.getElementById('main-mes').value = valorMes;
                             }
-
-                            if (enProveedores && fila[0] && fila[0] !== "ID") {
-                                nuevosProveedores.push({
-                                    id: fila[0],
-                                    nombre: fila[1],
-                                    color: fila[3] || '#666',
-                                    orden: parseInt(fila[4]) || 0
-                                });
+                            if (primeraCelda === "CONTRATO:" || primeraCelda === "CONTRATO") {
+                                const valorContrato = fila[1];
+                                if (valorContrato) document.getElementById('main-contrato').value = String(valorContrato);
                             }
-
-                            if (enProductos && fila[0] && fila[0] !== "Nombre") {
-                                nuevosProductos.push({
-                                    nombre: fila[0],
-                                    precio: parseFloat(fila[1]) || 0,
-                                    proveedor: fila[2],
-                                    cl: fila[4] === 'SI'
-                                });
+                            if (primeraCelda === "SEMANAS EJECUTADAS:" || primeraCelda === "SEMANAS EJECUTADAS") {
+                                const valorSemanas = parseInt(fila[1]) || 4;
+                                document.getElementById('num-semanas').value = valorSemanas;
                             }
-
-                            if (primeraCelda === "MES:") {
-                                document.getElementById('main-mes').value = fila[1];
-                            }
-                            if (primeraCelda === "CONTRATO:") {
-                                document.getElementById('main-contrato').value = fila[1];
-                            }
-                            if (primeraCelda === "SEMANAS EJECUTADAS:") {
-                                document.getElementById('num-semanas').value = fila[1];
-                            }
-                            if (primeraCelda === "VALOR CUPO HCB:") {
+                            if (primeraCelda === "VALOR CUPO HCB:" || primeraCelda === "VALOR CUPO HCB") {
                                 valorCupoBase = parseFloat(fila[1]) || 8094;
                             }
+                            
+                            // Parsear proveedores (después del header y si hay datos)
+                            if (enSeccionProveedores && idx > filaHeadersProveedores && fila[0] && fila[0] !== "ID") {
+                                const id = fila[0];
+                                const nombre = fila[1];
+                                const color = fila[3] || '#666666';
+                                const orden = parseInt(fila[4]) || nuevosProveedores.length;
+                                
+                                if (id && nombre) {
+                                    nuevosProveedores.push({
+                                        id: String(id),
+                                        nombre: String(nombre),
+                                        color: String(color),
+                                        orden: orden
+                                    });
+                                }
+                            }
+                            
+                            // Parsear productos (después del header y si hay datos)
+                            if (enSeccionProductos && idx > filaHeadersProductos && fila[0] && fila[0] !== "Nombre") {
+                                const nombre = fila[0];
+                                const precio = parseFloat(fila[1]) || 0;
+                                const proveedorId = fila[2];
+                                const cl = fila[4] === 'SI' || fila[4] === true || fila[4] === 1;
+                                
+                                if (nombre) {
+                                    nuevosProductos.push({
+                                        nombre: String(nombre),
+                                        precio: precio,
+                                        proveedor: proveedorId ? String(proveedorId) : null,
+                                        cl: cl
+                                    });
+                                }
+                            }
                         });
-
+                        
+                        // Aplicar configuración si se encontró
                         if (nuevosProveedores.length > 0) {
-                            proveedores = nuevosProveedores;
+                            proveedores = nuevosProveedores.sort((a, b) => a.orden - b.orden);
+                            console.log("Proveedores cargados:", proveedores);
                         }
+                        
                         if (nuevosProductos.length > 0) {
-                            productosBase = nuevosProductos;
+                            const provIdsValidos = new Set(proveedores.map(p => p.id));
+                            productosBase = nuevosProductos.map(p => ({
+                                ...p,
+                                proveedor: provIdsValidos.has(p.proveedor) ? p.proveedor : (proveedores[0]?.id || null)
+                            })).filter(p => p.proveedor !== null);
+                            console.log("Productos cargados:", productosBase);
                         }
                     }
-
-                    const wsData = workbook.Sheets["Datos Semanales"] || workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    // ===== 2. REINICIALIZAR GRID CON NUEVA CONFIGURACIÓN =====
+                    const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+                    initGrid(false);
+                    
+                    // ===== 3. CARGAR DATOS SEMANALES =====
+                    const wsData = workbook.Sheets["Datos Semanales"];
                     if (wsData) {
-                        const rows = XLSX.utils.sheet_to_json(wsData, { header: 1 });
-
-                        let maxSem = 0;
-                        rows.forEach(fila => {
-                            if (fila[0] && !isNaN(fila[0])) {
-                                maxSem = Math.max(maxSem, parseInt(fila[0]));
-                            }
+                        const rows = XLSX.utils.sheet_to_json(wsData, { 
+                            header: 1, 
+                            defval: "",
+                            raw: false
                         });
-
-                        if (maxSem > 0) {
-                            document.getElementById('num-semanas').value = maxSem;
-                            initGrid(false);
-                        }
-
-                        let semActual = 0;
-                        rows.forEach(fila => {
-                            if (!fila || fila.length === 0) return;
-                            const txtFila = fila.map(c => String(c).toUpperCase()).join(" ");
-
-                            if (txtFila.includes("SEMANA")) {
-                                const match = txtFila.match(/SEMANA\s+(\d+)/);
-                                if (match) semActual = parseInt(match[1]);
-                                return;
+                        
+                        console.log("Datos semanales:", rows.slice(0, 5));
+                        
+                        const IDX_SEMANA = 0;
+                        const IDX_DIAS = 1;
+                        const IDX_CUPOS = 2;
+                        const IDX_FACTURA = 6;
+                        const IDX_PRODUCTO = 7;
+                        const IDX_CANTIDAD = 8;
+                        const IDX_VALOR_UNIT = 9;
+                        const IDX_VALOR_TOTAL = 10;
+                        
+                        let datosPorSemana = {};
+                        
+                        rows.forEach((fila, idx) => {
+                            if (!fila || fila.length < 8) return;
+                            if (idx === 0) return;
+                            
+                            const semana = parseInt(fila[IDX_SEMANA]);
+                            if (!semana || isNaN(semana)) return;
+                            
+                            if (!datosPorSemana[semana]) {
+                                datosPorSemana[semana] = {
+                                    dias: fila[IDX_DIAS],
+                                    cupos: fila[IDX_CUPOS],
+                                    items: []
+                                };
                             }
-
-                            if (semActual > 0) {
-                                if (!isNaN(fila[0]) && fila[0] !== "" && !txtFila.includes("FACTURA") && !txtFila.includes("DIAS")) {
-                                    const dInput = document.getElementById(`dias-${semActual}`);
-                                    const cInput = document.getElementById(`cupos-${semActual}`);
-                                    if (dInput) dInput.value = fila[0];
-                                    if (cInput) cInput.value = fila[1];
-                                }
-
-                                productosBase.forEach((p, i) => {
-                                    if (txtFila.includes(p.nombre.toUpperCase())) {
-                                        const facInput = document.getElementById(`fac-${semActual}-${i}`);
-                                        const cantInput = document.getElementById(`cant-${semActual}-${i}`);
-                                        const valInput = document.getElementById(`val-${semActual}-${i}`);
-
-                                        let factura = "", cantidad = 0, valor = 0;
-
-                                        for (let j = 0; j < fila.length; j++) {
-                                            const val = String(fila[j]).trim();
-                                            if (val && !val.includes(p.nombre) && isNaN(val) && j < 3) factura = val;
-                                            if (!isNaN(val) && val !== "") {
-                                                if (cantidad === 0) cantidad = parseFloat(val);
-                                                else valor = parseFloat(val);
-                                            }
-                                        }
-
-                                        if (facInput) facInput.value = factura;
-                                        if (cantInput) cantInput.value = cantidad || "";
-                                        if (valInput && valor) {
-                                            valInput.value = formatter.format(valor);
-                                            ajustarPrecioInverso(semActual, i);
-                                        }
-                                    }
+                            
+                            const nombreProducto = String(fila[IDX_PRODUCTO] || "").trim();
+                            const factura = String(fila[IDX_FACTURA] || "").trim();
+                            const cantidad = parseFloat(fila[IDX_CANTIDAD]) || 0;
+                            const valorTotal = limpiarNum(String(fila[IDX_VALOR_TOTAL] || "0"));
+                            const valorUnit = parseFloat(fila[IDX_VALOR_UNIT]) || 0;
+                            
+                            if (nombreProducto && (cantidad > 0 || factura)) {
+                                datosPorSemana[semana].items.push({
+                                    producto: nombreProducto,
+                                    factura: factura,
+                                    cantidad: cantidad,
+                                    valorTotal: valorTotal,
+                                    valorUnit: valorUnit > 0 ? valorUnit : (cantidad > 0 ? valorTotal / cantidad : 0)
                                 });
                             }
                         });
-
-                        for (let s = 1; s <= maxSem; s++) calcular(s);
+                        
+                        console.log("Datos por semana:", datosPorSemana);
+                        
+                        for (let s = 1; s <= semanas; s++) {
+                            const datosSem = datosPorSemana[s];
+                            if (!datosSem) continue;
+                            
+                            const diasInput = document.getElementById(`dias-${s}`);
+                            const cuposInput = document.getElementById(`cupos-${s}`);
+                            if (diasInput && datosSem.dias) diasInput.value = datosSem.dias;
+                            if (cuposInput && datosSem.cupos) cuposInput.value = datosSem.cupos;
+                            
+                            datosSem.items.forEach(item => {
+                                const idxProducto = productosBase.findIndex(p => 
+                                    p.nombre.trim().toLowerCase() === item.producto.toLowerCase()
+                                );
+                                
+                                if (idxProducto !== -1) {
+                                    const facInput = document.getElementById(`fac-${s}-${idxProducto}`);
+                                    const cantInput = document.getElementById(`cant-${s}-${idxProducto}`);
+                                    const punitInput = document.getElementById(`punit-${s}-${idxProducto}`);
+                                    const valInput = document.getElementById(`val-${s}-${idxProducto}`);
+                                    
+                                    if (facInput) facInput.value = item.factura;
+                                    if (cantInput) cantInput.value = item.cantidad > 0 ? item.cantidad : "";
+                                    if (punitInput) punitInput.value = item.valorUnit > 0 ? item.valorUnit : productosBase[idxProducto].precio;
+                                    if (valInput && item.valorTotal > 0) {
+                                        valInput.value = formatter.format(item.valorTotal);
+                                    }
+                                } else {
+                                    console.warn(`Producto no encontrado en semana ${s}: ${item.producto}`);
+                                }
+                            });
+                            
+                            calcular(s);
+                        }
                     }
-
-                    alert('Importación completada exitosamente');
+                    
+                    // ===== 4. ACTUALIZAR UI Y FINALIZAR =====
+                    actualizarResumen();
                     marcarCambio();
-
+                    
+                    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+                    
+                    alert(`Importación completada exitosamente:\n• ${proveedores.length} proveedores\n• ${productosBase.length} productos\n• Datos de semanas cargados`);
+                    
                 } catch (err) {
-                    console.error(err);
+                    console.error("Error en importación:", err);
                     alert('Error al importar: ' + err.message);
                 }
             };
+            
+            reader.onerror = function(err) {
+                console.error("Error leyendo archivo:", err);
+                alert("Error al leer el archivo");
+            };
+            
             reader.readAsBinaryString(input.files[0]);
         }
 
-        // ===== LIMPIAR =====
+        // ===== LIMPIAR TODO MEJORADO =====
         function limpiarSemana(s) {
             if (!confirm(`¿Borrar datos de la SEMANA ${s}?`)) return;
+            
+            // Limpiar facturas y cantidades de productos
             productosBase.forEach((p, i) => {
                 const fac = document.getElementById(`fac-${s}-${i}`);
                 const cant = document.getElementById(`cant-${s}-${i}`);
+                const punit = document.getElementById(`punit-${s}-${i}`);
+                const val = document.getElementById(`val-${s}-${i}`);
+                
                 if (fac) fac.value = "";
                 if (cant) cant.value = "";
+                if (punit) punit.value = p.precio; // Restaurar precio base
+                if (val) val.value = "";
             });
+            
+            // NO limpiar días y cupos al limpiar solo la semana
             calcular(s);
             marcarCambio();
         }
 
         function limpiarTodo() {
-            if (!confirm('¿Borrar TODAS las semanas?')) return;
+            if (!confirm('¿Borrar TODOS los datos y empezar de cero?\n\nSe eliminarán:\n• Todos los datos de semanas\n• Días y cupos\n• ID de contrato\n• Configuración actual')) return;
+            
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            
+            // Limpiar datos de contrato
+            document.getElementById('main-contrato').value = "";
+            document.getElementById('main-mes').selectedIndex = 0; // Volver a Enero
+            
+            // Limpiar cada semana completamente (incluyendo días y cupos)
             for (let s = 1; s <= semanas; s++) {
+                // Limpiar días y cupos
+                const diasInput = document.getElementById(`dias-${s}`);
+                const cuposInput = document.getElementById(`cupos-${s}`);
+                if (diasInput) diasInput.value = "";
+                if (cuposInput) cuposInput.value = "";
+                
+                // Limpiar productos
                 productosBase.forEach((p, i) => {
                     const fac = document.getElementById(`fac-${s}-${i}`);
                     const cant = document.getElementById(`cant-${s}-${i}`);
+                    const punit = document.getElementById(`punit-${s}-${i}`);
+                    const val = document.getElementById(`val-${s}-${i}`);
+                    
                     if (fac) fac.value = "";
                     if (cant) cant.value = "";
+                    if (punit) punit.value = p.precio;
+                    if (val) val.value = "";
                 });
+                
                 calcular(s);
             }
+            
+            // Resetear valor cupo al default
+            valorCupoBase = 8094;
+            
+            // Limpiar localStorage
+            localStorage.removeItem(`elite_draft_${currentUser}`);
+            
             marcarCambio();
+            actualizarResumen();
+            
+            alert('Espacio de trabajo limpiado completamente.\n\nPuedes empezar a ingresar nuevos datos.');
         }
 
         // ===== LOCAL STORAGE =====
@@ -4377,3 +4671,4 @@
     </script>
 </body>
 </html>
+
