@@ -2511,34 +2511,41 @@
                 });
             }
         }
+		
+		// ===== INICIALIZACIÓN MEJORADA =====
 
         function iniciarApp(u) {
-            currentUser = u;
-            document.getElementById('sidebar-username').textContent = u.toUpperCase();
-            document.getElementById('user-avatar').textContent = u.charAt(0).toUpperCase();
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
+			currentUser = u;
+			document.getElementById('sidebar-username').textContent = u.toUpperCase();
+			document.getElementById('user-avatar').textContent = u.charAt(0).toUpperCase();
+			document.getElementById('auth-screen').style.display = 'none';
+			document.getElementById('app-content').style.display = 'block';
 
-            if (window.innerWidth <= 768) {
-                document.getElementById('sidebar').classList.add('collapsed');
-                sidebarOpen = false;
-            }
+			if (window.innerWidth <= 768) {
+				document.getElementById('sidebar').classList.add('collapsed');
+				sidebarOpen = false;
+			}
 
-            inicializarDatos();
-            
-            const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
-            if (tutorialVisto !== 'true') {
+			// Cargar archivo actual si existe
+			const savedFileId = localStorage.getItem(`elite_current_file_${currentUser}`);
+			if (savedFileId) {
+				currentFileId = savedFileId;
+				console.log("Archivo actual recordado:", currentFileId);
+			}
+
+			inicializarDatos();
+			
+			const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
+			if (tutorialVisto !== 'true') {
 				setTimeout(() => {
-					// Pequeña confirmación en lugar de alert intrusivo
 					if (confirm('¿Deseas ver el tutorial de bienvenida?\n\n(Puedes volver a verlo desde el botón ? en cualquier momento)')) {
 						startTutorial('completo');
 					} else {
-						// Si el usuario dice "No", marcar como visto para no volver a preguntar
 						marcarTutorialVisto();
 					}
 				}, 1000);
 			}
-        }
+		}
 
         function inicializarDatos() {
             const saved = localStorage.getItem(`elite_draft_${currentUser}`);
@@ -4178,244 +4185,369 @@
         }
 
         // ===== IMPORTACIÓN COMPLETA =====
-        function importarExcel(input) {
-            if (!input.files[0]) return;
+		function importarExcel(input) {
+    if (!input.files[0]) return;
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const data = e.target.result;
+            const workbook = XLSX.read(data, { type: 'binary' });
             
-            const reader = new FileReader();
+            console.log("Hojas disponibles:", workbook.SheetNames);
             
-            reader.onload = function(e) {
-                try {
-                    const data = e.target.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
+            // ===== FUNCIÓN AUXILIAR PARA PARSEAR DECIMALES =====
+            function parseDecimal(valor) {
+                if (valor === undefined || valor === null || valor === "") return 0;
+                
+                // Si ya es número, retornarlo directamente
+                if (typeof valor === 'number') {
+                    return valor;
+                }
+                
+                // Si es string, procesarlo
+                let str = String(valor).trim();
+                
+                // Detectar formato: si tiene coma y punto, determinar cuál es decimal
+                const tieneComa = str.includes(',');
+                const tienePunto = str.includes('.');
+                
+                if (tieneComa && tienePunto) {
+                    const ultimaComa = str.lastIndexOf(',');
+                    const ultimoPunto = str.lastIndexOf('.');
                     
-                    console.log("Hojas disponibles:", workbook.SheetNames);
+                    if (ultimaComa > ultimoPunto) {
+                        // Formato europeo: 1.234,56 → 1234.56
+                        str = str.replace(/\./g, '').replace(',', '.');
+                    } else {
+                        // Formato americano: 1,234.56 → 1234.56
+                        str = str.replace(/,/g, '');
+                    }
+                } else if (tieneComa && !tienePunto) {
+                    // Podría ser: 12,34 (decimal) o 1234 (miles sin punto)
+                    const partes = str.split(',');
+                    if (partes.length === 2 && partes[1].length <= 2 && partes[1].length > 0) {
+                        // Es decimal: 12,34 → 12.34
+                        str = str.replace(',', '.');
+                    } else {
+                        // Es separador de miles: 1,234 → 1234
+                        str = str.replace(/,/g, '');
+                    }
+                } else if (tienePunto && !tieneComa) {
+                    // Podría ser: 12.34 (decimal) o 1.234 (miles)
+                    const partes = str.split('.');
+                    if (partes.length === 2 && partes[1].length <= 2 && partes[1].length > 0) {
+                        // Es decimal: 12.34 → 12.34 (ya está bien)
+                    } else {
+                        // Es separador de miles: 1.234 → 1234
+                        str = str.replace(/\./g, '');
+                    }
+                }
+                
+                return parseFloat(str) || 0;
+            }
+            
+            // ===== 1. CARGAR CONFIGURACIÓN =====
+            const wsConfig = workbook.Sheets["Configuración"];
+            if (wsConfig) {
+                const configData = XLSX.utils.sheet_to_json(wsConfig, { 
+                    header: 1, 
+                    defval: "",
+                    raw: true 
+                });
+                
+                console.log("Datos de configuración:", configData);
+                
+                let nuevosProveedores = [];
+                let nuevosProductos = [];
+                let enSeccionProveedores = false;
+                let enSeccionProductos = false;
+                let filaHeadersProveedores = -1;
+                let filaHeadersProductos = -1;
+                
+                configData.forEach((fila, idx) => {
+                    if (!fila || fila.length === 0) return;
                     
-                    // ===== 1. CARGAR CONFIGURACIÓN =====
-                    const wsConfig = workbook.Sheets["Configuración"];
-                    if (wsConfig) {
-                        const configData = XLSX.utils.sheet_to_json(wsConfig, { 
-                            header: 1, 
-                            defval: "",
-                            raw: true 
-                        });
+                    const primeraCelda = String(fila[0] || "").toUpperCase().trim();
+                    
+                    if (primeraCelda.includes("PROVEEDORES CONFIGURADOS") || 
+                        (primeraCelda === "ID" && fila[1] === "Nombre")) {
+                        enSeccionProveedores = true;
+                        enSeccionProductos = false;
+                        filaHeadersProveedores = idx;
+                        return;
+                    }
+                    
+                    if (primeraCelda.includes("PRODUCTOS CONFIGURADOS") ||
+                        (primeraCelda === "Nombre" && fila[1] === "Precio")) {
+                        enSeccionProveedores = false;
+                        enSeccionProductos = true;
+                        filaHeadersProductos = idx;
+                        return;
+                    }
+                    
+                    if (primeraCelda === "MES:" || primeraCelda === "MES") {
+                        const valorMes = fila[1];
+                        if (valorMes) document.getElementById('main-mes').value = valorMes;
+                    }
+                    if (primeraCelda === "CONTRATO:" || primeraCelda === "CONTRATO") {
+                        const valorContrato = fila[1];
+                        if (valorContrato) document.getElementById('main-contrato').value = String(valorContrato);
+                    }
+                    if (primeraCelda === "SEMANAS EJECUTADAS:" || primeraCelda === "SEMANAS EJECUTADAS") {
+                        const valorSemanas = parseInt(fila[1]) || 4;
+                        document.getElementById('num-semanas').value = valorSemanas;
+                    }
+                    if (primeraCelda === "VALOR CUPO HCB:" || primeraCelda === "VALOR CUPO HCB") {
+                        valorCupoBase = parseFloat(fila[1]) || 8094;
+                    }
+                    
+                    if (enSeccionProveedores && idx > filaHeadersProveedores && fila[0] && fila[0] !== "ID") {
+                        const id = fila[0];
+                        const nombre = fila[1];
+                        const color = fila[3] || '#666666';
+                        const orden = parseInt(fila[4]) || nuevosProveedores.length;
                         
-                        console.log("Datos de configuración:", configData);
-                        
-                        let nuevosProveedores = [];
-                        let nuevosProductos = [];
-                        let enSeccionProveedores = false;
-                        let enSeccionProductos = false;
-                        let filaHeadersProveedores = -1;
-                        let filaHeadersProductos = -1;
-                        
-                        // Buscar secciones por encabezados específicos
-                        configData.forEach((fila, idx) => {
-                            if (!fila || fila.length === 0) return;
-                            
-                            const primeraCelda = String(fila[0] || "").toUpperCase().trim();
-                            
-                            // Detectar inicio de sección de proveedores
-                            if (primeraCelda.includes("PROVEEDORES CONFIGURADOS") || 
-                                primeraCelda === "ID" && fila[1] === "Nombre") {
-                                enSeccionProveedores = true;
-                                enSeccionProductos = false;
-                                filaHeadersProveedores = idx;
-                                return;
-                            }
-                            
-                            // Detectar inicio de sección de productos
-                            if (primeraCelda.includes("PRODUCTOS CONFIGURADOS") ||
-                                (primeraCelda === "Nombre" && fila[1] === "Precio")) {
-                                enSeccionProveedores = false;
-                                enSeccionProductos = true;
-                                filaHeadersProductos = idx;
-                                return;
-                            }
-                            
-                            // Detectar metadatos del contrato
-                            if (primeraCelda === "MES:" || primeraCelda === "MES") {
-                                const valorMes = fila[1];
-                                if (valorMes) document.getElementById('main-mes').value = valorMes;
-                            }
-                            if (primeraCelda === "CONTRATO:" || primeraCelda === "CONTRATO") {
-                                const valorContrato = fila[1];
-                                if (valorContrato) document.getElementById('main-contrato').value = String(valorContrato);
-                            }
-                            if (primeraCelda === "SEMANAS EJECUTADAS:" || primeraCelda === "SEMANAS EJECUTADAS") {
-                                const valorSemanas = parseInt(fila[1]) || 4;
-                                document.getElementById('num-semanas').value = valorSemanas;
-                            }
-                            if (primeraCelda === "VALOR CUPO HCB:" || primeraCelda === "VALOR CUPO HCB") {
-                                valorCupoBase = parseFloat(fila[1]) || 8094;
-                            }
-                            
-                            // Parsear proveedores (después del header y si hay datos)
-                            if (enSeccionProveedores && idx > filaHeadersProveedores && fila[0] && fila[0] !== "ID") {
-                                const id = fila[0];
-                                const nombre = fila[1];
-                                const color = fila[3] || '#666666';
-                                const orden = parseInt(fila[4]) || nuevosProveedores.length;
-                                
-                                if (id && nombre) {
-                                    nuevosProveedores.push({
-                                        id: String(id),
-                                        nombre: String(nombre),
-                                        color: String(color),
-                                        orden: orden
-                                    });
-                                }
-                            }
-                            
-                            // Parsear productos (después del header y si hay datos)
-                            if (enSeccionProductos && idx > filaHeadersProductos && fila[0] && fila[0] !== "Nombre") {
-                                const nombre = fila[0];
-                                const precio = parseFloat(fila[1]) || 0;
-                                const proveedorId = fila[2];
-                                const cl = fila[4] === 'SI' || fila[4] === true || fila[4] === 1;
-                                
-                                if (nombre) {
-                                    nuevosProductos.push({
-                                        nombre: String(nombre),
-                                        precio: precio,
-                                        proveedor: proveedorId ? String(proveedorId) : null,
-                                        cl: cl
-                                    });
-                                }
-                            }
-                        });
-                        
-                        // Aplicar configuración si se encontró
-                        if (nuevosProveedores.length > 0) {
-                            proveedores = nuevosProveedores.sort((a, b) => a.orden - b.orden);
-                            console.log("Proveedores cargados:", proveedores);
-                        }
-                        
-                        if (nuevosProductos.length > 0) {
-                            const provIdsValidos = new Set(proveedores.map(p => p.id));
-                            productosBase = nuevosProductos.map(p => ({
-                                ...p,
-                                proveedor: provIdsValidos.has(p.proveedor) ? p.proveedor : (proveedores[0]?.id || null)
-                            })).filter(p => p.proveedor !== null);
-                            console.log("Productos cargados:", productosBase);
+                        if (id && nombre) {
+                            nuevosProveedores.push({
+                                id: String(id),
+                                nombre: String(nombre),
+                                color: String(color),
+                                orden: orden
+                            });
                         }
                     }
                     
-                    // ===== 2. REINICIALIZAR GRID CON NUEVA CONFIGURACIÓN =====
-                    const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
-                    initGrid(false);
+                    if (enSeccionProductos && idx > filaHeadersProductos && fila[0] && fila[0] !== "Nombre") {
+                        const nombre = fila[0];
+                        const precio = parseDecimal(fila[1]);
+                        const proveedorId = fila[2];
+                        const cl = fila[4] === 'SI' || fila[4] === true || fila[4] === 1;
+                        
+                        if (nombre) {
+                            nuevosProductos.push({
+                                nombre: String(nombre),
+                                precio: precio,
+                                proveedor: proveedorId ? String(proveedorId) : null,
+                                cl: cl
+                            });
+                        }
+                    }
+                });
+                
+                if (nuevosProveedores.length > 0) {
+                    proveedores = nuevosProveedores.sort((a, b) => a.orden - b.orden);
+                    console.log("Proveedores cargados:", proveedores);
+                }
+                
+                if (nuevosProductos.length > 0) {
+                    const provIdsValidos = new Set(proveedores.map(p => p.id));
                     
-                    // ===== 3. CARGAR DATOS SEMANALES =====
-                    const wsData = workbook.Sheets["Datos Semanales"];
-                    if (wsData) {
-                        const rows = XLSX.utils.sheet_to_json(wsData, { 
-                            header: 1, 
-                            defval: "",
-                            raw: false
+                    productosBase = nuevosProductos.map(p => {
+                        let provAsignado = p.proveedor;
+                        
+                        if (!provAsignado || !provIdsValidos.has(provAsignado)) {
+                            console.warn(`Proveedor ${p.proveedor} no encontrado para producto ${p.nombre}, asignando al primero disponible`);
+                            provAsignado = proveedores[0]?.id || null;
+                        }
+                        
+                        return {
+                            nombre: p.nombre,
+                            precio: p.precio,
+                            proveedor: provAsignado,
+                            cl: p.cl
+                        };
+                    }).filter(p => p.proveedor !== null);
+                    
+                    console.log("Productos cargados:", productosBase);
+                }
+            }
+            
+            // ===== 2. REINICIALIZAR GRID CON NUEVA CONFIGURACIÓN =====
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            initGrid(false);
+            
+            // ===== 3. CARGAR DATOS SEMANALES =====
+            const wsData = workbook.Sheets["Datos Semanales"];
+            if (wsData) {
+                const rows = XLSX.utils.sheet_to_json(wsData, { 
+                    header: 1, 
+                    defval: "",
+                    raw: false
+                });
+                
+                console.log("Datos semanales - primeras filas:", rows.slice(0, 10));
+                
+                const IDX_SEMANA = 0;
+                const IDX_DIAS = 1;
+                const IDX_CUPOS = 2;
+                const IDX_FACTURA = 7;
+                const IDX_PRODUCTO = 8;
+                const IDX_CANTIDAD = 9;
+                const IDX_VALOR_UNIT = 10;
+                const IDX_VALOR_TOTAL = 11;
+                
+                let datosPorSemana = {};
+                
+                rows.forEach((fila, idx) => {
+                    if (!fila || fila.length < 9) return;
+                    if (idx === 0) return;
+                    
+                    const semanaRaw = fila[IDX_SEMANA];
+                    const semana = parseInt(semanaRaw);
+                    
+                    if (!semana || isNaN(semana) || semana < 1 || semana > 5) {
+                        return;
+                    }
+                    
+                    if (!datosPorSemana[semana]) {
+                        datosPorSemana[semana] = {
+                            dias: fila[IDX_DIAS],
+                            cupos: fila[IDX_CUPOS],
+                            items: []
+                        };
+                    }
+                    
+                    const nombreProducto = String(fila[IDX_PRODUCTO] || "").trim();
+                    const factura = String(fila[IDX_FACTURA] || "").trim();
+                    
+                    const cantidad = parseDecimal(fila[IDX_CANTIDAD]);
+                    const valorTotal = parseDecimal(fila[IDX_VALOR_TOTAL]);
+                    const valorUnit = parseDecimal(fila[IDX_VALOR_UNIT]);
+                    
+                    console.log(`Fila ${idx}: "${fila[IDX_CANTIDAD]}" -> ${cantidad}, "${fila[IDX_VALOR_TOTAL]}" -> ${valorTotal}`);
+                    
+                    let valorUnitFinal = valorUnit;
+                    if (valorUnitFinal === 0 && cantidad > 0 && valorTotal > 0) {
+                        valorUnitFinal = valorTotal / cantidad;
+                    }
+                    
+                    if (nombreProducto && (cantidad > 0 || factura || valorTotal > 0)) {
+                        datosPorSemana[semana].items.push({
+                            producto: nombreProducto,
+                            factura: factura,
+                            cantidad: cantidad,
+                            valorTotal: valorTotal,
+                            valorUnit: valorUnitFinal
+                        });
+                    }
+                });
+                
+                console.log("Datos por semana procesados:", datosPorSemana);
+                
+                // Cargar datos en el grid
+                for (let s = 1; s <= semanas; s++) {
+                    const datosSem = datosPorSemana[s];
+                    if (!datosSem) {
+                        console.log(`No hay datos para semana ${s}`);
+                        continue;
+                    }
+                    
+                    // Cargar días y cupos
+                    const diasInput = document.getElementById(`dias-${s}`);
+                    const cuposInput = document.getElementById(`cupos-${s}`);
+                    
+                    if (diasInput && datosSem.dias !== undefined && datosSem.dias !== "") {
+                        const diasValor = parseDecimal(datosSem.dias);
+                        if (!isNaN(diasValor) && diasValor > 0) {
+                            diasInput.value = diasValor;
+                        }
+                    }
+                    
+                    if (cuposInput && datosSem.cupos !== undefined && datosSem.cupos !== "") {
+                        const cuposValor = parseDecimal(datosSem.cupos);
+                        if (!isNaN(cuposValor) && cuposValor > 0) {
+                            cuposInput.value = cuposValor;
+                        }
+                    }
+                    
+                    console.log(`Cargando ${datosSem.items.length} items en semana ${s}`);
+                    
+                    // Cargar cada producto
+                    datosSem.items.forEach(item => {
+                        const idxProducto = productosBase.findIndex(p => {
+                            const nombreBase = p.nombre.trim().toLowerCase();
+                            const nombreItem = item.producto.trim().toLowerCase();
+                            return nombreBase === nombreItem || 
+                                   nombreBase.replace(/\s+/g, '') === nombreItem.replace(/\s+/g, '');
                         });
                         
-                        console.log("Datos semanales:", rows.slice(0, 5));
-                        
-                        const IDX_SEMANA = 0;
-                        const IDX_DIAS = 1;
-                        const IDX_CUPOS = 2;
-                        const IDX_FACTURA = 6;
-                        const IDX_PRODUCTO = 7;
-                        const IDX_CANTIDAD = 8;
-                        const IDX_VALOR_UNIT = 9;
-                        const IDX_VALOR_TOTAL = 10;
-                        
-                        let datosPorSemana = {};
-                        
-                        rows.forEach((fila, idx) => {
-                            if (!fila || fila.length < 8) return;
-                            if (idx === 0) return;
+                        if (idxProducto !== -1) {
+                            const facInput = document.getElementById(`fac-${s}-${idxProducto}`);
+                            const cantInput = document.getElementById(`cant-${s}-${idxProducto}`);
+                            const punitInput = document.getElementById(`punit-${s}-${idxProducto}`);
+                            const valInput = document.getElementById(`val-${s}-${idxProducto}`);
                             
-                            const semana = parseInt(fila[IDX_SEMANA]);
-                            if (!semana || isNaN(semana)) return;
-                            
-                            if (!datosPorSemana[semana]) {
-                                datosPorSemana[semana] = {
-                                    dias: fila[IDX_DIAS],
-                                    cupos: fila[IDX_CUPOS],
-                                    items: []
-                                };
-                            }
-                            
-                            const nombreProducto = String(fila[IDX_PRODUCTO] || "").trim();
-                            const factura = String(fila[IDX_FACTURA] || "").trim();
-                            const cantidad = parseFloat(fila[IDX_CANTIDAD]) || 0;
-                            const valorTotal = limpiarNum(String(fila[IDX_VALOR_TOTAL] || "0"));
-                            const valorUnit = parseFloat(fila[IDX_VALOR_UNIT]) || 0;
-                            
-                            if (nombreProducto && (cantidad > 0 || factura)) {
-                                datosPorSemana[semana].items.push({
-                                    producto: nombreProducto,
-                                    factura: factura,
-                                    cantidad: cantidad,
-                                    valorTotal: valorTotal,
-                                    valorUnit: valorUnit > 0 ? valorUnit : (cantidad > 0 ? valorTotal / cantidad : 0)
-                                });
-                            }
-                        });
-                        
-                        console.log("Datos por semana:", datosPorSemana);
-                        
-                        for (let s = 1; s <= semanas; s++) {
-                            const datosSem = datosPorSemana[s];
-                            if (!datosSem) continue;
-                            
-                            const diasInput = document.getElementById(`dias-${s}`);
-                            const cuposInput = document.getElementById(`cupos-${s}`);
-                            if (diasInput && datosSem.dias) diasInput.value = datosSem.dias;
-                            if (cuposInput && datosSem.cupos) cuposInput.value = datosSem.cupos;
-                            
-                            datosSem.items.forEach(item => {
-                                const idxProducto = productosBase.findIndex(p => 
-                                    p.nombre.trim().toLowerCase() === item.producto.toLowerCase()
-                                );
-                                
-                                if (idxProducto !== -1) {
-                                    const facInput = document.getElementById(`fac-${s}-${idxProducto}`);
-                                    const cantInput = document.getElementById(`cant-${s}-${idxProducto}`);
-                                    const punitInput = document.getElementById(`punit-${s}-${idxProducto}`);
-                                    const valInput = document.getElementById(`val-${s}-${idxProducto}`);
-                                    
-                                    if (facInput) facInput.value = item.factura;
-                                    if (cantInput) cantInput.value = item.cantidad > 0 ? item.cantidad : "";
-                                    if (punitInput) punitInput.value = item.valorUnit > 0 ? item.valorUnit : productosBase[idxProducto].precio;
-                                    if (valInput && item.valorTotal > 0) {
-                                        valInput.value = formatter.format(item.valorTotal);
-                                    }
-                                } else {
-                                    console.warn(`Producto no encontrado en semana ${s}: ${item.producto}`);
-                                }
+                            console.log(`Asignando a producto ${idxProducto} (${productosBase[idxProducto].nombre}):`, {
+                                factura: item.factura,
+                                cantidad: item.cantidad,
+                                valorUnit: item.valorUnit,
+                                valorTotal: item.valorTotal
                             });
                             
-                            calcular(s);
+                            if (facInput) facInput.value = item.factura;
+                            
+                            // ===== CORRECCIÓN CRÍTICA: Asignar cantidad con decimales =====
+                            if (cantInput) {
+                                // El input type="number" requiere punto decimal, no coma
+                                // toFixed(2) devuelve string con punto (ej: "12.34")
+                                const cantidadFormateada = item.cantidad % 1 !== 0 
+                                    ? item.cantidad.toFixed(2) 
+                                    : String(item.cantidad);
+                                
+                                console.log(`Asignando cantidad: ${item.cantidad} -> "${cantidadFormateada}" al input`);
+                                cantInput.value = cantidadFormateada;
+                                
+                                // Verificar que se asignó correctamente
+                                setTimeout(() => {
+                                    console.log(`Valor actual en input cant-${s}-${idxProducto}: "${cantInput.value}"`);
+                                }, 0);
+                            }
+                            
+                            if (punitInput) {
+                                const precioAsignar = item.valorUnit > 0 ? item.valorUnit : productosBase[idxProducto].precio;
+                                punitInput.value = precioAsignar;
+                            }
+                            
+                            if (valInput && item.valorTotal > 0) {
+                                valInput.value = formatter.format(item.valorTotal);
+                            } else if (valInput && item.cantidad > 0) {
+                                const precio = item.valorUnit > 0 ? item.valorUnit : productosBase[idxProducto].precio;
+                                const totalCalculado = item.cantidad * precio;
+                                valInput.value = formatter.format(totalCalculado);
+                            }
+                        } else {
+                            console.warn(`Producto no encontrado en semana ${s}: "${item.producto}"`);
+                            console.log("Productos disponibles:", productosBase.map(p => p.nombre));
                         }
-                    }
+                    });
                     
-                    // ===== 4. ACTUALIZAR UI Y FINALIZAR =====
-                    actualizarResumen();
-                    marcarCambio();
-                    
-                    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-                    
-                    alert(`Importación completada exitosamente:\n• ${proveedores.length} proveedores\n• ${productosBase.length} productos\n• Datos de semanas cargados`);
-                    
-                } catch (err) {
-                    console.error("Error en importación:", err);
-                    alert('Error al importar: ' + err.message);
+                    console.log(`Recalculando semana ${s}...`);
+                    calcular(s);
                 }
-            };
+            }
             
-            reader.onerror = function(err) {
-                console.error("Error leyendo archivo:", err);
-                alert("Error al leer el archivo");
-            };
+            actualizarResumen();
+            marcarCambio();
             
-            reader.readAsBinaryString(input.files[0]);
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            
+            alert(`Importación completada exitosamente:\n• ${proveedores.length} proveedores\n• ${productosBase.length} productos\n• Datos de semanas cargados`);
+            
+        } catch (err) {
+            console.error("Error en importación:", err);
+            alert('Error al importar: ' + err.message);
         }
+    };
+    
+    reader.onerror = function(err) {
+        console.error("Error leyendo archivo:", err);
+        alert("Error al leer el archivo");
+    };
+    
+    reader.readAsBinaryString(input.files[0]);
+}
 
         // ===== LIMPIAR TODO MEJORADO =====
         function limpiarSemana(s) {
@@ -4484,42 +4616,66 @@
             alert('Espacio de trabajo limpiado completamente.\n\nPuedes empezar a ingresar nuevos datos.');
         }
 
-        // ===== LOCAL STORAGE =====
-        function guardarLocal() {
-            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
-            const data = {
-                mes: document.getElementById('main-mes').value,
-                contrato: document.getElementById('main-contrato').value,
-                numSemanas: semanas,
-                valorCupo: valorCupoBase,
-                productosBase,
-                proveedores,
-                semanas: {}
-            };
+        // ===== LOCAL STORAGE - GUARDAR CON REFERENCIA AL ARCHIVO =====
+		function guardarLocal() {
+			const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+			const data = {
+				mes: document.getElementById('main-mes').value,
+				contrato: document.getElementById('main-contrato').value,
+				numSemanas: semanas,
+				valorCupo: valorCupoBase,
+				productosBase,
+				proveedores,
+				currentFileId: currentFileId, // Guardar referencia al archivo actual
+				semanas: {}
+			};
 
-            for (let s = 1; s <= semanas; s++) {
-                data.semanas[s] = {
-                    d: document.getElementById(`dias-${s}`)?.value || "",
-                    c: document.getElementById(`cupos-${s}`)?.value || "",
-                    items: {}
-                };
-                productosBase.forEach((p, i) => {
-                    data.semanas[s].items[p.nombre] = {
-                        f: document.getElementById(`fac-${s}-${i}`)?.value || "",
-                        q: document.getElementById(`cant-${s}-${i}`)?.value || "",
-                        p: document.getElementById(`punit-${s}-${i}`)?.value || p.precio
-                    };
-                });
-            }
+			for (let s = 1; s <= semanas; s++) {
+				data.semanas[s] = {
+					d: document.getElementById(`dias-${s}`)?.value || "",
+					c: document.getElementById(`cupos-${s}`)?.value || "",
+					items: {}
+				};
+				productosBase.forEach((p, i) => {
+					data.semanas[s].items[p.nombre] = {
+						f: document.getElementById(`fac-${s}-${i}`)?.value || "",
+						q: document.getElementById(`cant-${s}-${i}`)?.value || "",
+						p: document.getElementById(`punit-${s}-${i}`)?.value || p.precio
+					};
+				});
+			}
 
-            localStorage.setItem(`elite_draft_${currentUser}`, JSON.stringify(data));
-        }
+			localStorage.setItem(`elite_draft_${currentUser}`, JSON.stringify(data));
+			
+			// También guardar el ID del archivo actual por separado
+			if (currentFileId) {
+				localStorage.setItem(`elite_current_file_${currentUser}`, currentFileId);
+			}
+		}
 
-        function cargarLocal() {
-            const saved = localStorage.getItem(`elite_draft_${currentUser}`);
-            if (saved) restaurar(JSON.parse(saved));
-            else initGrid();
-        }
+        // ===== LOCAL STORAGE - CARGAR CON REFERENCIA =====
+		function cargarLocal() {
+			const saved = localStorage.getItem(`elite_draft_${currentUser}`);
+			
+			// Cargar el archivo actual recordado
+			const savedFileId = localStorage.getItem(`elite_current_file_${currentUser}`);
+			if (savedFileId) {
+				currentFileId = savedFileId;
+			}
+			
+			if (saved) {
+				const data = JSON.parse(saved);
+				
+				// Restaurar referencia al archivo si existe en los datos antiguos
+				if (data.currentFileId) {
+					currentFileId = data.currentFileId;
+				}
+				
+				restaurar(data);
+			} else {
+				initGrid();
+			}
+		}
 
         function restaurar(data) {
             if (data.proveedores) proveedores = data.proveedores;
@@ -4557,54 +4713,248 @@
             }
             marcarSincronizado();
         }
+		let currentFileId = null;
 
         // ===== FIREBASE =====
         async function guardarFirebase() {
-            const id = `${document.getElementById('main-mes').value}_${document.getElementById('main-contrato').value}`.replace(/\s+/g, '_');
-            const data = JSON.parse(localStorage.getItem(`elite_draft_${currentUser}`));
-            await db.ref(`files/${currentUser}/${id}`).set(data);
-            alert("Guardado en la nube exitosamente");
-            marcarSincronizado();
-        }
-
+			const mes = document.getElementById('main-mes').value;
+			const contrato = document.getElementById('main-contrato').value;
+			
+			if (!contrato || contrato.trim() === "") {
+				alert("Por favor ingresa un ID de contrato antes de guardar");
+				document.getElementById('main-contrato').focus();
+				return;
+			}
+			
+			// Generar ID único basado en mes + contrato (sin timestamp)
+			// Esto asegura que siempre se sobrescriba el mismo archivo para el mismo contrato
+			const id = `${mes}_${contrato}`.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '_');
+			
+			// Preparar datos para guardar
+			const data = JSON.parse(localStorage.getItem(`elite_draft_${currentUser}`)) || {};
+			
+			// Actualizar metadata
+			data._metadata = {
+				fechaGuardado: new Date().toISOString(),
+				usuario: currentUser,
+				version: '2.0',
+				fileId: id,
+				displayName: `${mes} - ${contrato}`
+			};
+			
+			// Actualizar datos actuales del formulario
+			data.mes = mes;
+			data.contrato = contrato;
+			data.numSemanas = parseInt(document.getElementById('num-semanas').value) || 4;
+			data.valorCupo = valorCupoBase;
+			data.proveedores = proveedores;
+			data.productosBase = productosBase;
+			data.semanas = {};
+			
+			// Guardar datos de cada semana
+			const semanas = data.numSemanas;
+			for (let s = 1; s <= semanas; s++) {
+				data.semanas[s] = {
+					d: document.getElementById(`dias-${s}`)?.value || "",
+					c: document.getElementById(`cupos-${s}`)?.value || "",
+					items: {}
+				};
+				
+				productosBase.forEach((p, i) => {
+					const cant = document.getElementById(`cant-${s}-${i}`)?.value || "";
+					const val = document.getElementById(`val-${s}-${i}`)?.value || "";
+					const fac = document.getElementById(`fac-${s}-${i}`)?.value || "";
+					const punit = document.getElementById(`punit-${s}-${i}`)?.value || p.precio;
+					
+					// Solo guardar si hay datos
+					if (cant || val || fac) {
+						data.semanas[s].items[p.nombre] = {
+							f: fac,
+							q: cant,
+							p: punit
+						};
+					}
+				});
+			}
+			
+			// Guardar en Firebase
+			await db.ref(`files/${currentUser}/${id}`).set(data);
+			
+			// Actualizar el currentFileId para saber en qué estamos trabajando
+			currentFileId = id;
+			
+			// Actualizar localStorage con el ID actual
+			localStorage.setItem(`elite_current_file_${currentUser}`, id);
+			
+			alert(`Guardado exitoso:\n${mes} - ${contrato}`);
+			marcarSincronizado();
+			
+			// Actualizar lista si está abierta
+			if (document.getElementById('drawer-archivo').classList.contains('open')) {
+				listarCloud();
+			}
+		}
+		
+		// ===== FIREBASE - LISTAR ARCHIVOS =====
+		
         async function listarCloud() {
-            const cont = document.getElementById('lista-archivos');
-            const snap = await db.ref(`files/${currentUser}`).once('value');
-            cont.innerHTML = "";
+			const cont = document.getElementById('lista-archivos');
+			const snap = await db.ref(`files/${currentUser}`).once('value');
+			cont.innerHTML = "";
 
-            snap.forEach(child => {
-                const v = child.val();
-                const div = document.createElement('div');
-                div.style = "background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;";
-                div.innerHTML = `
-                    <div onclick="cargarArchivo('${child.key}')" style="cursor:pointer; flex:1;">
-                        <b style="color:var(--primary-gold);">${v.mes}</b> - ${v.contrato}
-                    </div>
-                    <button class="btn btn-sm btn-danger" onclick="borrarArchivo('${child.key}')" style="margin-left:10px;">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                `;
-                cont.appendChild(div);
-            });
-        }
+			if (!snap.exists()) {
+				cont.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:20px;">No hay archivos guardados</div>';
+				return;
+			}
 
-        async function cargarArchivo(k) {
-            const snap = await db.ref(`files/${currentUser}/${k}`).once('value');
-            const data = snap.val();
-            
-            if (data.proveedores) proveedores = data.proveedores;
-            if (data.productosBase) productosBase = data.productosBase;
-            if (data.valorCupo) valorCupoBase = data.valorCupo;
-            
-            restaurar(data);
-            closeAllDrawers();
-        }
+			// Convertir a array
+			const archivos = [];
+			snap.forEach(child => {
+				const v = child.val();
+				archivos.push({
+					key: child.key,
+					data: v,
+					fecha: v._metadata?.fechaGuardado || v.fechaGuardado || 'Fecha desconocida',
+					esActual: child.key === currentFileId
+				});
+			});
+			
+			// Ordenar por fecha descendente (más reciente primero)
+			archivos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-        async function borrarArchivo(k) {
-            if (!confirm("¿Eliminar este registro?")) return;
-            await db.ref(`files/${currentUser}/${k}`).remove();
-            listarCloud();
-        }
+			// Mostrar archivos
+			archivos.forEach(archivo => {
+				const v = archivo.data;
+				const fechaFormateada = new Date(archivo.fecha).toLocaleString('es-CO');
+				const esActual = archivo.esActual;
+				
+				const div = document.createElement('div');
+				div.style = `background:${esActual ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)'}; 
+							 padding:10px; 
+							 margin-bottom:8px; 
+							 border-radius:8px; 
+							 display:flex; 
+							 justify-content:space-between; 
+							 align-items:center;
+							 border-left: ${esActual ? '3px solid var(--primary-gold)' : '3px solid transparent'};`;
+				
+				div.innerHTML = `
+					<div onclick="cargarArchivo('${archivo.key}')" style="cursor:pointer; flex:1;">
+						<b style="color:${esActual ? 'var(--primary-gold)' : 'var(--text-main)'};">
+							${v.mes || v.displayName?.split(' - ')[0] || 'Sin mes'} - ${v.contrato || 'Sin contrato'}
+							${esActual ? ' (ACTUAL)' : ''}
+						</b>
+						<div style="font-size:9px; color:var(--text-dim);">${fechaFormateada}</div>
+					</div>
+					<button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); borrarArchivo('${archivo.key}')" style="margin-left:10px;">
+						<i class="fa-solid fa-trash"></i>
+					</button>
+				`;
+				cont.appendChild(div);
+			});
+			
+			// Mostrar indicador de archivo actual
+			if (currentFileId && archivos.find(a => a.key === currentFileId)) {
+				const infoDiv = document.createElement('div');
+				infoDiv.style = "margin-top:15px; padding:10px; background:rgba(0,242,255,0.1); border-radius:8px; font-size:11px; color:var(--accent-cyan); text-align:center;";
+				infoDiv.innerHTML = `<i class="fa-solid fa-info-circle"></i> Archivo actual: ${archivos.find(a => a.key === currentFileId).data.displayName || archivos.find(a => a.key === currentFileId).data.mes + ' - ' + archivos.find(a => a.key === currentFileId).data.contrato}`;
+				cont.appendChild(infoDiv);
+			}
+		}
+		
+		// ===== FIREBASE - CARGAR ARCHIVO =====
+		
+        async function cargarArchivo(key) {
+			const snap = await db.ref(`files/${currentUser}/${key}`).once('value');
+			const data = snap.val();
+			
+			if (!data) {
+				alert("Error: No se encontraron datos");
+				return;
+			}
+			
+			// Actualizar el ID del archivo actual
+			currentFileId = key;
+			localStorage.setItem(`elite_current_file_${currentUser}`, key);
+			
+			// Restaurar datos
+			if (data.proveedores) proveedores = data.proveedores;
+			if (data.productosBase) productosBase = data.productosBase;
+			if (data.valorCupo) valorCupoBase = data.valorCupo;
+			
+			// Actualizar UI
+			document.getElementById('main-mes').value = data.mes || "Enero";
+			document.getElementById('main-contrato').value = data.contrato || "";
+			document.getElementById('num-semanas').value = data.numSemanas || 4;
+			
+			// Reinicializar grid
+			initGrid(false);
+			
+			// Cargar datos de semanas
+			const semanas = data.numSemanas || 4;
+			for (let s = 1; s <= semanas; s++) {
+				if (!data.semanas || !data.semanas[s]) continue;
+				
+				const semData = data.semanas[s];
+				
+				if (document.getElementById(`dias-${s}`)) 
+					document.getElementById(`dias-${s}`).value = semData.d || "";
+				if (document.getElementById(`cupos-${s}`)) 
+					document.getElementById(`cupos-${s}`).value = semData.c || "";
+
+				if (semData.items) {
+					// Cargar por nombre de producto (más robusto que por índice)
+					Object.entries(semData.items).forEach(([nombreProducto, item]) => {
+						const idxProducto = productosBase.findIndex(p => 
+							p.nombre.trim().toLowerCase() === nombreProducto.trim().toLowerCase()
+						);
+						
+						if (idxProducto !== -1) {
+							if (document.getElementById(`fac-${s}-${idxProducto}`)) 
+								document.getElementById(`fac-${s}-${idxProducto}`).value = item.f || "";
+							if (document.getElementById(`cant-${s}-${idxProducto}`)) 
+								document.getElementById(`cant-${s}-${idxProducto}`).value = item.q || "";
+							if (document.getElementById(`punit-${s}-${idxProducto}`)) 
+								document.getElementById(`punit-${s}-${idxProducto}`).value = item.p || productosBase[idxProducto].precio;
+							
+							// Calcular y mostrar valor total
+							const cant = parseFloat(item.q) || 0;
+							const precio = parseFloat(item.p) || productosBase[idxProducto].precio;
+							const total = cant * precio;
+							
+							if (document.getElementById(`val-${s}-${idxProducto}`) && total > 0) 
+								document.getElementById(`val-${s}-${idxProducto}`).value = formatter.format(total);
+						}
+					});
+				}
+				
+				calcular(s);
+			}
+			
+			actualizarResumen();
+			marcarSincronizado();
+			closeAllDrawers();
+			
+			// Mostrar notificación de archivo cargado
+			const nombreArchivo = data.displayName || `${data.mes} - ${data.contrato}`;
+			alert(`Archivo cargado:\n${nombreArchivo}\n\nAhora los cambios se guardarán en este archivo.`);
+		}
+		
+		// ===== FIREBASE - BORRAR ARCHIVO =====
+		
+        async function borrarArchivo(key) {
+			if (!confirm("¿Eliminar este registro permanentemente?")) return;
+			
+			await db.ref(`files/${currentUser}/${key}`).remove();
+			
+			// Si borramos el archivo actual, limpiar la referencia
+			if (key === currentFileId) {
+				currentFileId = null;
+				localStorage.removeItem(`elite_current_file_${currentUser}`);
+			}
+			
+			listarCloud();
+		}
 
         // ===== DRAWERS =====
         function toggleDrawer(id) {
@@ -4671,4 +5021,3 @@
     </script>
 </body>
 </html>
-
