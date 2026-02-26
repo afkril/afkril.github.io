@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HCB|Lista de mercado</title>
+    <title>Minutas HCB - Gestión Completa</title>
     <meta name="theme-color" content="#2563eb">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -493,6 +493,18 @@
             margin-left: -3px;
             border-radius: 0 0.375rem 0.375rem 0;
         }
+		.nav-item[data-section="Lista_Semanal"] {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%);
+            border-left: 3px solid #398374;
+            margin-left: -3px;
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+		.nav-item[data-section="Listas_guardadas"] {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%);
+            border-left: 3px solid #f59e0b;
+            margin-left: -3px;
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
 
         .regional-selector {
             background: var(--bg-dark);
@@ -810,7 +822,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0.75rem 0.5rem;
             background: var(--bg-card);
             border: 2px solid var(--border);
             border-radius: 0.75rem;
@@ -1382,18 +1393,6 @@
             background: var(--card-gradient);
         }
 
-        .summary-card.total-sugerido::before {
-            background: linear-gradient(90deg, #f59e0b, #fbbf24);
-        }
-
-        .summary-card.total-entregado::before {
-            background: linear-gradient(90deg, #10b981, #34d399);
-        }
-
-        .summary-card.diferencia::before {
-            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
-        }
-
         .summary-label {
             font-size: 0.75rem;
             color: var(--text-secondary);
@@ -1960,9 +1959,7 @@
             background: #ec4899;
         }
 		
-		#totalEntregaGlobal, #totalSugeridoGlobal, #diferenciaGlobal {
-			transition: transform 0.2s ease, color 0.2s ease;
-		}
+		
     </style>
 </head>
 <body class="reg-neiva" data-theme="dark">
@@ -1995,15 +1992,12 @@
         <div class="nav-section">
             <div class="nav-title">Principal</div>
             <button class="nav-item active" onclick="showSection('calculator')" data-section="calculator">
-                <span>🧮</span> <span>Minutas Semanales</span>
+                <span>🍽️</span> <span>Minutas Semanales</span>
             </button>
             <button class="nav-item" onclick="showSection('monthly')" data-section="monthly">
                 <span>📅</span> <span>Listado Mensual</span>
             </button>
-            <button class="nav-item" onclick="showSection('saved')" data-section="saved">
-                <span>💾</span> <span>Guardadas</span>
-                <span id="savedCount" style="margin-left: auto; background: var(--primary-neiva); color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.6875rem;">0</span>
-            </button>
+            
         </div>
 
         <div class="nav-section">
@@ -2017,6 +2011,10 @@
             <a href="https://afkril.github.io/MINUTA_PATRON.html" class="nav-item" target="_blank" rel="noopener noreferrer" onclick="toggleSidebar()" data-section="Minuta">
                <span>👁️</span> <span>Ver Minuta Patrón</span>
             </a>
+			<button class="nav-item" onclick="showSection('saved')" data-section="calendar">
+                <span>💾</span> <span>Guardadas</span>
+                <span id="savedCount"  style="margin-left: auto; background: var(--primary-neiva); color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.6875rem;">0</span>
+            </button>
         </div>
 
         <div class="regional-selector">
@@ -2130,6 +2128,7 @@
                         <button class="btn-icon" onclick="exportPDF()" title="PDF">📄</button>
                         <button class="btn-icon" onclick="guardarLista()" title="Guardar">💾</button>
                         <button class="btn-icon" onclick="imprimir()" title="Imprimir">🖨️</button>
+						<button class="btn-icon" onclick="limpiarEntregasSemanal()" title="Limpiar Entregas">🧹</button>
                     </div>
                 </div>
                 
@@ -2315,6 +2314,7 @@
                         <button class="btn-icon" onclick="exportMonthlyPDF()" title="PDF">📄</button>
                         <button class="btn-icon" onclick="guardarListaMensual()" title="Guardar">💾</button>
                         <button class="btn-icon" onclick="imprimirMensual()" title="Imprimir">🖨️</button>
+						<button class="btn-icon" onclick="limpiarEntregasMensual()" title="Limpiar Entregas">🧹</button>
                     </div>
                 </div>
 
@@ -2323,22 +2323,6 @@
                         <thead id="monthlyTableHead"></thead>
                         <tbody id="monthlyTableBody"></tbody>
                     </table>
-                </div>
-
-                <!-- Resumen de Totales -->
-                <div class="monthly-summary no-print" id="monthlySummary" style="display: none;">
-                    <div class="summary-card total-sugerido">
-                        <div class="summary-label">Total Sugerido</div>
-                        <div class="summary-value" id="totalSugeridoGlobal">0</div>
-                    </div>
-                    <div class="summary-card total-entregado">
-                        <div class="summary-label">Total a Entregar</div>
-                        <div class="summary-value" id="totalEntregaGlobal">0</div>
-                    </div>
-                    <div class="summary-card diferencia">
-                        <div class="summary-label">Diferencia</div>
-                        <div class="summary-value" id="diferenciaGlobal">0</div>
-                    </div>
                 </div>
 
                 <div class="table-header no-print" style="border-top: 1px solid var(--border); border-bottom: none; padding: 0.375rem 0.75rem;">
@@ -3125,28 +3109,83 @@
         }
 
         function cambiarRegional(regional) {
-            currentRegional = regional;
-            document.body.className = document.body.className.replace(/reg-\w+/, `reg-${regional}`);
-            
-            const activeSection = document.querySelector('.section.active')?.id;
-            if (activeSection === 'section-monthly') document.body.classList.add('view-monthly');
-            if (activeSection === 'section-calendar') document.body.classList.add('view-calendar');
-            if (activeSection === 'section-editor') document.body.classList.add('view-editor');
-            
-            document.getElementById('btnNeiva').classList.toggle('active', regional === 'neiva');
-            document.getElementById('btnGaitana').classList.toggle('active', regional === 'gaitana');
-            
-            localStorage.setItem('smartMenu_lastRegional', regional);
-            showToast(`Regional: ${regionales[regional].titulo}`, 'success');
-            
-            // Recargar editor si está abierto
-            if (activeSection === 'section-editor') {
-                initEditor();
-                if (currentEditingProduct !== null) {
-                    loadProductMatrix();
-                }
-            }
-        }
+			currentRegional = regional;
+			document.body.className = document.body.className.replace(/reg-\w+/, `reg-${regional}`);
+			
+			const activeSection = document.querySelector('.section.active')?.id;
+			if (activeSection === 'section-monthly') document.body.classList.add('view-monthly');
+			if (activeSection === 'section-calendar') document.body.classList.add('view-calendar');
+			if (activeSection === 'section-editor') document.body.classList.add('view-editor');
+			
+			document.getElementById('btnNeiva').classList.toggle('active', regional === 'neiva');
+			document.getElementById('btnGaitana').classList.toggle('active', regional === 'gaitana');
+			
+			localStorage.setItem('smartMenu_lastRegional', regional);
+			
+			// LIMPIAR LISTADO SEMANAL
+			currentData = null;
+			filteredData = null;
+			searchTerm = '';
+			document.getElementById('resultContainer').style.display = 'none';
+			document.getElementById('catFilters').style.display = 'none';
+			document.getElementById('searchContainer').style.display = 'none';
+			document.getElementById('buscador').value = '';
+			
+			// Resetear contadores de categorías semanales
+			['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia'].forEach(cat => {
+				const el = document.getElementById(`count-${cat}`);
+				if (el) el.textContent = '0';
+			});
+			
+			// Resetear filtros de categoría semanales (dejar todos activos)
+			activeFilters = new Set(['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
+			document.querySelectorAll('#catFilters .category-card').forEach(card => {
+				card.classList.add('active');
+			});
+			
+			// LIMPIAR LISTADO MENSUAL
+			monthlyData = null;
+			monthlyFilteredData = null;
+			monthlySearchTerm = '';
+			document.getElementById('monthlyResultContainer').style.display = 'none';
+			document.getElementById('monthlyCatFilters').style.display = 'none';
+			document.getElementById('monthlySearchContainer').style.display = 'none';
+			document.getElementById('buscadorMensual').value = '';
+			
+			// Resetear contadores de categorías mensuales
+			['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia'].forEach(cat => {
+				const el = document.getElementById(`monthly-count-${cat}`);
+				if (el) el.textContent = '0';
+			});
+			
+			// Resetear filtros de categoría mensuales (dejar todos activos)
+			monthlyActiveFilters = new Set(['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
+			document.querySelectorAll('#monthlyCatFilters .category-card').forEach(card => {
+				card.classList.add('active');
+			});
+			
+			// Limpiar selector de semanas mensuales
+			monthlyActiveWeeks.clear();
+			for (let i = 1; i <= 5; i++) {
+				const card = document.getElementById(`week-${i}`);
+				const checkbox = document.getElementById(`check-week-${i}`);
+				if (card) {
+					card.classList.remove('active');
+					checkbox.checked = false;
+					card.querySelectorAll('.week-day-chip').forEach(chip => chip.classList.remove('selected'));
+				}
+			}
+			
+			// Recargar editor si está abierto
+			if (activeSection === 'section-editor') {
+				initEditor();
+				if (currentEditingProduct !== null) {
+					loadProductMatrix();
+				}
+			}
+			
+			showToast(`Regional cambiada a: ${regionales[regional].titulo}. Genere una nueva lista.`, 'success');
+		}
 
         // ==================== FUNCIONES CALCULADORA SEMANAL ====================
         function generar() {
@@ -3362,7 +3401,6 @@
                 document.getElementById('monthlyResultContainer').style.display = 'block';
                 document.getElementById('monthlyCatFilters').style.display = 'grid';
                 document.getElementById('monthlySearchContainer').style.display = 'block';
-                document.getElementById('monthlySummary').style.display = 'grid';
                 document.getElementById('monthlyLastUpdate').textContent = new Date().toLocaleTimeString();
                 
                 btn.classList.remove('loading');
@@ -3464,14 +3502,25 @@
         }
 
         function formatCompacto(cantidad, unidad) {
-            if (unidad === 'und') return Math.round(cantidad) + ' ud';
-            if (unidad === 'ml') return Math.round(cantidad) + ' ml';
-            if (unidad === 'gr') {
-                if (cantidad >= 1000) return (cantidad/1000).toFixed(1) + ' kg';
-                return Math.round(cantidad) + ' g';
-            }
-            return cantidad.toFixed(1) + ' ' + unidad;
-        }
+			if (unidad === 'und') return Math.round(cantidad) + ' ud';
+			if (unidad === 'ml') return Math.round(cantidad) + ' ml';
+			if (unidad === 'gr') {
+				// Convertir a libras (1 libra = 500 gramos)
+				const libras = cantidad / 500;
+				
+				// Formato comercial por libras
+				if (libras < 0.25) return Math.round(cantidad) + ' g';
+				if (libras === 0.25) return '¼ Lb';
+				if (libras === 0.5) return '½ Lb';
+				if (libras === 1) return '1 Lb';
+				if (libras % 1 === 0) return `${libras} Lb`;
+				if (libras % 0.5 === 0) return `${libras} Lb`;
+				
+				// Para valores decimales, mostrar con 2 decimales si es necesario
+				return `${libras.toFixed(2)} Lb`;
+			}
+			return cantidad.toFixed(1) + ' ' + unidad;
+		}
 
         function guardarEntregaMensual(idRef, valor, input) {
             // Guardar en localStorage
@@ -3537,12 +3586,10 @@
 					}
 				});
 				
-				// Sumar entregas (desde localStorage y inputs visibles)
+				// Sumar entregas
 				sortedWeeks.forEach(week => {
 					const storageKey = `entrega_${idBase}_w${week}`;
 					const valorStorage = localStorage.getItem(storageKey);
-					
-					// Priorizar el valor del input visible si existe
 					const input = document.querySelector(`input[data-week="${week}"]`);
 					let valorFinal = 0;
 					
@@ -3552,25 +3599,36 @@
 						valorFinal = parseFloat(valorStorage) || 0;
 					}
 					
+					// Convertir entrega a gramos si es necesario (asumiendo que el input está en la misma unidad)
 					globalEntrega += valorFinal;
 				});
 			});
 			
-			// Actualizar UI con animación
+			// Función auxiliar para formatear en libras
+			const formatLibras = (gramos) => {
+				const libras = gramos / 500;
+				if (libras === 0) return '0 Lb';
+				if (libras === 0.25) return '¼ Lb';
+				if (libras === 0.5) return '½ Lb';
+				if (libras === 1) return '1 Lb';
+				if (libras % 1 === 0) return `${libras} Lb`;
+				return `${libras.toFixed(2)} Lb`;
+			};
+			
+			// Actualizar UI
 			const elSugerido = document.getElementById('totalSugeridoGlobal');
 			const elEntrega = document.getElementById('totalEntregaGlobal');
 			const elDiferencia = document.getElementById('diferenciaGlobal');
 			
-			if (elSugerido) elSugerido.textContent = globalSugerido.toLocaleString('es-CO', {maximumFractionDigits: 2}) + ' gr';
+			if (elSugerido) elSugerido.textContent = formatLibras(globalSugerido);
 			if (elEntrega) {
-				elEntrega.textContent = globalEntrega.toLocaleString('es-CO', {maximumFractionDigits: 2}) + ' gr';
-				// Animación de actualización
+				elEntrega.textContent = formatLibras(globalEntrega);
 				elEntrega.style.transform = 'scale(1.1)';
 				setTimeout(() => elEntrega.style.transform = 'scale(1)', 200);
 			}
 			if (elDiferencia) {
 				const diff = globalEntrega - globalSugerido;
-				elDiferencia.textContent = diff.toLocaleString('es-CO', {maximumFractionDigits: 2}) + ' gr';
+				elDiferencia.textContent = formatLibras(diff);
 				elDiferencia.style.color = diff >= 0 ? '#34d399' : '#f87171';
 			}
 		}
@@ -3740,74 +3798,173 @@
         }
 
         function showSavedLists() {
-            const container = document.getElementById('savedListsContainer');
-            if (savedLists.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-icon">💾</div><p>No hay listas guardadas</p></div>';
-                return;
-            }
-            
-            container.innerHTML = savedLists.map(l => `
-                <div class="snapshot-item" onclick="loadSavedList(${l.id})" style="cursor: pointer;">
-                    <div class="snapshot-info">
-                        <h4>${l.nombre} ${l.tipo === 'mensual' ? '<span style="background: #8b5cf6; color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.625rem;">MENSUAL</span>' : ''}</h4>
-                        <div class="snapshot-meta">${regionales[l.regional].titulo} • ${new Date(l.fecha).toLocaleDateString()}</div>
-                    </div>
-                    <button class="btn-icon" onclick="event.stopPropagation(); deleteSavedList(${l.id})" style="color: var(--danger);">🗑️</button>
-                </div>
-            `).join('');
-        }
+			const container = document.getElementById('savedListsContainer');
+			if (savedLists.length === 0) {
+				container.innerHTML = '<div class="empty-state"><div class="empty-icon">💾</div><p>No hay listas guardadas</p></div>';
+				return;
+			}
+			
+			container.innerHTML = savedLists.map(l => `
+				<div class="snapshot-item" onclick="loadSavedList(${l.id})" style="cursor: pointer; padding: 1rem; border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 0.5rem; background: var(--bg-card);">
+					<div style="display: flex; justify-content: space-between; align-items: center;">
+						<div>
+							<h4 style="margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+								${l.nombre} 
+								${l.tipo === 'mensual' 
+									? '<span style="background: #8b5cf6; color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.625rem;">MENSUAL</span>' 
+									: '<span style="background: #2563eb; color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.625rem;">SEMANAL</span>'
+								}
+							</h4>
+							<div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
+								${regionales[l.regional].titulo} • ${new Date(l.fecha).toLocaleDateString()}
+								${l.tipo === 'semanal' ? `• Semana ${l.semana}` : ''}
+							</div>
+						</div>
+						<button class="btn-icon" onclick="event.stopPropagation(); deleteSavedList(${l.id})" style="color: var(--danger); width: 32px; height: 32px;">🗑️</button>
+					</div>
+				</div>
+			`).join('');
+		}
 
         function loadSavedList(id) {
-            const l = savedLists.find(x => x.id === id);
-            if (!l) return;
+			const l = savedLists.find(x => x.id === id);
+			if (!l) return;
 
-            cambiarRegional(l.regional);
-            
-            if (l.tipo === 'mensual') {
-                showSection('monthly');
-                document.getElementById('monthly-num-p').value = l.personas;
-                monthlyActiveWeeks.clear();
-                l.semanas.forEach(({week, days}) => {
-                    monthlyActiveWeeks.set(week, new Set(days));
-                    const card = document.getElementById(`week-${week}`);
-                    const checkbox = document.getElementById(`check-week-${week}`);
-                    card.classList.add('active');
-                    checkbox.checked = true;
-                    days.forEach(day => {
-                        const chip = document.querySelector(`#week-${week} .week-day-chip[data-day="${day}"]`);
-                        if (chip) chip.classList.add('selected');
-                    });
-                });
-                monthlyActiveFilters = new Set(l.filters || ['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
-                monthlyData = l.data;
-                document.querySelectorAll('#monthlyCatFilters .category-card').forEach(card => {
-                    const cat = card.classList[1].replace('cat-', '');
-                    card.classList.toggle('active', monthlyActiveFilters.has(cat));
-                });
-                updateMonthlyCategoryCounts(monthlyData);
-                applyMonthlyFilters();
-                document.getElementById('monthlyResultContainer').style.display = 'block';
-                document.getElementById('monthlyCatFilters').style.display = 'grid';
-                document.getElementById('monthlySearchContainer').style.display = 'block';
-                document.getElementById('monthlySummary').style.display = 'grid';
-            } else {
-                showSection('calculator');
-                document.getElementById('sem').value = l.semana;
-                document.getElementById('num-p').value = l.personas;
-                activeFilters = new Set(l.filters || ['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
-                currentData = l.data;
-                document.querySelectorAll('#catFilters .category-card').forEach(card => {
-                    const cat = card.classList[1].replace('cat-', '');
-                    card.classList.toggle('active', activeFilters.has(cat));
-                });
-                updateCategoryCounts(currentData);
-                applyFilters();
-                document.getElementById('resultContainer').style.display = 'block';
-                document.getElementById('catFilters').style.display = 'grid';
-                document.getElementById('searchContainer').style.display = 'block';
-            }
-            showToast('Lista cargada', 'success');
-        }
+			cambiarRegional(l.regional);
+			
+			if (l.tipo === 'mensual') {
+				showSection('monthly');
+				document.getElementById('monthly-num-p').value = l.personas;
+				monthlyActiveWeeks.clear();
+				l.semanas.forEach(({week, days}) => {
+					monthlyActiveWeeks.set(week, new Set(days));
+					const card = document.getElementById(`week-${week}`);
+					const checkbox = document.getElementById(`check-week-${week}`);
+					card.classList.add('active');
+					checkbox.checked = true;
+					days.forEach(day => {
+						const chip = document.querySelector(`#week-${week} .week-day-chip[data-day="${day}"]`);
+						if (chip) chip.classList.add('selected');
+					});
+				});
+				monthlyActiveFilters = new Set(l.filters || ['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
+				monthlyData = l.data;
+				document.querySelectorAll('#monthlyCatFilters .category-card').forEach(card => {
+					const cat = card.classList[1].replace('cat-', '');
+					card.classList.toggle('active', monthlyActiveFilters.has(cat));
+				});
+				updateMonthlyCategoryCounts(monthlyData);
+				applyMonthlyFilters();
+				document.getElementById('monthlyResultContainer').style.display = 'block';
+				document.getElementById('monthlyCatFilters').style.display = 'grid';
+				document.getElementById('monthlySearchContainer').style.display = 'block';
+				document.getElementById('monthlySummary').style.display = 'grid';
+				
+				// Restaurar entregas guardadas
+				if (l.entregas) {
+					Object.entries(l.entregas).forEach(([name, valor]) => {
+						const idBase = `${l.regional}_monthly_${name.replace(/\s/g, '')}`;
+						l.semanas.forEach(({week}) => {
+							localStorage.setItem(`entrega_${idBase}_w${week}`, valor);
+						});
+					});
+				}
+			} else {
+				// CARGA DE LISTADO SEMANAL
+				showSection('calculator');
+				document.getElementById('sem').value = l.semana;
+				document.getElementById('num-p').value = l.personas;
+				
+				// Restaurar días seleccionados
+				document.querySelectorAll('.d-ch').forEach(cb => {
+					cb.checked = l.dias.includes(parseInt(cb.value));
+				});
+				
+				activeFilters = new Set(l.filters || ['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
+				currentData = l.data;
+				
+				// Restaurar entregas en localStorage
+				if (l.entregas) {
+					Object.entries(l.entregas).forEach(([name, valor]) => {
+						const idRef = `${l.regional}_${name.replace(/\s/g, '')}`;
+						localStorage.setItem(`entrega_${idRef}`, valor);
+					});
+				}
+				
+				document.querySelectorAll('#catFilters .category-card').forEach(card => {
+					const cat = card.classList[1].replace('cat-', '');
+					card.classList.toggle('active', activeFilters.has(cat));
+				});
+				
+				updateCategoryCounts(currentData);
+				applyFilters();
+				document.getElementById('resultContainer').style.display = 'block';
+				document.getElementById('catFilters').style.display = 'grid';
+				document.getElementById('searchContainer').style.display = 'block';
+			}
+			showToast('Lista cargada correctamente', 'success');
+		}
+		
+		// ==================== LIMPIAR ENTREGAS SEMANAL ====================
+		function limpiarEntregasSemanal() {
+			if (!currentData || Object.keys(currentData).length === 0) {
+				showToast('No hay datos para limpiar', 'warning');
+				return;
+			}
+			
+			if (!confirm('¿Está seguro de limpiar TODAS las cantidades de entrega digitadas en esta lista?')) {
+				return;
+			}
+			
+			// Limpiar localStorage para esta regional y productos actuales
+			Object.keys(currentData).forEach(name => {
+				const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
+				localStorage.removeItem(`entrega_${idRef}`);
+			});
+			
+			// Limpiar inputs visibles
+			document.querySelectorAll('.input-entrega').forEach(input => {
+				input.value = '';
+				input.classList.remove('saved');
+			});
+			
+			showToast('Cantidades de entrega limpiadas', 'success');
+		}
+
+		// ==================== LIMPIAR ENTREGAS MENSUAL ====================
+		function limpiarEntregasMensual() {
+			if (!monthlyData || Object.keys(monthlyData).length === 0) {
+				showToast('No hay datos para limpiar', 'warning');
+				return;
+			}
+			
+			if (!confirm('¿Está seguro de limpiar TODAS las cantidades de entrega digitadas en este listado mensual?')) {
+				return;
+			}
+			
+			const sortedWeeks = Array.from(monthlyActiveWeeks.keys()).sort((a, b) => a - b);
+			
+			// Limpiar localStorage para todos los productos y semanas activas
+			Object.keys(monthlyData).forEach(name => {
+				const idBase = `${currentRegional}_monthly_${name.replace(/\s/g, '')}`;
+				sortedWeeks.forEach(week => {
+					localStorage.removeItem(`entrega_${idBase}_w${week}`);
+				});
+			});
+			
+			// Limpiar inputs visibles y resetear totales
+			document.querySelectorAll('.input-entrega-mes').forEach(input => {
+				input.value = '';
+				input.classList.remove('saved');
+				// Actualizar el total de la fila
+				actualizarTotalFila(input);
+			});
+			
+			// Actualizar totales globales
+			updateMonthlyTotals();
+			
+			showToast('Cantidades de entrega mensuales limpiadas', 'success');
+		}
 
         function deleteSavedList(id) {
             savedLists = savedLists.filter(x => x.id !== id);
@@ -3816,13 +3973,113 @@
             showSavedLists();
             showToast('Lista eliminada', 'success');
         }
+		
+		function guardarLista() {
+			if (!currentData || Object.keys(currentData).length === 0) {
+				showToast('Genere una lista primero', 'error');
+				return;
+			}
+			
+			const nombre = prompt('Nombre del listado semanal:');
+			if (!nombre || nombre.trim() === '') return;
+
+			// Obtener configuración actual
+			const sem = document.getElementById('sem').value;
+			const personas = document.getElementById('num-p').value;
+			const diasSeleccionados = Array.from(document.querySelectorAll('.d-ch:checked')).map(cb => parseInt(cb.value));
+
+			// Recopilar entregas guardadas en localStorage
+			const entregas = {};
+			Object.keys(currentData).forEach(name => {
+				const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
+				const valorEntrega = localStorage.getItem(`entrega_${idRef}`);
+				if (valorEntrega) {
+					entregas[name] = valorEntrega;
+				}
+			});
+
+			const lista = {
+				id: Date.now(),
+				tipo: 'semanal',
+				nombre: nombre.trim(),
+				regional: currentRegional,
+				fecha: new Date().toISOString(),
+				semana: sem,
+				personas: personas,
+				dias: diasSeleccionados,
+				filters: Array.from(activeFilters),
+				data: currentData,
+				entregas: entregas
+			};
+
+			savedLists.unshift(lista);
+			localStorage.setItem('smartMenu_savedLists', JSON.stringify(savedLists));
+			updateSavedCount();
+			showToast('Listado semanal guardado correctamente', 'success');
+		}
 
         // Placeholders para funciones no implementadas
-        function exportExcel() { showToast('Exportando a Excel...', 'success'); }
-        function exportPDF() { window.print(); }
-        function guardarLista() { showToast('Función de guardar - Use el botón en la tabla', 'info'); }
+        function exportExcel() {
+			if (!currentData || Object.keys(currentData).length === 0) {
+				showToast('No hay productos para exportar', 'error');
+				return;
+			}
+			
+			const sem = document.getElementById('sem').value;
+			const personas = document.getElementById('num-p').value;
+			
+			// Preparar datos para Excel
+			const data = Object.entries(currentData).map(([name, item]) => {
+				const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
+				const valorEntrega = localStorage.getItem(`entrega_${idRef}`) || '';
+				
+				return {
+					'Producto': name,
+					'Categoría': item.c,
+					'Unidad': item.u,
+					'Cantidad x Niño': item.qIndividual.toFixed(2),
+					'Cantidad Total': item.qTotal.toFixed(2),
+					'Sugerido (Comercial)': redondearComercial(item.qTotal, item.u),
+					'Entrega': valorEntrega
+				};
+			});
+
+			// Ordenar por categoría
+			data.sort((a, b) => (ORDER_CATEGORIES[a.Categoría] || 99) - (ORDER_CATEGORIES[b.Categoría] || 99));
+
+			// Crear hoja de trabajo
+			const ws = XLSX.utils.json_to_sheet(data);
+			
+			// Ajustar anchos de columna
+			const colWidths = [
+				{ wch: 25 }, // Producto
+				{ wch: 12 }, // Categoría
+				{ wch: 8 },  // Unidad
+				{ wch: 15 }, // Cantidad x Niño
+				{ wch: 15 }, // Cantidad Total
+				{ wch: 20 }, // Sugerido
+				{ wch: 15 }  // Entrega
+			];
+			ws['!cols'] = colWidths;
+
+			// Crear libro y añadir hoja
+			const wb = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(wb, ws, "Minuta_Semanal");
+			
+			// Generar nombre de archivo
+			const fecha = new Date().toISOString().split('T')[0];
+			const nombreArchivo = `Minuta_${currentRegional}_Sem${sem}_${fecha}.xlsx`;
+			
+			// Descargar archivo
+			XLSX.writeFile(wb, nombreArchivo);
+			showToast(`Excel exportado: ${data.length} productos`, 'success');
+		}
+        
+		function exportPDF() { window.print(); }
+        
+		
+		
         function imprimir() { window.print(); }
     </script>
 </body>
 </html>
-
