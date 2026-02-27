@@ -3774,8 +3774,7 @@ body.dark-mode .modal-grafica-footer {
         }
 
         function loadArchivedNovelties() {
-		// Usar 'archived_JER' para consistencia
-		const archivedRef = database.ref('archived_JER');
+		const archivedRef = database.ref('archived');
 		archivedRef.once('value', (snapshot) => {
 			const data = snapshot.val() || {};
 			archivedNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
@@ -5117,3 +5116,4 @@ body.dark-mode .modal-grafica-footer {
     </script>
 </body>
 </html>
+
