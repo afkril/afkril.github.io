@@ -1641,8 +1641,7 @@ body.dark-mode .modal-grafica-footer {
                             </label>
                         </div>
                         <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección y Barrio" class="w-full rounded-lg">
-                        <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
-                        
+                        <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2"inputmode="tel"pattern="[0-9]*"minlength="7"maxlength="10"oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         <div class="md:col-span-2 space-y-2">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
                             <input type="file" id="fileInput" name="soporte_documento" accept=".pdf,image/*" 
@@ -1656,8 +1655,8 @@ body.dark-mode .modal-grafica-footer {
                         <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg">
-                        <input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg"inputmode="numeric"pattern="[0-9]*"minlength="7"maxlength="12"oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+						<input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
                         <div class="space-y-1 md:col-span-2">
                             <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
                             <input type="date" id="acudienteDOB" name="acudiente_nacimiento" class="w-full rounded-lg">
@@ -2872,6 +2871,241 @@ body.dark-mode .modal-grafica-footer {
                 }
             });
         }
+		
+		// ============================================
+		// FUNCIONES DE ACCIONES MASIVAS
+		// ============================================
+
+		/**
+		 * Marca todas las novedades visibles (filtradas) como cargadas al CUENTAME
+		 */
+		function marcarTodosCargados() {
+			// Obtener las novedades actualmente filtradas (las que se muestran en la tabla)
+			const searchInput = document.getElementById('searchInput');
+			const filterContract = document.getElementById('filterContract');
+			const filterType = document.getElementById('filterType');
+			const filterDate = document.getElementById('filterDate');
+			const filterMonth = document.getElementById('filterMonth');
+			const filterUDS = document.getElementById('filterUDS');
+			const filterStatus = document.getElementById('filterStatus');
+			
+			const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+			const contractFilter = filterContract ? filterContract.value : '';
+			const typeFilter = filterType ? filterType.value : '';
+			const dateFilter = filterDate ? filterDate.value : '';
+			const monthFilter = filterMonth ? filterMonth.value : '';
+			const udsFilter = filterUDS ? filterUDS.value : '';
+			const statusFilter = filterStatus ? filterStatus.value : '';
+
+			// Filtrar las novedades igual que en filterNovelties
+			let pendientesFiltrados = currentNovelties.filter(n => {
+				const matchesSearch = !searchTerm || 
+					(n.name && n.name.toLowerCase().includes(searchTerm)) || 
+					(n.document && n.document.includes(searchTerm)) ||
+					(n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+					(n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+					(n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+					(n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+				
+				const matchesContract = !contractFilter || n.contract === contractFilter;
+				
+				let matchesType = true;
+				if (typeFilter === 'retiro') {
+					matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+				} else if (typeFilter === 'ingreso') {
+					matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+				} else if (typeFilter === 'ambos') {
+					matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+				}
+				
+				const matchesDate = !dateFilter || n.date === dateFilter;
+				const matchesUDS = !udsFilter || n.udsName === udsFilter;
+				
+				let matchesMonth = true;
+				if (monthFilter !== '') {
+					const nDate = new Date(n.timestamp);
+					matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+				}
+
+				let matchesStatus = true;
+				if (statusFilter === 'pendiente') {
+					matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+				} else if (statusFilter === 'cargado') {
+					matchesStatus = n.cuentameStatus === 'cargado';
+				}
+
+				// Solo incluir los que están pendientes
+				const isPendiente = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+
+				return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && isPendiente;
+			});
+
+			if (pendientesFiltrados.length === 0) {
+				showToast('No hay novedades pendientes en la vista actual para marcar como cargadas', 'warning');
+				return;
+			}
+
+			if (!confirm(`¿Está seguro de marcar como "Cargado al CUENTAME" ${pendientesFiltrados.length} novedades?\n\nEsta acción no se puede deshacer.`)) {
+				return;
+			}
+
+			showToast(`⏳ Procesando ${pendientesFiltrados.length} novedades...`, 'info');
+
+			const batch = database.ref().batch ? database.ref().batch() : null;
+			let actualizados = 0;
+			const fechaActual = new Date().toISOString();
+
+			// Si Firebase soporta batch (v9+), usarlo. Si no, actualizar uno por uno
+			const promesas = pendientesFiltrados.map(novedad => {
+				const updates = {
+					cuentameStatus: 'cargado',
+					cuentameDate: fechaActual
+				};
+				return database.ref(`novelties/${novedad.id}`).update(updates)
+					.then(() => {
+						actualizados++;
+						// Actualizar el objeto local también
+						const index = currentNovelties.findIndex(n => n.id === novedad.id);
+						if (index !== -1) {
+							currentNovelties[index].cuentameStatus = 'cargado';
+							currentNovelties[index].cuentameDate = fechaActual;
+						}
+					})
+					.catch(error => {
+						console.error(`Error actualizando ${novedad.id}:`, error);
+					});
+			});
+
+			Promise.all(promesas)
+				.then(() => {
+					showToast(`✅ ${actualizados} novedades marcadas como cargadas al CUENTAME`, 'success');
+					filterNovelties(); // Recargar la tabla
+					updatePendientesIndicator(); // Actualizar el contador
+				})
+				.catch(error => {
+					showToast('Error al actualizar: ' + error.message, 'error');
+				});
+		}
+
+		/**
+		 * Archiva todas las novedades que están marcadas como cargadas al CUENTAME
+		 * en la vista actual filtrada
+		 */
+		function archivarTodosCargados() {
+			// Obtener las novedades actualmente filtradas que están cargadas
+			const searchInput = document.getElementById('searchInput');
+			const filterContract = document.getElementById('filterContract');
+			const filterType = document.getElementById('filterType');
+			const filterDate = document.getElementById('filterDate');
+			const filterMonth = document.getElementById('filterMonth');
+			const filterUDS = document.getElementById('filterUDS');
+			const filterStatus = document.getElementById('filterStatus');
+			
+			const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+			const contractFilter = filterContract ? filterContract.value : '';
+			const typeFilter = filterType ? filterType.value : '';
+			const dateFilter = filterDate ? filterDate.value : '';
+			const monthFilter = filterMonth ? filterMonth.value : '';
+			const udsFilter = filterUDS ? filterUDS.value : '';
+			const statusFilter = filterStatus ? filterStatus.value : '';
+
+			// Filtrar las novedades cargadas
+			let cargadosFiltrados = currentNovelties.filter(n => {
+				const matchesSearch = !searchTerm || 
+					(n.name && n.name.toLowerCase().includes(searchTerm)) || 
+					(n.document && n.document.includes(searchTerm)) ||
+					(n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+					(n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+					(n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+					(n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+				
+				const matchesContract = !contractFilter || n.contract === contractFilter;
+				
+				let matchesType = true;
+				if (typeFilter === 'retiro') {
+					matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+				} else if (typeFilter === 'ingreso') {
+					matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+				} else if (typeFilter === 'ambos') {
+					matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+				}
+				
+				const matchesDate = !dateFilter || n.date === dateFilter;
+				const matchesUDS = !udsFilter || n.udsName === udsFilter;
+				
+				let matchesMonth = true;
+				if (monthFilter !== '') {
+					const nDate = new Date(n.timestamp);
+					matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+				}
+
+				let matchesStatus = true;
+				if (statusFilter === 'pendiente') {
+					matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+				} else if (statusFilter === 'cargado') {
+					matchesStatus = n.cuentameStatus === 'cargado';
+				}
+
+				// Solo incluir los que están cargados
+				const isCargado = n.cuentameStatus === 'cargado';
+
+				return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && isCargado;
+			});
+
+			if (cargadosFiltrados.length === 0) {
+				showToast('No hay novedades cargadas en la vista actual para archivar', 'warning');
+				return;
+			}
+
+			if (!confirm(`⚠️ ¿Está seguro de ARCHIVAR ${cargadosFiltrados.length} novedades?\n\nSolo se archivarán las que estén marcadas como "Cargado al CUENTAME".\n\nEsta acción moverá los registros a la sección de Archivados.`)) {
+				return;
+			}
+
+			showToast(`⏳ Archivando ${cargadosFiltrados.length} novedades...`, 'info');
+
+			let archivados = 0;
+			let errores = 0;
+			const fechaArchivo = new Date().toISOString();
+
+			// Procesar uno por uno (Firebase Realtime Database no soporta batch nativo en v8)
+			const promesas = cargadosFiltrados.map(novedad => {
+				const archivedData = {
+					...novedad,
+					archivedDate: fechaArchivo,
+					originalId: novedad.id
+				};
+
+				// Primero guardar en archivados, luego eliminar de novelties
+				const archivedRef = database.ref('archived').push();
+				
+				return archivedRef.set(archivedData)
+					.then(() => database.ref(`novelties/${novedad.id}`).remove())
+					.then(() => {
+						archivados++;
+						// Actualizar arrays locales
+						archivedNovelties.push({ id: archivedRef.key, ...archivedData });
+						currentNovelties = currentNovelties.filter(n => n.id !== novedad.id);
+					})
+					.catch(error => {
+						errores++;
+						console.error(`Error archivando ${novedad.id}:`, error);
+					});
+			});
+
+			Promise.all(promesas)
+				.then(() => {
+					if (errores > 0) {
+						showToast(`⚠️ ${archivados} archivados, ${errores} errores`, 'warning');
+					} else {
+						showToast(`🗃️ ${archivados} novedades archivadas correctamente`, 'success');
+					}
+					filterNovelties(); // Recargar tabla activas
+					updatePendientesIndicator(); // Actualizar contador
+				})
+				.catch(error => {
+					showToast('Error general al archivar: ' + error.message, 'error');
+				});
+		}
 
         function loadMonthChart(novelties) {
             const ctx = document.getElementById('monthChart');
@@ -2979,32 +3213,33 @@ body.dark-mode .modal-grafica-footer {
         }
 
         function archivarNovelty(id) {
-            const novelty = currentNovelties.find(n => n.id === id);
-            if (!novelty) return;
-            
-            if (novelty.cuentameStatus !== 'cargado') {
-                showToast('⚠️ Solo se pueden archivar novedades marcadas como "Cargado al CUENTAME"', 'warning');
-                return;
-            }
-            
-            if (!confirm('¿Está seguro de archivar esta novedad?\n\nLos archivados se mueven a una sección separada.')) return;
-            
-            const archivedData = {
-                ...novelty,
-                archivedDate: new Date().toISOString(),
-                originalId: id
-            };
-            
-            const archivedRef = database.ref('archived').push();
-            archivedRef.set(archivedData)
-                .then(() => database.ref(`novelties/${id}`).remove())
-                .then(() => {
-                    showToast('🗃️ Novedad archivada correctamente', 'success');
-                    loadNoveltiesTable();
-                    updatePendientesIndicator();
-                })
-                .catch((error) => showToast('Error al archivar: ' + error.message, 'error'));
-        }
+			const novelty = currentNovelties.find(n => n.id === id);
+			if (!novelty) return;
+			
+			if (novelty.cuentameStatus !== 'cargado') {
+				showToast('⚠️ Solo se pueden archivar novedades marcadas como "Cargado al CUENTAME"', 'warning');
+				return;
+			}
+			
+			if (!confirm('¿Está seguro de archivar esta novedad?\n\nLos archivados se mueven a una sección separada.')) return;
+			
+			const archivedData = {
+				...novelty,
+				archivedDate: new Date().toISOString(),
+				originalId: id
+			};
+			
+			// ✅ CORREGIDO: Usar 'archived_JER' para consistencia
+			const archivedRef = database.ref('archived_JER').push();
+			archivedRef.set(archivedData)
+				.then(() => database.ref(`novelties/${id}`).remove())
+				.then(() => {
+					showToast('🗃️ Novedad archivada correctamente', 'success');
+					loadNoveltiesTable();
+					updatePendientesIndicator();
+				})
+				.catch((error) => showToast('Error al archivar: ' + error.message, 'error'));
+		}
 
         function updatePendientesIndicator() {
             const indicator = document.getElementById('pendientesIndicator');
@@ -3539,13 +3774,14 @@ body.dark-mode .modal-grafica-footer {
         }
 
         function loadArchivedNovelties() {
-            const archivedRef = database.ref('archived');
-            archivedRef.once('value', (snapshot) => {
-                const data = snapshot.val() || {};
-                archivedNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
-                filterArchivedNovelties();
-            });
-        }
+		// Usar 'archived_JER' para consistencia
+		const archivedRef = database.ref('archived_JER');
+		archivedRef.once('value', (snapshot) => {
+			const data = snapshot.val() || {};
+			archivedNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+			filterArchivedNovelties();
+		});
+	}
 
         function filterArchivedNovelties() {
             const searchInput = document.getElementById('searchInputArchivados');
@@ -3686,7 +3922,7 @@ body.dark-mode .modal-grafica-footer {
             
             showToast('⏳ Eliminando todos los archivados...', 'info');
             
-            const archivedRef = database.ref('archived');
+            const archivedRef = database.ref('archived_JER').push();
             archivedRef.remove()
                 .then(() => {
                     showToast(`🗑️ ${count} archivados eliminados permanentemente`, 'success');
