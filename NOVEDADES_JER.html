@@ -1486,7 +1486,7 @@ body.dark-mode .modal-grafica-footer {
                 <strong id="bloqueoFechasDisplay">Periodo de cierre: 28 - 30 de cada mes</strong>
             </div>
             <div class="bloqueo-contacto">
-                📞 Comuníquese con el administrativo del Cuentame
+                📞 Comuníquese con el administrativo de Timanco 3
             </div>
             
             <div class="bloqueo-admin-access">
@@ -1713,18 +1713,18 @@ body.dark-mode .modal-grafica-footer {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Fecha de Valoración Antropométrica *</label>
-                            <input type="date" id="nutricionFecha" name="nutricion_fecha" class="w-full rounded-lg" required onchange="calcularEstadoNutricional()">
+                            <input type="date" id="nutricionFecha" name="nutricion_fecha" class="w-full rounded-lg"  onchange="calcularEstadoNutricional()">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Peso (kg) * <span class="text-[10px] font-normal">(5 - 30.5 kg)</span></label>
                             <input type="number" id="nutricionPeso" name="nutricion_peso" placeholder="Ej: 12.5" 
-                                   class="w-full rounded-lg" step="0.1" min="5" max="30.5" required
+                                   class="w-full rounded-lg" step="0.1" min="5" max="30.5" 
                                    oninput="validarRangoNutricion(this, 5, 30.5); calcularEstadoNutricional()">
                         </div>
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Talla (cm) * <span class="text-[10px] font-normal">(50 - 130.5 cm)</span></label>
                             <input type="number" id="nutricionTalla" name="nutricion_talla" placeholder="Ej: 85.0" 
-                                   class="w-full rounded-lg" step="0.1" min="50" max="130.5" required
+                                   class="w-full rounded-lg" step="0.1" min="50" max="130.5" 
                                    oninput="validarRangoNutricion(this, 50, 130.5); calcularEstadoNutricional()">
                         </div>
                         <div class="space-y-1">
@@ -2483,17 +2483,27 @@ body.dark-mode .modal-grafica-footer {
             const statusEl = document.getElementById('nutricionStatus');
             const detailsEl = document.getElementById('nutricionDetails');
             const legendEl = document.getElementById('nutricionLegend');
+			
+			//Si no hay ingreso seleccionado, no calcular
+			const checkIngreso = document.getElementById('checkIngreso');
+			if (!checkIngreso || !checkIngreso.checked) {
+				if (indicator) indicator.style.display = 'none';
+				return;
+			}
 
-            if (!pesoInput || !tallaInput || !generoInput) return;
-            
-            const peso = parseFloat(pesoInput.value);
-            const talla = parseFloat(tallaInput.value);
-            const genero = generoInput.value;
+			if (!pesoInput || !tallaInput || !generoInput) {
+				if (indicator) indicator.style.display = 'none';
+				return;
+			}
+			
+			const peso = parseFloat(pesoInput.value);
+			const talla = parseFloat(tallaInput.value);
+			const genero = generoInput.value;
 
-            if (!peso || !talla || isNaN(peso) || isNaN(talla)) {
-                if (indicator) indicator.style.display = 'none';
-                return;
-            }
+			if (!peso || !talla || isNaN(peso) || isNaN(talla)) {
+				if (indicator) indicator.style.display = 'none';
+				return;
+			}
 			
 			// Si el modal está abierto, actualizar la gráfica
 			const modal = document.getElementById('modalGraficaOMS');
@@ -4494,71 +4504,80 @@ body.dark-mode .modal-grafica-footer {
 
             const checkRetiro = document.getElementById('checkRetiro');
             const checkIngreso = document.getElementById('checkIngreso');
-            
-            if (checkRetiro && checkRetiro.checked) {
-                const retiroDocType = document.getElementById('retiroDocType');
-                const retiroDocNumber = document.getElementById('retiroDocNumber');
-                const retiroFullName = document.getElementById('retiroFullName');
-                const retiroDate = document.getElementById('retiroDate');
-                const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
-                
-                formData += `[ DATOS DE RETIRO ]\n`;
-                formData += `  - Documento:  ${retiroDocType ? retiroDocType.value : ''} ${retiroDocNumber ? retiroDocNumber.value : ''}\n`;
-                formData += `  - Nombre:     ${retiroFullName ? retiroFullName.value.toUpperCase() : ''}\n`;
-                formData += `  - Fecha:      ${retiroDate ? retiroDate.value : ''}\n`;
-                formData += `  - Género:     ${retiroGender ? retiroGender.value : 'N/A'}\n\n`;
-            }
+			
+			// CORREGIDO: Verificar explícitamente cada sección
+			const tieneRetiro = checkRetiro && checkRetiro.checked;
+			const tieneIngreso = checkIngreso && checkIngreso.checked;
+			
+			if (tieneRetiro) {
+				const retiroDocType = document.getElementById('retiroDocType');
+				const retiroDocNumber = document.getElementById('retiroDocNumber');
+				const retiroFullName = document.getElementById('retiroFullName');
+				const retiroDate = document.getElementById('retiroDate');
+				const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
+				
+				formData += `[ DATOS DE RETIRO ]\n`;
+				formData += `  - Documento:  ${retiroDocType ? retiroDocType.value : ''} ${retiroDocNumber ? retiroDocNumber.value : ''}\n`;
+				formData += `  - Nombre:     ${retiroFullName ? retiroFullName.value.toUpperCase() : ''}\n`;
+				formData += `  - Fecha:      ${retiroDate ? retiroDate.value : ''}\n`;
+				formData += `  - Género:     ${retiroGender ? retiroGender.value : 'N/A'}\n\n`;
+			}
 
-            if (checkIngreso && checkIngreso.checked) {
-                const ingresoDocType = document.getElementById('ingresoDocType');
-                const ingresoDocNumber = document.getElementById('ingresoDocNumber');
-                const ingresoFullName = document.getElementById('ingresoFullName');
-                const displayAge = document.getElementById('displayAge');
-                const ingresoDOB = document.getElementById('ingresoDOB');
-                const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
-                const ingresoAddress = document.getElementById('ingresoAddress');
-                const ingresoPhone = document.getElementById('ingresoPhone');
-                const acudienteName = document.getElementById('acudienteName');
-                const acudienteDoc = document.getElementById('acudienteDoc');
-                const acudienteDOB = document.getElementById('acudienteDOB');
-                const ingresoDate = document.getElementById('ingresoDate');
-                
-                formData += `[ DATOS DE INGRESO ]\n`;
-                formData += `  - Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
-                formData += `  - Documento:  ${ingresoDocType ? ingresoDocType.value : ''} ${ingresoDocNumber ? ingresoDocNumber.value : ''}\n`;
-                formData += `  - Edad:       ${displayAge ? displayAge.value : ''}\n`;
-                formData += `  - F. Nacim:   ${ingresoDOB ? ingresoDOB.value : ''}\n`;
-                formData += `  - F. Ingreso: ${ingresoDate ? ingresoDate.value : ''}\n`;
-                formData += `  - Género:     ${ingresoGender ? ingresoGender.value : 'N/A'}\n`;
-                formData += `  - Direccion:  ${ingresoAddress ? ingresoAddress.value : ''}\n`;
-                formData += `  - Teléfono:   ${ingresoPhone ? ingresoPhone.value : ''}\n\n`;
-                
-                formData += `[ DATOS DEL ACUDIENTE ]\n`;
-                formData += `  - Nombre:     ${acudienteName ? acudienteName.value : ''}\n`;
-                formData += `  - F. Nacim:   ${acudienteDOB ? acudienteDOB.value : ''}\n`;
-                formData += `  - Documento:  ${acudienteDoc ? acudienteDoc.value : ''}\n`;
+			if (tieneIngreso) {
+				// ... (resto del código de ingreso sin cambios)
+				const ingresoDocType = document.getElementById('ingresoDocType');
+				const ingresoDocNumber = document.getElementById('ingresoDocNumber');
+				const ingresoFullName = document.getElementById('ingresoFullName');
+				const displayAge = document.getElementById('displayAge');
+				const ingresoDOB = document.getElementById('ingresoDOB');
+				const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
+				const ingresoAddress = document.getElementById('ingresoAddress');
+				const ingresoPhone = document.getElementById('ingresoPhone');
+				const acudienteName = document.getElementById('acudienteName');
+				const acudienteDoc = document.getElementById('acudienteDoc');
+				const acudienteDOB = document.getElementById('acudienteDOB');
+				const ingresoDate = document.getElementById('ingresoDate');
+				
+				formData += `[ DATOS DE INGRESO ]\n`;
+				formData += `  - Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
+				formData += `  - Documento:  ${ingresoDocType ? ingresoDocType.value : ''} ${ingresoDocNumber ? ingresoDocNumber.value : ''}\n`;
+				formData += `  - Edad:       ${displayAge ? displayAge.value : ''}\n`;
+				formData += `  - F. Nacim:   ${ingresoDOB ? ingresoDOB.value : ''}\n`;
+				formData += `  - F. Ingreso: ${ingresoDate ? ingresoDate.value : ''}\n`;
+				formData += `  - Género:     ${ingresoGender ? ingresoGender.value : 'N/A'}\n`;
+				formData += `  - Direccion:  ${ingresoAddress ? ingresoAddress.value : ''}\n`;
+				formData += `  - Teléfono:   ${ingresoPhone ? ingresoPhone.value : ''}\n\n`;
+				
+				formData += `[ DATOS DEL ACUDIENTE ]\n`;
+				formData += `  - Nombre:     ${acudienteName ? acudienteName.value : ''}\n`;
+				formData += `  - F. Nacim:   ${acudienteDOB ? acudienteDOB.value : ''}\n`;
+				formData += `  - Documento:  ${acudienteDoc ? acudienteDoc.value : ''}\n`;
 
-                const nutricionFecha = document.getElementById('nutricionFecha');
-                const nutricionPeso = document.getElementById('nutricionPeso');
-                const nutricionTalla = document.getElementById('nutricionTalla');
-                const nutricionRegimen = document.getElementById('nutricionRegimen');
-                const nutricionEPS = document.getElementById('nutricionEPS');
-                const nutricionStatus = document.getElementById('nutricionStatus');
+				const nutricionFecha = document.getElementById('nutricionFecha');
+				const nutricionPeso = document.getElementById('nutricionPeso');
+				const nutricionTalla = document.getElementById('nutricionTalla');
+				const nutricionRegimen = document.getElementById('nutricionRegimen');
+				const nutricionEPS = document.getElementById('nutricionEPS');
+				const nutricionStatus = document.getElementById('nutricionStatus');
 
-                if (nutricionFecha && nutricionFecha.value) {
-                    formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
-                    formData += `  - F. Valoración:  ${nutricionFecha.value}\n`;
-                    formData += `  - Peso:           ${nutricionPeso ? nutricionPeso.value + ' kg' : ''}\n`;
-                    formData += `  - Talla:          ${nutricionTalla ? nutricionTalla.value + ' cm' : ''}\n`;
-                    formData += `  - Régimen:        ${nutricionRegimen ? nutricionRegimen.value : ''}\n`;
-                    formData += `  - EPS:            ${nutricionEPS ? nutricionEPS.value : ''}\n`;
-                    formData += `  - Estado Nutric.: ${nutricionStatus ? nutricionStatus.textContent : 'No calculado'}\n`;
-                }
-            }
-            
-            formData += `\n------------------------------------------\n`;
-            formData += `Generado el: ${new Date().toLocaleString()}\n`;
-            
+				if (nutricionFecha && nutricionFecha.value) {
+					formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
+					formData += `  - F. Valoración:  ${nutricionFecha.value}\n`;
+					formData += `  - Peso:           ${nutricionPeso ? nutricionPeso.value + ' kg' : ''}\n`;
+					formData += `  - Talla:          ${nutricionTalla ? nutricionTalla.value + ' cm' : ''}\n`;
+					formData += `  - Régimen:        ${nutricionRegimen ? nutricionRegimen.value : ''}\n`;
+					formData += `  - EPS:            ${nutricionEPS ? nutricionEPS.value : ''}\n`;
+					formData += `  - Estado Nutric.: ${nutricionStatus ? nutricionStatus.textContent : 'No calculado'}\n`;
+				}
+			}
+			 //CORREGIDO: Si no hay ninguno seleccionado, mostrar advertencia
+			if (!tieneRetiro && !tieneIngreso) {
+				formData += `[ ⚠️ NO SE SELECCIONÓ RETIRO NI INGRESO ]\n`;
+			}
+			
+			formData += `\n------------------------------------------\n`;
+			formData += `Generado el: ${new Date().toLocaleString()}\n`;
+			
             return formData;
         }
 
@@ -4591,44 +4610,38 @@ body.dark-mode .modal-grafica-footer {
                     }
 
                     if (isIngreso) {
-                        const ingresoDocNumber = document.getElementById('ingresoDocNumber');
-                        if (ingresoDocNumber && (ingresoDocNumber.value.length < 7 || ingresoDocNumber.value.length > 10)) {
-                            showToast("El documento de ingreso debe tener entre 7 y 10 dígitos.", "error");
-                            return;
-                        }
+						const nutricionPeso = document.getElementById('nutricionPeso');
+						const nutricionTalla = document.getElementById('nutricionTalla');
+						const nutricionFecha = document.getElementById('nutricionFecha');
 
-                        const nutricionPeso = document.getElementById('nutricionPeso');
-                        const nutricionTalla = document.getElementById('nutricionTalla');
-                        const nutricionFecha = document.getElementById('nutricionFecha');
+						if (!nutricionPeso || !nutricionPeso.value) {
+							showToast("El campo PESO es obligatorio para el seguimiento nutricional.", "error");
+							nutricionPeso.classList.add('input-error');
+							return;
+						}
+						if (!nutricionTalla || !nutricionTalla.value) {
+							showToast("El campo TALLA es obligatorio para el seguimiento nutricional.", "error");
+							nutricionTalla.classList.add('input-error');
+							return;
+						}
+						if (!nutricionFecha || !nutricionFecha.value) {
+							showToast("La FECHA DE VALORACIÓN es obligatoria.", "error");
+							nutricionFecha.classList.add('input-error');
+							return;
+						}
 
-                        if (!nutricionPeso || !nutricionPeso.value) {
-                            showToast("El campo PESO es obligatorio para el seguimiento nutricional.", "error");
-                            nutricionPeso.classList.add('input-error');
-                            return;
-                        }
-                        if (!nutricionTalla || !nutricionTalla.value) {
-                            showToast("El campo TALLA es obligatorio para el seguimiento nutricional.", "error");
-                            nutricionTalla.classList.add('input-error');
-                            return;
-                        }
-                        if (!nutricionFecha || !nutricionFecha.value) {
-                            showToast("La FECHA DE VALORACIÓN es obligatoria.", "error");
-                            nutricionFecha.classList.add('input-error');
-                            return;
-                        }
+						const peso = parseFloat(nutricionPeso.value);
+						const talla = parseFloat(nutricionTalla.value);
 
-                        const peso = parseFloat(nutricionPeso.value);
-                        const talla = parseFloat(nutricionTalla.value);
-
-                        if (peso < 5 || peso > 30.5) {
-                            showToast("El peso debe estar entre 5 y 30.5 kg.", "error");
-                            return;
-                        }
-                        if (talla < 50 || talla > 130.5) {
-                            showToast("La talla debe estar entre 50 y 130.5 cm.", "error");
-                            return;
-                        }
-                    }
+						if (peso < 5 || peso > 30.5) {
+							showToast("El peso debe estar entre 5 y 30.5 kg.", "error");
+							return;
+						}
+						if (talla < 50 || talla > 130.5) {
+							showToast("La talla debe estar entre 50 y 130.5 cm.", "error");
+							return;
+						}
+					}
 
                     if (isRetiro && isIngreso) {
                         const retiroDate = document.getElementById('retiroDate');
@@ -4781,7 +4794,10 @@ body.dark-mode .modal-grafica-footer {
 
                     const emailSubject = document.getElementById('emailSubject');
                     const hiddenFormattedData = document.getElementById('hiddenFormattedData');
-                    
+                    const formattedData = formatData();
+					if (hiddenFormattedData) hiddenFormattedData.value = formattedData;
+					
+					
                     if (emailSubject) emailSubject.value = `Novedad UDS: ${udsName}`;
                     if (hiddenFormattedData) hiddenFormattedData.value = formatData();
 
@@ -4865,4 +4881,3 @@ body.dark-mode .modal-grafica-footer {
     </script>
 </body>
 </html>
-
