@@ -62,6 +62,22 @@
       color: #2d3436;
     }
     
+    /* Error Message */
+    .error-banner {
+      background: #e17055;
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      text-align: center;
+      font-size: 13px;
+      display: none;
+    }
+    
+    .error-banner.active {
+      display: block;
+    }
+    
     /* Hamburger Menu */
     .menu-btn {
       position: fixed;
@@ -838,6 +854,11 @@
     <span id="connectionText">Sin conexión</span>
   </div>
   
+  <!-- Error Banner -->
+  <div class="error-banner" id="errorBanner">
+    ⚠️ Error de conexión con Firebase. Verifica tu conexión a internet o las reglas de la base de datos.
+  </div>
+  
   <!-- Menu Button -->
   <div class="menu-btn" id="menuBtn" onclick="toggleMenu()">
     <span></span>
@@ -1056,52 +1077,65 @@
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, remove, onDisconnect, get } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, remove, get } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
     
     // Firebase Configuration
     const firebaseConfig = {
-	  apiKey: "AIzaSyDqEEMcGDrYkft7F_V9cNkeY0gsIgMX1eE",
-	  authDomain: "rifa-c2a1e.firebaseapp.com",
-	  databaseURL: "https://rifa-c2a1e-default-rtdb.firebaseio.com",
-	  projectId: "rifa-c2a1e",
-	  storageBucket: "rifa-c2a1e.firebasestorage.app",
-	  messagingSenderId: "280605316793",
-	  appId: "1:280605316793:web:66a3205f1c48574df62d68",
-	  measurementId: "G-BJ4MG00Z5F"
-	};
+      apiKey: "AIzaSyDqEEMcGDrYkft7F_V9cNkeY0gsIgMX1eE",
+      authDomain: "rifa-c2a1e.firebaseapp.com",
+      databaseURL: "https://rifa-c2a1e-default-rtdb.firebaseio.com",
+      projectId: "rifa-c2a1e",
+      storageBucket: "rifa-c2a1e.firebasestorage.app",
+      messagingSenderId: "280605316793",
+      appId: "1:280605316793:web:66a3205f1c48574df62d68",
+      measurementId: "G-BJ4MG00Z5F"
+    };
     
     // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const rifaRef = ref(database, 'rifa/numeros');
-    
-    // Global state
+    let app;
+    let database;
+    let rifaRef;
     let rifaData = {};
     let currentNumber = null;
     let currentStatus = 'pending';
-    let isOnline = false;
+    
+    try {
+      app = initializeApp(firebaseConfig);
+      database = getDatabase(app);
+      rifaRef = ref(database, 'rifa/numeros');
+    } catch (error) {
+      console.error("Error initializing Firebase:", error);
+      showError("Error al inicializar Firebase. Verifica tu conexión.");
+    }
+    
+    // Show error banner
+    function showError(message) {
+      const errorBanner = document.getElementById('errorBanner');
+      errorBanner.innerText = message;
+      errorBanner.classList.add('active');
+    }
     
     // Connection monitoring
     const connectedRef = ref(database, ".info/connected");
     onValue(connectedRef, (snap) => {
-      isOnline = snap.val() === true;
+      const isOnline = snap.val() === true;
       updateConnectionStatus(isOnline ? 'online' : 'offline');
+    }, (error) => {
+      console.error("Connection error:", error);
+      updateConnectionStatus('offline');
+      showError("No se puede conectar a Firebase. Verifica las reglas de seguridad.");
     });
     
     function updateConnectionStatus(status) {
       const statusEl = document.getElementById('connectionStatus');
-      const textEl = document.getElementById('connectionText');
       
       statusEl.className = 'connection-status ' + status;
       
       if (status === 'online') {
-        textEl.textContent = 'Conectado';
         statusEl.innerHTML = '<span>🟢</span><span>Conectado</span>';
       } else if (status === 'offline') {
-        textEl.textContent = 'Sin conexión';
         statusEl.innerHTML = '<span>🔴</span><span>Sin conexión</span>';
       } else if (status === 'syncing') {
-        textEl.textContent = 'Sincronizando...';
         statusEl.innerHTML = '<span>🟡</span><span>Sincronizando...</span>';
       }
     }
@@ -1114,6 +1148,7 @@
     }, (error) => {
       console.error("Error reading data:", error);
       updateConnectionStatus('offline');
+      showError("Error al leer datos. Verifica las reglas de seguridad en Firebase.");
     });
     
     // Render grid
@@ -1206,7 +1241,7 @@
         updateConnectionStatus('online');
       } catch (error) {
         console.error("Error saving:", error);
-        alert('Error al guardar. Verifique su conexión.');
+        alert('Error al guardar: ' + error.message);
         updateConnectionStatus('offline');
       }
     };
@@ -1223,7 +1258,7 @@
         updateConnectionStatus('online');
       } catch (error) {
         console.error("Error deleting:", error);
-        alert('Error al eliminar. Verifique su conexión.');
+        alert('Error al eliminar: ' + error.message);
         updateConnectionStatus('offline');
       }
     };
@@ -1357,7 +1392,7 @@
         updateConnectionStatus('online');
       } catch (error) {
         console.error("Error resetting:", error);
-        alert('Error al reiniciar. Verifique su conexión.');
+        alert('Error al reiniciar: ' + error.message);
         updateConnectionStatus('offline');
       }
     };
