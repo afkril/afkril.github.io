@@ -204,7 +204,7 @@
         }
 
         .chart-container {
-			position: relative; /* Esto es clave para que el tooltip no se salga */
+			position: relative;
 			display: flex;
 			gap: 20px;
 			align-items: flex-start;
@@ -968,158 +968,157 @@
         }
 
         /* Móviles */
-@media (max-width: 480px) {
-    .modal-grafica-overlay {
-        padding: 0;
-        /* En móvil, ocupar toda la pantalla */
-        align-items: flex-end;
-    }
-    
-    .modal-grafica-content {
-        width: 100%;
-        height: 95vh;
-        max-height: none;
-        border-radius: 20px 20px 0 0;
-        border-width: 3px 0 0 0;
-        animation: slideUp 0.3s ease;
-    }
-    
-    @keyframes slideUp {
-        from { 
-            opacity: 0;
-            transform: translateY(100%);
+        @media (max-width: 480px) {
+            .modal-grafica-overlay {
+                padding: 0;
+                align-items: flex-end;
+            }
+            
+            .modal-grafica-content {
+                width: 100%;
+                height: 95vh;
+                max-height: none;
+                border-radius: 20px 20px 0 0;
+                border-width: 3px 0 0 0;
+                animation: slideUp 0.3s ease;
+            }
+            
+            @keyframes slideUp {
+                from { 
+                    opacity: 0;
+                    transform: translateY(100%);
+                }
+                to { 
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .modal-grafica-header {
+                padding: 16px;
+                border-radius: 20px 20px 0 0;
+            }
+            
+            .modal-grafica-title {
+                font-size: 14px;
+            }
+            
+            .modal-grafica-subtitle {
+                font-size: 11px;
+            }
+            
+            .modal-grafica-close {
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+            }
+            
+            .modal-grafica-body {
+                padding: 12px;
+                max-height: calc(95vh - 110px);
+            }
+            
+            .modal-grafica-canvas-wrapper {
+                height: clamp(180px, 40vh, 350px);
+                min-height: 180px;
+                border-radius: 10px;
+                border-width: 1px;
+            }
+            
+            .modal-grafica-leyenda {
+                grid-template-columns: 1fr;
+                gap: 4px;
+                margin-top: 12px;
+            }
+            
+            .leyenda-item {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+            
+            .modal-grafica-footer {
+                padding: 12px 16px;
+            }
         }
-        to { 
-            opacity: 1;
-            transform: translateY(0);
+
+        /* Móviles muy pequeños */
+        @media (max-width: 360px) {
+            .modal-grafica-canvas-wrapper {
+                height: 160px;
+                min-height: 160px;
+            }
+            
+            .modal-grafica-leyenda {
+                font-size: 9px;
+            }
         }
-    }
-    
-    .modal-grafica-header {
-        padding: 16px;
-        border-radius: 20px 20px 0 0;
-    }
-    
-    .modal-grafica-title {
-        font-size: 14px;
-    }
-    
-    .modal-grafica-subtitle {
-        font-size: 11px;
-    }
-    
-    .modal-grafica-close {
-        width: 36px;
-        height: 36px;
-        font-size: 20px;
-    }
-    
-    .modal-grafica-body {
-        padding: 12px;
-        max-height: calc(95vh - 110px);
-    }
-    
-    .modal-grafica-canvas-wrapper {
-        height: clamp(180px, 40vh, 350px);
-        min-height: 180px;
-        border-radius: 10px;
-        border-width: 1px;
-    }
-    
-    .modal-grafica-leyenda {
-        grid-template-columns: 1fr;
-        gap: 4px;
-        margin-top: 12px;
-    }
-    
-    .leyenda-item {
-        padding: 8px 10px;
-        font-size: 11px;
-    }
-    
-    .modal-grafica-footer {
-        padding: 12px 16px;
-    }
-}
 
-/* Móviles muy pequeños */
-@media (max-width: 360px) {
-    .modal-grafica-canvas-wrapper {
-        height: 160px;
-        min-height: 160px;
-    }
-    
-    .modal-grafica-leyenda {
-        font-size: 9px;
-    }
-}
+        /* Orientación landscape en móviles */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .modal-grafica-content {
+                max-height: 98vh;
+            }
+            
+            .modal-grafica-canvas-wrapper {
+                height: 200px;
+            }
+            
+            .modal-grafica-leyenda {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
 
-/* Orientación landscape en móviles */
-@media (max-height: 500px) and (orientation: landscape) {
-    .modal-grafica-content {
-        max-height: 98vh;
-    }
-    
-    .modal-grafica-canvas-wrapper {
-        height: 200px;
-    }
-    
-    .modal-grafica-leyenda {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
+        /* Dark mode */
+        body.dark-mode .modal-grafica-content {
+            background: #1e293b;
+            border-color: #475569;
+        }
 
-/* Dark mode */
-body.dark-mode .modal-grafica-content {
-    background: #1e293b;
-    border-color: #475569;
-}
+        body.dark-mode .modal-grafica-header {
+            background: linear-gradient(to right, #334155, #1e293b);
+            border-color: #475569;
+        }
 
-body.dark-mode .modal-grafica-header {
-    background: linear-gradient(to right, #334155, #1e293b);
-    border-color: #475569;
-}
+        body.dark-mode .modal-grafica-title {
+            color: #f1f5f9;
+        }
 
-body.dark-mode .modal-grafica-title {
-    color: #f1f5f9;
-}
+        body.dark-mode .modal-grafica-subtitle {
+            color: #94a3b8;
+        }
 
-body.dark-mode .modal-grafica-subtitle {
-    color: #94a3b8;
-}
+        body.dark-mode .modal-grafica-close {
+            background: #334155;
+            color: #94a3b8;
+        }
 
-body.dark-mode .modal-grafica-close {
-    background: #334155;
-    color: #94a3b8;
-}
+        body.dark-mode .modal-grafica-close:hover {
+            background: #475569;
+        }
 
-body.dark-mode .modal-grafica-close:hover {
-    background: #475569;
-}
+        body.dark-mode .modal-grafica-canvas-wrapper {
+            background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+            border-color: #475569;
+        }
 
-body.dark-mode .modal-grafica-canvas-wrapper {
-    background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
-    border-color: #475569;
-}
+        body.dark-mode .leyenda-item {
+            background: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
 
-body.dark-mode .leyenda-item {
-    background: #334155;
-    border-color: #475569;
-    color: #e2e8f0;
-}
-
-body.dark-mode .modal-grafica-footer {
-    background: #334155;
-    border-color: #475569;
-}
-
-/* Prevenir scroll del body cuando el modal está abierto */
-body.modal-open {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-}
+        body.dark-mode .modal-grafica-footer {
+            background: #334155;
+            border-color: #475569;
+        }
+        
+        /* Prevenir scroll del body cuando el modal está abierto */
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
 
         /* Leyenda de rangos */
 		.rangos-leyenda {
@@ -1210,7 +1209,6 @@ body.modal-open {
 			justify-content: center;
 			padding: 20px;
 			animation: fadeIn 0.3s ease;
-			/* Prevenir scroll del body cuando el modal está abierto */
 			overflow: hidden;
 		}
 
@@ -1225,13 +1223,11 @@ body.modal-open {
 			width: 90%;
 			max-width: 900px;
 			max-height: 90vh;
-			/* IMPORTANTE: Posición fija relativa al viewport */
 			position: relative;
 			display: flex;
 			flex-direction: column;
 			animation: scaleIn 0.3s ease;
 			border: 4px solid #e2e8f0;
-			/* Prevenir que el contenido se desborde */
 			overflow: hidden;
 		}
 
@@ -1243,7 +1239,6 @@ body.modal-open {
 			border-color: #ec4899;
 		}
 
-		/* Header fijo en la parte superior */
 		.modal-grafica-header {
 			padding: 20px 24px;
 			border-bottom: 2px solid #f1f5f9;
@@ -1251,7 +1246,6 @@ body.modal-open {
 			justify-content: space-between;
 			align-items: center;
 			background: linear-gradient(to right, #f8fafc, #ffffff);
-			/* Fijo al hacer scroll dentro del modal */
 			flex-shrink: 0;
 		}
 
@@ -1293,20 +1287,16 @@ body.modal-open {
 			transform: rotate(90deg);
 		}
 
-		/* Body con scroll interno si es necesario */
 		.modal-grafica-body {
 			padding: 24px;
 			overflow-y: auto;
 			flex: 1;
-			/* Permitir scroll solo si el contenido excede el espacio */
 			max-height: calc(90vh - 140px);
 		}
 
-		/* NUEVO: Wrapper responsive para el canvas */
 		.modal-grafica-canvas-wrapper {
 			position: relative;
 			width: 100%;
-			/* Altura proporcional que se adapta al viewport */
 			height: clamp(250px, 50vh, 500px);
 			min-height: 250px;
 			background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
@@ -1318,140 +1308,158 @@ body.modal-open {
 			display: block;
 			width: 100% !important;
 			height: 100% !important;
-			/* Mantener la proporción pero llenar el espacio */
 			object-fit: contain;
 		}
 
-.modal-grafica-canvas-container {
-    position: relative;
-    width: 100%;
-    height: 400px;
-    background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
-    border-radius: 16px;
-    overflow: hidden;
-    border: 2px solid #e2e8f0;
-}
+        .modal-grafica-canvas-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+        }
 
-.modal-grafica-leyenda {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 8px;
-}
+        .modal-grafica-leyenda {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+        }
 
-@media (max-width: 600px) {
-    .modal-grafica-leyenda {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
+        @media (max-width: 600px) {
+            .modal-grafica-leyenda {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
 
-.leyenda-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-}
+        .leyenda-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
 
-.leyenda-color {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
+        .leyenda-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
 
-/* Footer fijo en la parte inferior */
-.modal-grafica-footer {
-    padding: 16px 24px;
-    border-top: 2px solid #f1f5f9;
-    display: flex;
-    justify-content: flex-end;
-    background: #f8fafc;
-    flex-shrink: 0;
-}
+        .modal-grafica-footer {
+            padding: 16px 24px;
+            border-top: 2px solid #f1f5f9;
+            display: flex;
+            justify-content: flex-end;
+            background: #f8fafc;
+            flex-shrink: 0;
+        }
 
-.modal-grafica-btn-cerrar {
-    padding: 12px 32px;
-    border-radius: 12px;
-    border: none;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
+        .modal-grafica-btn-cerrar {
+            padding: 12px 32px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-.modal-grafica-btn-cerrar:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
-}
+        .modal-grafica-btn-cerrar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
+        }
 
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
-/* Animaciones */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
+        @keyframes scaleIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
 
-@keyframes scaleIn {
-    from { 
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to { 
-        opacity: 1;
-        transform: scale(1);
-    }
-}
+        /* Dark mode */
+        body.dark-mode .modal-grafica-content {
+            background: #1e293b;
+            border-color: #475569;
+        }
 
-/* Dark mode */
-body.dark-mode .modal-grafica-content {
-    background: #1e293b;
-    border-color: #475569;
-}
+        body.dark-mode .modal-grafica-header {
+            background: linear-gradient(to right, #334155, #1e293b);
+            border-color: #475569;
+        }
 
-body.dark-mode .modal-grafica-header {
-    background: linear-gradient(to right, #334155, #1e293b);
-    border-color: #475569;
-}
+        body.dark-mode .modal-grafica-title {
+            color: #f1f5f9;
+        }
 
-body.dark-mode .modal-grafica-title {
-    color: #f1f5f9;
-}
+        body.dark-mode .modal-grafica-subtitle {
+            color: #94a3b8;
+        }
 
-body.dark-mode .modal-grafica-subtitle {
-    color: #94a3b8;
-}
+        body.dark-mode .modal-grafica-close {
+            background: #334155;
+            color: #94a3b8;
+        }
 
-body.dark-mode .modal-grafica-close {
-    background: #334155;
-    color: #94a3b8;
-}
+        body.dark-mode .modal-grafica-close:hover {
+            background: #475569;
+        }
 
-body.dark-mode .modal-grafica-close:hover {
-    background: #475569;
-}
+        body.dark-mode .modal-grafica-canvas-container {
+            background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+            border-color: #475569;
+        }
 
-body.dark-mode .modal-grafica-canvas-container {
-    background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
-    border-color: #475569;
-}
+        body.dark-mode .leyenda-item {
+            background: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
 
-body.dark-mode .leyenda-item {
-    background: #334155;
-    border-color: #475569;
-    color: #e2e8f0;
-}
-
-body.dark-mode .modal-grafica-footer {
-    background: #334155;
-    border-color: #475569;
-}
+        body.dark-mode .modal-grafica-footer {
+            background: #334155;
+            border-color: #475569;
+        }
+        
+        /* Botón de gráfica */
+        .grafica-trigger {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+        
+        .grafica-trigger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -1486,7 +1494,7 @@ body.dark-mode .modal-grafica-footer {
                 <strong id="bloqueoFechasDisplay">Periodo de cierre: 28 - 30 de cada mes</strong>
             </div>
             <div class="bloqueo-contacto">
-                📞 Comuníquese con el administrativo del Cuentame
+                📞 Comuníquese con el administrativo de Timanco 3
             </div>
             
             <div class="bloqueo-admin-access">
@@ -1527,8 +1535,10 @@ body.dark-mode .modal-grafica-footer {
                 </div>
             </div>
         </header>
+        
         <!-- FORMULARIO ACTUALIZADO PARA GOOGLE APPS SCRIPT -->
-        <form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbwDfN_uetafpPOlSV6Jv94B024YJ4uOShDBN0JBV1uozA0gaWyr0hNUMGQJqd3CyL4/exec" method="POST" class="p-8 space-y-6">
+		<form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbwvO5vg4wM9PdHc86IZM8FKcmoaSX7ls-4D-ZdbOVAFR6GUrRIHcXCq0rpQBDOVZvI/exec" method="POST" class="p-8 space-y-6">
+        
            
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
@@ -1641,11 +1651,13 @@ body.dark-mode .modal-grafica-footer {
                             </label>
                         </div>
                         <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección y Barrio" class="w-full rounded-lg">
-                        <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2"inputmode="tel"pattern="[0-9]*"minlength="7"maxlength="10"oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
+                        
                         <div class="md:col-span-2 space-y-2">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
                             <input type="file" id="fileInput" name="soporte_documento" accept=".pdf,image/*" 
                                    class="w-full rounded-lg bg-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border-2 border-dashed border-green-200">
+                            <p class="text-xs text-slate-500 mt-1">Tamaño máximo: 8MB (PDF, JPG, PNG)</p>
                         </div>
                     </div>
                 </div>
@@ -1655,58 +1667,56 @@ body.dark-mode .modal-grafica-footer {
                         <span class="w-3 h-3 bg-blue-500 rounded-full mr-2"></span> Datos Madre / Acudiente
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg"inputmode="numeric"pattern="[0-9]*"minlength="7"maxlength="12"oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-						<input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento Acudiente" class="w-full rounded-lg">
+                        <input type="text" id="acudienteName" name="acudiente_nombre" placeholder="Nombre Acudiente" class="w-full rounded-lg">
                         <div class="space-y-1 md:col-span-2">
                             <label class="text-[11px] font-bold text-blue-600 ml-1 uppercase">Fecha Nacimiento Acudiente</label>
                             <input type="date" id="acudienteDOB" name="acudiente_nacimiento" class="w-full rounded-lg">
                         </div>
                     </div>
                 </div>			
-					<!-- MODAL DE GRÁFICA OMS - VERSIÓN RESPONSIVE Y FIJA -->
-					<div id="modalGraficaOMS" class="modal-grafica-overlay" onclick="cerrarModalGrafica(event)">
-						<div class="modal-grafica-content" onclick="event.stopPropagation()">
-							<div class="modal-grafica-header">
-								<div>
-									<h3 class="modal-grafica-title" id="modalGraficaTitle">Gráfica Peso/Talla OMS</h3>
-									<p class="modal-grafica-subtitle" id="modalGraficaSubtitle">Complete los datos para ver la posición en la curva</p>
-								</div>
-								<button type="button" class="modal-grafica-close" onclick="cerrarModalGrafica()">&times;</button>
-							</div>
-							
-							<div class="modal-grafica-body">
-								<!-- Contenedor responsive del canvas -->
-								<div class="modal-grafica-canvas-wrapper">
-									<canvas id="omsChartModal"></canvas>
-								</div>
-								
-								<div class="modal-grafica-leyenda" id="modalGraficaLeyenda">
-									<!-- Se llena dinámicamente -->
-								</div>
-							</div>
-							
-							<div class="modal-grafica-footer">
-								<button type="button" class="modal-grafica-btn-cerrar" onclick="cerrarModalGrafica()">Cerrar</button>
-							</div>
-						</div>
-					</div>
+                
+                <!-- MODAL DE GRÁFICA OMS - VERSIÓN RESPONSIVE Y FIJA -->
+                <div id="modalGraficaOMS" class="modal-grafica-overlay" onclick="cerrarModalGrafica(event)">
+                    <div class="modal-grafica-content" onclick="event.stopPropagation()">
+                        <div class="modal-grafica-header">
+                            <div>
+                                <h3 class="modal-grafica-title" id="modalGraficaTitle">Gráfica Peso/Talla OMS</h3>
+                                <p class="modal-grafica-subtitle" id="modalGraficaSubtitle">Complete los datos para ver la posición en la curva</p>
+                            </div>
+                            <button type="button" class="modal-grafica-close" onclick="cerrarModalGrafica()">&times;</button>
+                        </div>
+                        
+                        <div class="modal-grafica-body">
+                            <!-- Contenedor responsive del canvas -->
+                            <div class="modal-grafica-canvas-wrapper">
+                                <canvas id="omsChartModal"></canvas>
+                            </div>
+                            
+                            <div class="modal-grafica-leyenda" id="modalGraficaLeyenda">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                        </div>
+                        
+                        <div class="modal-grafica-footer">
+                            <button type="button" class="modal-grafica-btn-cerrar" onclick="cerrarModalGrafica()">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- NUEVO: SEGUIMIENTO NUTRICIONAL MEJORADO CON GRÁFICA FLOTANTE -->
                 <div class="nutricion-card">
                     <div class="nutricion-title">
                         <div class="flex items-center gap-2">
                             <span>🍎</span>
                             <span>Seguimiento Nutricional</span>
-							
-							<!-- ===== BOTÓN DE GRÁFICA OMS ===== -->
-							
-							<button type="button" class="grafica-trigger" id="graficaTrigger" onclick="abrirModalGrafica()">
-								<span>📊</span>
-								<span>Ver Gráfica OMS</span>
-							</button>
-							
+                            
+                            <!-- ===== BOTÓN DE GRÁFICA OMS ===== -->
+                            <button type="button" class="grafica-trigger" id="graficaTrigger" onclick="abrirModalGrafica()">
+                                <span>📊</span>
+                                <span>Ver Gráfica OMS</span>
+                            </button>
                         </div>
-                        
-                        
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1810,24 +1820,23 @@ body.dark-mode .modal-grafica-footer {
                             <button onclick="exportToPDF()" class="export-btn export-pdf">
                                 Exportar PDF
                             </button>
-							<!-- Reemplaza el botón anterior con este menú desplegable -->
-							<div style="position: relative; display: inline-block;">
-								<button onclick="toggleBatchMenu()" class="export-btn" style="background: linear-gradient(135deg, #64748b, #475569); color: white;">
-									⚡ Acciones Masivas ▼
-								</button>
-								<div id="batchMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); min-width: 220px; z-index: 100; overflow: hidden;">
-									<button onclick="marcarTodosCargados(); toggleBatchMenu();" style="width: 100%; padding: 12px 16px; text-align: left; border: none; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-										<span style="color: #10b981;">✓</span>
-										Marcar todos como cargados
-										<span id="countPendientesBadge" style="margin-left: auto; background: #f59e0b; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">0</span>
-									</button>
-									<div style="height: 1px; background: #e2e8f0;"></div>
-									<button onclick="archivarTodosCargados(); toggleBatchMenu();" style="width: 100%; padding: 12px 16px; text-align: left; border: none; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-										<span style="color: #8b5cf6;">🗃</span>
-										Archivar todos los cargados
-									</button>
-								</div>
-							</div>
+                            <div style="position: relative; display: inline-block;">
+                                <button onclick="toggleBatchMenu()" class="export-btn" style="background: linear-gradient(135deg, #64748b, #475569); color: white;">
+                                    ⚡ Acciones Masivas ▼
+                                </button>
+                                <div id="batchMenu" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); min-width: 220px; z-index: 100; overflow: hidden;">
+                                    <button onclick="marcarTodosCargados(); toggleBatchMenu();" style="width: 100%; padding: 12px 16px; text-align: left; border: none; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                                        <span style="color: #10b981;">✓</span>
+                                        Marcar todos como cargados
+                                        <span id="countPendientesBadge" style="margin-left: auto; background: #f59e0b; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">0</span>
+                                    </button>
+                                    <div style="height: 1px; background: #e2e8f0;"></div>
+                                    <button onclick="archivarTodosCargados(); toggleBatchMenu();" style="width: 100%; padding: 12px 16px; text-align: left; border: none; background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: #475569; transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                                        <span style="color: #8b5cf6;">🗃</span>
+                                        Archivar todos los cargados
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="filter-grid">
@@ -2130,8 +2139,7 @@ body.dark-mode .modal-grafica-footer {
     </div>
 
     <script>
-		// Firebase Configuration
-		// Firebase Configuration - moonbox-b997c (Realtime Database)
+        // Firebase Configuration - moonbox-b997c (Realtime Database)
         const firebaseConfig = {
             apiKey: "AIzaSyDX9mBXhGSx6vVqvrLgMLY0Stno4nI-jPw",
             authDomain: "moonbox-b997c.firebaseapp.com",
@@ -2158,10 +2166,6 @@ body.dark-mode .modal-grafica-footer {
             '676': 'linear-gradient(to bottom right, #d1fae5, #10b981)', 
             'default': 'linear-gradient(to bottom right, #f8fafc, #e2e8f0)' 
         };
-		
-		
-
-		
 
         const ADMIN_PASSWORD = "ZAN";
         let typeChartInstance = null, udsChartInstance = null, cuentameChartInstance = null, monthChartInstance = null, contractChartInstance = null;
@@ -2200,6 +2204,17 @@ body.dark-mode .modal-grafica-footer {
         const DE_COLORS = ['#7f1d1d', '#dc2626', '#f59e0b', '#10b981', '#fbbf24', '#f97316', '#dc2626'];
         const DE_LABELS = ['-3DE', '-2DE', '-1DE', 'Mediana', '+1DE', '+2DE', '+3DE'];
 
+        // Rangos para la leyenda
+        const rangos = [
+            { nombre: 'Desnutrición Severa', de: '< -3DE', color: '#7f1d1d', clase: 'rango-desnutricion-severa' },
+            { nombre: 'Desnutrición Moderada', de: '-3DE a -2DE', color: '#dc2626', clase: 'rango-desnutricion-moderada' },
+            { nombre: 'Riesgo Desnutrición', de: '-2DE a -1DE', color: '#f59e0b', clase: 'rango-riesgo-desnutricion' },
+            { nombre: 'Normal', de: '-1DE a +1DE', color: '#10b981', clase: 'rango-normal' },
+            { nombre: 'Riesgo Sobrepeso', de: '+1DE a +1.5DE', color: '#fbbf24', clase: 'rango-riesgo-sobrepeso' },
+            { nombre: 'Sobrepeso', de: '+1.5DE a +2DE', color: '#f97316', clase: 'rango-sobrepeso' },
+            { nombre: 'Obesidad', de: '> +2DE', color: '#dc2626', clase: 'rango-obesidad' }
+        ];
+
         function updateClock() {
             const now = new Date();
             const date = now.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -2215,7 +2230,7 @@ body.dark-mode .modal-grafica-footer {
             if (!container) return;
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            const icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+            const icons = { success: '✅', error: '❌', warning: '⚠', info: 'ℹ' };
             toast.innerHTML = `<span style="font-weight:bold">${icons[type]}</span><span>${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), duration);
@@ -2427,7 +2442,6 @@ body.dark-mode .modal-grafica-footer {
         setInterval(verificarBloqueo, 3600000);
         document.addEventListener('DOMContentLoaded', () => cargarConfigBloqueo());
 
-        
         function calcularRangoOMS(talla, peso, genero) {
             const data = genero === 'M' ? OMS_REFERENCE_DATA.boys : OMS_REFERENCE_DATA.girls;
             const tallas = Object.keys(data).map(Number).sort((a, b) => a - b);
@@ -2482,39 +2496,36 @@ body.dark-mode .modal-grafica-footer {
             const statusEl = document.getElementById('nutricionStatus');
             const detailsEl = document.getElementById('nutricionDetails');
             const legendEl = document.getElementById('nutricionLegend');
-			
-			//Si no hay ingreso seleccionado, no calcular
-			const checkIngreso = document.getElementById('checkIngreso');
-			if (!checkIngreso || !checkIngreso.checked) {
-				if (indicator) indicator.style.display = 'none';
-				return;
-			}
+            
+            const checkIngreso = document.getElementById('checkIngreso');
+            if (!checkIngreso || !checkIngreso.checked) {
+                if (indicator) indicator.style.display = 'none';
+                return;
+            }
 
-			if (!pesoInput || !tallaInput || !generoInput) {
-				if (indicator) indicator.style.display = 'none';
-				return;
-			}
-			
-			const peso = parseFloat(pesoInput.value);
-			const talla = parseFloat(tallaInput.value);
-			const genero = generoInput.value;
+            if (!pesoInput || !tallaInput || !generoInput) {
+                if (indicator) indicator.style.display = 'none';
+                return;
+            }
+            
+            const peso = parseFloat(pesoInput.value);
+            const talla = parseFloat(tallaInput.value);
+            const genero = generoInput.value;
 
-			if (!peso || !talla || isNaN(peso) || isNaN(talla)) {
-				if (indicator) indicator.style.display = 'none';
-				return;
-			}
-			
-			// Si el modal está abierto, actualizar la gráfica
-			const modal = document.getElementById('modalGraficaOMS');
-			if (modal && modal.classList.contains('active')) {
-				const generoInput = document.querySelector('input[name="_ingresoGender"]:checked');
-				if (generoInput) {
-					// Usar requestAnimationFrame para optimizar rendimiento
-					requestAnimationFrame(() => {
-						dibujarGraficaEnModal(generoInput.value);
-					});
-				}
-			}
+            if (!peso || !talla || isNaN(peso) || isNaN(talla)) {
+                if (indicator) indicator.style.display = 'none';
+                return;
+            }
+            
+            const modal = document.getElementById('modalGraficaOMS');
+            if (modal && modal.classList.contains('active')) {
+                const generoInput = document.querySelector('input[name="_ingresoGender"]:checked');
+                if (generoInput) {
+                    requestAnimationFrame(() => {
+                        dibujarGraficaEnModal(generoInput.value);
+                    });
+                }
+            }
 
             const estado = calcularRangoOMS(talla, peso, genero);
             
@@ -2537,8 +2548,6 @@ body.dark-mode .modal-grafica-footer {
                     </div>
                 `).join('');
             }
-
-            actualizarGraficaOMS();
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -2546,15 +2555,13 @@ body.dark-mode .modal-grafica-footer {
             
             ['nutricionPeso', 'nutricionTalla'].forEach(id => {
                 const input = document.getElementById(id);
-                if (input) input.addEventListener('input', actualizarGraficaOMS);
+                if (input) input.addEventListener('input', calcularEstadoNutricional);
             });
             
             document.querySelectorAll('input[name="_ingresoGender"]').forEach(input => {
-                input.addEventListener('change', actualizarGraficaOMS);
+                input.addEventListener('change', calcularEstadoNutricional);
             });
         });
-		
-		
 
         function inicializarSelectorMes() {
             const selectorAnio = document.getElementById('resumenAnioSelector');
@@ -2612,7 +2619,7 @@ body.dark-mode .modal-grafica-footer {
 
         function loadResumenStats() {
             const noveltiesRef = database.ref('novelties');
-            const archivedRef = database.ref('archived_JER');
+            const archivedRef = database.ref('archived');
             
             Promise.all([
                 noveltiesRef.once('value'),
@@ -2756,52 +2763,28 @@ body.dark-mode .modal-grafica-footer {
                 }
             });
         }
-		
-		function toggleBatchMenu() {
-			const menu = document.getElementById('batchMenu');
-			if (menu) {
-				const isVisible = menu.style.display === 'block';
-				menu.style.display = isVisible ? 'none' : 'block';
-				
-				// Actualizar contador
-				if (!isVisible) {
-					const pendientes = currentNovelties.filter(n => !n.cuentameStatus || n.cuentameStatus === 'pendiente');
-					const badge = document.getElementById('countPendientesBadge');
-					if (badge) badge.textContent = pendientes.length;
-				}
-			}
-		}
+        
+        function toggleBatchMenu() {
+            const menu = document.getElementById('batchMenu');
+            if (menu) {
+                const isVisible = menu.style.display === 'block';
+                menu.style.display = isVisible ? 'none' : 'block';
+                
+                if (!isVisible) {
+                    const pendientes = currentNovelties.filter(n => !n.cuentameStatus || n.cuentameStatus === 'pendiente');
+                    const badge = document.getElementById('countPendientesBadge');
+                    if (badge) badge.textContent = pendientes.length;
+                }
+            }
+        }
 
-		// Cerrar menú al hacer clic fuera
-		document.addEventListener('click', function(e) {
-			const menu = document.getElementById('batchMenu');
-			const btn = e.target.closest('button');
-			if (menu && menu.style.display === 'block' && !btn?.textContent?.includes('Acciones Masivas')) {
-				menu.style.display = 'none';
-			}
-		});function toggleBatchMenu() {
-			const menu = document.getElementById('batchMenu');
-			if (menu) {
-				const isVisible = menu.style.display === 'block';
-				menu.style.display = isVisible ? 'none' : 'block';
-				
-				// Actualizar contador
-				if (!isVisible) {
-					const pendientes = currentNovelties.filter(n => !n.cuentameStatus || n.cuentameStatus === 'pendiente');
-					const badge = document.getElementById('countPendientesBadge');
-					if (badge) badge.textContent = pendientes.length;
-				}
-			}
-		}
-
-		// Cerrar menú al hacer clic fuera
-		document.addEventListener('click', function(e) {
-			const menu = document.getElementById('batchMenu');
-			const btn = e.target.closest('button');
-			if (menu && menu.style.display === 'block' && !btn?.textContent?.includes('Acciones Masivas')) {
-				menu.style.display = 'none';
-			}
-		});
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('batchMenu');
+            const btn = e.target.closest('button');
+            if (menu && menu.style.display === 'block' && !btn?.textContent?.includes('Acciones Masivas')) {
+                menu.style.display = 'none';
+            }
+        });
 
         function loadUDSChart(novelties) {
             const ctx = document.getElementById('udsChart');
@@ -2871,241 +2854,218 @@ body.dark-mode .modal-grafica-footer {
                 }
             });
         }
-		
-		// ============================================
-		// FUNCIONES DE ACCIONES MASIVAS
-		// ============================================
+        
+        function marcarTodosCargados() {
+            const searchInput = document.getElementById('searchInput');
+            const filterContract = document.getElementById('filterContract');
+            const filterType = document.getElementById('filterType');
+            const filterDate = document.getElementById('filterDate');
+            const filterMonth = document.getElementById('filterMonth');
+            const filterUDS = document.getElementById('filterUDS');
+            const filterStatus = document.getElementById('filterStatus');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const contractFilter = filterContract ? filterContract.value : '';
+            const typeFilter = filterType ? filterType.value : '';
+            const dateFilter = filterDate ? filterDate.value : '';
+            const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
+            const statusFilter = filterStatus ? filterStatus.value : '';
 
-		/**
-		 * Marca todas las novedades visibles (filtradas) como cargadas al CUENTAME
-		 */
-		function marcarTodosCargados() {
-			// Obtener las novedades actualmente filtradas (las que se muestran en la tabla)
-			const searchInput = document.getElementById('searchInput');
-			const filterContract = document.getElementById('filterContract');
-			const filterType = document.getElementById('filterType');
-			const filterDate = document.getElementById('filterDate');
-			const filterMonth = document.getElementById('filterMonth');
-			const filterUDS = document.getElementById('filterUDS');
-			const filterStatus = document.getElementById('filterStatus');
-			
-			const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-			const contractFilter = filterContract ? filterContract.value : '';
-			const typeFilter = filterType ? filterType.value : '';
-			const dateFilter = filterDate ? filterDate.value : '';
-			const monthFilter = filterMonth ? filterMonth.value : '';
-			const udsFilter = filterUDS ? filterUDS.value : '';
-			const statusFilter = filterStatus ? filterStatus.value : '';
+            let pendientesFiltrados = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+                
+                const matchesContract = !contractFilter || n.contract === contractFilter;
+                
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+                
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
 
-			// Filtrar las novedades igual que en filterNovelties
-			let pendientesFiltrados = currentNovelties.filter(n => {
-				const matchesSearch = !searchTerm || 
-					(n.name && n.name.toLowerCase().includes(searchTerm)) || 
-					(n.document && n.document.includes(searchTerm)) ||
-					(n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
-					(n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
-					(n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
-					(n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
-				
-				const matchesContract = !contractFilter || n.contract === contractFilter;
-				
-				let matchesType = true;
-				if (typeFilter === 'retiro') {
-					matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
-				} else if (typeFilter === 'ingreso') {
-					matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
-				} else if (typeFilter === 'ambos') {
-					matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
-				}
-				
-				const matchesDate = !dateFilter || n.date === dateFilter;
-				const matchesUDS = !udsFilter || n.udsName === udsFilter;
-				
-				let matchesMonth = true;
-				if (monthFilter !== '') {
-					const nDate = new Date(n.timestamp);
-					matchesMonth = nDate.getMonth() === parseInt(monthFilter);
-				}
+                let matchesStatus = true;
+                if (statusFilter === 'pendiente') {
+                    matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+                } else if (statusFilter === 'cargado') {
+                    matchesStatus = n.cuentameStatus === 'cargado';
+                }
 
-				let matchesStatus = true;
-				if (statusFilter === 'pendiente') {
-					matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
-				} else if (statusFilter === 'cargado') {
-					matchesStatus = n.cuentameStatus === 'cargado';
-				}
+                const isPendiente = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
 
-				// Solo incluir los que están pendientes
-				const isPendiente = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && isPendiente;
+            });
 
-				return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && isPendiente;
-			});
+            if (pendientesFiltrados.length === 0) {
+                showToast('No hay novedades pendientes en la vista actual para marcar como cargadas', 'warning');
+                return;
+            }
 
-			if (pendientesFiltrados.length === 0) {
-				showToast('No hay novedades pendientes en la vista actual para marcar como cargadas', 'warning');
-				return;
-			}
+            if (!confirm(`¿Está seguro de marcar como "Cargado al CUENTAME" ${pendientesFiltrados.length} novedades?\n\nEsta acción no se puede deshacer.`)) {
+                return;
+            }
 
-			if (!confirm(`¿Está seguro de marcar como "Cargado al CUENTAME" ${pendientesFiltrados.length} novedades?\n\nEsta acción no se puede deshacer.`)) {
-				return;
-			}
+            showToast(`⏳ Procesando ${pendientesFiltrados.length} novedades...`, 'info');
 
-			showToast(`⏳ Procesando ${pendientesFiltrados.length} novedades...`, 'info');
+            let actualizados = 0;
+            const fechaActual = new Date().toISOString();
 
-			const batch = database.ref().batch ? database.ref().batch() : null;
-			let actualizados = 0;
-			const fechaActual = new Date().toISOString();
+            const promesas = pendientesFiltrados.map(novedad => {
+                const updates = {
+                    cuentameStatus: 'cargado',
+                    cuentameDate: fechaActual
+                };
+                return database.ref(`novelties/${novedad.id}`).update(updates)
+                    .then(() => {
+                        actualizados++;
+                        const index = currentNovelties.findIndex(n => n.id === novedad.id);
+                        if (index !== -1) {
+                            currentNovelties[index].cuentameStatus = 'cargado';
+                            currentNovelties[index].cuentameDate = fechaActual;
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error actualizando ${novedad.id}:`, error);
+                    });
+            });
 
-			// Si Firebase soporta batch (v9+), usarlo. Si no, actualizar uno por uno
-			const promesas = pendientesFiltrados.map(novedad => {
-				const updates = {
-					cuentameStatus: 'cargado',
-					cuentameDate: fechaActual
-				};
-				return database.ref(`novelties/${novedad.id}`).update(updates)
-					.then(() => {
-						actualizados++;
-						// Actualizar el objeto local también
-						const index = currentNovelties.findIndex(n => n.id === novedad.id);
-						if (index !== -1) {
-							currentNovelties[index].cuentameStatus = 'cargado';
-							currentNovelties[index].cuentameDate = fechaActual;
-						}
-					})
-					.catch(error => {
-						console.error(`Error actualizando ${novedad.id}:`, error);
-					});
-			});
+            Promise.all(promesas)
+                .then(() => {
+                    showToast(`✅ ${actualizados} novedades marcadas como cargadas al CUENTAME`, 'success');
+                    filterNovelties();
+                    updatePendientesIndicator();
+                })
+                .catch(error => {
+                    showToast('Error al actualizar: ' + error.message, 'error');
+                });
+        }
 
-			Promise.all(promesas)
-				.then(() => {
-					showToast(`✅ ${actualizados} novedades marcadas como cargadas al CUENTAME`, 'success');
-					filterNovelties(); // Recargar la tabla
-					updatePendientesIndicator(); // Actualizar el contador
-				})
-				.catch(error => {
-					showToast('Error al actualizar: ' + error.message, 'error');
-				});
-		}
+        function archivarTodosCargados() {
+            const searchInput = document.getElementById('searchInput');
+            const filterContract = document.getElementById('filterContract');
+            const filterType = document.getElementById('filterType');
+            const filterDate = document.getElementById('filterDate');
+            const filterMonth = document.getElementById('filterMonth');
+            const filterUDS = document.getElementById('filterUDS');
+            const filterStatus = document.getElementById('filterStatus');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const contractFilter = filterContract ? filterContract.value : '';
+            const typeFilter = filterType ? filterType.value : '';
+            const dateFilter = filterDate ? filterDate.value : '';
+            const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
+            const statusFilter = filterStatus ? filterStatus.value : '';
 
-		/**
-		 * Archiva todas las novedades que están marcadas como cargadas al CUENTAME
-		 * en la vista actual filtrada
-		 */
-		function archivarTodosCargados() {
-			// Obtener las novedades actualmente filtradas que están cargadas
-			const searchInput = document.getElementById('searchInput');
-			const filterContract = document.getElementById('filterContract');
-			const filterType = document.getElementById('filterType');
-			const filterDate = document.getElementById('filterDate');
-			const filterMonth = document.getElementById('filterMonth');
-			const filterUDS = document.getElementById('filterUDS');
-			const filterStatus = document.getElementById('filterStatus');
-			
-			const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-			const contractFilter = filterContract ? filterContract.value : '';
-			const typeFilter = filterType ? filterType.value : '';
-			const dateFilter = filterDate ? filterDate.value : '';
-			const monthFilter = filterMonth ? filterMonth.value : '';
-			const udsFilter = filterUDS ? filterUDS.value : '';
-			const statusFilter = filterStatus ? filterStatus.value : '';
+            let cargadosFiltrados = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+                
+                const matchesContract = !contractFilter || n.contract === contractFilter;
+                
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+                
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
 
-			// Filtrar las novedades cargadas
-			let cargadosFiltrados = currentNovelties.filter(n => {
-				const matchesSearch = !searchTerm || 
-					(n.name && n.name.toLowerCase().includes(searchTerm)) || 
-					(n.document && n.document.includes(searchTerm)) ||
-					(n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
-					(n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
-					(n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
-					(n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
-				
-				const matchesContract = !contractFilter || n.contract === contractFilter;
-				
-				let matchesType = true;
-				if (typeFilter === 'retiro') {
-					matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
-				} else if (typeFilter === 'ingreso') {
-					matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
-				} else if (typeFilter === 'ambos') {
-					matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
-				}
-				
-				const matchesDate = !dateFilter || n.date === dateFilter;
-				const matchesUDS = !udsFilter || n.udsName === udsFilter;
-				
-				let matchesMonth = true;
-				if (monthFilter !== '') {
-					const nDate = new Date(n.timestamp);
-					matchesMonth = nDate.getMonth() === parseInt(monthFilter);
-				}
+                let matchesStatus = true;
+                if (statusFilter === 'pendiente') {
+                    matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+                } else if (statusFilter === 'cargado') {
+                    matchesStatus = n.cuentameStatus === 'cargado';
+                }
 
-				let matchesStatus = true;
-				if (statusFilter === 'pendiente') {
-					matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
-				} else if (statusFilter === 'cargado') {
-					matchesStatus = n.cuentameStatus === 'cargado';
-				}
+                const isCargado = n.cuentameStatus === 'cargado';
 
-				// Solo incluir los que están cargados
-				const isCargado = n.cuentameStatus === 'cargado';
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && isCargado;
+            });
 
-				return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && isCargado;
-			});
+            if (cargadosFiltrados.length === 0) {
+                showToast('No hay novedades cargadas en la vista actual para archivar', 'warning');
+                return;
+            }
 
-			if (cargadosFiltrados.length === 0) {
-				showToast('No hay novedades cargadas en la vista actual para archivar', 'warning');
-				return;
-			}
+            if (!confirm(`⚠️ ¿Está seguro de ARCHIVAR ${cargadosFiltrados.length} novedades?\n\nSolo se archivarán las que estén marcadas como "Cargado al CUENTAME".\n\nEsta acción moverá los registros a la sección de Archivados.`)) {
+                return;
+            }
 
-			if (!confirm(`⚠️ ¿Está seguro de ARCHIVAR ${cargadosFiltrados.length} novedades?\n\nSolo se archivarán las que estén marcadas como "Cargado al CUENTAME".\n\nEsta acción moverá los registros a la sección de Archivados.`)) {
-				return;
-			}
+            showToast(`⏳ Archivando ${cargadosFiltrados.length} novedades...`, 'info');
 
-			showToast(`⏳ Archivando ${cargadosFiltrados.length} novedades...`, 'info');
+            let archivados = 0;
+            let errores = 0;
+            const fechaArchivo = new Date().toISOString();
 
-			let archivados = 0;
-			let errores = 0;
-			const fechaArchivo = new Date().toISOString();
+            const promesas = cargadosFiltrados.map(novedad => {
+                const archivedData = {
+                    ...novedad,
+                    archivedDate: fechaArchivo,
+                    originalId: novedad.id
+                };
 
-			// Procesar uno por uno (Firebase Realtime Database no soporta batch nativo en v8)
-			const promesas = cargadosFiltrados.map(novedad => {
-				const archivedData = {
-					...novedad,
-					archivedDate: fechaArchivo,
-					originalId: novedad.id
-				};
+                const archivedRef = database.ref('archived').push();
+                
+                return archivedRef.set(archivedData)
+                    .then(() => database.ref(`novelties/${novedad.id}`).remove())
+                    .then(() => {
+                        archivados++;
+                        archivedNovelties.push({ id: archivedRef.key, ...archivedData });
+                        currentNovelties = currentNovelties.filter(n => n.id !== novedad.id);
+                    })
+                    .catch(error => {
+                        errores++;
+                        console.error(`Error archivando ${novedad.id}:`, error);
+                    });
+            });
 
-				// Primero guardar en archivados, luego eliminar de novelties
-				const archivedRef = database.ref('archived').push();
-				
-				return archivedRef.set(archivedData)
-					.then(() => database.ref(`novelties/${novedad.id}`).remove())
-					.then(() => {
-						archivados++;
-						// Actualizar arrays locales
-						archivedNovelties.push({ id: archivedRef.key, ...archivedData });
-						currentNovelties = currentNovelties.filter(n => n.id !== novedad.id);
-					})
-					.catch(error => {
-						errores++;
-						console.error(`Error archivando ${novedad.id}:`, error);
-					});
-			});
-
-			Promise.all(promesas)
-				.then(() => {
-					if (errores > 0) {
-						showToast(`⚠️ ${archivados} archivados, ${errores} errores`, 'warning');
-					} else {
-						showToast(`🗃️ ${archivados} novedades archivadas correctamente`, 'success');
-					}
-					filterNovelties(); // Recargar tabla activas
-					updatePendientesIndicator(); // Actualizar contador
-				})
-				.catch(error => {
-					showToast('Error general al archivar: ' + error.message, 'error');
-				});
-		}
+            Promise.all(promesas)
+                .then(() => {
+                    if (errores > 0) {
+                        showToast(`⚠️ ${archivados} archivados, ${errores} errores`, 'warning');
+                    } else {
+                        showToast(`🗃️ ${archivados} novedades archivadas correctamente`, 'success');
+                    }
+                    filterNovelties();
+                    updatePendientesIndicator();
+                })
+                .catch(error => {
+                    showToast('Error general al archivar: ' + error.message, 'error');
+                });
+        }
 
         function loadMonthChart(novelties) {
             const ctx = document.getElementById('monthChart');
@@ -3213,33 +3173,32 @@ body.dark-mode .modal-grafica-footer {
         }
 
         function archivarNovelty(id) {
-			const novelty = currentNovelties.find(n => n.id === id);
-			if (!novelty) return;
-			
-			if (novelty.cuentameStatus !== 'cargado') {
-				showToast('⚠️ Solo se pueden archivar novedades marcadas como "Cargado al CUENTAME"', 'warning');
-				return;
-			}
-			
-			if (!confirm('¿Está seguro de archivar esta novedad?\n\nLos archivados se mueven a una sección separada.')) return;
-			
-			const archivedData = {
-				...novelty,
-				archivedDate: new Date().toISOString(),
-				originalId: id
-			};
-			
-			// ✅ CORREGIDO: Usar 'archived_JER' para consistencia
-			const archivedRef = database.ref('archived_JER').push();
-			archivedRef.set(archivedData)
-				.then(() => database.ref(`novelties/${id}`).remove())
-				.then(() => {
-					showToast('🗃️ Novedad archivada correctamente', 'success');
-					loadNoveltiesTable();
-					updatePendientesIndicator();
-				})
-				.catch((error) => showToast('Error al archivar: ' + error.message, 'error'));
-		}
+            const novelty = currentNovelties.find(n => n.id === id);
+            if (!novelty) return;
+            
+            if (novelty.cuentameStatus !== 'cargado') {
+                showToast('⚠️ Solo se pueden archivar novedades marcadas como "Cargado al CUENTAME"', 'warning');
+                return;
+            }
+            
+            if (!confirm('¿Está seguro de archivar esta novedad?\n\nLos archivados se mueven a una sección separada.')) return;
+            
+            const archivedData = {
+                ...novelty,
+                archivedDate: new Date().toISOString(),
+                originalId: id
+            };
+            
+            const archivedRef = database.ref('archived').push();
+            archivedRef.set(archivedData)
+                .then(() => database.ref(`novelties/${id}`).remove())
+                .then(() => {
+                    showToast('🗃️ Novedad archivada correctamente', 'success');
+                    loadNoveltiesTable();
+                    updatePendientesIndicator();
+                })
+                .catch((error) => showToast('Error al archivar: ' + error.message, 'error'));
+        }
 
         function updatePendientesIndicator() {
             const indicator = document.getElementById('pendientesIndicator');
@@ -3266,338 +3225,286 @@ body.dark-mode .modal-grafica-footer {
             document.getElementById('filterStatus').value = 'pendiente';
             filterNovelties();
         }
-		// ===== FUNCIONES DEL MODAL DE GRÁFICA OMS =====
-		
-		// ===== FUNCIONES DEL MODAL DE GRÁFICA OMS - VERSIÓN RESPONSIVE =====
+        
+        function abrirModalGrafica() {
+            const modal = document.getElementById('modalGraficaOMS');
+            const generoInput = document.querySelector('input[name="_ingresoGender"]:checked');
+            
+            if (!generoInput) {
+                showToast('Seleccione el género del beneficiario primero', 'warning');
+                return;
+            }
+            
+            document.body.classList.add('modal-open');
+            
+            const genero = generoInput.value;
+            const content = modal.querySelector('.modal-grafica-content');
+            
+            content.classList.remove('boy', 'girl');
+            content.classList.add(genero === 'M' ? 'boy' : 'girl');
+            
+            const title = document.getElementById('modalGraficaTitle');
+            const icon = genero === 'M' ? '👦' : '👧';
+            title.textContent = `Gráfica Peso/Talla OMS - ${genero === 'M' ? 'NIÑOS' : 'NIÑAS'} ${icon}`;
+            
+            modal.classList.add('active');
+            
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    dibujarGraficaEnModal(genero);
+                }, 100);
+            });
+            
+            llenarLeyendaModal();
+            
+            window.addEventListener('resize', handleResizeModal);
+        }
 
-		function abrirModalGrafica() {
-			const modal = document.getElementById('modalGraficaOMS');
-			const generoInput = document.querySelector('input[name="_ingresoGender"]:checked');
-			
-			if (!generoInput) {
-				showToast('Seleccione el género del beneficiario primero', 'warning');
-				return;
-			}
-			
-			// Bloquear scroll del body
-			document.body.classList.add('modal-open');
-			
-			// Determinar género y aplicar estilos
-			const genero = generoInput.value;
-			const content = modal.querySelector('.modal-grafica-content');
-			
-			// Quitar clases anteriores y agregar la nueva
-			content.classList.remove('boy', 'girl');
-			content.classList.add(genero === 'M' ? 'boy' : 'girl');
-			
-			// Actualizar título
-			const title = document.getElementById('modalGraficaTitle');
-			const icon = genero === 'M' ? '👦' : '👧';
-			title.textContent = `Gráfica Peso/Talla OMS - ${genero === 'M' ? 'NIÑOS' : 'NIÑAS'} ${icon}`;
-			
-			// Mostrar modal
-			modal.classList.add('active');
-			
-			// Dibujar la gráfica después de que el modal sea visible y tenga dimensiones
-			requestAnimationFrame(() => {
-				setTimeout(() => {
-					dibujarGraficaEnModal(genero);
-				}, 100);
-			});
-			
-			// Llenar leyenda
-			llenarLeyendaModal();
-			
-			// Agregar listener para redimensionamiento
-			window.addEventListener('resize', handleResizeModal);
-		}
+        function cerrarModalGrafica(event) {
+            if (event && event.target.closest('.modal-grafica-content')) {
+                return;
+            }
+            
+            const modal = document.getElementById('modalGraficaOMS');
+            modal.classList.remove('active');
+            
+            document.body.classList.remove('modal-open');
+            
+            window.removeEventListener('resize', handleResizeModal);
+        }
 
-		function cerrarModalGrafica(event) {
-			// Si hay evento y el clic fue dentro del contenido, no cerrar
-			if (event && event.target.closest('.modal-grafica-content')) {
-				return;
-			}
-			
-			const modal = document.getElementById('modalGraficaOMS');
-			modal.classList.remove('active');
-			
-			// Restaurar scroll del body
-			document.body.classList.remove('modal-open');
-			
-			// Remover listener de resize
-			window.removeEventListener('resize', handleResizeModal);
-		}
+        let resizeTimeout;
+        function handleResizeModal() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const modal = document.getElementById('modalGraficaOMS');
+                if (modal.classList.contains('active')) {
+                    const generoInput = document.querySelector('input[name="_ingresoGender"]:checked');
+                    if (generoInput) {
+                        dibujarGraficaEnModal(generoInput.value);
+                    }
+                }
+            }, 250);
+        }
 
-		// Variable para manejar el debounce del resize
-		let resizeTimeout;
-		function handleResizeModal() {
-			clearTimeout(resizeTimeout);
-			resizeTimeout = setTimeout(() => {
-				const modal = document.getElementById('modalGraficaOMS');
-				if (modal.classList.contains('active')) {
-					const generoInput = document.querySelector('input[name="_ingresoGender"]:checked');
-					if (generoInput) {
-						dibujarGraficaEnModal(generoInput.value);
-					}
-				}
-			}, 250);
-		}
+        function dibujarGraficaEnModal(genero) {
+            const canvas = document.getElementById('omsChartModal');
+            const wrapper = document.querySelector('.modal-grafica-canvas-wrapper');
+            
+            if (!canvas || !wrapper) return;
+            
+            const rect = wrapper.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            
+            ctx.clearRect(0, 0, rect.width, rect.height);
+            
+            const width = rect.width;
+            const height = rect.height;
+            
+            const padding = {
+                top: height * 0.12,
+                right: width * 0.15,
+                bottom: height * 0.18,
+                left: width * 0.12
+            };
+            
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            
+            dibujarGrid(ctx, padding, chartWidth, chartHeight, width, height);
+            dibujarEjes(ctx, padding, chartWidth, chartHeight, width, height);
+            dibujarCurvasOMSModal(ctx, genero, padding, chartWidth, chartHeight);
+            
+            const pesoInput = document.getElementById('nutricionPeso');
+            const tallaInput = document.getElementById('nutricionTalla');
+            
+            if (pesoInput && tallaInput && pesoInput.value && tallaInput.value) {
+                const peso = parseFloat(pesoInput.value);
+                const talla = parseFloat(tallaInput.value);
+                dibujarPuntoEnModal(ctx, talla, peso, padding, chartWidth, chartHeight);
+                
+                const estado = calcularRangoOMS(talla, peso, genero);
+                const subtitle = document.getElementById('modalGraficaSubtitle');
+                subtitle.innerHTML = `<strong style="color: ${estado.color}">${estado.nombre}</strong> (DE: ${estado.de})`;
+            }
+        }
 
-		function dibujarGraficaEnModal(genero) {
-			const canvas = document.getElementById('omsChartModal');
-			const wrapper = document.querySelector('.modal-grafica-canvas-wrapper');
-			
-			if (!canvas || !wrapper) return;
-			
-			// Obtener dimensiones reales del contenedor
-			const rect = wrapper.getBoundingClientRect();
-			const dpr = window.devicePixelRatio || 1;
-			
-			// Establecer dimensiones del canvas con alta resolución
-			canvas.width = rect.width * dpr;
-			canvas.height = rect.height * dpr;
-			
-			// Establecer estilo CSS para mantener el tamaño visual
-			canvas.style.width = rect.width + 'px';
-			canvas.style.height = rect.height + 'px';
-			
-			const ctx = canvas.getContext('2d');
-			ctx.scale(dpr, dpr);
-			
-			// Limpiar canvas
-			ctx.clearRect(0, 0, rect.width, rect.height);
-			
-			const width = rect.width;
-			const height = rect.height;
-			
-			// Márgenes proporcionales al tamaño
-			const padding = {
-				top: height * 0.12,
-				right: width * 0.15,
-				bottom: height * 0.18,
-				left: width * 0.12
-			};
-			
-			const chartWidth = width - padding.left - padding.right;
-			const chartHeight = height - padding.top - padding.bottom;
-			
-			// Dibujar grid
-			dibujarGrid(ctx, padding, chartWidth, chartHeight, width, height);
-			
-			// Dibujar ejes
-			dibujarEjes(ctx, padding, chartWidth, chartHeight, width, height);
-			
-			// Dibujar curvas OMS
-			dibujarCurvasOMSModal(ctx, genero, padding, chartWidth, chartHeight);
-			
-			// Dibujar punto si hay datos
-			const pesoInput = document.getElementById('nutricionPeso');
-			const tallaInput = document.getElementById('nutricionTalla');
-			
-			if (pesoInput && tallaInput && pesoInput.value && tallaInput.value) {
-				const peso = parseFloat(pesoInput.value);
-				const talla = parseFloat(tallaInput.value);
-				dibujarPuntoEnModal(ctx, talla, peso, padding, chartWidth, chartHeight);
-				
-				// Actualizar subtítulo con estado
-				const estado = calcularRangoOMS(talla, peso, genero);
-				const subtitle = document.getElementById('modalGraficaSubtitle');
-				subtitle.innerHTML = `<strong style="color: ${estado.color}">${estado.nombre}</strong> (DE: ${estado.de})`;
-			}
-		}
+        function dibujarGrid(ctx, padding, chartWidth, chartHeight, width, height) {
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = Math.max(0.5, height * 0.002);
+            
+            for (let i = 0; i <= 10; i++) {
+                const y = padding.top + (i * chartHeight / 10);
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
+            }
+            
+            for (let i = 0; i <= 8; i++) {
+                const x = padding.left + (i * chartWidth / 8);
+                ctx.beginPath();
+                ctx.moveTo(x, padding.top);
+                ctx.lineTo(x, height - padding.bottom);
+                ctx.stroke();
+            }
+        }
 
-		function dibujarGrid(ctx, padding, chartWidth, chartHeight, width, height) {
-			// Líneas horizontales (peso) - 10 divisiones
-			ctx.strokeStyle = '#e2e8f0';
-			ctx.lineWidth = Math.max(0.5, height * 0.002);
-			
-			for (let i = 0; i <= 10; i++) {
-				const y = padding.top + (i * chartHeight / 10);
-				ctx.beginPath();
-				ctx.moveTo(padding.left, y);
-				ctx.lineTo(width - padding.right, y);
-				ctx.stroke();
-			}
-			
-			// Líneas verticales (talla) - 8 divisiones
-			for (let i = 0; i <= 8; i++) {
-				const x = padding.left + (i * chartWidth / 8);
-				ctx.beginPath();
-				ctx.moveTo(x, padding.top);
-				ctx.lineTo(x, height - padding.bottom);
-				ctx.stroke();
-			}
-		}
+        function dibujarEjes(ctx, padding, chartWidth, chartHeight, width, height) {
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = Math.max(1.5, height * 0.004);
+            ctx.beginPath();
+            ctx.moveTo(padding.left, padding.top);
+            ctx.lineTo(padding.left, height - padding.bottom);
+            ctx.lineTo(width - padding.right, height - padding.bottom);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#1e293b';
+            ctx.font = `bold ${Math.max(10, height * 0.025)}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText('Talla (cm)', padding.left + chartWidth / 2, height - padding.bottom / 3);
+            
+            ctx.save();
+            ctx.translate(padding.left / 2, padding.top + chartHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Peso (kg)', 0, 0);
+            ctx.restore();
+            
+            ctx.fillStyle = '#64748b';
+            ctx.font = `${Math.max(9, height * 0.02)}px Inter, sans-serif`;
+            
+            for (let i = 0; i <= 10; i++) {
+                const peso = 30 - (i * 2.8);
+                const y = padding.top + (i * chartHeight / 10);
+                ctx.textAlign = 'right';
+                ctx.fillText(peso.toFixed(1), padding.left - 8, y + 4);
+            }
+            
+            ctx.textAlign = 'center';
+            for (let i = 0; i <= 8; i++) {
+                const talla = 50 + (i * 10);
+                const x = padding.left + (i * chartWidth / 8);
+                ctx.fillText(talla, x, height - padding.bottom + 20);
+            }
+        }
 
-		function dibujarEjes(ctx, padding, chartWidth, chartHeight, width, height) {
-			// Ejes principales
-			ctx.strokeStyle = '#374151';
-			ctx.lineWidth = Math.max(1.5, height * 0.004);
-			ctx.beginPath();
-			ctx.moveTo(padding.left, padding.top);
-			ctx.lineTo(padding.left, height - padding.bottom);
-			ctx.lineTo(width - padding.right, height - padding.bottom);
-			ctx.stroke();
-			
-			// Título del eje X (Talla)
-			ctx.fillStyle = '#1e293b';
-			ctx.font = `bold ${Math.max(10, height * 0.025)}px Inter, sans-serif`;
-			ctx.textAlign = 'center';
-			ctx.fillText('Talla (cm)', padding.left + chartWidth / 2, height - padding.bottom / 3);
-			
-			// Título del eje Y (Peso) - rotado
-			ctx.save();
-			ctx.translate(padding.left / 2, padding.top + chartHeight / 2);
-			ctx.rotate(-Math.PI / 2);
-			ctx.fillText('Peso (kg)', 0, 0);
-			ctx.restore();
-			
-			// Etiquetas de valores
-			ctx.fillStyle = '#64748b';
-			ctx.font = `${Math.max(9, height * 0.02)}px Inter, sans-serif`;
-			
-			// Etiquetas de peso (eje Y) - de 30 a 2 kg
-			for (let i = 0; i <= 10; i++) {
-				const peso = 30 - (i * 2.8);
-				const y = padding.top + (i * chartHeight / 10);
-				ctx.textAlign = 'right';
-				ctx.fillText(peso.toFixed(1), padding.left - 8, y + 4);
-			}
-			
-			// Etiquetas de talla (eje X) - de 50 a 130 cm
-			ctx.textAlign = 'center';
-			for (let i = 0; i <= 8; i++) {
-				const talla = 50 + (i * 10);
-				const x = padding.left + (i * chartWidth / 8);
-				ctx.fillText(talla, x, height - padding.bottom + 20);
-			}
-		}
+        function dibujarCurvasOMSModal(ctx, genero, padding, chartWidth, chartHeight) {
+            const data = genero === 'M' ? OMS_REFERENCE_DATA.boys : OMS_REFERENCE_DATA.girls;
+            const tallas = Object.keys(data).map(Number).sort((a, b) => a - b);
+            
+            const minTalla = 50;
+            const maxTalla = 130;
+            const minPeso = 2;
+            const maxPeso = 30;
+            
+            const baseLineWidth = Math.max(1, chartHeight * 0.004);
+            
+            for (let deIndex = 0; deIndex < 7; deIndex++) {
+                ctx.strokeStyle = DE_COLORS[deIndex];
+                ctx.lineWidth = deIndex === 3 ? baseLineWidth * 1.8 : baseLineWidth;
+                ctx.beginPath();
+                
+                let firstPoint = true;
+                
+                tallas.forEach(talla => {
+                    const peso = data[talla][deIndex];
+                    
+                    const x = padding.left + ((talla - minTalla) / (maxTalla - minTalla)) * chartWidth;
+                    const y = padding.top + ((maxPeso - peso) / (maxPeso - minPeso)) * chartHeight;
+                    
+                    if (firstPoint) {
+                        ctx.moveTo(x, y);
+                        firstPoint = false;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.stroke();
+                
+                const lastTalla = tallas[tallas.length - 1];
+                const lastPeso = data[lastTalla][deIndex];
+                const lastX = padding.left + ((lastTalla - minTalla) / (maxTalla - minTalla)) * chartWidth;
+                const lastY = padding.top + ((maxPeso - lastPeso) / (maxPeso - minPeso)) * chartHeight;
+                
+                ctx.fillStyle = DE_COLORS[deIndex];
+                ctx.font = `bold ${Math.max(8, chartHeight * 0.018)}px Inter, sans-serif`;
+                ctx.textAlign = 'left';
+                ctx.fillText(DE_LABELS[deIndex], lastX + 5, lastY + 3);
+            }
+        }
 
-		function dibujarCurvasOMSModal(ctx, genero, padding, chartWidth, chartHeight) {
-			const data = genero === 'M' ? OMS_REFERENCE_DATA.boys : OMS_REFERENCE_DATA.girls;
-			const tallas = Object.keys(data).map(Number).sort((a, b) => a - b);
-			
-			const minTalla = 50;
-			const maxTalla = 130;
-			const minPeso = 2;
-			const maxPeso = 30;
-			
-			// Grosor de línea proporcional
-			const baseLineWidth = Math.max(1, chartHeight * 0.004);
-			
-			for (let deIndex = 0; deIndex < 7; deIndex++) {
-				ctx.strokeStyle = DE_COLORS[deIndex];
-				ctx.lineWidth = deIndex === 3 ? baseLineWidth * 1.8 : baseLineWidth;
-				ctx.beginPath();
-				
-				let firstPoint = true;
-				
-				tallas.forEach(talla => {
-					const peso = data[talla][deIndex];
-					
-					const x = padding.left + ((talla - minTalla) / (maxTalla - minTalla)) * chartWidth;
-					const y = padding.top + ((maxPeso - peso) / (maxPeso - minPeso)) * chartHeight;
-					
-					if (firstPoint) {
-						ctx.moveTo(x, y);
-						firstPoint = false;
-					} else {
-						ctx.lineTo(x, y);
-					}
-				});
-				
-				ctx.stroke();
-				
-				// Etiqueta de la curva al final
-				const lastTalla = tallas[tallas.length - 1];
-				const lastPeso = data[lastTalla][deIndex];
-				const lastX = padding.left + ((lastTalla - minTalla) / (maxTalla - minTalla)) * chartWidth;
-				const lastY = padding.top + ((maxPeso - lastPeso) / (maxPeso - minPeso)) * chartHeight;
-				
-				ctx.fillStyle = DE_COLORS[deIndex];
-				ctx.font = `bold ${Math.max(8, chartHeight * 0.018)}px Inter, sans-serif`;
-				ctx.textAlign = 'left';
-				ctx.fillText(DE_LABELS[deIndex], lastX + 5, lastY + 3);
-			}
-		}
+        function dibujarPuntoEnModal(ctx, talla, peso, padding, chartWidth, chartHeight) {
+            const minTalla = 50;
+            const maxTalla = 130;
+            const minPeso = 2;
+            const maxPeso = 30;
+            
+            const x = padding.left + ((talla - minTalla) / (maxTalla - minTalla)) * chartWidth;
+            const y = padding.top + ((maxPeso - peso) / (maxPeso - minPeso)) * chartHeight;
+            
+            if (x < padding.left || x > padding.left + chartWidth || 
+                y < padding.top || y > padding.top + chartHeight) {
+                return;
+            }
+            
+            const puntoSize = Math.max(8, chartHeight * 0.025);
+            
+            ctx.beginPath();
+            ctx.arc(x, y, puntoSize * 1.8, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(220, 38, 38, 0.2)';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(x, y, puntoSize, 0, 2 * Math.PI);
+            ctx.fillStyle = '#dc2626';
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = Math.max(2, puntoSize * 0.25);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#1e293b';
+            ctx.font = `bold ${Math.max(10, chartHeight * 0.022)}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillText(`${peso}kg`, x, y - puntoSize * 1.5);
+            ctx.fillText(`${talla}cm`, x, y + puntoSize * 2);
+        }
 
-		function dibujarPuntoEnModal(ctx, talla, peso, padding, chartWidth, chartHeight) {
-			const minTalla = 50;
-			const maxTalla = 130;
-			const minPeso = 2;
-			const maxPeso = 30;
-			
-			const x = padding.left + ((talla - minTalla) / (maxTalla - minTalla)) * chartWidth;
-			const y = padding.top + ((maxPeso - peso) / (maxPeso - minPeso)) * chartHeight;
-			
-			// Verificar que el punto esté dentro del área de la gráfica
-			if (x < padding.left || x > padding.left + chartWidth || 
-				y < padding.top || y > padding.top + chartHeight) {
-				return;
-			}
-			
-			const puntoSize = Math.max(8, chartHeight * 0.025);
-			
-			// Círculo exterior (glow)
-			ctx.beginPath();
-			ctx.arc(x, y, puntoSize * 1.8, 0, 2 * Math.PI);
-			ctx.fillStyle = 'rgba(220, 38, 38, 0.2)';
-			ctx.fill();
-			
-			// Círculo medio
-			ctx.beginPath();
-			ctx.arc(x, y, puntoSize, 0, 2 * Math.PI);
-			ctx.fillStyle = '#dc2626';
-			ctx.fill();
-			ctx.strokeStyle = 'white';
-			ctx.lineWidth = Math.max(2, puntoSize * 0.25);
-			ctx.stroke();
-			
-			// Etiqueta del punto
-			ctx.fillStyle = '#1e293b';
-			ctx.font = `bold ${Math.max(10, chartHeight * 0.022)}px Inter, sans-serif`;
-			ctx.textAlign = 'center';
-			ctx.fillText(`${peso}kg`, x, y - puntoSize * 1.5);
-			ctx.fillText(`${talla}cm`, x, y + puntoSize * 2);
-		}
+        function llenarLeyendaModal() {
+            const container = document.getElementById('modalGraficaLeyenda');
+            if (!container) return;
+            
+            container.innerHTML = rangos.map(r => `
+                <div class="leyenda-item">
+                    <div class="leyenda-color" style="background: ${r.color}"></div>
+                    <div>
+                        <div style="font-weight: 700; color: #1e293b; font-size: 10px;">${r.nombre}</div>
+                        <div style="font-size: 9px; color: #64748b;">${r.de}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-		function llenarLeyendaModal() {
-			const container = document.getElementById('modalGraficaLeyenda');
-			if (!container) return;
-			
-			
-			
-			container.innerHTML = rangos.map(r => `
-				<div class="leyenda-item">
-					<div class="leyenda-color" style="background: ${r.color}"></div>
-					<div>
-						<div style="font-weight: 700; color: #1e293b; font-size: 10px;">${r.nombre}</div>
-						<div style="font-size: 9px; color: #64748b;">${r.de}</div>
-					</div>
-				</div>
-			`).join('');
-		}
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarModalGrafica();
+            }
+        });
 
-		// Cerrar modal con tecla ESC
-		document.addEventListener('keydown', function(e) {
-			if (e.key === 'Escape') {
-				cerrarModalGrafica();
-			}
-		});
-
-		// Cerrar modal al hacer clic fuera del contenido
-		document.getElementById('modalGraficaOMS').addEventListener('click', function(e) {
-			if (e.target === this) {
-				cerrarModalGrafica();
-			}
-		});
-
-		// Cerrar modal con tecla ESC
-		document.addEventListener('keydown', function(e) {
-			if (e.key === 'Escape') {
-				cerrarModalGrafica();
-			}
-		});
+        document.getElementById('modalGraficaOMS').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModalGrafica();
+            }
+        });
 
         function filterNovelties() {
             const searchInput = document.getElementById('searchInput');
@@ -3774,13 +3681,13 @@ body.dark-mode .modal-grafica-footer {
         }
 
         function loadArchivedNovelties() {
-		const archivedRef = database.ref('archived');
-		archivedRef.once('value', (snapshot) => {
-			const data = snapshot.val() || {};
-			archivedNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
-			filterArchivedNovelties();
-		});
-	}
+            const archivedRef = database.ref('archived');
+            archivedRef.once('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                archivedNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
+                filterArchivedNovelties();
+            });
+        }
 
         function filterArchivedNovelties() {
             const searchInput = document.getElementById('searchInputArchivados');
@@ -3921,7 +3828,7 @@ body.dark-mode .modal-grafica-footer {
             
             showToast('⏳ Eliminando todos los archivados...', 'info');
             
-            const archivedRef = database.ref('archived_JER').push();
+            const archivedRef = database.ref('archived');
             archivedRef.remove()
                 .then(() => {
                     showToast(`🗑️ ${count} archivados eliminados permanentemente`, 'success');
@@ -4739,83 +4646,85 @@ body.dark-mode .modal-grafica-footer {
 
             const checkRetiro = document.getElementById('checkRetiro');
             const checkIngreso = document.getElementById('checkIngreso');
-			
-			// CORREGIDO: Verificar explícitamente cada sección
-			const tieneRetiro = checkRetiro && checkRetiro.checked;
-			const tieneIngreso = checkIngreso && checkIngreso.checked;
-			
-			if (tieneRetiro) {
-				const retiroDocType = document.getElementById('retiroDocType');
-				const retiroDocNumber = document.getElementById('retiroDocNumber');
-				const retiroFullName = document.getElementById('retiroFullName');
-				const retiroDate = document.getElementById('retiroDate');
-				const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
-				
-				formData += `[ DATOS DE RETIRO ]\n`;
-				formData += `  - Documento:  ${retiroDocType ? retiroDocType.value : ''} ${retiroDocNumber ? retiroDocNumber.value : ''}\n`;
-				formData += `  - Nombre:     ${retiroFullName ? retiroFullName.value.toUpperCase() : ''}\n`;
-				formData += `  - Fecha:      ${retiroDate ? retiroDate.value : ''}\n`;
-				formData += `  - Género:     ${retiroGender ? retiroGender.value : 'N/A'}\n\n`;
-			}
+            
+            const tieneRetiro = checkRetiro && checkRetiro.checked;
+            const tieneIngreso = checkIngreso && checkIngreso.checked;
+            
+            if (tieneRetiro) {
+                const retiroDocType = document.getElementById('retiroDocType');
+                const retiroDocNumber = document.getElementById('retiroDocNumber');
+                const retiroFullName = document.getElementById('retiroFullName');
+                const retiroDate = document.getElementById('retiroDate');
+                const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
+                
+                formData += `[ DATOS DE RETIRO ]\n`;
+                formData += `  - Documento:  ${retiroDocType ? retiroDocType.value : ''} ${retiroDocNumber ? retiroDocNumber.value : ''}\n`;
+                formData += `  - Nombre:     ${retiroFullName ? retiroFullName.value.toUpperCase() : ''}\n`;
+                formData += `  - Fecha:      ${retiroDate ? retiroDate.value : ''}\n`;
+                formData += `  - Género:     ${retiroGender ? retiroGender.value : 'N/A'}\n\n`;
+            }
 
-			if (tieneIngreso) {
-				// ... (resto del código de ingreso sin cambios)
-				const ingresoDocType = document.getElementById('ingresoDocType');
-				const ingresoDocNumber = document.getElementById('ingresoDocNumber');
-				const ingresoFullName = document.getElementById('ingresoFullName');
-				const displayAge = document.getElementById('displayAge');
-				const ingresoDOB = document.getElementById('ingresoDOB');
-				const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
-				const ingresoAddress = document.getElementById('ingresoAddress');
-				const ingresoPhone = document.getElementById('ingresoPhone');
-				const acudienteName = document.getElementById('acudienteName');
-				const acudienteDoc = document.getElementById('acudienteDoc');
-				const acudienteDOB = document.getElementById('acudienteDOB');
-				const ingresoDate = document.getElementById('ingresoDate');
-				
-				formData += `[ DATOS DE INGRESO ]\n`;
-				formData += `  - Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
-				formData += `  - Documento:  ${ingresoDocType ? ingresoDocType.value : ''} ${ingresoDocNumber ? ingresoDocNumber.value : ''}\n`;
-				formData += `  - Edad:       ${displayAge ? displayAge.value : ''}\n`;
-				formData += `  - F. Nacim:   ${ingresoDOB ? ingresoDOB.value : ''}\n`;
-				formData += `  - F. Ingreso: ${ingresoDate ? ingresoDate.value : ''}\n`;
-				formData += `  - Género:     ${ingresoGender ? ingresoGender.value : 'N/A'}\n`;
-				formData += `  - Direccion:  ${ingresoAddress ? ingresoAddress.value : ''}\n`;
-				formData += `  - Teléfono:   ${ingresoPhone ? ingresoPhone.value : ''}\n\n`;
-				
-				formData += `[ DATOS DEL ACUDIENTE ]\n`;
-				formData += `  - Nombre:     ${acudienteName ? acudienteName.value : ''}\n`;
-				formData += `  - F. Nacim:   ${acudienteDOB ? acudienteDOB.value : ''}\n`;
-				formData += `  - Documento:  ${acudienteDoc ? acudienteDoc.value : ''}\n`;
+            if (tieneIngreso) {
+                const ingresoDocType = document.getElementById('ingresoDocType');
+                const ingresoDocNumber = document.getElementById('ingresoDocNumber');
+                const ingresoFullName = document.getElementById('ingresoFullName');
+                const displayAge = document.getElementById('displayAge');
+                const ingresoDOB = document.getElementById('ingresoDOB');
+                const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
+                const ingresoAddress = document.getElementById('ingresoAddress');
+                const ingresoPhone = document.getElementById('ingresoPhone');
+                const acudienteName = document.getElementById('acudienteName');
+                const acudienteDoc = document.getElementById('acudienteDoc');
+                const acudienteDOB = document.getElementById('acudienteDOB');
+                const ingresoDate = document.getElementById('ingresoDate');
+                
+                formData += `[ DATOS DE INGRESO ]\n`;
+                formData += `  - Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
+                formData += `  - Documento:  ${ingresoDocType ? ingresoDocType.value : ''} ${ingresoDocNumber ? ingresoDocNumber.value : ''}\n`;
+                formData += `  - Edad:       ${displayAge ? displayAge.value : ''}\n`;
+                formData += `  - F. Nacim:   ${ingresoDOB ? ingresoDOB.value : ''}\n`;
+                formData += `  - F. Ingreso: ${ingresoDate ? ingresoDate.value : ''}\n`;
+                formData += `  - Género:     ${ingresoGender ? ingresoGender.value : 'N/A'}\n`;
+                formData += `  - Direccion:  ${ingresoAddress ? ingresoAddress.value : ''}\n`;
+                formData += `  - Teléfono:   ${ingresoPhone ? ingresoPhone.value : ''}\n\n`;
+                
+                formData += `[ DATOS DEL ACUDIENTE ]\n`;
+                formData += `  - Nombre:     ${acudienteName ? acudienteName.value : ''}\n`;
+                formData += `  - F. Nacim:   ${acudienteDOB ? acudienteDOB.value : ''}\n`;
+                formData += `  - Documento:  ${acudienteDoc ? acudienteDoc.value : ''}\n`;
 
-				const nutricionFecha = document.getElementById('nutricionFecha');
-				const nutricionPeso = document.getElementById('nutricionPeso');
-				const nutricionTalla = document.getElementById('nutricionTalla');
-				const nutricionRegimen = document.getElementById('nutricionRegimen');
-				const nutricionEPS = document.getElementById('nutricionEPS');
-				const nutricionStatus = document.getElementById('nutricionStatus');
+                const nutricionFecha = document.getElementById('nutricionFecha');
+                const nutricionPeso = document.getElementById('nutricionPeso');
+                const nutricionTalla = document.getElementById('nutricionTalla');
+                const nutricionRegimen = document.getElementById('nutricionRegimen');
+                const nutricionEPS = document.getElementById('nutricionEPS');
+                const nutricionStatus = document.getElementById('nutricionStatus');
 
-				if (nutricionFecha && nutricionFecha.value) {
-					formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
-					formData += `  - F. Valoración:  ${nutricionFecha.value}\n`;
-					formData += `  - Peso:           ${nutricionPeso ? nutricionPeso.value + ' kg' : ''}\n`;
-					formData += `  - Talla:          ${nutricionTalla ? nutricionTalla.value + ' cm' : ''}\n`;
-					formData += `  - Régimen:        ${nutricionRegimen ? nutricionRegimen.value : ''}\n`;
-					formData += `  - EPS:            ${nutricionEPS ? nutricionEPS.value : ''}\n`;
-					formData += `  - Estado Nutric.: ${nutricionStatus ? nutricionStatus.textContent : 'No calculado'}\n`;
-				}
-			}
-			 //CORREGIDO: Si no hay ninguno seleccionado, mostrar advertencia
-			if (!tieneRetiro && !tieneIngreso) {
-				formData += `[ ⚠️ NO SE SELECCIONÓ RETIRO NI INGRESO ]\n`;
-			}
-			
-			formData += `\n------------------------------------------\n`;
-			formData += `Generado el: ${new Date().toLocaleString()}\n`;
-			
+                if (nutricionFecha && nutricionFecha.value) {
+                    formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
+                    formData += `  - F. Valoración:  ${nutricionFecha.value}\n`;
+                    formData += `  - Peso:           ${nutricionPeso ? nutricionPeso.value + ' kg' : ''}\n`;
+                    formData += `  - Talla:          ${nutricionTalla ? nutricionTalla.value + ' cm' : ''}\n`;
+                    formData += `  - Régimen:        ${nutricionRegimen ? nutricionRegimen.value : ''}\n`;
+                    formData += `  - EPS:            ${nutricionEPS ? nutricionEPS.value : ''}\n`;
+                    formData += `  - Estado Nutric.: ${nutricionStatus ? nutricionStatus.textContent : 'No calculado'}\n`;
+                }
+            }
+            
+            if (!tieneRetiro && !tieneIngreso) {
+                formData += `[ ⚠️ NO SE SELECCIONÓ RETIRO NI INGRESO ]\n`;
+            }
+            
+            formData += `\n------------------------------------------\n`;
+            formData += `Generado el: ${new Date().toLocaleString()}\n`;
+            
             return formData;
         }
 
+        // ============================================================
+        // CÓDIGO CORREGIDO PARA ENVÍO DE FORMULARIO CON VALIDACIONES SEPARADAS
+        // ============================================================
+        
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('noveltyForm');
             if (form) {
@@ -4827,6 +4736,7 @@ body.dark-mode .modal-grafica-footer {
                     const uds = document.getElementById('mainUdsDropdown');
                     const checkRetiro = document.getElementById('checkRetiro');
                     const checkIngreso = document.getElementById('checkIngreso');
+                    const fileInput = document.querySelector('input[name="soporte_documento"]');
                     
                     if (!contract || !uds || !checkRetiro || !checkIngreso) {
                         showToast("Error: Elementos del formulario no encontrados", "error");
@@ -4836,91 +4746,259 @@ body.dark-mode .modal-grafica-footer {
                     const isRetiro = checkRetiro.checked;
                     const isIngreso = checkIngreso.checked;
 
+                    // ============================================
+                    // VALIDACIONES GENERALES (siempre aplican)
+                    // ============================================
+                    if (!contract.value) {
+                        showToast("❌ Seleccione el CONTRATO", "error");
+                        contract?.classList.add('input-error');
+                        contract?.focus();
+                        return;
+                    }
+                    contract?.classList.remove('input-error');
+
+                    if (!uds.value) {
+                        showToast("❌ Seleccione la UDS", "error");
+                        uds?.classList.add('input-error');
+                        uds?.focus();
+                        return;
+                    }
+                    uds?.classList.remove('input-error');
+
+                    if (!isRetiro && !isIngreso) {
+                        showToast("❌ Seleccione al menos una acción: RETIRO o INGRESO", "error");
+                        return;
+                    }
+
+                    // ============================================
+                    // VALIDACIONES SOLO PARA RETIRO
+                    // ============================================
                     if (isRetiro) {
                         const retiroDocNumber = document.getElementById('retiroDocNumber');
-                        if (retiroDocNumber && (retiroDocNumber.value.length < 7 || retiroDocNumber.value.length > 10)) {
-                            showToast("El documento de retiro debe tener entre 7 y 10 dígitos.", "error");
+                        const retiroFullName = document.getElementById('retiroFullName');
+                        const retiroDate = document.getElementById('retiroDate');
+                        const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
+
+                        // Documento obligatorio
+                        if (!retiroDocNumber || !retiroDocNumber.value.trim()) {
+                            showToast("❌ El DOCUMENTO del beneficiario a retirar es OBLIGATORIO", "error");
+                            retiroDocNumber?.classList.add('input-error');
+                            retiroDocNumber?.focus();
+                            return;
+                        }
+                        
+                        if (retiroDocNumber.value.length < 7 || retiroDocNumber.value.length > 10) {
+                            showToast("El documento de retiro debe tener entre 7 y 10 dígitos", "error");
+                            retiroDocNumber.classList.add('input-error');
+                            retiroDocNumber.focus();
+                            return;
+                        }
+                        retiroDocNumber.classList.remove('input-error');
+
+                        // Nombre obligatorio
+                        if (!retiroFullName || !retiroFullName.value.trim()) {
+                            showToast("❌ El NOMBRE del beneficiario a retirar es OBLIGATORIO", "error");
+                            retiroFullName?.classList.add('input-error');
+                            retiroFullName?.focus();
+                            return;
+                        }
+                        
+                        const nombreParts = retiroFullName.value.trim().split(/\s+/);
+                        if (nombreParts.length < 2) {
+                            showToast("Ingrese nombre y apellidos completos del retiro", "error");
+                            retiroFullName.classList.add('input-error');
+                            retiroFullName.focus();
+                            return;
+                        }
+                        retiroFullName.classList.remove('input-error');
+
+                        // Fecha de retiro obligatoria
+                        if (!retiroDate || !retiroDate.value) {
+                            showToast("❌ La FECHA DE RETIRO es OBLIGATORIA", "error");
+                            retiroDate?.classList.add('input-error');
+                            retiroDate?.focus();
+                            return;
+                        }
+                        retiroDate.classList.remove('input-error');
+
+                        // Género obligatorio
+                        if (!retiroGender) {
+                            showToast("❌ Seleccione el GÉNERO del beneficiario a retirar", "error");
+                            // Scroll al campo
+                            document.getElementById('sectionRetiro')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             return;
                         }
                     }
 
+                    // ============================================
+                    // VALIDACIONES SOLO PARA INGRESO
+                    // ============================================
                     if (isIngreso) {
-						const nutricionPeso = document.getElementById('nutricionPeso');
-						const nutricionTalla = document.getElementById('nutricionTalla');
-						const nutricionFecha = document.getElementById('nutricionFecha');
+                        const ingresoDocNumber = document.getElementById('ingresoDocNumber');
+                        const ingresoFullName = document.getElementById('ingresoFullName');
+                        const ingresoDOB = document.getElementById('ingresoDOB');
+                        const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
+                        const ingresoDate = document.getElementById('ingresoDate');
+                        const ingresoAddress = document.getElementById('ingresoAddress');
+                        const ingresoPhone = document.getElementById('ingresoPhone');
+                        const acudienteName = document.getElementById('acudienteName');
 
-						if (!nutricionPeso || !nutricionPeso.value) {
-							showToast("El campo PESO es obligatorio para el seguimiento nutricional.", "error");
-							nutricionPeso.classList.add('input-error');
-							return;
-						}
-						if (!nutricionTalla || !nutricionTalla.value) {
-							showToast("El campo TALLA es obligatorio para el seguimiento nutricional.", "error");
-							nutricionTalla.classList.add('input-error');
-							return;
-						}
-						if (!nutricionFecha || !nutricionFecha.value) {
-							showToast("La FECHA DE VALORACIÓN es obligatoria.", "error");
-							nutricionFecha.classList.add('input-error');
-							return;
-						}
+                        // Documento obligatorio
+                        if (!ingresoDocNumber || !ingresoDocNumber.value.trim()) {
+                            showToast("❌ El DOCUMENTO del beneficiario es OBLIGATORIO", "error");
+                            ingresoDocNumber?.classList.add('input-error');
+                            ingresoDocNumber?.focus();
+                            return;
+                        }
+                        
+                        if (ingresoDocNumber.value.length < 7 || ingresoDocNumber.value.length > 10) {
+                            showToast("El documento debe tener entre 7 y 10 dígitos", "error");
+                            ingresoDocNumber.classList.add('input-error');
+                            ingresoDocNumber.focus();
+                            return;
+                        }
+                        ingresoDocNumber.classList.remove('input-error');
 
-						const peso = parseFloat(nutricionPeso.value);
-						const talla = parseFloat(nutricionTalla.value);
+                        // Nombre obligatorio
+                        if (!ingresoFullName || !ingresoFullName.value.trim()) {
+                            showToast("❌ El NOMBRE del beneficiario es OBLIGATORIO", "error");
+                            ingresoFullName?.classList.add('input-error');
+                            ingresoFullName?.focus();
+                            return;
+                        }
+                        
+                        const nombreParts = ingresoFullName.value.trim().split(/\s+/);
+                        if (nombreParts.length < 2) {
+                            showToast("Ingrese nombre y apellidos completos", "error");
+                            ingresoFullName.classList.add('input-error');
+                            ingresoFullName.focus();
+                            return;
+                        }
+                        ingresoFullName.classList.remove('input-error');
 
-						if (peso < 5 || peso > 30.5) {
-							showToast("El peso debe estar entre 5 y 30.5 kg.", "error");
-							return;
-						}
-						if (talla < 50 || talla > 130.5) {
-							showToast("La talla debe estar entre 50 y 130.5 cm.", "error");
-							return;
-						}
-					}
+                        // Fecha de nacimiento obligatoria
+                        if (!ingresoDOB || !ingresoDOB.value) {
+                            showToast("❌ La FECHA DE NACIMIENTO es OBLIGATORIA", "error");
+                            ingresoDOB?.classList.add('input-error');
+                            ingresoDOB?.focus();
+                            return;
+                        }
+                        ingresoDOB.classList.remove('input-error');
 
+                        // Género obligatorio
+                        if (!ingresoGender) {
+                            showToast("❌ Seleccione el GÉNERO del beneficiario", "error");
+                            document.getElementById('sectionIngreso')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            return;
+                        }
+
+                        // Fecha de ingreso obligatoria
+                        if (!ingresoDate || !ingresoDate.value) {
+                            showToast("❌ La FECHA DE INGRESO es OBLIGATORIA", "error");
+                            ingresoDate?.classList.add('input-error');
+                            ingresoDate?.focus();
+                            return;
+                        }
+                        ingresoDate.classList.remove('input-error');
+
+                        // Dirección obligatoria
+                        if (!ingresoAddress || !ingresoAddress.value.trim()) {
+                            showToast("❌ La DIRECCIÓN es OBLIGATORIA", "error");
+                            ingresoAddress?.classList.add('input-error');
+                            ingresoAddress?.focus();
+                            return;
+                        }
+                        ingresoAddress.classList.remove('input-error');
+
+                        // Teléfono obligatorio
+                        if (!ingresoPhone || !ingresoPhone.value.trim()) {
+                            showToast("❌ El TELÉFONO de contacto es OBLIGATORIO", "error");
+                            ingresoPhone?.classList.add('input-error');
+                            ingresoPhone?.focus();
+                            return;
+                        }
+                        ingresoPhone.classList.remove('input-error');
+
+                        // Acudiente obligatorio
+                        if (!acudienteName || !acudienteName.value.trim()) {
+                            showToast("❌ El NOMBRE del acudiente es OBLIGATORIO", "error");
+                            acudienteName?.classList.add('input-error');
+                            acudienteName?.focus();
+                            return;
+                        }
+                        acudienteName.classList.remove('input-error');
+
+                        // Validaciones de nutrición
+                        const nutricionPeso = document.getElementById('nutricionPeso');
+                        const nutricionTalla = document.getElementById('nutricionTalla');
+                        const nutricionFecha = document.getElementById('nutricionFecha');
+
+                        if (!nutricionPeso || !nutricionPeso.value) {
+                            showToast("❌ El PESO es obligatorio para el seguimiento nutricional", "error");
+                            nutricionPeso?.classList.add('input-error');
+                            nutricionPeso?.focus();
+                            return;
+                        }
+                        
+                        if (!nutricionTalla || !nutricionTalla.value) {
+                            showToast("❌ La TALLA es obligatoria para el seguimiento nutricional", "error");
+                            nutricionTalla?.classList.add('input-error');
+                            nutricionTalla?.focus();
+                            return;
+                        }
+                        
+                        if (!nutricionFecha || !nutricionFecha.value) {
+                            showToast("❌ La FECHA DE VALORACIÓN es obligatoria", "error");
+                            nutricionFecha?.classList.add('input-error');
+                            nutricionFecha?.focus();
+                            return;
+                        }
+
+                        const peso = parseFloat(nutricionPeso.value);
+                        const talla = parseFloat(nutricionTalla.value);
+
+                        if (peso < 5 || peso > 30.5) {
+                            showToast("❌ El peso debe estar entre 5 y 30.5 kg", "error");
+                            nutricionPeso.classList.add('input-error');
+                            return;
+                        }
+                        nutricionPeso.classList.remove('input-error');
+
+                        if (talla < 50 || talla > 130.5) {
+                            showToast("❌ La talla debe estar entre 50 y 130.5 cm", "error");
+                            nutricionTalla.classList.add('input-error');
+                            return;
+                        }
+                        nutricionTalla.classList.remove('input-error');
+                    }
+
+                    // ============================================
+                    // VALIDACIÓN DE FECHAS CRUZADAS (solo si hay ambos)
+                    // ============================================
                     if (isRetiro && isIngreso) {
                         const retiroDate = document.getElementById('retiroDate');
                         const ingresoDate = document.getElementById('ingresoDate');
-                        if (retiroDate && ingresoDate && retiroDate.value && ingresoDate.value) {
+                        
+                        if (retiroDate?.value && ingresoDate?.value) {
                             const dRetiro = new Date(retiroDate.value);
                             const dIngreso = new Date(ingresoDate.value);
                             dRetiro.setMinutes(dRetiro.getMinutes() + dRetiro.getTimezoneOffset());
                             dIngreso.setMinutes(dIngreso.getMinutes() + dIngreso.getTimezoneOffset());
 
                             if (dRetiro >= dIngreso) {
-                                showToast("La fecha de retiro debe ser anterior a la fecha de ingreso.", "error");
+                                showToast("❌ La fecha de retiro debe ser anterior a la fecha de ingreso", "error");
+                                retiroDate.classList.add('input-error');
+                                ingresoDate.classList.add('input-error');
                                 return;
                             }
+                            retiroDate.classList.remove('input-error');
+                            ingresoDate.classList.remove('input-error');
                         }
                     }
 
-                    if (!contract.value || !uds.value) {
-                        showToast("Seleccione Contrato y Unidad de Servicio (UDS).", "error");
-                        return;
-                    }
-                    if (!isRetiro && !isIngreso) {
-                        showToast("Seleccione al menos una acción: RETIRO o INGRESO.", "error");
-                        return;
-                    }
-
-                    if (isRetiro) {
-                        const retiroDocNumber = document.getElementById('retiroDocNumber');
-                        const retiroDate = document.getElementById('retiroDate');
-                        if ((!retiroDocNumber || !retiroDocNumber.value) || (!retiroDate || !retiroDate.value)) {
-                            showToast("Complete los datos de RETIRO.", "error"); 
-                            return;
-                        }
-                    }
-                    
-                    if (isIngreso) {
-                        const ingresoDocNumber = document.getElementById('ingresoDocNumber');
-                        const acudienteName = document.getElementById('acudienteName');
-                        if ((!ingresoDocNumber || !ingresoDocNumber.value) || (!acudienteName || !acudienteName.value)) {
-                            showToast("Complete los datos de INGRESO y ACUDIENTE.", "error"); 
-                            return;
-                        }
-                    }
-
+                    // ============================================
+                    // CONSTRUIR DATOS PARA ENVÍO
+                    // ============================================
                     const udsName = uds.value.split(' - ')[0];
                     const noveltyData = {
                         contract: contract.value,
@@ -4931,6 +5009,7 @@ body.dark-mode .modal-grafica-footer {
                         cuentameStatus: 'pendiente'
                     };
 
+                    // Determinar tipo
                     if (isRetiro && isIngreso) {
                         noveltyData.type = 'ambos';
                         noveltyData.hasRetiro = true;
@@ -4945,134 +5024,125 @@ body.dark-mode .modal-grafica-footer {
                         noveltyData.hasIngreso = true;
                     }
 
+                    // Datos de retiro (solo si aplica)
                     if (isRetiro) {
-                        const retiroDocType = document.getElementById('retiroDocType');
-                        const retiroDocNumber = document.getElementById('retiroDocNumber');
-                        const retiroFullName = document.getElementById('retiroFullName');
-                        const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
-                        const retiroDate = document.getElementById('retiroDate');
-                        
                         noveltyData.retiro = {
-                            docType: retiroDocType ? retiroDocType.value : 'RC',
-                            document: retiroDocNumber ? retiroDocNumber.value : '',
-                            name: retiroFullName ? retiroFullName.value : '',
-                            gender: retiroGender ? retiroGender.value : '',
-                            retiroDate: retiroDate ? retiroDate.value : ''
+                            docType: document.getElementById('retiroDocType')?.value || 'RC',
+                            document: document.getElementById('retiroDocNumber')?.value?.trim() || '',
+                            name: document.getElementById('retiroFullName')?.value?.trim() || '',
+                            gender: document.querySelector('input[name="_retiroGender"]:checked')?.value || '',
+                            retiroDate: document.getElementById('retiroDate')?.value || ''
                         };
-                        noveltyData.docType = noveltyData.retiro.docType;
                         noveltyData.document = noveltyData.retiro.document;
                         noveltyData.name = noveltyData.retiro.name;
-                        noveltyData.gender = noveltyData.retiro.gender;
-                        noveltyData.retiroDate = noveltyData.retiro.retiroDate;
                     }
 
+                    // Datos de ingreso (solo si aplica)
                     if (isIngreso) {
-                        const ingresoDocType = document.getElementById('ingresoDocType');
-                        const ingresoDocNumber = document.getElementById('ingresoDocNumber');
-                        const ingresoFullName = document.getElementById('ingresoFullName');
-                        const ingresoDOB = document.getElementById('ingresoDOB');
-                        const displayAge = document.getElementById('displayAge');
-                        const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
-                        const ingresoAddress = document.getElementById('ingresoAddress');
-                        const ingresoPhone = document.getElementById('ingresoPhone');
-                        const acudienteName = document.getElementById('acudienteName');
-                        const acudienteDoc = document.getElementById('acudienteDoc');
-                        const acudienteDOB = document.getElementById('acudienteDOB');
-                        const ingresoDate = document.getElementById('ingresoDate');
-                        
                         noveltyData.ingreso = {
-                            docType: ingresoDocType ? ingresoDocType.value : 'RC',
-                            document: ingresoDocNumber ? ingresoDocNumber.value : '',
-                            name: ingresoFullName ? ingresoFullName.value : '',
-                            dob: ingresoDOB ? ingresoDOB.value : '',
-                            age: displayAge ? displayAge.value : '',
-                            gender: ingresoGender ? ingresoGender.value : '',
-                            address: ingresoAddress ? ingresoAddress.value : '',
-                            phone: ingresoPhone ? ingresoPhone.value : '',
-                            acudiente: acudienteName ? acudienteName.value : '',
-                            acudienteDoc: acudienteDoc ? acudienteDoc.value : '',
-                            acudienteDOB: acudienteDOB ? acudienteDOB.value : '',
-                            ingresoDate: ingresoDate ? ingresoDate.value : ''
+                            docType: document.getElementById('ingresoDocType')?.value || 'RC',
+                            document: document.getElementById('ingresoDocNumber')?.value?.trim() || '',
+                            name: document.getElementById('ingresoFullName')?.value?.trim() || '',
+                            dob: document.getElementById('ingresoDOB')?.value || '',
+                            age: document.getElementById('displayAge')?.value || '',
+                            gender: document.querySelector('input[name="_ingresoGender"]:checked')?.value || '',
+                            address: document.getElementById('ingresoAddress')?.value?.trim() || '',
+                            phone: document.getElementById('ingresoPhone')?.value?.trim() || '',
+                            acudiente: document.getElementById('acudienteName')?.value?.trim() || '',
+                            acudienteDoc: document.getElementById('acudienteDoc')?.value?.trim() || '',
+                            acudienteDOB: document.getElementById('acudienteDOB')?.value || '',
+                            ingresoDate: document.getElementById('ingresoDate')?.value || ''
                         };
-                        noveltyData.ingresoDOB = noveltyData.ingreso.dob;
-                        noveltyData.age = noveltyData.ingreso.age;
-                        noveltyData.address = noveltyData.ingreso.address;
-                        noveltyData.phone = noveltyData.ingreso.phone;
-                        noveltyData.acudiente = noveltyData.ingreso.acudiente;
-                        noveltyData.acudienteDoc = noveltyData.ingreso.acudienteDoc;
-                        noveltyData.acudienteDOB = noveltyData.ingreso.acudienteDOB;
-                        noveltyData.ingresoDate = noveltyData.ingreso.ingresoDate;
                         
-                        const nutricionFecha = document.getElementById('nutricionFecha');
-                        const nutricionPeso = document.getElementById('nutricionPeso');
-                        const nutricionTalla = document.getElementById('nutricionTalla');
-                        const nutricionRegimen = document.getElementById('nutricionRegimen');
-                        const nutricionEPS = document.getElementById('nutricionEPS');
-                        const nutricionStatus = document.getElementById('nutricionStatus');
-
                         noveltyData.nutricion = {
-                            fecha: nutricionFecha ? nutricionFecha.value : '',
-                            peso: nutricionPeso ? nutricionPeso.value : '',
-                            talla: nutricionTalla ? nutricionTalla.value : '',
-                            regimen: nutricionRegimen ? nutricionRegimen.value : '',
-                            eps: nutricionEPS ? nutricionEPS.value : '',
-                            estadoNutricional: nutricionStatus ? nutricionStatus.textContent : 'No calculado'
+                            fecha: document.getElementById('nutricionFecha')?.value || '',
+                            peso: document.getElementById('nutricionPeso')?.value || '',
+                            talla: document.getElementById('nutricionTalla')?.value || '',
+                            regimen: document.getElementById('nutricionRegimen')?.value || '',
+                            eps: document.getElementById('nutricionEPS')?.value || '',
+                            estadoNutricional: document.getElementById('nutricionStatus')?.textContent || 'No calculado'
                         };
 
                         if (!isRetiro) {
-                            noveltyData.docType = noveltyData.ingreso.docType;
                             noveltyData.document = noveltyData.ingreso.document;
                             noveltyData.name = noveltyData.ingreso.name;
-                            noveltyData.gender = noveltyData.ingreso.gender;
                         }
                     }
 
-                    const emailSubject = document.getElementById('emailSubject');
-                    const hiddenFormattedData = document.getElementById('hiddenFormattedData');
-                    const formattedData = formatData();
-					if (hiddenFormattedData) hiddenFormattedData.value = formattedData;
-					
-					
-                    if (emailSubject) emailSubject.value = `Novedad UDS: ${udsName}`;
-                    if (hiddenFormattedData) hiddenFormattedData.value = formatData();
+                    // Preparar datos para Google Apps Script
+                    const googleData = {
+                        Contrato: contract.value,
+                        UDS_Full: uds.value,
+                        REPORTE_DETALLADO: formatData(),
+                        _subject: `Novedad UDS: ${udsName}`
+                    };
+
+                    // Solo agregar datos de retiro si existe
+                    if (isRetiro && noveltyData.retiro) {
+                        googleData.retiro_tipo_doc = noveltyData.retiro.docType;
+                        googleData.retiro_documento = noveltyData.retiro.document;
+                        googleData.retiro_nombre = noveltyData.retiro.name;
+                        googleData.retiro_fecha = noveltyData.retiro.retiroDate;
+                        googleData._retiroGender = noveltyData.retiro.gender;
+                    }
+
+                    // Solo agregar datos de ingreso si existe
+                    if (isIngreso && noveltyData.ingreso) {
+                        googleData.ingreso_tipo_doc = noveltyData.ingreso.docType;
+                        googleData.ingreso_documento = noveltyData.ingreso.document;
+                        googleData.ingreso_nombre = noveltyData.ingreso.name;
+                        googleData.ingreso_nacimiento = noveltyData.ingreso.dob;
+                        googleData.edad_calculada = noveltyData.ingreso.age;
+                        googleData.ingreso_fecha = noveltyData.ingreso.ingresoDate;
+                        googleData._ingresoGender = noveltyData.ingreso.gender;
+                        googleData.ingreso_direccion = noveltyData.ingreso.address;
+                        googleData.ingreso_telefono = noveltyData.ingreso.phone;
+                        googleData.acudiente_documento = noveltyData.ingreso.acudienteDoc;
+                        googleData.acudiente_nombre = noveltyData.ingreso.acudiente;
+                        googleData.acudiente_nacimiento = noveltyData.ingreso.acudienteDOB;
+                        googleData.nutricion_fecha = noveltyData.nutricion.fecha;
+                        googleData.nutricion_peso = noveltyData.nutricion.peso;
+                        googleData.nutricion_talla = noveltyData.nutricion.talla;
+                        googleData.nutricion_regimen = noveltyData.nutricion.regimen;
+                        googleData.nutricion_eps = noveltyData.nutricion.eps;
+                    }
 
                     if (btn) {
                         btn.disabled = true;
                         btn.innerHTML = '<span class="spinner"></span> ENVIANDO...';
                     }
 
-                    let firebaseSaved = false;
-
                     try {
-                        const noveltiesRef = database.ref('novelties');
-                        await noveltiesRef.push(noveltyData);
-                        firebaseSaved = true;
-                        console.log('Guardado en Firebase correctamente');
-                    } catch (firebaseError) {
-                        console.warn('No se pudo guardar en Firebase:', firebaseError.message);
-                    }
+                        // 1. Guardar en Firebase
+                        await database.ref('novelties').push(noveltyData);
+                        console.log('✅ Firebase OK');
 
-                    try {
-                        const fileInput = document.getElementById('fileInput');
-                        const formData = new FormData(this);
-                        const obj = Object.fromEntries(formData.entries());
-
-                        if (fileInput && fileInput.files.length > 0) {
+                        // 2. Procesar archivo si existe
+                        if (fileInput?.files?.length > 0) {
                             const file = fileInput.files[0];
-                            const reader = new FileReader();
-                            reader.onload = async function() {
-                                obj.file_base64 = reader.result.split(',')[1];
-                                obj.file_type = file.type;
-                                obj.file_name = file.name;
-                                await enviarAGoogle(obj, btn);
-                            };
-                            reader.readAsDataURL(file);
-                        } else {
-                            await enviarAGoogle(obj, btn);
+                            
+                            if (file.size > 8 * 1024 * 1024) {
+                                throw new Error("El archivo excede 8MB. Use un archivo más pequeño.");
+                            }
+
+                            const base64 = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = e => resolve(e.target.result.split(',')[1]);
+                                reader.onerror = () => reject(new Error("Error al leer archivo"));
+                                reader.readAsDataURL(file);
+                            });
+
+                            googleData.file_base64 = base64;
+                            googleData.file_type = file.type;
+                            googleData.file_name = file.name;
                         }
+
+                        // 3. Enviar a Google Apps Script
+                        await enviarAGoogle(googleData, btn);
+
                     } catch (error) {
                         console.error('Error:', error);
-                        showToast("Error al preparar el envío. Intente nuevamente.", "error");
+                        showToast(error.message, "error");
                         if (btn) {
                             btn.disabled = false;
                             btn.innerHTML = '<span>Enviar Reporte Al Correo</span>';
@@ -5082,30 +5152,37 @@ body.dark-mode .modal-grafica-footer {
             }
         });
 
+        // Función separada para envío a Google
         async function enviarAGoogle(data, btn) {
-            const formBody = Object.keys(data).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key])).join('&');
+            const formBody = Object.keys(data)
+                .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key] || ''))
+                .join('&');
 
             try {
-                await fetch(document.getElementById('noveltyForm').action, {
+                const response = await fetch(document.getElementById('noveltyForm').action, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    mode: 'no-cors',  // Necesario para Google Apps Script
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: formBody
                 });
 
                 showToast('✅ ¡Éxito! Reporte enviado correctamente.', 'success');
                 
+                // Resetear formulario
                 document.getElementById('noveltyForm').reset();
                 updateStyles();
                 document.getElementById('sectionRetiro').classList.add('hidden');
                 document.getElementById('sectionIngreso').classList.add('hidden');
-                document.getElementById('displayAge').value = "Esperando fechas...";
+                const displayAge = document.getElementById('displayAge');
+                if (displayAge) displayAge.value = "Esperando fechas...";
                 
                 const nutricionIndicator = document.getElementById('nutricionIndicator');
                 if (nutricionIndicator) nutricionIndicator.style.display = 'none';
 
             } catch (error) {
+                console.error('Error envío:', error);
                 showToast("❌ Error de conexión con Google Apps Script.", "error");
+                throw error;
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -5113,8 +5190,11 @@ body.dark-mode .modal-grafica-footer {
                 }
             }
         }
+        
+        function inicializarGraficaOMS() {
+            // Placeholder para inicialización de gráfica
+            console.log('Gráfica OMS inicializada');
+        }
     </script>
 </body>
 </html>
-
-
