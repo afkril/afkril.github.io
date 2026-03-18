@@ -19,13 +19,18 @@
       padding: 0;
     }
     .container {
-      max-width: 700px;
-      margin: 20px auto;
-      background: #fff;
-      border-radius: 100px;
-      padding: 40px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
+	  max-width: 700px;
+	  margin: 20px auto;
+	  background: #fff;
+	  /* Reducimos el border-radius para que no corte el contenido en móviles */
+	  border-radius: 30px; 
+	  padding: 20px; /* Reducimos padding para ganar espacio */
+	  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+	  /* Esto evita que el contenido se salga del fondo blanco */
+	  width: 90%; 
+	  box-sizing: border-box;
+	  overflow: hidden;
+	}
     h1 {
       font-size: 40px;
       color: #6a1b9a;
@@ -624,6 +629,29 @@
       background: #ff9800;
     }
 
+	/* Ajustes para pantallas pequeñas (Celulares) */
+	@media (max-width: 480px) {
+	  .grid {
+		/* Cambiamos a 5 columnas en lugar de 10 para que los círculos no se aplasten */
+		grid-template-columns: repeat(5, 1fr); 
+		gap: 8px;
+	  }
+	  
+	  .cell {
+		padding: 10px 5px; /* Celdas un poco más pequeñas */
+		font-size: 14px;
+	  }
+
+	  h1 {
+		font-size: 28px; /* Título más pequeño para que no rompa el diseño */
+	  }
+
+	  .container {
+		padding: 15px;
+		border-radius: 20px; /* Bordes más sutiles en móvil */
+	  }
+	}
+	
     /* Responsive */
     @media (max-width: 600px) {
       .sidebar {
@@ -817,7 +845,7 @@
   <div class="container">
     <h1>Super Rifa Solidaria</h1>
     <div class="prize">
-      Premio: <strong>$250.000</strong><br>
+      Gran Premio de: <strong>$250.000</strong><br>
       <span class="highlight">$15.000 EL NUMERO</span>
     </div>
     
