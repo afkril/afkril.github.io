@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Rifa de Apoyo Solidario</title>
+  
+  <!-- Firebase SDK v10 (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+  
+  <style>
+    /* ESTILOS ORIGINALES - PRESERVADOS */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      background: linear-gradient(to bottom right, #a18cd1, #fbc2eb);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 700px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 100px;
+      padding: 40px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    h1 {
+      font-size: 40px;
+      color: #6a1b9a;
+    }
+    h2 {
+      font-size: 25px;
+      color: #eb1eb1;
+    }
+    .prize {
+      font-size: 25px;
+      margin-bottom: 25px;
+      color: #333;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+    .cell {
+      background-color: #e0f7fa;
+      border: 1px solid #0097a7;
+      padding: 12px;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      transition: transform 0.1s ease;
+    }
+    .cell:hover {
+      transform: scale(1.05);
+    }
+    .cell.sold {
+      background-color: #a473e5;
+      color: #fff;
+    }
+    .cell.paid {
+      background-color: #4caf50;
+      color: #fff;
+      border-color: #2e7d32;
+    }
+    .footer {
+      font-size: 20px;
+      color: #444;
+      margin-top: 25px;
+    }
+    .highlight {
+      color: #00796b;
+      font-weight: bold;
+    }
+    .highlight2 {
+      color: #b00448;
+      font-weight: bold;
+    }
+    .export-button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #8e24aa;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .export-button:hover {
+      background-color: #6a1b9a;
+    }
+
+    /* ESTILOS DEL MODAL/TARJETA DE DATOS */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .data-card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideIn 0.3s ease;
+      position: relative;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    .card-header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .card-header h3 {
+      margin: 0;
+      color: #6a1b9a;
+      font-size: 24px;
+    }
+    
+    .number-display {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 36px;
+      font-weight: bold;
+      padding: 10px 30px;
+      border-radius: 50px;
+      margin-top: 10px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .payment-status {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .status-option {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s;
+      font-weight: 600;
+    }
+    
+    .status-option:hover {
+      border-color: #667eea;
+    }
+    
+    .status-option.selected {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    
+    .status-option.paid-option.selected {
+      background: #4caf50;
+      border-color: #4caf50;
+    }
+    
+    .status-option.debt-option.selected {
+      background: #ff9800;
+      border-color: #ff9800;
+    }
+    
+    .card-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-save {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-delete {
+      background: #f44336;
+      color: white;
+    }
+    
+    .btn-delete:hover {
+      background: #d32f2f;
+      transform: translateY(-2px);
+    }
+    
+    .btn-cancel {
+      background: #f5f5f5;
+      color: #666;
+    }
+    
+    .btn-cancel:hover {
+      background: #e0e0e0;
+    }
+    
+    .close-card {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #999;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+    
+    .close-card:hover {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    /* ESTILOS DEL MENU HAMBURGUESA */
+    .menu-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1001;
+      cursor: pointer;
+      width: 45px;
+      height: 45px;
+      background: #6a1b9a;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .menu-btn:hover {
+      background: #8e24aa;
+      transform: scale(1.05);
+    }
+    
+    .menu-btn span {
+      display: block;
+      width: 25px;
+      height: 3px;
+      background: white;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    
+    .menu-btn.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    
+    .menu-btn.active span:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .menu-btn.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(6px, -6px);
+    }
+    
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -350px;
+      width: 350px;
+      height: 100vh;
+      background: linear-gradient(180deg, #6a1b9a 0%, #8e24aa 100%);
+      z-index: 1000;
+      transition: left 0.3s ease;
+      box-shadow: 2px 0 15px rgba(0,0,0,0.3);
+      overflow-y: auto;
+    }
+    
+    .sidebar.open {
+      left: 0;
+    }
+    
+    .sidebar-header {
+      padding: 80px 20px 20px;
+      text-align: center;
+      border-bottom: 2px solid rgba(255,255,255,0.2);
+    }
+    
+    .sidebar-header h3 {
+      color: white;
+      margin: 0;
+      font-size: 24px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    .sidebar-menu {
+      padding: 20px;
+    }
+    
+    .menu-item {
+      display: block;
+      padding: 15px 20px;
+      margin: 10px 0;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-size: 16px;
+      font-family: inherit;
+    }
+    
+    .menu-item:hover {
+      background: rgba(255,255,255,0.25);
+      transform: translateX(5px);
+    }
+    
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .overlay.show {
+      display: block;
+      opacity: 1;
+    }
+
+    /* ESTILOS DEL PANEL DE RESUMEN */
+    .summary-panel {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 900px;
+      max-height: 85vh;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      z-index: 1002;
+      overflow: hidden;
+    }
+    
+    .summary-panel.show {
+      display: block;
+    }
+    
+    .summary-header {
+      background: linear-gradient(135deg, #6a1b9a 0%, #8e24aa 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+    
+    .summary-header h2 {
+      margin: 0;
+      color: white;
+      font-size: 28px;
+    }
+    
+    .close-summary {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      transition: background 0.3s;
+    }
+    
+    .close-summary:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .summary-content {
+      padding: 20px;
+      overflow-y: auto;
+      max-height: calc(85vh - 80px);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .stat-number {
+      font-size: 32px;
+      font-weight: bold;
+      color: #6a1b9a;
+      margin: 10px 0;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 600;
+    }
+    
+    .list-section {
+      margin-bottom: 25px;
+    }
+    
+    .list-section h3 {
+      color: #6a1b9a;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .list-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .list-table th {
+      background: #6a1b9a;
+      color: white;
+      padding: 12px;
+      text-align: left;
+    }
+    
+    .list-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .list-table tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    
+    .list-table tr:hover {
+      background: #f0e6f5;
+    }
+    
+    .badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .badge-paid {
+      background: #4caf50;
+      color: white;
+    }
+    
+    .badge-debt {
+      background: #ff9800;
+      color: white;
+    }
+    
+    .export-section {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #e0e0e0;
+    }
+    
+    .btn-export {
+      padding: 12px 25px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 5px;
+      transition: background 0.3s;
+    }
+    
+    .btn-export:hover {
+      background: #45a049;
+    }
+    
+    .btn-export-debt {
+      background: #ff9800;
+    }
+    
+    .btn-export-debt:hover {
+      background: #e68900;
+    }
+    
+    .btn-clear {
+      background: #f44336;
+    }
+    
+    .btn-clear:hover {
+      background: #d32f2f;
+    }
+
+    /* Indicador de sincronizacion */
+    .sync-indicator {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 8px 15px;
+      background: #4caf50;
+      color: white;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 1003;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .sync-indicator.show {
+      display: block;
+    }
+    
+    .sync-indicator.syncing {
+      background: #ff9800;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .sidebar {
+        width: 280px;
+        left: -280px;
+      }
+      
+      .summary-panel {
+        width: 95%;
+        max-height: 90vh;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .stat-number {
+        font-size: 24px;
+      }
+      
+      .data-card {
+        padding: 20px;
+        margin: 10px;
+      }
+      
+      .number-display {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Indicador de sincronizacion -->
+  <div class="sync-indicator" id="syncIndicator">Sincronizado</div>
+
+  <!-- BOTON MENU HAMBURGUESA -->
+  <div class="menu-btn" id="menuBtn" onclick="toggleSidebar()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+  
+  <!-- OVERLAY -->
+  <div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
+  
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Gestion</h3>
+    </div>
+    <div class="sidebar-menu">
+      <button class="menu-item" onclick="showSummary()">
+        Ver Resumen y Estadisticas
+      </button>
+      <button class="menu-item" onclick="exportCSV()">
+        Exportar Todo a CSV
+      </button>
+      <button class="menu-item" onclick="exportDebtCSV()">
+        Exportar Solo Deudores
+      </button>
+      <button class="menu-item" onclick="exportPaidCSV()">
+        Exportar Solo Pagados
+      </button>
+      <button class="menu-item" onclick="clearAllData()">
+        Limpiar Todos los Datos
+      </button>
+    </div>
+  </div>
+  
+  <!-- PANEL DE RESUMEN -->
+  <div class="summary-panel" id="summaryPanel">
+    <div class="summary-header">
+      <h2>Resumen de la Rifa</h2>
+      <button class="close-summary" onclick="closeSummary()">&times;</button>
+    </div>
+    <div class="summary-content">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="statTotal">100</div>
+          <div class="stat-label">Total Numeros</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statSold">0</div>
+          <div class="stat-label">Vendidos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statPaid">0</div>
+          <div class="stat-label">Pagados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statDebt">0</div>
+          <div class="stat-label">Por Pagar</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statAvailable">100</div>
+          <div class="stat-label">Disponibles</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="statMoney">$0</div>
+          <div class="stat-label">Dinero Recaudado</div>
+        </div>
+      </div>
+      
+      <div class="list-section">
+        <h3>Numeros Pagados</h3>
+        <table class="list-table">
+          <thead>
+            <tr>
+              <th>Numero</th>
+              <th>Nombre</th>
+              <th>Telefono</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="paidList">
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="list-section">
+        <h3>Numeros por Pagar</h3>
+        <table class="list-table">
+          <thead>
+            <tr>
+              <th>Numero</th>
+              <th>Nombre</th>
+              <th>Telefono</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="debtList">
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="export-section">
+        <button class="btn-export" onclick="exportCSV()">Exportar Todo</button>
+        <button class="btn-export btn-export-debt" onclick="exportDebtCSV()">Exportar Deudores</button>
+        <button class="btn-export" onclick="exportPaidCSV()">Exportar Pagados</button>
+        <button class="btn-export btn-clear" onclick="clearAllData()">Limpiar Datos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL/TARJETA PARA DATOS -->
+  <div class="modal-overlay" id="dataModal">
+    <div class="data-card">
+      <button class="close-card" onclick="closeModal()">&times;</button>
+      
+      <div class="card-header">
+        <h3 id="modalTitle">Numero Seleccionado</h3>
+        <div class="number-display" id="modalNumber">00</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="inputName">Nombre del comprador:</label>
+        <input type="text" id="inputName" placeholder="Ingresa el nombre completo">
+      </div>
+      
+      <div class="form-group">
+        <label for="inputPhone">Telefono:</label>
+        <input type="tel" id="inputPhone" placeholder="Ej: 315 0506939">
+      </div>
+      
+      <div class="form-group">
+        <label>Estado de pago:</label>
+        <div class="payment-status">
+          <div class="status-option paid-option" onclick="selectStatus(true)">
+            Pagado
+          </div>
+          <div class="status-option debt-option" onclick="selectStatus(false)">
+            Debe
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-buttons" id="newButtons">
+        <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-save" onclick="saveData()">Guardar</button>
+      </div>
+      
+      <div class="card-buttons" id="editButtons" style="display:none;">
+        <button class="btn btn-delete" onclick="deleteNumber()">Liberar</button>
+        <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-save" onclick="saveData()">Actualizar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENIDO ORIGINAL -->
+  <div class="container">
+    <h1>Super Rifa Solidaria</h1>
+    <div class="prize">
+      Premio: <strong>$250.000</strong><br>
+      <span class="highlight">$15.000 EL NUMERO</span>
+    </div>
+    
+    <div class="grid" id="rifaGrid"></div>
+    <div class="footer">
+      Juega el dia <span class="highlight">14 DE ABRIL</span> con las dos ultimas cifras del Premio Mayor de la <span class="highlight">LOTERIA DEL HUILA</span><br><br>
+      <strong>NEQUI:</strong>315 0506939 / 3105789669<br>
+      <strong>DAVIPLATA:</strong>321 2529413<br>
+      <span class="highlight">Responsable MINI JOHANNA LOSADA</span><br><br>
+      <span class="highlight2">Numero sin Pagar No Juega</span><br><br>
+    </div>
+    
+  </div>
+  
+  <script>
+    // ==========================================
+    // CONFIGURACION FIREBASE
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqEEMcGDrYkft7F_V9cNkeY0gsIgMX1eE",
+      authDomain: "rifa-c2a1e.firebaseapp.com",
+      databaseURL: "https://rifa-c2a1e-default-rtdb.firebaseio.com",
+      projectId: "rifa-c2a1e",
+      storageBucket: "rifa-c2a1e.firebasestorage.app",
+      messagingSenderId: "280605316793",
+      appId: "1:280605316793:web:66a3205f1c48574df62d68",
+      measurementId: "G-BJ4MG00Z5F"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    
+    // Referencia a la base de datos
+    const database = firebase.database();
+    const rifaRef = database.ref('rifa/numeros');
+    
+    // ==========================================
+    // VARIABLES GLOBALES
+    // ==========================================
+    const grid = document.getElementById('rifaGrid');
+    let localData = {}; // Cache local de datos
+    let currentNumber = null;
+    let currentPaidStatus = false;
+    let isEditing = false;
+    const PRICE_PER_NUMBER = 15000;
+
+    // ==========================================
+    // INICIALIZAR GRID
+    // ==========================================
+    function initGrid() {
+      grid.innerHTML = '';
+      for (let i = 0; i < 100; i++) {
+        const number = i.toString().padStart(2, '0');
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.innerText = number;
+        cell.id = 'cell-' + number;
+        cell.addEventListener('click', () => openModal(number));
+        grid.appendChild(cell);
+      }
+    }
+
+    initGrid();
+
+    // ==========================================
+    // SINCRONIZACION CON FIREBASE (TIEMPO REAL)
+    // ==========================================
+    function setupRealtimeSync() {
+      const syncIndicator = document.getElementById('syncIndicator');
+      
+      // Escuchar cambios en tiempo real
+      rifaRef.on('value', (snapshot) => {
+        syncIndicator.textContent = 'Sincronizado';
+        syncIndicator.classList.add('show');
+        syncIndicator.classList.remove('syncing');
+        
+        const data = snapshot.val() || {};
+        localData = data;
+        
+        // Actualizar todas las celdas
+        Object.keys(data).forEach(number => {
+          updateCellVisual(number, data[number]);
+        });
+        
+        // Limpiar celdas que ya no existen en Firebase
+        for (let i = 0; i < 100; i++) {
+          const num = i.toString().padStart(2, '0');
+          if (!data[num]) {
+            clearCellVisual(num);
+          }
+        }
+        
+        // Actualizar resumen si esta abierto
+        if (document.getElementById('summaryPanel').classList.contains('show')) {
+          updateSummaryStats();
+          updateLists();
+        }
+        
+        // Ocultar indicador despues de 2 segundos
+        setTimeout(() => {
+          syncIndicator.classList.remove('show');
+        }, 2000);
+      }, (error) => {
+        console.error('Error de sincronizacion:', error);
+        syncIndicator.textContent = 'Error de conexion';
+        syncIndicator.style.background = '#f44336';
+        syncIndicator.classList.add('show');
+      });
+
+      // Indicador de sincronizacion en progreso
+      rifaRef.on('child_added', () => {
+        syncIndicator.textContent = 'Sincronizando...';
+        syncIndicator.classList.add('syncing');
+        syncIndicator.classList.add('show');
+      });
+    }
+
+    setupRealtimeSync();
+
+    // ==========================================
+    // FUNCIONES VISUALES DEL GRID
+    // ==========================================
+    function updateCellVisual(number, data) {
+      const cell = document.getElementById('cell-' + number);
+      if (!cell) return;
+      
+      cell.classList.add('sold');
+      if (data.paid) {
+        cell.classList.add('paid');
+        cell.classList.remove('sold');
+      } else {
+        cell.classList.add('sold');
+        cell.classList.remove('paid');
+      }
+    }
+
+    function clearCellVisual(number) {
+      const cell = document.getElementById('cell-' + number);
+      if (!cell) return;
+      
+      cell.classList.remove('sold', 'paid');
+    }
+
+    // ==========================================
+    // FUNCIONES DEL MODAL/TARJETA
+    // ==========================================
+    function openModal(number) {
+      currentNumber = number;
+      isEditing = false;
+      const modal = document.getElementById('dataModal');
+      const numberDisplay = document.getElementById('modalNumber');
+      const nameInput = document.getElementById('inputName');
+      const phoneInput = document.getElementById('inputPhone');
+      const modalTitle = document.getElementById('modalTitle');
+      const newButtons = document.getElementById('newButtons');
+      const editButtons = document.getElementById('editButtons');
+      
+      numberDisplay.textContent = number;
+      
+      // Si ya existe datos en Firebase, cargarlos en modo edicion
+      if (localData[number]) {
+        isEditing = true;
+        const data = localData[number];
+        nameInput.value = data.name || '';
+        phoneInput.value = data.phone || '';
+        selectStatus(data.paid);
+        modalTitle.textContent = 'Editar Numero';
+        newButtons.style.display = 'none';
+        editButtons.style.display = 'flex';
+      } else {
+        // Nuevo numero
+        nameInput.value = '';
+        phoneInput.value = '';
+        selectStatus(false);
+        modalTitle.textContent = 'Numero Seleccionado';
+        newButtons.style.display = 'flex';
+        editButtons.style.display = 'none';
+      }
+      
+      modal.classList.add('show');
+      nameInput.focus();
+    }
+
+    function closeModal() {
+      document.getElementById('dataModal').classList.remove('show');
+      currentNumber = null;
+      isEditing = false;
+    }
+
+    function selectStatus(paid) {
+      currentPaidStatus = paid;
+      const options = document.querySelectorAll('.status-option');
+      options.forEach(opt => opt.classList.remove('selected'));
+      
+      if (paid) {
+        document.querySelector('.paid-option').classList.add('selected');
+      } else {
+        document.querySelector('.debt-option').classList.add('selected');
+      }
+    }
+
+    // ==========================================
+    // OPERACIONES CRUD CON FIREBASE
+    // ==========================================
+    function saveData() {
+      const name = document.getElementById('inputName').value.trim();
+      const phone = document.getElementById('inputPhone').value.trim();
+      
+      if (!name) {
+        alert('Por favor ingresa el nombre del comprador');
+        document.getElementById('inputName').focus();
+        return;
+      }
+      
+      const data = {
+        name: name,
+        phone: phone,
+        paid: currentPaidStatus,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      };
+      
+      // Guardar en Firebase
+      rifaRef.child(currentNumber).set(data)
+        .then(() => {
+          console.log('Datos guardados exitosamente');
+          closeModal();
+        })
+        .catch((error) => {
+          console.error('Error al guardar:', error);
+          alert('Error al guardar los datos. Intenta de nuevo.');
+        });
+    }
+
+    function deleteNumber() {
+      if (!confirm(`Estas seguro de liberar el numero ${currentNumber}?\n\nEsta accion eliminara a ${localData[currentNumber]?.name || 'este registro'} de la lista.`)) {
+        return;
+      }
+      
+      // Eliminar de Firebase
+      rifaRef.child(currentNumber).remove()
+        .then(() => {
+          console.log('Numero liberado exitosamente');
+          closeModal();
+        })
+        .catch((error) => {
+          console.error('Error al eliminar:', error);
+          alert('Error al liberar el numero. Intenta de nuevo.');
+        });
+    }
+
+    // ==========================================
+    // FUNCIONES DEL MENU Y SIDEBAR
+    // ==========================================
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      const menuBtn = document.getElementById('menuBtn');
+      
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+      menuBtn.classList.toggle('active');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('show');
+      document.getElementById('menuBtn').classList.remove('active');
+    }
+
+    function closeAllPanels() {
+      closeSidebar();
+      closeSummary();
+      closeModal();
+    }
+
+    // ==========================================
+    // PANEL DE RESUMEN Y ESTADISTICAS
+    // ==========================================
+    function showSummary() {
+      updateSummaryStats();
+      updateLists();
+      document.getElementById('summaryPanel').classList.add('show');
+      document.getElementById('overlay').classList.add('show');
+      closeSidebar();
+    }
+
+    function closeSummary() {
+      document.getElementById('summaryPanel').classList.remove('show');
+      if (!document.getElementById('sidebar').classList.contains('open')) {
+        document.getElementById('overlay').classList.remove('show');
+      }
+    }
+
+    function updateSummaryStats() {
+      const total = 100;
+      const sold = Object.keys(localData).length;
+      const paid = Object.values(localData).filter(d => d.paid).length;
+      const debt = sold - paid;
+      const available = total - sold;
+      const money = paid * PRICE_PER_NUMBER;
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statSold').textContent = sold;
+      document.getElementById('statPaid').textContent = paid;
+      document.getElementById('statDebt').textContent = debt;
+      document.getElementById('statAvailable').textContent = available;
+      document.getElementById('statMoney').textContent = '$' + money.toLocaleString();
+    }
+
+    function updateLists() {
+      const paidList = document.getElementById('paidList');
+      const debtList = document.getElementById('debtList');
+      
+      paidList.innerHTML = '';
+      debtList.innerHTML = '';
+
+      // Ordenar por numero
+      const sortedData = Object.entries(localData).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+
+      sortedData.forEach(([num, data]) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${num}</strong></td>
+          <td>${data.name}</td>
+          <td>${data.phone || 'N/A'}</td>
+          <td><span class="badge ${data.paid ? 'badge-paid' : 'badge-debt'}">${data.paid ? 'Pagado' : 'Debe'}</span></td>
+        `;
+        
+        if (data.paid) {
+          paidList.appendChild(row);
+        } else {
+          debtList.appendChild(row);
+        }
+      });
+
+      if (paidList.children.length === 0) {
+        paidList.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999; padding:20px;">No hay numeros pagados aun</td></tr>';
+      }
+      if (debtList.children.length === 0) {
+        debtList.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#999; padding:20px;">No hay numeros por pagar</td></tr>';
+      }
+    }
+
+    // ==========================================
+    // EXPORTACIONES A CSV
+    // ==========================================
+    function exportCSV() {
+      let csv = 'Numero,Nombre,Telefono,Estado\n';
+      const sortedData = Object.entries(localData).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+      sortedData.forEach(([num, data]) => {
+        csv += `${num},${data.name},${data.phone || ''},${data.paid ? 'Pagado' : 'Debe'}\n`;
+      });
+
+      downloadCSV(csv, 'rifa_completa.csv');
+    }
+
+    function exportDebtCSV() {
+      let csv = 'Numero,Nombre,Telefono,Estado\n';
+      const sortedData = Object.entries(localData).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+      let count = 0;
+      sortedData.forEach(([num, data]) => {
+        if (!data.paid) {
+          csv += `${num},${data.name},${data.phone || ''},Debe\n`;
+          count++;
+        }
+      });
+
+      if (count === 0) {
+        alert('No hay numeros por pagar para exportar');
+        return;
+      }
+
+      downloadCSV(csv, 'rifa_deudores.csv');
+    }
+
+    function exportPaidCSV() {
+      let csv = 'Numero,Nombre,Telefono,Estado\n';
+      const sortedData = Object.entries(localData).sort((a, b) => parseInt(a[0]) - parseInt(b[0]));
+      let count = 0;
+      sortedData.forEach(([num, data]) => {
+        if (data.paid) {
+          csv += `${num},${data.name},${data.phone || ''},Pagado\n`;
+          count++;
+        }
+      });
+
+      if (count === 0) {
+        alert('No hay numeros pagados para exportar');
+        return;
+      }
+
+      downloadCSV(csv, 'rifa_pagados.csv');
+    }
+
+    function downloadCSV(csv, filename) {
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', filename);
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // ==========================================
+    // LIMPIAR TODOS LOS DATOS
+    // ==========================================
+    function clearAllData() {
+      if (!confirm('ATENCION: Estas seguro de que deseas eliminar TODOS los datos de la rifa?\n\nEsta accion no se puede deshacer.\n\nSe eliminaran todos los numeros vendidos y sus datos de Firebase.')) {
+        return;
+      }
+      
+      if (!confirm('CONFIRMACION FINAL: Realmente deseas borrar todo?')) {
+        return;
+      }
+      
+      rifaRef.remove()
+        .then(() => {
+          localData = {};
+          alert('Todos los datos han sido eliminados de Firebase');
+          closeSummary();
+        })
+        .catch((error) => {
+          console.error('Error al eliminar:', error);
+          alert('Error al eliminar los datos. Intenta de nuevo.');
+        });
+    }
+
+    // ==========================================
+    // EVENT LISTENERS GLOBALES
+    // ==========================================
+    
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('dataModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+
+    // Cerrar con tecla Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeSummary();
+        closeSidebar();
+      }
+    });
+  </script>
+</body>
+</html>
