@@ -28,7 +28,9 @@
             background-color: #f1f5f9;
         }
 
-        body.dark-mode { background-color: #0f172a; }
+        body.dark-mode { 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
 
         .glass-container { 
             background: rgba(255, 255, 255, 0.98); 
@@ -56,38 +58,296 @@
 			background: #475569;
 		}
 
+        /* ============================================================
+           MODO OSCURO PROFESIONAL - PALETA MEJORADA
+           ============================================================ */
+
+        /* Contenedor principal - mejor contraste */
         body.dark-mode .glass-container {
+            background: rgba(30, 41, 59, 0.95);
+            color: #f1f5f9;
+            border-color: #334155;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Header del formulario */
+        body.dark-mode header {
             background: rgba(30, 41, 59, 0.98);
-            color: #e2e8f0;
+            border-color: #334155;
         }
 
-        body.dark-mode .glass-container input,
-        body.dark-mode .glass-container select {
-            background: #1e293b;
-            color: #e2e8f0;
-            border-color: #475569 !important;
+        body.dark-mode header h1 {
+            color: #f8fafc !important;
         }
 
-        body.dark-mode .glass-container label,
-        body.dark-mode .glass-container h1,
-        body.dark-mode .glass-container h3 {
-            color: #e2e8f0 !important;
+        body.dark-mode header h1 span {
+            color: #fbbf24 !important; /* Amarillo dorado para "Novedades" */
         }
 
-        body.dark-mode .glass-container .text-slate-600 {
+        body.dark-mode header p {
             color: #94a3b8 !important;
         }
 
-        body.dark-mode .glass-container .text-slate-800 {
+        /* Títulos de sección */
+        body.dark-mode h3 {
+            color: #e2e8f0 !important;
+        }
+
+        /* Labels de campos - MEJOR CONTRASTE */
+        body.dark-mode label {
+            color: #cbd5e1 !important;
+        }
+
+        body.dark-mode label.text-green-600,
+        body.dark-mode label.text-orange-700,
+        body.dark-mode label.text-pink-800,
+        body.dark-mode label.text-blue-600,
+        body.dark-mode label.text-red-600 {
+            color: #7dd3fc !important; /* Azul claro para todos los labels */
+            font-weight: 600;
+        }
+
+        /* Inputs y selects - fondo más oscuro, borde visible */
+        body.dark-mode input,
+        body.dark-mode select {
+            background: #0f172a !important;
+            color: #f1f5f9 !important;
+            border-color: #475569 !important;
+            border-width: 2px !important;
+        }
+
+        body.dark-mode input::placeholder {
+            color: #64748b !important;
+        }
+
+        /* Estados de focus para inputs */
+        body.dark-mode input:focus,
+        body.dark-mode select:focus {
+            border-color: #60a5fa !important; /* Azul claro al enfocar */
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2) !important;
+        }
+
+        /* Input de Edad Calculada - fondo especial */
+        body.dark-mode #displayAge {
+            background: #1e1b4b !important; /* Índigo oscuro */
+            color: #fbbf24 !important; /* Amarillo dorado */
+            border-color: #f59e0b !important;
+        }
+
+        /* Sección de Retiro - fondo rojo muy oscuro */
+        body.dark-mode #sectionRetiro {
+            background: rgba(69, 10, 10, 0.6) !important;
+            border-color: #dc2626 !important;
+        }
+
+        body.dark-mode #sectionRetiro h3 {
+            color: #fca5a5 !important; /* Rojo claro */
+        }
+
+        body.dark-mode #sectionRetiro label {
+            color: #fecaca !important;
+        }
+
+        /* Sección de Ingreso - fondo verde muy oscuro */
+        body.dark-mode #sectionIngreso .bg-green-100 {
+            background: rgba(6, 78, 59, 0.5) !important;
+            border-color: #10b981 !important;
+        }
+
+        body.dark-mode #sectionIngreso h3 {
+            color: #86efac !important; /* Verde claro */
+        }
+
+        body.dark-mode #sectionIngreso label.text-green-600 {
+            color: #86efac !important;
+        }
+
+        /* Sección de Acudiente - fondo azul muy oscuro */
+        body.dark-mode .bg-blue-100 {
+            background: rgba(30, 58, 138, 0.4) !important;
+            border-color: #3b82f6 !important;
+        }
+
+        body.dark-mode .bg-blue-100 h3 {
+            color: #93c5fd !important;
+        }
+
+        body.dark-mode .bg-blue-100 label.text-blue-600 {
+            color: #93c5fd !important;
+        }
+
+        /* Sección Nutricional - fondo naranja muy oscuro */
+        body.dark-mode .nutricion-card {
+            background: linear-gradient(135deg, rgba(124, 45, 12, 0.6), rgba(67, 20, 7, 0.8)) !important;
+            border-color: #f97316 !important;
+        }
+
+        body.dark-mode .nutricion-title {
+            color: #fdba74 !important; /* Naranja claro */
+        }
+
+        body.dark-mode .nutricion-indicator {
+            background: #0f172a !important;
+            border-color: #f97316 !important;
+        }
+
+        body.dark-mode .nutricion-details {
+            color: #cbd5e1 !important;
+        }
+
+        /* Checkboxes de género */
+        body.dark-mode .border-green-100 {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+        }
+
+        body.dark-mode .text-slate-400 {
+            color: #94a3b8 !important;
+        }
+
+        /* Botón de enviar - más brillante */
+        body.dark-mode #submitButton {
+            filter: brightness(1.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Footer */
+        body.dark-mode footer {
+            color: #64748b !important;
+        }
+
+        /* Indicador de contrato */
+        body.dark-mode #contractIndicator {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Toggle de tema - mejor visible */
+        body.dark-mode .theme-toggle {
+            background: #475569;
+        }
+
+        /* Reloj */
+        body.dark-mode #clockDisplay {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+        }
+
+        /* Badges de pasos (1, 2, 3) */
+        body.dark-mode .step-badge {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Opciones de reporte (Retiro/Ingreso) */
+        body.dark-mode label:has(input[type="checkbox"]) {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+        }
+
+        body.dark-mode label:has(input[type="checkbox"]:checked) {
+            background: rgba(16, 185, 129, 0.2) !important;
+            border-color: #10b981 !important;
+        }
+
+        /* Mejorar visibilidad de textos en secciones coloreadas */
+        body.dark-mode .text-slate-600 {
+            color: #cbd5e1 !important;
+        }
+
+        body.dark-mode .text-slate-800 {
             color: #f1f5f9 !important;
         }
 
-        body.dark-mode .glass-container .bg-white {
-            background: #1e293b !important;
+        /* Inputs de archivo */
+        body.dark-mode input[type="file"] {
+            background: #0f172a !important;
+            color: #cbd5e1 !important;
         }
 
-        body.dark-mode .glass-container .border-slate-100 {
-            border-color: #334155 !important;
+        /* Leyendas y textos pequeños */
+        body.dark-mode .text-xs {
+            color: #94a3b8;
+        }
+
+        /* Hover effects mejorados */
+        body.dark-mode input:hover,
+        body.dark-mode select:hover {
+            border-color: #64748b !important;
+        }
+
+        /* Indicador de estado nutricional */
+        body.dark-mode .nutricion-status {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Leyenda de rangos nutricionales */
+        body.dark-mode .nutricion-legend-item {
+            opacity: 0.9;
+        }
+
+        /* Scrollbar personalizada para modo oscuro */
+        body.dark-mode ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 5px;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* Panel de admin en modo oscuro */
+        body.dark-mode .admin-content {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .admin-tab {
+            background: #334155;
+            color: #94a3b8;
+        }
+
+        body.dark-mode .admin-tab.active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        body.dark-mode .stats-card {
+            background: linear-gradient(135deg, #334155, #1e293b);
+            border-color: #475569;
+        }
+
+        body.dark-mode .data-table th {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .data-table td {
+            border-color: #475569;
+            color: #cbd5e1;
+        }
+
+        body.dark-mode .data-table tr:hover {
+            background: #334155;
+        }
+
+        body.dark-mode .search-box input {
+            background: #0f172a !important;
+            color: #f1f5f9 !important;
+        }
+
+        body.dark-mode .filter-grid input,
+        body.dark-mode .filter-grid select {
+            background: #0f172a !important;
+            color: #f1f5f9 !important;
+            border-color: #475569 !important;
         }
 
         input, select { 
@@ -180,11 +440,6 @@
             min-height: calc(100vh - 40px);
         }
 
-        body.dark-mode .admin-content {
-            background: #1e293b;
-            color: #e2e8f0;
-        }
-
         .stats-card {
             background: linear-gradient(135deg, #f8fafc, #e2e8f0);
             border-radius: 16px;
@@ -196,11 +451,6 @@
         .stats-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        body.dark-mode .stats-card {
-            background: linear-gradient(135deg, #334155, #1e293b);
-            border-color: #475569;
         }
 
         .chart-container {
@@ -290,10 +540,6 @@
             border-bottom: 1px solid #e2e8f0;
         }
 
-        body.dark-mode .data-table th, body.dark-mode .data-table td {
-            border-color: #475569;
-        }
-
         .data-table th {
             background: #f8fafc;
             font-weight: 700;
@@ -302,9 +548,7 @@
             letter-spacing: 0.05em;
         }
 
-        body.dark-mode .data-table th { background: #334155; }
         .data-table tr:hover { background: #f8fafc; }
-        body.dark-mode .data-table tr:hover { background: #334155; }
 
         .badge {
             padding: 3px 10px;
@@ -707,11 +951,6 @@
             gap: 8px;
         }
 
-        body.dark-mode .admin-tab {
-            background: #334155;
-            color: #94a3b8;
-        }
-
         .admin-tab:hover {
             background: #e2e8f0;
             color: #475569;
@@ -832,6 +1071,12 @@
             width: 150px;
         }
 
+        body.dark-mode .config-input {
+            background: #0f172a !important;
+            color: #f1f5f9 !important;
+            border-color: #475569 !important;
+        }
+
         .estado-activo { color: #10b981; font-weight: 700; }
         .estado-inactivo { color: #6b7280; font-weight: 700; }
 
@@ -840,6 +1085,11 @@
             background-color: #fef2f2 !important;
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
             transition: all 0.5s ease;
+        }
+
+        body.dark-mode .input-error {
+            background-color: #450a0a !important;
+            border-color: #dc2626 !important;
         }
 
         .stat-big {
@@ -855,6 +1105,8 @@
             color: #64748b;
             margin-top: 8px;
         }
+
+        body.dark-mode .stat-label { color: #94a3b8; }
 
         .mes-selector {
             display: flex;
@@ -892,11 +1144,6 @@
             margin-top: 20px;
         }
 
-        body.dark-mode .nutricion-card {
-            background: linear-gradient(135deg, #431407, #7c2d12);
-            border-color: #ea580c;
-        }
-
         .nutricion-title {
             font-size: 16px;
             font-weight: 700;
@@ -908,8 +1155,6 @@
             justify-content: space-between;
         }
 
-        body.dark-mode .nutricion-title { color: #fb923c; }
-
         .nutricion-indicator {
             background: white;
             border-radius: 12px;
@@ -917,11 +1162,6 @@
             margin-top: 16px;
             border: 2px solid #fed7aa;
             text-align: center;
-        }
-
-        body.dark-mode .nutricion-indicator {
-            background: #1e293b;
-            border-color: #7c2d12;
         }
 
         .nutricion-status {
@@ -938,8 +1178,6 @@
             color: #78716c;
             margin-top: 8px;
         }
-
-        body.dark-mode .nutricion-details { color: #a8a29e; }
 
         .rango-desnutricion-severa { background: #7f1d1d; color: #fecaca; }
         .rango-desnutricion-moderada { background: #dc2626; color: white; }
@@ -1494,7 +1732,7 @@
                 <strong id="bloqueoFechasDisplay">Periodo de cierre: 28 - 30 de cada mes</strong>
             </div>
             <div class="bloqueo-contacto">
-                📞 Comuníquese con el administrativo de Cuentame
+                📞 Comuníquese con el administrativo de Timanco 3
             </div>
             
             <div class="bloqueo-admin-access">
@@ -1536,7 +1774,7 @@
             </div>
         </header>
         
-        <!-- FORMULARIO ACTUALIZADO PARA GOOGLE APPS SCRIPT -->
+        <!-- FORMULARIO ACTUALIZADO CON COMUNA, BARRIO Y PERÍMETRO BRAQUIAL -->
 		<form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbwvO5vg4wM9PdHc86IZM8FKcmoaSX7ls-4D-ZdbOVAFR6GUrRIHcXCq0rpQBDOVZvI/exec" method="POST" class="p-8 space-y-6">
         
            
@@ -1637,22 +1875,51 @@
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Fecha de Ingreso</label>
                             <input type="date" id="ingresoDate" name="ingreso_fecha" class="w-full rounded-lg" onchange="updateAgeDisplay(); validateDatesRealTime(); calcularEstadoNutricional();">
                         </div>
-                        <div class="md:col-span-2 space-y-1">
-                            <label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
-                            <input type="text" id="displayAge" name="edad_calculada" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
-                        </div>
-                        <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100">
-                            <span class="text-xs font-bold text-slate-400">GÉNERO:</span>
-                            <label class="text-sm font-bold flex items-center">
-                                <input type="radio" name="_ingresoGender" value="M" class="mr-1" onchange="calcularEstadoNutricional()"> M
-                            </label>
-                            <label class="text-sm font-bold flex items-center">
-                                <input type="radio" name="_ingresoGender" value="F" class="mr-1" onchange="calcularEstadoNutricional()"> F
-                            </label>
-                        </div>
-                        <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección y Barrio" class="w-full rounded-lg">
-                        <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg md:col-span-2">
+                        <div class="space-y-1">
+							<label class="text-[11px] font-bold text-pink-800 ml-1 uppercase">Edad Calculada al Ingreso</label>
+							<input type="text" id="displayAge" name="edad_calculada" readonly placeholder="Esperando fechas..." class="w-full rounded-lg bg-pink-50 border-pink-800 text-orange-700 font-bold italic">
+						</div>
+                        <div class="flex items-center justify-center space-x-6 bg-white px-4 py-2 rounded-lg border border-green-100 h-full">
+							<span class="text-xs font-bold text-slate-400">GÉNERO:</span>
+							<label class="text-sm font-bold flex items-center">
+								<input type="radio" name="_ingresoGender" value="M" class="mr-1" onchange="calcularEstadoNutricional()"> M
+							</label>
+							<label class="text-sm font-bold flex items-center">
+								<input type="radio" name="_ingresoGender" value="F" class="mr-1" onchange="calcularEstadoNutricional()"> F
+							</label>
+						</div>
                         
+                        <!-- Fila 2: Comuna (izquierda) + Barrio (derecha) -->
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Comuna *</label>
+							<select id="ingresoComuna" name="ingreso_comuna" class="w-full rounded-lg" required>
+								<option value="">Seleccione Comuna...</option>
+								<option value="Comuna 1">Comuna 1</option>
+								<option value="Comuna 2">Comuna 2</option>
+								<option value="Comuna 3">Comuna 3</option>
+								<option value="Comuna 4">Comuna 4</option>
+								<option value="Comuna 5">Comuna 5</option>
+								<option value="Comuna 6">Comuna 6</option>
+								<option value="Comuna 7">Comuna 7</option>
+								<option value="Comuna 8">Comuna 8</option>
+								<option value="Comuna 9">Comuna 9</option>
+								<option value="Comuna 10">Comuna 10</option>
+							</select>
+						</div>
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Barrio *</label>
+							<input type="text" id="ingresoBarrio" name="ingreso_barrio" placeholder="Nombre del Barrio" class="w-full rounded-lg" required>
+						</div>
+                        
+                        <!-- Fila 3: Dirección (izquierda) + Teléfono (derecha) -->
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Dirección *</label>
+							<input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección completa" class="w-full rounded-lg" required>
+						</div>
+						<div class="space-y-1">
+							<label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Teléfono *</label>
+							<input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg" required>
+						</div>
                         <div class="md:col-span-2 space-y-2">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
                             <input type="file" id="fileInput" name="soporte_documento" accept=".pdf,image/*" 
@@ -1736,20 +2003,27 @@
                                    class="w-full rounded-lg" step="0.1" min="50" max="130.5" 
                                    oninput="validarRangoNutricion(this, 50, 130.5); calcularEstadoNutricional()">
                         </div>
+                        <!-- NUEVO CAMPO: PERÍMETRO BRAQUIAL -->
                         <div class="space-y-1">
-                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Régimen</label>
-                            <select id="nutricionRegimen" name="nutricion_regimen" class="w-full rounded-lg">
-                                <option value="">Seleccione...</option>
-                                <option value="SUBSIDIADO">RÉGIMEN SUBSIDIADO</option>
-                                <option value="CONTRIBUTIVO">RÉGIMEN CONTRIBUTIVO</option>
-                                <option value="ESPECIAL">RÉGIMEN ESPECIAL</option>
-                                <option value="NO_AFILIADO">NO AFILIADO</option>
-                            </select>
+                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Perímetro Braquial (cm) * <span class="text-[10px] font-normal">(6 - 30 cm)</span></label>
+                            <input type="number" id="nutricionPerimetroBraquial" name="nutricion_perimetro_braquial" placeholder="Ej: 15.5" 
+                                   class="w-full rounded-lg" step="0.1" min="6" max="30" 
+                                   oninput="validarRangoNutricion(this, 6, 30)">
                         </div>
-                        <div class="space-y-1 md:col-span-2">
-                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">EPS</label>
-                            <input type="text" id="nutricionEPS" name="nutricion_eps" placeholder="Nombre de la EPS" class="w-full rounded-lg">
-                        </div>
+                        <div class="space-y-1">
+							<label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Régimen</label>
+							<select id="nutricionRegimen" name="nutricion_regimen" class="w-full rounded-lg">
+								<option value="">Seleccione...</option>
+								<option value="SUBSIDIADO">RÉGIMEN SUBSIDIADO</option>
+								<option value="CONTRIBUTIVO">RÉGIMEN CONTRIBUTIVO</option>
+								<option value="ESPECIAL">RÉGIMEN ESPECIAL</option>
+								<option value="NO_AFILIADO">NO AFILIADO</option>
+							</select>
+						</div>
+                        <div class="space-y-1">
+							<label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">EPS</label>
+							<input type="text" id="nutricionEPS" name="nutricion_eps" placeholder="Nombre de la EPS" class="w-full rounded-lg">
+						</div>
                     </div>
 
                     <!-- INDICADOR DE ESTADO NUTRICIONAL CON 7 RANGOS -->
@@ -2206,13 +2480,7 @@
 
         // Rangos para la leyenda
         const rangos = [
-            { nombre: 'Desnutrición Severa', de: '< -3DE', color: '#7f1d1d', clase: 'rango-desnutricion-severa' },
-            { nombre: 'Desnutrición Moderada', de: '-3DE a -2DE', color: '#dc2626', clase: 'rango-desnutricion-moderada' },
-            { nombre: 'Riesgo Desnutrición', de: '-2DE a -1DE', color: '#f59e0b', clase: 'rango-riesgo-desnutricion' },
-            { nombre: 'Normal', de: '-1DE a +1DE', color: '#10b981', clase: 'rango-normal' },
-            { nombre: 'Riesgo Sobrepeso', de: '+1DE a +1.5DE', color: '#fbbf24', clase: 'rango-riesgo-sobrepeso' },
-            { nombre: 'Sobrepeso', de: '+1.5DE a +2DE', color: '#f97316', clase: 'rango-sobrepeso' },
-            { nombre: 'Obesidad', de: '> +2DE', color: '#dc2626', clase: 'rango-obesidad' }
+            
         ];
 
         function updateClock() {
@@ -3868,6 +4136,7 @@
                 let docRetiro = '', docIngreso = '';
                 let nombreRetiro = '', nombreIngreso = '';
                 let fechaRetiro = '', fechaIngreso = '';
+                let comuna = '', barrio = '', perimetroBraquial = '';
                 
                 if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
                     if (n.retiro) {
@@ -3881,6 +4150,8 @@
                         fechaIngreso = n.ingreso.ingresoDate || '';
                         fechaNacimientoNiño = n.ingreso.dob || '';
                         fechaNacimientoAcudiente = n.ingreso.acudienteDOB || '';
+                        comuna = n.ingreso.comuna || '';
+                        barrio = n.ingreso.barrio || '';
                     }
                 } else if (n.type === 'retiro') {
                     const retiroData = n.retiro || n;
@@ -3894,6 +4165,22 @@
                     fechaIngreso = ingresoData.ingresoDate || n.ingresoDate || '';
                     fechaNacimientoNiño = ingresoData.dob || n.ingresoDOB || '';
                     fechaNacimientoAcudiente = ingresoData.acudienteDOB || n.acudienteDOB || '';
+                    comuna = ingresoData.comuna || n.comuna || '';
+                    barrio = ingresoData.barrio || n.barrio || '';
+                }
+
+                // Datos nutricionales incluyendo perímetro braquial
+                let nutricionFecha = '', nutricionPeso = '', nutricionTalla = '', nutricionPerimetroBraquial = '';
+                let nutricionRegimen = '', nutricionEPS = '', nutricionEstado = '';
+                
+                if (n.nutricion) {
+                    nutricionFecha = n.nutricion.fecha || '';
+                    nutricionPeso = n.nutricion.peso || '';
+                    nutricionTalla = n.nutricion.talla || '';
+                    nutricionPerimetroBraquial = n.nutricion.perimetroBraquial || '';
+                    nutricionRegimen = n.nutricion.regimen || '';
+                    nutricionEPS = n.nutricion.eps || '';
+                    nutricionEstado = n.nutricion.estadoNutricional || '';
                 }
 
                 return {
@@ -3911,17 +4198,20 @@
                     'Fecha Ingreso': fechaIngreso,
                     'Fecha Nacimiento Niño': fechaNacimientoNiño,
                     'Edad al Ingreso': n.ingreso ? n.ingreso.age : n.age || '',
+                    'Comuna': comuna,
+                    'Barrio': barrio,
                     'Dirección': n.ingreso ? n.ingreso.address : n.address || '',
                     'Teléfono': n.ingreso ? n.ingreso.phone : n.phone || '',
                     'Acudiente Nombre': n.ingreso ? n.ingreso.acudiente : n.acudiente || '',
                     'Acudiente Documento': n.ingreso ? n.ingreso.acudienteDoc : n.acudienteDoc || '',
                     'Fecha Nacimiento Acudiente': fechaNacimientoAcudiente,
-                    'Fecha Valoración Nutricional': n.nutricion ? n.nutricion.fecha : '',
-                    'Peso (kg)': n.nutricion ? n.nutricion.peso : '',
-                    'Talla (cm)': n.nutricion ? n.nutricion.talla : '',
-                    'Régimen': n.nutricion ? n.nutricion.regimen : '',
-                    'EPS': n.nutricion ? n.nutricion.eps : '',
-                    'Estado Nutricional': n.nutricion ? n.nutricion.estadoNutricional : ''
+                    'Fecha Valoración Nutricional': nutricionFecha,
+                    'Peso (kg)': nutricionPeso,
+                    'Talla (cm)': nutricionTalla,
+                    'Perímetro Braquial (cm)': nutricionPerimetroBraquial,
+                    'Régimen': nutricionRegimen,
+                    'EPS': nutricionEPS,
+                    'Estado Nutricional': nutricionEstado
                 };
             });
 
@@ -3972,6 +4262,10 @@
                 let fechaNacimientoNiño = ingresoData.dob || ingresoData.ingresoDOB || novelty.ingresoDOB || '-';
                 let fechaNacimientoAcudiente = ingresoData.acudienteDOB || novelty.acudienteDOB || '-';
                 
+                // Nuevos campos comuna y barrio
+                let comuna = ingresoData.comuna || novelty.comuna || '-';
+                let barrio = ingresoData.barrio || novelty.barrio || '-';
+                
                 formData += `[ DATOS DE INGRESO ]\n`;
                 formData += `  - Niño:           ${ingresoData.name ? ingresoData.name.toUpperCase() : 'N/A'}\n`;
                 formData += `  - Documento:      ${ingresoData.docType || 'RC'} ${ingresoData.document || 'N/A'}\n`;
@@ -3979,6 +4273,8 @@
                 formData += `  - F. Nacimiento:  ${fechaNacimientoNiño}\n`;
                 formData += `  - F. Ingreso:     ${ingresoData.ingresoDate || novelty.ingresoDate || '-'}\n`;
                 formData += `  - Género:         ${ingresoData.gender === 'M' ? 'Masculino' : ingresoData.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
+                formData += `  - Comuna:         ${comuna}\n`;
+                formData += `  - Barrio:         ${barrio}\n`;
                 formData += `  - Direccion:      ${ingresoData.address || novelty.address || 'N/A'}\n`;
                 formData += `  - Teléfono:       ${ingresoData.phone || novelty.phone || 'N/A'}\n\n`;
                 
@@ -3993,6 +4289,7 @@
                     formData += `  - F. Valoración:  ${nutData.fecha || '-'}\n`;
                     formData += `  - Peso:           ${nutData.peso ? nutData.peso + ' kg' : '-'}\n`;
                     formData += `  - Talla:          ${nutData.talla ? nutData.talla + ' cm' : '-'}\n`;
+                    formData += `  - Perímetro Braquial: ${nutData.perimetroBraquial ? nutData.perimetroBraquial + ' cm' : '-'}\n`;
                     formData += `  - Régimen:        ${nutData.regimen || '-'}\n`;
                     formData += `  - EPS:            ${nutData.eps || '-'}\n`;
                     formData += `  - Estado Nutric.: ${nutData.estadoNutricional || 'No calculado'}\n`;
@@ -4120,6 +4417,8 @@
                 let generoIngreso = '';
                 let fechaRetiro = '';
                 let fechaIngreso = '';
+                let comuna = '';
+                let barrio = '';
                 
                 if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
                     tipoNovedad = 'AMBOS (RETIRO + INGRESO)';
@@ -4138,6 +4437,8 @@
                         fechaIngreso = n.ingreso.ingresoDate || '';
                         fechaNacimientoNiño = n.ingreso.dob || '';
                         fechaNacimientoAcudiente = n.ingreso.acudienteDOB || '';
+                        comuna = n.ingreso.comuna || '';
+                        barrio = n.ingreso.barrio || '';
                     }
                 } else if (n.type === 'retiro') {
                     const retiroData = n.retiro || n;
@@ -4153,6 +4454,8 @@
                     fechaIngreso = ingresoData.ingresoDate || n.ingresoDate || '';
                     fechaNacimientoNiño = ingresoData.dob || n.ingresoDOB || '';
                     fechaNacimientoAcudiente = ingresoData.acudienteDOB || n.acudienteDOB || '';
+                    comuna = ingresoData.comuna || n.comuna || '';
+                    barrio = ingresoData.barrio || n.barrio || '';
                 }
 
                 let nutricionData = {};
@@ -4180,6 +4483,8 @@
                     'Fecha Nacimiento Niño': fechaNacimientoNiño,
                     'Edad al Ingreso': n.ingreso ? n.ingreso.age : n.age || '',
                     'Fecha Ingreso': fechaIngreso,
+                    'Comuna': comuna,
+                    'Barrio': barrio,
                     'Dirección': n.ingreso ? n.ingreso.address : n.address || '',
                     'Teléfono': n.ingreso ? n.ingreso.phone : n.phone || '',
                     'Acudiente Nombre': n.ingreso ? n.ingreso.acudiente : n.acudiente || '',
@@ -4188,6 +4493,7 @@
                     'Fecha Valoración Nutricional': nutricionData.fecha || '',
                     'Peso (kg)': nutricionData.peso || '',
                     'Talla (cm)': nutricionData.talla || '',
+                    'Perímetro Braquial (cm)': nutricionData.perimetroBraquial || '',
                     'Régimen': nutricionData.regimen || '',
                     'EPS': nutricionData.eps || '',
                     'Estado Nutricional': nutricionData.estadoNutricional || ''
@@ -4246,6 +4552,8 @@
                     let nombreIngreso = '';
                     let fechaRetiro = '';
                     let fechaIngreso = '';
+                    let comuna = '';
+                    let barrio = '';
                     
                     if (n.type === 'ambos' || (n.hasRetiro && n.hasIngreso)) {
                         if (n.retiro) {
@@ -4259,6 +4567,8 @@
                             fechaIngreso = n.ingreso.ingresoDate || '';
                             fechaNacimientoNiño = n.ingreso.dob || '';
                             fechaNacimientoAcudiente = n.ingreso.acudienteDOB || '';
+                            comuna = n.ingreso.comuna || '';
+                            barrio = n.ingreso.barrio || '';
                         }
                     } else if (n.type === 'retiro') {
                         const retiroData = n.retiro || n;
@@ -4272,6 +4582,8 @@
                         fechaIngreso = ingresoData.ingresoDate || n.ingresoDate || '';
                         fechaNacimientoNiño = ingresoData.dob || n.ingresoDOB || '';
                         fechaNacimientoAcudiente = ingresoData.acudienteDOB || n.acudienteDOB || '';
+                        comuna = ingresoData.comuna || n.comuna || '';
+                        barrio = ingresoData.barrio || n.barrio || '';
                     }
 
                     let nutricionData = {};
@@ -4297,6 +4609,8 @@
                         'Fecha Ingreso': fechaIngreso,
                         'Fecha Nacimiento Niño': fechaNacimientoNiño,
                         'Edad al Ingreso': n.ingreso ? n.ingreso.age : n.age || '',
+                        'Comuna': comuna,
+                        'Barrio': barrio,
                         'Dirección': n.ingreso ? n.ingreso.address : n.address || '',
                         'Teléfono': n.ingreso ? n.ingreso.phone : n.phone || '',
                         'Acudiente Nombre': n.ingreso ? n.ingreso.acudiente : n.acudiente || '',
@@ -4305,6 +4619,7 @@
                         'Fecha Valoración Nutricional': nutricionData.fecha || '',
                         'Peso (kg)': nutricionData.peso || '',
                         'Talla (cm)': nutricionData.talla || '',
+                        'Perímetro Braquial (cm)': nutricionData.perimetroBraquial || '',
                         'Régimen': nutricionData.regimen || '',
                         'EPS': nutricionData.eps || '',
                         'Estado Nutricional': nutricionData.estadoNutricional || ''
@@ -4677,6 +4992,8 @@
                 const acudienteDoc = document.getElementById('acudienteDoc');
                 const acudienteDOB = document.getElementById('acudienteDOB');
                 const ingresoDate = document.getElementById('ingresoDate');
+                const ingresoComuna = document.getElementById('ingresoComuna');
+                const ingresoBarrio = document.getElementById('ingresoBarrio');
                 
                 formData += `[ DATOS DE INGRESO ]\n`;
                 formData += `  - Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
@@ -4685,6 +5002,8 @@
                 formData += `  - F. Nacim:   ${ingresoDOB ? ingresoDOB.value : ''}\n`;
                 formData += `  - F. Ingreso: ${ingresoDate ? ingresoDate.value : ''}\n`;
                 formData += `  - Género:     ${ingresoGender ? ingresoGender.value : 'N/A'}\n`;
+                formData += `  - Comuna:     ${ingresoComuna ? ingresoComuna.value : ''}\n`;
+                formData += `  - Barrio:     ${ingresoBarrio ? ingresoBarrio.value : ''}\n`;
                 formData += `  - Direccion:  ${ingresoAddress ? ingresoAddress.value : ''}\n`;
                 formData += `  - Teléfono:   ${ingresoPhone ? ingresoPhone.value : ''}\n\n`;
                 
@@ -4696,18 +5015,20 @@
                 const nutricionFecha = document.getElementById('nutricionFecha');
                 const nutricionPeso = document.getElementById('nutricionPeso');
                 const nutricionTalla = document.getElementById('nutricionTalla');
+                const nutricionPerimetroBraquial = document.getElementById('nutricionPerimetroBraquial');
                 const nutricionRegimen = document.getElementById('nutricionRegimen');
                 const nutricionEPS = document.getElementById('nutricionEPS');
                 const nutricionStatus = document.getElementById('nutricionStatus');
 
                 if (nutricionFecha && nutricionFecha.value) {
                     formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
-                    formData += `  - F. Valoración:  ${nutricionFecha.value}\n`;
-                    formData += `  - Peso:           ${nutricionPeso ? nutricionPeso.value + ' kg' : ''}\n`;
-                    formData += `  - Talla:          ${nutricionTalla ? nutricionTalla.value + ' cm' : ''}\n`;
-                    formData += `  - Régimen:        ${nutricionRegimen ? nutricionRegimen.value : ''}\n`;
-                    formData += `  - EPS:            ${nutricionEPS ? nutricionEPS.value : ''}\n`;
-                    formData += `  - Estado Nutric.: ${nutricionStatus ? nutricionStatus.textContent : 'No calculado'}\n`;
+                    formData += `  - F. Valoración:      ${nutricionFecha.value}\n`;
+                    formData += `  - Peso:               ${nutricionPeso ? nutricionPeso.value + ' kg' : ''}\n`;
+                    formData += `  - Talla:              ${nutricionTalla ? nutricionTalla.value + ' cm' : ''}\n`;
+                    formData += `  - Perímetro Braquial: ${nutricionPerimetroBraquial ? nutricionPerimetroBraquial.value + ' cm' : ''}\n`;
+                    formData += `  - Régimen:            ${nutricionRegimen ? nutricionRegimen.value : ''}\n`;
+                    formData += `  - EPS:                ${nutricionEPS ? nutricionEPS.value : ''}\n`;
+                    formData += `  - Estado Nutric.:     ${nutricionStatus ? nutricionStatus.textContent : 'No calculado'}\n`;
                 }
             }
             
@@ -4842,6 +5163,8 @@
                         const ingresoAddress = document.getElementById('ingresoAddress');
                         const ingresoPhone = document.getElementById('ingresoPhone');
                         const acudienteName = document.getElementById('acudienteName');
+                        const ingresoComuna = document.getElementById('ingresoComuna');
+                        const ingresoBarrio = document.getElementById('ingresoBarrio');
 
                         // Documento obligatorio
                         if (!ingresoDocNumber || !ingresoDocNumber.value.trim()) {
@@ -4901,6 +5224,24 @@
                         }
                         ingresoDate.classList.remove('input-error');
 
+                        // Comuna obligatoria
+                        if (!ingresoComuna || !ingresoComuna.value) {
+                            showToast("❌ La COMUNA es OBLIGATORIA", "error");
+                            ingresoComuna?.classList.add('input-error');
+                            ingresoComuna?.focus();
+                            return;
+                        }
+                        ingresoComuna.classList.remove('input-error');
+
+                        // Barrio obligatorio
+                        if (!ingresoBarrio || !ingresoBarrio.value.trim()) {
+                            showToast("❌ El BARRIO es OBLIGATORIO", "error");
+                            ingresoBarrio?.classList.add('input-error');
+                            ingresoBarrio?.focus();
+                            return;
+                        }
+                        ingresoBarrio.classList.remove('input-error');
+
                         // Dirección obligatoria
                         if (!ingresoAddress || !ingresoAddress.value.trim()) {
                             showToast("❌ La DIRECCIÓN es OBLIGATORIA", "error");
@@ -4932,6 +5273,7 @@
                         const nutricionPeso = document.getElementById('nutricionPeso');
                         const nutricionTalla = document.getElementById('nutricionTalla');
                         const nutricionFecha = document.getElementById('nutricionFecha');
+                        const nutricionPerimetroBraquial = document.getElementById('nutricionPerimetroBraquial');
 
                         if (!nutricionPeso || !nutricionPeso.value) {
                             showToast("❌ El PESO es obligatorio para el seguimiento nutricional", "error");
@@ -4954,8 +5296,16 @@
                             return;
                         }
 
+                        if (!nutricionPerimetroBraquial || !nutricionPerimetroBraquial.value) {
+                            showToast("❌ El PERÍMETRO BRAQUIAL es obligatorio", "error");
+                            nutricionPerimetroBraquial?.classList.add('input-error');
+                            nutricionPerimetroBraquial?.focus();
+                            return;
+                        }
+
                         const peso = parseFloat(nutricionPeso.value);
                         const talla = parseFloat(nutricionTalla.value);
+                        const perimetroBraquial = parseFloat(nutricionPerimetroBraquial.value);
 
                         if (peso < 5 || peso > 30.5) {
                             showToast("❌ El peso debe estar entre 5 y 30.5 kg", "error");
@@ -4970,6 +5320,13 @@
                             return;
                         }
                         nutricionTalla.classList.remove('input-error');
+
+                        if (perimetroBraquial < 6 || perimetroBraquial > 30) {
+                            showToast("❌ El perímetro braquial debe estar entre 6 y 30 cm", "error");
+                            nutricionPerimetroBraquial.classList.add('input-error');
+                            return;
+                        }
+                        nutricionPerimetroBraquial.classList.remove('input-error');
                     }
 
                     // ============================================
@@ -5046,6 +5403,8 @@
                             dob: document.getElementById('ingresoDOB')?.value || '',
                             age: document.getElementById('displayAge')?.value || '',
                             gender: document.querySelector('input[name="_ingresoGender"]:checked')?.value || '',
+                            comuna: document.getElementById('ingresoComuna')?.value || '',
+                            barrio: document.getElementById('ingresoBarrio')?.value?.trim() || '',
                             address: document.getElementById('ingresoAddress')?.value?.trim() || '',
                             phone: document.getElementById('ingresoPhone')?.value?.trim() || '',
                             acudiente: document.getElementById('acudienteName')?.value?.trim() || '',
@@ -5058,6 +5417,7 @@
                             fecha: document.getElementById('nutricionFecha')?.value || '',
                             peso: document.getElementById('nutricionPeso')?.value || '',
                             talla: document.getElementById('nutricionTalla')?.value || '',
+                            perimetroBraquial: document.getElementById('nutricionPerimetroBraquial')?.value || '',
                             regimen: document.getElementById('nutricionRegimen')?.value || '',
                             eps: document.getElementById('nutricionEPS')?.value || '',
                             estadoNutricional: document.getElementById('nutricionStatus')?.textContent || 'No calculado'
@@ -5095,6 +5455,8 @@
                         googleData.edad_calculada = noveltyData.ingreso.age;
                         googleData.ingreso_fecha = noveltyData.ingreso.ingresoDate;
                         googleData._ingresoGender = noveltyData.ingreso.gender;
+                        googleData.ingreso_comuna = noveltyData.ingreso.comuna;
+                        googleData.ingreso_barrio = noveltyData.ingreso.barrio;
                         googleData.ingreso_direccion = noveltyData.ingreso.address;
                         googleData.ingreso_telefono = noveltyData.ingreso.phone;
                         googleData.acudiente_documento = noveltyData.ingreso.acudienteDoc;
@@ -5103,6 +5465,7 @@
                         googleData.nutricion_fecha = noveltyData.nutricion.fecha;
                         googleData.nutricion_peso = noveltyData.nutricion.peso;
                         googleData.nutricion_talla = noveltyData.nutricion.talla;
+                        googleData.nutricion_perimetro_braquial = noveltyData.nutricion.perimetroBraquial;
                         googleData.nutricion_regimen = noveltyData.nutricion.regimen;
                         googleData.nutricion_eps = noveltyData.nutricion.eps;
                     }
