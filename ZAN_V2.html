@@ -1608,24 +1608,27 @@
                 </div>
             </div>
 
-            <div class="week-selector" id="week-selector">
-				<div class="sync-status">
-                    <span class="sync-dot" id="sync-dot"></span>
-                    <span id="sync-text">Sincronizado</span>
-            	</div>
-                <a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
+            <!-- Indicador de sincronización en top-bar -->
+			<div class="sync-indicator-top" style="display: flex; align-items: center; gap: 8px; margin-right: 15px; padding: 5px 12px; background: rgba(0,0,0,0.3); border-radius: 20px; border: 1px solid var(--border-color);">
+				<span class="sync-dot" id="sync-dot-top" style="width: 10px; height: 10px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); transition: all 0.3s;"></span>
+				<span id="sync-text-top" style="font-size: 10px; color: var(--text-dim); font-weight: 500;">Sincronizado</span>
+			</div>
+
+			<div class="week-selector" id="week-selector">
+				<a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
 	                <i class="fa-solid fa-cloud"></i>
 	                <span>Guardar</span>
 	            </a>
-				<small>Semanas:</small>
+				<small>Semanas:</small>	
 				<select id="num-semanas" onchange="cambiarSemanas()">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4" selected>4</option>
-                    <option value="5">5</option>
-                </select>
-            </div>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4" selected>4</option>
+					<option value="5">5</option>
+				</select>
+			</div>
+			
         </header>
 
         <div id="app-content">
@@ -1807,7 +1810,7 @@
 
         const PRODUCTOS_INICIALES = [
             { nombre: "Pollo Libra", precio: 9000, cl: true, proveedor: 'prov_3' },
-            { nombre: "Huevo Und", precio: 470, cl: true, proveedor: 'prov_3' },
+            { nombre: "Huevo Und", precio: 480, cl: true, proveedor: 'prov_3' },
             { nombre: "Molleja Libra", precio: 7000, cl: true, proveedor: 'prov_3' },
             { nombre: "Queso Libra", precio: 13000, cl: false, proveedor: 'prov_3' },
             { nombre: "Carne Cerdo Kilo", precio: 20000, cl: true, proveedor: 'prov_1' },
@@ -2462,23 +2465,43 @@
         }
 
         function marcarCambio() {
-            const dot = document.getElementById('sync-dot');
-            const text = document.getElementById('sync-text');
-            if (dot) {
-                dot.classList.add('unsaved');
-                text.textContent = "Cambios pendientes";
-            }
-            guardarLocal();
-        }
+			const dot = document.getElementById('sync-dot');
+			const text = document.getElementById('sync-text');
+			const dotTop = document.getElementById('sync-dot-top');
+			const textTop = document.getElementById('sync-text-top');
+			
+			if (dot) {
+				dot.classList.add('unsaved');
+				text.textContent = "Cambios pendientes";
+			}
+			if (dotTop) {
+				dotTop.classList.add('unsaved');
+				dotTop.style.background = 'var(--danger)';
+				dotTop.style.boxShadow = '0 0 8px var(--danger)';
+				textTop.textContent = "Cambios pendientes";
+				textTop.style.color = 'var(--danger)';
+			}
+			guardarLocal();
+		}
 
         function marcarSincronizado() {
-            const dot = document.getElementById('sync-dot');
-            const text = document.getElementById('sync-text');
-            if (dot) {
-                dot.classList.remove('unsaved');
-                text.textContent = "Sincronizado";
-            }
-        }
+			const dot = document.getElementById('sync-dot');
+			const text = document.getElementById('sync-text');
+			const dotTop = document.getElementById('sync-dot-top');
+			const textTop = document.getElementById('sync-text-top');
+			
+			if (dot) {
+				dot.classList.remove('unsaved');
+				text.textContent = "Sincronizado";
+			}
+			if (dotTop) {
+				dotTop.classList.remove('unsaved');
+				dotTop.style.background = 'var(--success)';
+				dotTop.style.boxShadow = '0 0 8px var(--success)';
+				textTop.textContent = "Sincronizado";
+				textTop.style.color = 'var(--text-dim)';
+			}
+		}
 
         // ===== INICIALIZACIÓN =====
         window.onload = () => {
