@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minutas HCB - Gestión Completa</title>
+    <title>Minutas HCB - Gestion Completa</title>
     <meta name="theme-color" content="#2563eb">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -347,7 +347,7 @@
             50% { transform: scale(1.05); box-shadow: 0 0 20px 5px rgba(37, 99, 235, 0.2); }
         }
 
-        /* Botón colapsar sidebar */
+        /* Boton colapsar sidebar */
         .sidebar-toggle {
             position: absolute;
             top: 50%;
@@ -1202,7 +1202,7 @@
             color: white;
         }
 
-        /* TABLA MENSUAL - ANCHO RESPONSIVO POR NÚMERO DE SEMANAS */
+        /* TABLA MENSUAL - ANCHO RESPONSIVO POR NuMERO DE SEMANAS */
         .monthly-table-wrapper {
             overflow-x: auto;
             overflow-y: visible;
@@ -1261,7 +1261,7 @@
             background: var(--bg-dark);
         }
 
-        /* ANCHOS RESPONSIVOS SEGÚN NÚMERO DE SEMANAS */
+        /* ANCHOS RESPONSIVOS SEGuN NuMERO DE SEMANAS */
         /* Por defecto (4 semanas) - ultra compacto */
         .monthly-table .week-header-col {
             background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(245, 158, 11, 0.15));
@@ -1294,7 +1294,7 @@
             text-align: center;
         }
 
-        /* Input compacto para 4 dígitos */
+        /* Input compacto para 4 digitos */
         .monthly-table .input-entrega-mes {
             width: 100%;
             min-width: 70px;
@@ -1310,7 +1310,7 @@
             height: 24px;
         }
 
-        /* Modo 1-2 semanas - más espacioso */
+        /* Modo 1-2 semanas - mas espacioso */
         .monthly-table.weeks-1-2 .week-header-col,
         .monthly-table.weeks-1-2 td.suggested-cell,
         .monthly-table.weeks-1-2 td.entrega-cell {
@@ -1802,7 +1802,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* PRINT STYLES - Tabla completa en impresión */
+        /* PRINT STYLES - Tabla completa en impresion */
         @media print {
             @page {
                 size: landscape;
@@ -2009,12 +2009,15 @@
                 <span>📆</span> <span>Calendario Festivos</span>
             </button>
             <a href="https://afkril.github.io/MINUTA_PATRON.html" class="nav-item" target="_blank" rel="noopener noreferrer" onclick="toggleSidebar()" data-section="Minuta">
-               <span>👁️</span> <span>Ver Minuta Patrón</span>
+               <span>👁️</span> <span>Ver Minuta Patron</span>
             </a>
 			<button class="nav-item" onclick="showSection('saved')" data-section="calendar">
                 <span>💾</span> <span>Guardadas</span>
                 <span id="savedCount"  style="margin-left: auto; background: var(--primary-neiva); color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.6875rem;">0</span>
             </button>
+			<button class="nav-item" onclick="abrirAdmin()" data-section="admin" style="border-left-color: #ef4444;">
+				<span>🔐</span> <span>Admin</span>
+			</button>
         </div>
 
         <div class="regional-selector">
@@ -2026,10 +2029,122 @@
             <span class="theme-label">Modo Oscuro</span>
             <div class="theme-toggle" onclick="toggleTheme()"></div>
         </div>
+		
+		
+		<!-- PANEL ADMINISTRATIVO (Oculto por defecto) -->
+		<div id="admin-panel" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 1000; overflow-y: auto;">
+			<div style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+				<!-- Header Admin -->
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);">
+					<div>
+						<h2 style="font-size: 1.5rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+							🔐 Panel Administrativo
+						</h2>
+						<p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0.25rem 0 0 0;">
+							Registro de auditoría de accesos y generación de listas
+						</p>
+					</div>
+					<button class="btn btn-danger" onclick="cerrarAdmin()">
+						<span>✕</span> Cerrar
+					</button>
+				</div>
+
+				<!-- Login Admin -->
+				<div id="admin-login" style="max-width: 400px; margin: 3rem auto; background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border);">
+					<div style="text-align: center; margin-bottom: 1.5rem;">
+						<div style="font-size: 3rem; margin-bottom: 0.5rem;">🔐</div>
+						<h3 style="margin: 0;">Acceso Administrativo</h3>
+					</div>
+					<div class="form-group" style="margin-bottom: 1rem;">
+						<label class="form-label">Clave de acceso</label>
+						<input type="password" id="admin-clave" class="form-input" style="width: 100%;" placeholder="Ingrese clave..." onkeypress="if(event.key==='Enter')validarAdmin()">
+					</div>
+					<button class="btn btn-primary btn-block" onclick="validarAdmin()" style="width: 100%;">
+						<span>🔓</span> Acceder
+					</button>
+					<div id="admin-error" style="color: var(--danger); text-align: center; margin-top: 1rem; display: none;">
+						Clave incorrecta
+					</div>
+				</div>
+
+				<!-- Dashboard Admin (Oculto inicialmente) -->
+				<div id="admin-dashboard" style="display: none;">
+					<!-- Estadísticas rápidas -->
+					<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+						<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; border-left: 4px solid var(--primary-neiva);">
+							<div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Total Accesos Hoy</div>
+							<div style="font-size: 2rem; font-weight: 700;" id="stat-total-hoy">0</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; border-left: 4px solid var(--primary-gaitana);">
+							<div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Regional Neiva</div>
+							<div style="font-size: 2rem; font-weight: 700;" id="stat-neiva">0</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; border-left: 4px solid var(--success);">
+							<div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Regional Gaitana</div>
+							<div style="font-size: 2rem; font-weight: 700;" id="stat-gaitana">0</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; border-left: 4px solid #8b5cf6;">
+							<div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Listas Mensuales</div>
+							<div style="font-size: 2rem; font-weight: 700;" id="stat-mensual">0</div>
+						</div>
+					</div>
+
+					<!-- Filtros -->
+					<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+						<div class="form-group" style="margin: 0;">
+							<label class="form-label">Filtrar por Regional</label>
+							<select class="form-select" id="admin-filter-regional" onchange="filtrarRegistros()">
+								<option value="todos">Todas</option>
+								<option value="neiva">Neiva</option>
+								<option value="gaitana">Gaitana</option>
+							</select>
+						</div>
+						<div class="form-group" style="margin: 0;">
+							<label class="form-label">Tipo</label>
+							<select class="form-select" id="admin-filter-tipo" onchange="filtrarRegistros()">
+								<option value="todos">Todos</option>
+								<option value="semanal">Semanal</option>
+								<option value="mensual">Mensual</option>
+							</select>
+						</div>
+						<div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
+							<label class="form-label">Buscar IP/Usuario</label>
+							<input type="text" class="form-input" id="admin-filter-buscar" placeholder="IP o identificador..." oninput="filtrarRegistros()">
+						</div>
+						<button class="btn btn-secondary" onclick="exportarRegistros()" style="margin-top: 1.25rem;">
+							<span>📊</span> Exportar Excel
+						</button>
+						<button class="btn btn-danger" onclick="limpiarRegistros()" style="margin-top: 1.25rem;">
+							<span>🗑️</span> Limpiar
+						</button>
+					</div>
+
+					<!-- Tabla de registros -->
+					<div class="table-container" style="max-height: 60vh; overflow-y: auto;">
+						<table style="width: 100%; font-size: 0.8125rem;">
+							<thead style="position: sticky; top: 0; background: var(--bg-dark); z-index: 10;">
+								<tr>
+									<th style="padding: 0.75rem; text-align: left;">Fecha/Hora</th>
+									<th style="padding: 0.75rem; text-align: left;">IP</th>
+									<th style="padding: 0.75rem; text-align: left;">Usuario/PC</th>
+									<th style="padding: 0.75rem; text-align: left;">Acción</th>
+									<th style="padding: 0.75rem; text-align: left;">Regional</th>
+									<th style="padding: 0.75rem; text-align: left;">Tipo</th>
+									<th style="padding: 0.75rem; text-align: left;">Detalles</th>
+								</tr>
+							</thead>
+							<tbody id="admin-registros-tbody">
+								<!-- Se llena dinámicamente -->
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
     </aside>
 
     <main class="main-content" id="mainContent">
-        <!-- SECCIÓN CALCULADORA SEMANAL -->
+        <!-- SECCIoN CALCULADORA SEMANAL -->
         <div id="section-calculator" class="section active">
             <div class="config-panel no-print">
                 <div class="config-row">
@@ -2050,7 +2165,7 @@
                     </div>
 
                     <div class="form-group" style="flex: 1; min-width: 220px;">
-                        <label class="form-label">Días</label>
+                        <label class="form-label">Dias</label>
                         <div class="days-selector">
                             <label class="day-chip">
                                 <input type="checkbox" class="d-ch" value="1" checked>
@@ -2095,12 +2210,12 @@
                 </div>
                 <div class="category-card cat-proteinas active" onclick="toggleCategory(this, 'proteinas')">
                     <span class="category-icon">🥩</span>
-                    <span class="category-name">Proteínas</span>
+                    <span class="category-name">Proteinas</span>
                     <span class="category-count" id="count-proteinas">0</span>
                 </div>
                 <div class="category-card cat-lacteos active" onclick="toggleCategory(this, 'lacteos')">
                     <span class="category-icon">🥛</span>
-                    <span class="category-name">Lácteos</span>
+                    <span class="category-name">Lacteos</span>
                     <span class="category-count" id="count-lacteos">0</span>
                 </div>
                 <div class="category-card cat-verduras active" onclick="toggleCategory(this, 'verduras')">
@@ -2115,7 +2230,7 @@
                 </div>
                 <div class="category-card cat-panaderia active" onclick="toggleCategory(this, 'panaderia')">
                     <span class="category-icon">🥖</span>
-                    <span class="category-name">Panadería</span>
+                    <span class="category-name">Panaderia</span>
                     <span class="category-count" id="count-panaderia">0</span>
                 </div>
             </div>
@@ -2147,7 +2262,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN LISTADO MENSUAL -->
+        <!-- SECCIoN LISTADO MENSUAL -->
         <div id="section-monthly" class="section">
             <div class="monthly-header no-print">
                 <div class="monthly-title">
@@ -2155,7 +2270,7 @@
                     <span>Listado Mensual de Mercado</span>
                 </div>
                 <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                    Planificación y consolidación de compras por semanas
+                    Planificacion y consolidacion de compras por semanas
                 </div>
             </div>
 
@@ -2167,7 +2282,7 @@
                     </div>
                     
                     <div class="form-group" style="flex: 1;">
-                        <label class="form-label">Selecciona las semanas y días a incluir</label>
+                        <label class="form-label">Selecciona las semanas y dias a incluir</label>
                     </div>
 
                     <button class="btn btn-primary" onclick="generarMensual()" id="btnGenerarMensual">
@@ -2271,7 +2386,7 @@
                 </div>
             </div>
 
-            <!-- Filtros de Categoría para Mensual -->
+            <!-- Filtros de Categoria para Mensual -->
             <div class="category-filters no-print" id="monthlyCatFilters" style="display: none;">
                 <div class="category-card cat-granos active" onclick="toggleMonthlyCategory(this, 'granos')">
                     <span class="category-icon">🌾</span>
@@ -2280,12 +2395,12 @@
                 </div>
                 <div class="category-card cat-proteinas active" onclick="toggleMonthlyCategory(this, 'proteinas')">
                     <span class="category-icon">🥩</span>
-                    <span class="category-name">Proteínas</span>
+                    <span class="category-name">Proteinas</span>
                     <span class="category-count" id="monthly-count-proteinas">0</span>
                 </div>
                 <div class="category-card cat-lacteos active" onclick="toggleMonthlyCategory(this, 'lacteos')">
                     <span class="category-icon">🥛</span>
-                    <span class="category-name">Lácteos</span>
+                    <span class="category-name">Lacteos</span>
                     <span class="category-count" id="monthly-count-lacteos">0</span>
                 </div>
                 <div class="category-card cat-verduras active" onclick="toggleMonthlyCategory(this, 'verduras')">
@@ -2300,7 +2415,7 @@
                 </div>
                 <div class="category-card cat-panaderia active" onclick="toggleMonthlyCategory(this, 'panaderia')">
                     <span class="category-icon">🥖</span>
-                    <span class="category-name">Panadería</span>
+                    <span class="category-name">Panaderia</span>
                     <span class="category-count" id="monthly-count-panaderia">0</span>
                 </div>
             </div>
@@ -2333,7 +2448,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN CALENDARIO FESTIVOS -->
+        <!-- SECCIoN CALENDARIO FESTIVOS -->
         <div id="section-calendar" class="section">
             <div class="calendar-header no-print">
                 <div class="calendar-title">
@@ -2341,16 +2456,16 @@
                     <span>Calendario Festivos Colombia 2026</span>
                 </div>
                 <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                    Días festivos y hábiles del año
+                    Dias festivos y habiles del año
                 </div>
             </div>
 
             <div class="calendar-nav no-print" id="calendarNav">
-                <!-- Se genera dinámicamente -->
+                <!-- Se genera dinamicamente -->
             </div>
 
             <div class="calendar-grid" id="calendarGrid">
-                <!-- Se genera dinámicamente -->
+                <!-- Se genera dinamicamente -->
             </div>
 
             <div class="calendar-legend no-print">
@@ -2360,7 +2475,7 @@
                 </div>
                 <div class="legend-item">
                     <div class="legend-color holiday"></div>
-                    <span>Días festivos</span>
+                    <span>Dias festivos</span>
                 </div>
                 <div class="legend-item">
                     <div class="legend-color today"></div>
@@ -2369,7 +2484,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN EDITOR DE GRAMAJES -->
+        <!-- SECCIoN EDITOR DE GRAMAJES -->
         <div id="section-editor" class="section">
             <div class="editor-header no-print">
                 <div class="editor-title">
@@ -2377,7 +2492,7 @@
                     <span>Editor de Gramajes</span>
                 </div>
                 <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                    Modifica los gramajes por menú y regional. Los cambios se guardan en Firebase.
+                    Modifica los gramajes por menu y regional. Los cambios se guardan en Firebase.
                 </div>
             </div>
 
@@ -2406,7 +2521,7 @@
                     </select>
                 </div>
                 <div class="form-group" style="width: 120px;">
-                    <label class="form-label">Categoría</label>
+                    <label class="form-label">Categoria</label>
                     <input type="text" class="form-input" id="editorProductCategory" readonly>
                 </div>
                 <div class="form-group" style="width: 100px;">
@@ -2549,7 +2664,7 @@
             </div>
         </div>
 
-        <!-- SECCIÓN GUARDADAS -->
+        <!-- SECCIoN GUARDADAS -->
         <div id="section-saved" class="section">
             <div class="config-panel">
                 <h2 style="margin-bottom: 1rem; font-size: 1.25rem;">💾 Listas Guardadas</h2>
@@ -2724,28 +2839,28 @@
         // ==================== FESTIVOS COLOMBIA 2026 ====================
         const festivos2026 = [
             { fecha: '2026-01-01', nombre: 'Año Nuevo' },
-            { fecha: '2026-01-12', nombre: 'Día de Reyes' },
-            { fecha: '2026-03-23', nombre: 'Día de San José' },
+            { fecha: '2026-01-12', nombre: 'Dia de Reyes' },
+            { fecha: '2026-03-23', nombre: 'Dia de San José' },
             { fecha: '2026-04-02', nombre: 'Jueves Santo' },
             { fecha: '2026-04-03', nombre: 'Viernes Santo' },
-            { fecha: '2026-04-05', nombre: 'Domingo de Resurrección' },
-            { fecha: '2026-05-01', nombre: 'Día del Trabajo' },
-            { fecha: '2026-05-18', nombre: 'Ascensión del Señor' },
+            { fecha: '2026-04-05', nombre: 'Domingo de Resurreccion' },
+            { fecha: '2026-05-01', nombre: 'Dia del Trabajo' },
+            { fecha: '2026-05-18', nombre: 'Ascension del Señor' },
             { fecha: '2026-06-08', nombre: 'Corpus Christi' },
-            { fecha: '2026-06-15', nombre: 'Sagrado Corazón' },
+            { fecha: '2026-06-15', nombre: 'Sagrado Corazon' },
             { fecha: '2026-06-29', nombre: 'San Pedro y San Pablo' },
-            { fecha: '2026-07-20', nombre: 'Día de la Independencia' },
-            { fecha: '2026-08-07', nombre: 'Batalla de Boyacá' },
-            { fecha: '2026-08-17', nombre: 'La Asunción de la Virgen' },
-            { fecha: '2026-10-12', nombre: 'Día de la Raza' },
+            { fecha: '2026-07-20', nombre: 'Dia de la Independencia' },
+            { fecha: '2026-08-07', nombre: 'Batalla de Boyaca' },
+            { fecha: '2026-08-17', nombre: 'La Asuncion de la Virgen' },
+            { fecha: '2026-10-12', nombre: 'Dia de la Raza' },
             { fecha: '2026-11-02', nombre: 'Todos los Santos' },
             { fecha: '2026-11-16', nombre: 'Independencia de Cartagena' },
-            { fecha: '2026-12-08', nombre: 'Inmaculada Concepción' },
+            { fecha: '2026-12-08', nombre: 'Inmaculada Concepcion' },
             { fecha: '2026-12-25', nombre: 'Navidad' }
         ];
 
         const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        const nombresDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const nombresDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab'];
 
         // ==================== VARIABLES GLOBALES ====================
         let regionales = JSON.parse(JSON.stringify(baseDatabase));
@@ -2771,7 +2886,7 @@
         let modifiedFields = new Set();
         let firebaseConnected = false;
 
-        // ==================== INICIALIZACIÓN ====================
+        // ==================== INICIALIZACIoN ====================
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('smartMenu_theme') || 'dark';
             document.body.setAttribute('data-theme', savedTheme);
@@ -2822,7 +2937,7 @@
             }, (error) => {
                 console.error('Error Firebase:', error);
                 updateFirebaseStatus(false);
-                showToast('Error de conexión con Firebase', 'error');
+                showToast('Error de conexion con Firebase', 'error');
             });
         }
 
@@ -2871,7 +2986,7 @@
                     [currentRegional]: regionales[currentRegional].db
                 });
 
-                // Guardar timestamp de modificación
+                // Guardar timestamp de modificacion
                 await window.firebaseSet(window.firebaseRef(window.firebaseDB, `modificaciones/${currentRegional}`), {
                     timestamp: Date.now(),
                     usuario: 'admin',
@@ -2882,7 +2997,7 @@
                 modifiedFields.clear();
                 updateChangeIndicator();
                 
-                // Recargar lista si está visible
+                // Recargar lista si esta visible
                 if (currentData) {
                     generar();
                 }
@@ -2897,7 +3012,7 @@
         }
 
         async function restaurarValoresOriginales() {
-            if (!confirm('¿Está seguro de restaurar los valores originales? Se perderán todas las modificaciones.')) {
+            if (!confirm('¿Esta seguro de restaurar los valores originales? Se perderan todas las modificaciones.')) {
                 return;
             }
 
@@ -2920,12 +3035,12 @@
                     // Actualizar local
                     regionales = JSON.parse(JSON.stringify(originales));
                     
-                    // Recargar editor si está abierto
+                    // Recargar editor si esta abierto
                     if (currentEditingProduct !== null) {
                         loadProductMatrix();
                     }
 
-                    // Recargar lista si está visible
+                    // Recargar lista si esta visible
                     if (currentData) {
                         generar();
                     }
@@ -3033,7 +3148,7 @@
             }
         }
 
-        // ==================== NAVEGACIÓN Y UI ====================
+        // ==================== NAVEGACIoN Y UI ====================
         function showSection(section) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(`section-${section}`).classList.add('active');
@@ -3132,13 +3247,13 @@
 			document.getElementById('searchContainer').style.display = 'none';
 			document.getElementById('buscador').value = '';
 			
-			// Resetear contadores de categorías semanales
+			// Resetear contadores de categorias semanales
 			['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia'].forEach(cat => {
 				const el = document.getElementById(`count-${cat}`);
 				if (el) el.textContent = '0';
 			});
 			
-			// Resetear filtros de categoría semanales (dejar todos activos)
+			// Resetear filtros de categoria semanales (dejar todos activos)
 			activeFilters = new Set(['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
 			document.querySelectorAll('#catFilters .category-card').forEach(card => {
 				card.classList.add('active');
@@ -3153,13 +3268,13 @@
 			document.getElementById('monthlySearchContainer').style.display = 'none';
 			document.getElementById('buscadorMensual').value = '';
 			
-			// Resetear contadores de categorías mensuales
+			// Resetear contadores de categorias mensuales
 			['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia'].forEach(cat => {
 				const el = document.getElementById(`monthly-count-${cat}`);
 				if (el) el.textContent = '0';
 			});
 			
-			// Resetear filtros de categoría mensuales (dejar todos activos)
+			// Resetear filtros de categoria mensuales (dejar todos activos)
 			monthlyActiveFilters = new Set(['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
 			document.querySelectorAll('#monthlyCatFilters .category-card').forEach(card => {
 				card.classList.add('active');
@@ -3177,7 +3292,7 @@
 				}
 			}
 			
-			// Recargar editor si está abierto
+			// Recargar editor si esta abierto
 			if (activeSection === 'section-editor') {
 				initEditor();
 				if (currentEditingProduct !== null) {
@@ -3199,7 +3314,7 @@
                 const checks = document.querySelectorAll('.d-ch:checked');
                 
                 if(checks.length === 0) {
-                    showToast('Selecciona al menos un día', 'error');
+                    showToast('Selecciona al menos un dia', 'error');
                     btn.classList.remove('loading');
                     return;
                 }
@@ -3370,7 +3485,7 @@
                 }
                 
                 if (!hasDays) {
-                    showToast('Selecciona al menos un día en las semanas elegidas', 'error');
+                    showToast('Selecciona al menos un dia en las semanas elegidas', 'error');
                     btn.classList.remove('loading');
                     return;
                 }
@@ -3447,7 +3562,7 @@
             const sortedWeeks = Array.from(monthlyActiveWeeks.keys()).sort((a, b) => a - b);
             const numWeeks = sortedWeeks.length;
             
-            // Aplicar clase según número de semanas para anchos responsivos
+            // Aplicar clase segun numero de semanas para anchos responsivos
             const table = document.getElementById('monthlyTable');
             table.className = 'monthly-table';
             if (numWeeks <= 2) table.classList.add('weeks-1-2');
@@ -3554,7 +3669,7 @@
 				}
 			});
 			
-			// Encontrar la celda de total (última td con clase total-entrega)
+			// Encontrar la celda de total (ultima td con clase total-entrega)
 			const celdaTotal = fila.querySelector('.total-entrega');
 			if (celdaTotal) {
 				// Obtener la unidad de la fila (de la columna UND.)
@@ -3600,12 +3715,12 @@
 						valorFinal = parseFloat(valorStorage) || 0;
 					}
 					
-					// Convertir entrega a gramos si es necesario (asumiendo que el input está en la misma unidad)
+					// Convertir entrega a gramos si es necesario (asumiendo que el input esta en la misma unidad)
 					globalEntrega += valorFinal;
 				});
 			});
 			
-			// Función auxiliar para formatear en libras
+			// Funcion auxiliar para formatear en libras
 			const formatLibras = (gramos) => {
 				const libras = gramos / 500;
 				if (libras === 0) return '0 Lb';
@@ -3642,7 +3757,7 @@
             
             const sortedWeeks = Array.from(monthlyActiveWeeks.keys()).sort((a, b) => a - b);
             const data = Object.entries(monthlyFilteredData).map(([name, item]) => {
-                const row = { Producto: name, Categoría: item.c, Unidad: item.u };
+                const row = { Producto: name, Categoria: item.c, Unidad: item.u };
                 sortedWeeks.forEach(week => {
                     const weekData = item.weeks[week];
                     if (weekData) {
@@ -3721,7 +3836,7 @@
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
             
-            // Headers de días
+            // Headers de dias
             nombresDias.forEach(dia => {
                 const header = document.createElement('div');
                 header.className = 'calendar-day-header';
@@ -3734,7 +3849,7 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const prevMonthDays = new Date(year, month, 0).getDate();
             
-            // Días del mes anterior
+            // Dias del mes anterior
             for (let i = firstDay - 1; i >= 0; i--) {
                 const day = document.createElement('div');
                 day.className = 'calendar-day other-month';
@@ -3742,7 +3857,7 @@
                 grid.appendChild(day);
             }
             
-            // Días del mes actual
+            // Dias del mes actual
             const today = new Date();
             const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
             
@@ -3766,7 +3881,7 @@
                 grid.appendChild(day);
             }
             
-            // Días del mes siguiente
+            // Dias del mes siguiente
             const remainingCells = 42 - (firstDay + daysInMonth);
             for (let i = 1; i <= remainingCells; i++) {
                 const day = document.createElement('div');
@@ -3876,7 +3991,7 @@
 				document.getElementById('sem').value = l.semana;
 				document.getElementById('num-p').value = l.personas;
 				
-				// Restaurar días seleccionados
+				// Restaurar dias seleccionados
 				document.querySelectorAll('.d-ch').forEach(cb => {
 					cb.checked = l.dias.includes(parseInt(cb.value));
 				});
@@ -3913,7 +4028,7 @@
 				return;
 			}
 			
-			if (!confirm('¿Está seguro de limpiar TODAS las cantidades de entrega digitadas en esta lista?')) {
+			if (!confirm('¿Esta seguro de limpiar TODAS las cantidades de entrega digitadas en esta lista?')) {
 				return;
 			}
 			
@@ -3939,7 +4054,7 @@
 				return;
 			}
 			
-			if (!confirm('¿Está seguro de limpiar TODAS las cantidades de entrega digitadas en este listado mensual?')) {
+			if (!confirm('¿Esta seguro de limpiar TODAS las cantidades de entrega digitadas en este listado mensual?')) {
 				return;
 			}
 			
@@ -3984,7 +4099,7 @@
 			const nombre = prompt('Nombre del listado semanal:');
 			if (!nombre || nombre.trim() === '') return;
 
-			// Obtener configuración actual
+			// Obtener configuracion actual
 			const sem = document.getElementById('sem').value;
 			const personas = document.getElementById('num-p').value;
 			const diasSeleccionados = Array.from(document.querySelectorAll('.d-ch:checked')).map(cb => parseInt(cb.value));
@@ -4036,7 +4151,7 @@
 				
 				return {
 					'Producto': name,
-					'Categoría': item.c,
+					'Categoria': item.c,
 					'Unidad': item.u,
 					'Cantidad x Niño': item.qIndividual.toFixed(2),
 					'Cantidad Total': item.qTotal.toFixed(2),
@@ -4045,8 +4160,8 @@
 				};
 			});
 
-			// Ordenar por categoría
-			data.sort((a, b) => (ORDER_CATEGORIES[a.Categoría] || 99) - (ORDER_CATEGORIES[b.Categoría] || 99));
+			// Ordenar por categoria
+			data.sort((a, b) => (ORDER_CATEGORIES[a.Categoria] || 99) - (ORDER_CATEGORIES[b.Categoria] || 99));
 
 			// Crear hoja de trabajo
 			const ws = XLSX.utils.json_to_sheet(data);
@@ -4054,7 +4169,7 @@
 			// Ajustar anchos de columna
 			const colWidths = [
 				{ wch: 25 }, // Producto
-				{ wch: 12 }, // Categoría
+				{ wch: 12 }, // Categoria
 				{ wch: 8 },  // Unidad
 				{ wch: 15 }, // Cantidad x Niño
 				{ wch: 15 }, // Cantidad Total
@@ -4081,8 +4196,295 @@
 		
 		
         function imprimir() { window.print(); }
+		
+		// ==================== SISTEMA ADMIN ====================
+
+		const CLAVE_ADMIN = 'ADHARA';
+		let registrosAuditoria = JSON.parse(localStorage.getItem('smartMenu_auditoria')) || [];
+
+		// Obtener información del dispositivo
+		function getDeviceInfo() {
+			return {
+				userAgent: navigator.userAgent,
+				plataforma: navigator.platform,
+				idioma: navigator.language,
+				nucleos: navigator.hardwareConcurrency || 'unknown',
+				memoria: navigator.deviceMemory || 'unknown',
+				pantalla: `${screen.width}x${screen.height}`,
+				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+			};
+		}
+
+		// Registrar acción en auditoría
+		async function registrarAuditoria(accion, regional, tipo, detalles = {}) {
+			let ip = 'unknown';
+			try {
+				const response = await fetch('https://api.ipify.org?format=json');
+				const data = await response.json();
+				ip = data.ip;
+			} catch (e) {
+				console.log('No se pudo obtener IP');
+			}
+
+			const registro = {
+				id: Date.now(),
+				fecha: new Date().toISOString(),
+				fechaLocal: new Date().toLocaleString('es-CO'),
+				ip: ip,
+				deviceInfo: getDeviceInfo(),
+				// Intentar obtener identificador único del navegador
+				deviceId: localStorage.getItem('smartMenu_deviceId') || generarDeviceId(),
+				accion: accion,
+				regional: regional,
+				tipo: tipo, // 'semanal' o 'mensual'
+				detalles: detalles,
+				url: window.location.href
+			};
+
+			// Guardar deviceId si es nuevo
+			if (!localStorage.getItem('smartMenu_deviceId')) {
+				localStorage.setItem('smartMenu_deviceId', registro.deviceId);
+			}
+
+			registrosAuditoria.unshift(registro);
+			
+			// Mantener solo últimos 1000 registros
+			if (registrosAuditoria.length > 1000) {
+				registrosAuditoria = registrosAuditoria.slice(0, 1000);
+			}
+			
+			localStorage.setItem('smartMenu_auditoria', JSON.stringify(registrosAuditoria));
+			
+			// Si Firebase está disponible, también guardar ahí
+			if (window.firebaseDB) {
+				try {
+					await window.firebaseSet(
+						window.firebaseRef(window.firebaseDB, `auditoria/${registro.id}`), 
+						registro
+					);
+				} catch (e) {
+					console.log('Error guardando en Firebase:', e);
+				}
+			}
+
+			return registro;
+		}
+
+		function generarDeviceId() {
+			return 'DEV_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+		}
+
+		// Modificar función generar() para registrar
+		const generarOriginal = generar;
+		generar = function() {
+			const sem = parseInt(document.getElementById('sem').value);
+			const personas = parseInt(document.getElementById('num-p').value) || 0;
+			const dias = Array.from(document.querySelectorAll('.d-ch:checked')).map(cb => parseInt(cb.value));
+			
+			// Llamar función original
+			const resultado = generarOriginal.apply(this, arguments);
+			
+			// Registrar en auditoría
+			registrarAuditoria('GENERAR_LISTA', currentRegional, 'semanal', {
+				semana: sem,
+				personas: personas,
+				diasSeleccionados: dias,
+				totalProductos: currentData ? Object.keys(currentData).length : 0
+			});
+			
+			return resultado;
+		};
+
+		// Modificar función generarMensual() para registrar
+		const generarMensualOriginal = generarMensual;
+		generarMensual = function() {
+			const semanas = Array.from(monthlyActiveWeeks.keys());
+			const personas = parseInt(document.getElementById('monthly-num-p').value) || 0;
+			
+			// Llamar función original
+			const resultado = generarMensualOriginal.apply(this, arguments);
+			
+			// Registrar en auditoría
+			registrarAuditoria('GENERAR_LISTA_MENSUAL', currentRegional, 'mensual', {
+				semanas: semanas,
+				personas: personas,
+				totalProductos: monthlyData ? Object.keys(monthlyData).length : 0
+			});
+			
+			return resultado;
+		};
+
+		// ==================== PANEL ADMIN ====================
+
+		function abrirAdmin() {
+			document.getElementById('admin-panel').style.display = 'block';
+			document.getElementById('admin-login').style.display = 'block';
+			document.getElementById('admin-dashboard').style.display = 'none';
+			document.getElementById('admin-clave').value = '';
+			document.getElementById('admin-error').style.display = 'none';
+			document.getElementById('admin-clave').focus();
+		}
+
+		function cerrarAdmin() {
+			document.getElementById('admin-panel').style.display = 'none';
+		}
+
+		function validarAdmin() {
+			const clave = document.getElementById('admin-clave').value;
+			if (clave === CLAVE_ADMIN) {
+				document.getElementById('admin-login').style.display = 'none';
+				document.getElementById('admin-dashboard').style.display = 'block';
+				cargarRegistrosAdmin();
+			} else {
+				document.getElementById('admin-error').style.display = 'block';
+				setTimeout(() => {
+					document.getElementById('admin-error').style.display = 'none';
+				}, 3000);
+			}
+		}
+
+		function cargarRegistrosAdmin() {
+			const tbody = document.getElementById('admin-registros-tbody');
+			const filtroRegional = document.getElementById('admin-filter-regional').value;
+			const filtroTipo = document.getElementById('admin-filter-tipo').value;
+			const filtroBuscar = document.getElementById('admin-filter-buscar').value.toLowerCase();
+
+			// Calcular estadísticas
+			const hoy = new Date().toDateString();
+			const stats = {
+				totalHoy: 0,
+				neiva: 0,
+				gaitana: 0,
+				mensual: 0
+			};
+
+			let html = '';
+			
+			registrosAuditoria.forEach(reg => {
+				// Estadísticas
+				const fechaReg = new Date(reg.fecha).toDateString();
+				if (fechaReg === hoy) stats.totalHoy++;
+				if (reg.regional === 'neiva') stats.neiva++;
+				if (reg.regional === 'gaitana') stats.gaitana++;
+				if (reg.tipo === 'mensual') stats.mensual++;
+
+				// Filtros
+				if (filtroRegional !== 'todos' && reg.regional !== filtroRegional) return;
+				if (filtroTipo !== 'todos' && reg.tipo !== filtroTipo) return;
+				if (filtroBuscar && !reg.ip.toLowerCase().includes(filtroBuscar) && 
+					!reg.deviceId.toLowerCase().includes(filtroBuscar)) return;
+
+				// Formatear detalles
+				let detallesHtml = '';
+				if (reg.detalles) {
+					if (reg.detalles.semana) detallesHtml += `Semana ${reg.detalles.semana}<br>`;
+					if (reg.detalles.semanas) detallesHtml += `Semanas: ${reg.detalles.semanas.join(', ')}<br>`;
+					if (reg.detalles.personas) detallesHtml += `${reg.detalles.personas} niños<br>`;
+					if (reg.detalles.totalProductos) detallesHtml += `${reg.detalles.totalProductos} productos`;
+				}
+
+				// Badge de regional
+				const regionalColor = reg.regional === 'neiva' ? '#2563eb' : '#059669';
+				
+				html += `
+					<tr style="border-bottom: 1px solid var(--border);">
+						<td style="padding: 0.75rem; white-space: nowrap;">
+							<div style="font-weight: 600;">${reg.fechaLocal.split(',')[0]}</div>
+							<div style="font-size: 0.75rem; color: var(--text-secondary);">${reg.fechaLocal.split(',')[1]}</div>
+						</td>
+						<td style="padding: 0.75rem; font-family: monospace; font-size: 0.75rem;">
+							${reg.ip}
+						</td>
+						<td style="padding: 0.75rem;">
+							<div style="font-weight: 500;">${reg.deviceId}</div>
+							<div style="font-size: 0.75rem; color: var(--text-secondary);">${reg.deviceInfo.plataforma}</div>
+						</td>
+						<td style="padding: 0.75rem;">
+							<span style="background: var(--bg-dark); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+								${reg.accion === 'GENERAR_LISTA' ? '📋 Generar Lista' : '📅 Generar Mensual'}
+							</span>
+						</td>
+						<td style="padding: 0.75rem;">
+							<span style="background: ${regionalColor}20; color: ${regionalColor}; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+								${reg.regional}
+							</span>
+						</td>
+						<td style="padding: 0.75rem;">
+							<span style="background: ${reg.tipo === 'mensual' ? '#8b5cf6' : '#f59e0b'}20; color: ${reg.tipo === 'mensual' ? '#8b5cf6' : '#f59e0b'}; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+								${reg.tipo}
+							</span>
+						</td>
+						<td style="padding: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);">
+							${detallesHtml}
+						</td>
+					</tr>
+				`;
+			});
+
+			tbody.innerHTML = html || '<tr><td colspan="7" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No hay registros</td></tr>';
+
+			// Actualizar estadísticas
+			document.getElementById('stat-total-hoy').textContent = stats.totalHoy;
+			document.getElementById('stat-neiva').textContent = stats.neiva;
+			document.getElementById('stat-gaitana').textContent = stats.gaitana;
+			document.getElementById('stat-mensual').textContent = stats.mensual;
+		}
+
+		function filtrarRegistros() {
+			cargarRegistrosAdmin();
+		}
+
+		function exportarRegistros() {
+			if (registrosAuditoria.length === 0) {
+				showToast('No hay registros para exportar', 'error');
+				return;
+			}
+
+			const data = registrosAuditoria.map(reg => ({
+				'Fecha': reg.fechaLocal,
+				'IP': reg.ip,
+				'Device ID': reg.deviceId,
+				'Plataforma': reg.deviceInfo.plataforma,
+				'Navegador': reg.deviceInfo.userAgent.substring(0, 50),
+				'Acción': reg.accion,
+				'Regional': reg.regional,
+				'Tipo': reg.tipo,
+				'Semana(s)': reg.detalles?.semana || reg.detalles?.semanas?.join(', ') || '',
+				'Personas': reg.detalles?.personas || '',
+				'Productos': reg.detalles?.totalProductos || '',
+				'URL': reg.url
+			}));
+
+			const ws = XLSX.utils.json_to_sheet(data);
+			const wb = XLSX.utils.book_new();
+			XLSX.utils.book_append_sheet(wb, ws, "Auditoria");
+			XLSX.writeFile(wb, `Auditoria_Minutas_${new Date().toISOString().split('T')[0]}.xlsx`);
+			showToast(`${data.length} registros exportados`, 'success');
+		}
+
+		function limpiarRegistros() {
+			if (!confirm('¿Está seguro de eliminar TODOS los registros de auditoría?')) return;
+			
+			registrosAuditoria = [];
+			localStorage.removeItem('smartMenu_auditoria');
+			
+			// También limpiar de Firebase si está disponible
+			if (window.firebaseDB) {
+				window.firebaseSet(window.firebaseRef(window.firebaseDB, 'auditoria'), null);
+			}
+			
+			cargarRegistrosAdmin();
+			showToast('Registros eliminados', 'success');
+		}
+
+		// Cerrar admin con ESC
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && document.getElementById('admin-panel').style.display === 'block') {
+				cerrarAdmin();
+			}
+		});
+		
+		
     </script>
 </body>
 </html>
-
-
