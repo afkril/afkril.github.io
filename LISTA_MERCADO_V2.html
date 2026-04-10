@@ -2888,19 +2888,20 @@
 
         // ==================== INICIALIZACIoN ====================
         document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('smartMenu_theme') || 'dark';
-            document.body.setAttribute('data-theme', savedTheme);
-            
-            const lastRegional = localStorage.getItem('smartMenu_lastRegional') || 'neiva';
-            cambiarRegional(lastRegional);
-            
-            if (sidebarCollapsed && window.innerWidth >= 1024) {
-                toggleSidebarCollapse(false);
-            }
+			const savedTheme = localStorage.getItem('smartMenu_theme') || 'dark';
+			document.body.setAttribute('data-theme', savedTheme);
+			
+			const lastRegional = localStorage.getItem('smartMenu_lastRegional') || 'neiva';
+			cambiarRegional(lastRegional);
+			
+			if (sidebarCollapsed && window.innerWidth >= 1024) {
+				toggleSidebarCollapse(false);
+			}
             
             updateSavedCount();
-            initCalendar();
-            initFirebase();
+			initCalendar();
+			initFirebase();
+			initAuditoria(); // <-- AGREGAR ESTA LÍNEA	
         });
 
         // ==================== FIREBASE ====================
@@ -4193,14 +4194,17 @@
         
 		function exportPDF() { window.print(); }
         
-		
-		
-        function imprimir() { window.print(); }
-		
-		// ==================== SISTEMA ADMIN ====================
+		// ==================== SISTEMA DE AUDITORÍA Y ADMIN ====================
 
-		const CLAVE_ADMIN = 'ADHARA';
-		let registrosAuditoria = JSON.parse(localStorage.getItem('smartMenu_auditoria')) || [];
+		const CLAVE_ADMIN = 'ZAN';
+		let registrosAuditoria = [];
+		let auditoriaListener = null;
+
+		// Referencia a Firebase para auditoría
+		function getAuditoriaRef() {
+			if (!window.firebaseDB) return null;
+			return window.firebaseRef(window.firebaseDB, 'auditoria');
+		}
 
 		// Obtener información del dispositivo
 		function getDeviceInfo() {
@@ -4215,63 +4219,153 @@
 			};
 		}
 
-		// Registrar acción en auditoría
+		// Generar ID único de dispositivo
+		function getDeviceId() {
+			let deviceId = localStorage.getItem('smartMenu_deviceId');
+			if (!deviceId) {
+				deviceId = 'DEV_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+				localStorage.setItem('smartMenu_deviceId', deviceId);
+			}
+			return deviceId;
+		}
+
+		// Registrar acción en auditoría - SIEMPRE en Firebase
 		async function registrarAuditoria(accion, regional, tipo, detalles = {}) {
+			// Obtener IP
 			let ip = 'unknown';
 			try {
 				const response = await fetch('https://api.ipify.org?format=json');
 				const data = await response.json();
 				ip = data.ip;
 			} catch (e) {
-				console.log('No se pudo obtener IP');
+				console.log('No se pudo obtener IP, usando fallback');
+				// Fallback: intentar con otro servicio
+				try {
+					const resp2 = await fetch('https://ipapi.co/json/');
+					const data2 = await resp2.json();
+					ip = data2.ip;
+				} catch (e2) {
+					ip = 'unknown_' + Date.now();
+				}
 			}
 
 			const registro = {
 				id: Date.now(),
 				fecha: new Date().toISOString(),
 				fechaLocal: new Date().toLocaleString('es-CO'),
+				timestamp: Date.now(),
 				ip: ip,
 				deviceInfo: getDeviceInfo(),
-				// Intentar obtener identificador único del navegador
-				deviceId: localStorage.getItem('smartMenu_deviceId') || generarDeviceId(),
+				deviceId: getDeviceId(),
 				accion: accion,
 				regional: regional,
-				tipo: tipo, // 'semanal' o 'mensual'
+				tipo: tipo,
 				detalles: detalles,
-				url: window.location.href
+				url: window.location.href,
+				userAgent: navigator.userAgent
 			};
 
-			// Guardar deviceId si es nuevo
-			if (!localStorage.getItem('smartMenu_deviceId')) {
-				localStorage.setItem('smartMenu_deviceId', registro.deviceId);
-			}
-
-			registrosAuditoria.unshift(registro);
-			
-			// Mantener solo últimos 1000 registros
-			if (registrosAuditoria.length > 1000) {
-				registrosAuditoria = registrosAuditoria.slice(0, 1000);
-			}
-			
-			localStorage.setItem('smartMenu_auditoria', JSON.stringify(registrosAuditoria));
-			
-			// Si Firebase está disponible, también guardar ahí
+			// GUARDAR PRIMERO EN FIREBASE (fuente principal)
 			if (window.firebaseDB) {
 				try {
 					await window.firebaseSet(
 						window.firebaseRef(window.firebaseDB, `auditoria/${registro.id}`), 
 						registro
 					);
-				} catch (e) {
-					console.log('Error guardando en Firebase:', e);
+					console.log('✅ Registro guardado en Firebase:', registro.id);
+					
+					// También guardar en localStorage como backup
+					const backup = JSON.parse(localStorage.getItem('smartMenu_auditoria_backup') || '[]');
+					backup.unshift(registro);
+					if (backup.length > 100) backup.pop(); // Solo últimos 100 en backup
+					localStorage.setItem('smartMenu_auditoria_backup', JSON.stringify(backup));
+					
+				} catch (error) {
+					console.error('❌ Error guardando en Firebase:', error);
+					// Si falla Firebase, guardar en localStorage temporalmente
+					const pendientes = JSON.parse(localStorage.getItem('smartMenu_auditoria_pendientes') || '[]');
+					pendientes.push(registro);
+					localStorage.setItem('smartMenu_auditoria_pendientes', JSON.stringify(pendientes));
+					showToast('Error de conexión. Registro pendiente de sincronizar.', 'warning');
 				}
+			} else {
+				console.warn('Firebase no disponible, guardando localmente');
+				const pendientes = JSON.parse(localStorage.getItem('smartMenu_auditoria_pendientes') || '[]');
+				pendientes.push(registro);
+				localStorage.setItem('smartMenu_auditoria_pendientes', JSON.stringify(pendientes));
 			}
 
 			return registro;
 		}
 
-		function generarDeviceId() {
-			return 'DEV_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+		// Sincronizar registros pendientes
+		async function sincronizarPendientes() {
+			const pendientes = JSON.parse(localStorage.getItem('smartMenu_auditoria_pendientes') || '[]');
+			if (pendientes.length === 0 || !window.firebaseDB) return;
+			
+			console.log(`Sincronizando ${pendientes.length} registros pendientes...`);
+			
+			const exitosos = [];
+			for (const reg of pendientes) {
+				try {
+					await window.firebaseSet(
+						window.firebaseRef(window.firebaseDB, `auditoria/${reg.id}`), 
+						reg
+					);
+					exitosos.push(reg.id);
+					console.log('✅ Sincronizado:', reg.id);
+				} catch (e) {
+					console.error('❌ Fallo sincronización:', reg.id);
+				}
+			}
+			
+			// Eliminar los que se sincronizaron
+			const restantes = pendientes.filter(r => !exitosos.includes(r.id));
+			localStorage.setItem('smartMenu_auditoria_pendientes', JSON.stringify(restantes));
+			
+			if (exitosos.length > 0) {
+				showToast(`${exitosos.length} registros sincronizados con Firebase`, 'success');
+			}
+		}
+
+		// Configurar listener de Firebase para auditoría en tiempo real
+		function setupAuditoriaListener() {
+			if (!window.firebaseDB) {
+				console.warn('Firebase no disponible para auditoría');
+				return;
+			}
+			
+			const auditoriaRef = getAuditoriaRef();
+			if (!auditoriaRef) return;
+			
+			// Cancelar listener anterior si existe
+			if (auditoriaListener) {
+				// No hay método directo para cancelar, pero podemos ignorar callbacks
+			}
+			
+			console.log('👂 Configurando listener de auditoría...');
+			
+			window.firebaseOnValue(auditoriaRef, (snapshot) => {
+				const data = [];
+				if (snapshot.exists()) {
+					snapshot.forEach((childSnapshot) => {
+						data.push(childSnapshot.val());
+					});
+				}
+				
+				// Ordenar por fecha descendente
+				data.sort((a, b) => b.timestamp - a.timestamp);
+				
+				registrosAuditoria = data;
+				console.log(`📊 ${data.length} registros cargados de Firebase`);
+				
+				// Si el admin está abierto, actualizar vista
+				if (document.getElementById('admin-dashboard').style.display === 'block') {
+					cargarRegistrosAdmin();
+				}
+			}, (error) => {
+				console.error('Error cargando auditoría:', error);
+			});
 		}
 
 		// Modificar función generar() para registrar
@@ -4281,16 +4375,16 @@
 			const personas = parseInt(document.getElementById('num-p').value) || 0;
 			const dias = Array.from(document.querySelectorAll('.d-ch:checked')).map(cb => parseInt(cb.value));
 			
-			// Llamar función original
+			// Llamar función original PRIMERO
 			const resultado = generarOriginal.apply(this, arguments);
 			
-			// Registrar en auditoría
+			// Luego registrar en auditoría (no bloqueante)
 			registrarAuditoria('GENERAR_LISTA', currentRegional, 'semanal', {
 				semana: sem,
 				personas: personas,
 				diasSeleccionados: dias,
 				totalProductos: currentData ? Object.keys(currentData).length : 0
-			});
+			}).catch(e => console.error('Error en auditoría:', e));
 			
 			return resultado;
 		};
@@ -4301,15 +4395,15 @@
 			const semanas = Array.from(monthlyActiveWeeks.keys());
 			const personas = parseInt(document.getElementById('monthly-num-p').value) || 0;
 			
-			// Llamar función original
+			// Llamar función original PRIMERO
 			const resultado = generarMensualOriginal.apply(this, arguments);
 			
-			// Registrar en auditoría
+			// Luego registrar en auditoría (no bloqueante)
 			registrarAuditoria('GENERAR_LISTA_MENSUAL', currentRegional, 'mensual', {
 				semanas: semanas,
 				personas: personas,
 				totalProductos: monthlyData ? Object.keys(monthlyData).length : 0
-			});
+			}).catch(e => console.error('Error en auditoría:', e));
 			
 			return resultado;
 		};
@@ -4334,6 +4428,14 @@
 			if (clave === CLAVE_ADMIN) {
 				document.getElementById('admin-login').style.display = 'none';
 				document.getElementById('admin-dashboard').style.display = 'block';
+				
+				// Asegurar que el listener esté activo
+				setupAuditoriaListener();
+				
+				// Intentar sincronizar pendientes
+				sincronizarPendientes();
+				
+				// Cargar registros
 				cargarRegistrosAdmin();
 			} else {
 				document.getElementById('admin-error').style.display = 'block';
@@ -4360,7 +4462,21 @@
 
 			let html = '';
 			
-			registrosAuditoria.forEach(reg => {
+			// Usar registros de Firebase (variable global)
+			const registros = registrosAuditoria || [];
+			
+			if (registros.length === 0) {
+				tbody.innerHTML = '<tr><td colspan="7" style="padding: 2rem; text-align: center; color: var(--text-secondary);">Cargando registros de Firebase...<br><small>Si no aparecen datos, verifica la conexión</small></td></tr>';
+				
+				// Actualizar stats en 0
+				document.getElementById('stat-total-hoy').textContent = '0';
+				document.getElementById('stat-neiva').textContent = '0';
+				document.getElementById('stat-gaitana').textContent = '0';
+				document.getElementById('stat-mensual').textContent = '0';
+				return;
+			}
+			
+			registros.forEach(reg => {
 				// Estadísticas
 				const fechaReg = new Date(reg.fecha).toDateString();
 				if (fechaReg === hoy) stats.totalHoy++;
@@ -4371,8 +4487,15 @@
 				// Filtros
 				if (filtroRegional !== 'todos' && reg.regional !== filtroRegional) return;
 				if (filtroTipo !== 'todos' && reg.tipo !== filtroTipo) return;
-				if (filtroBuscar && !reg.ip.toLowerCase().includes(filtroBuscar) && 
-					!reg.deviceId.toLowerCase().includes(filtroBuscar)) return;
+				if (filtroBuscar) {
+					const buscarEn = [
+						reg.ip,
+						reg.deviceId,
+						reg.deviceInfo?.plataforma,
+						reg.deviceInfo?.userAgent
+					].join(' ').toLowerCase();
+					if (!buscarEn.includes(filtroBuscar)) return;
+				}
 
 				// Formatear detalles
 				let detallesHtml = '';
@@ -4386,18 +4509,23 @@
 				// Badge de regional
 				const regionalColor = reg.regional === 'neiva' ? '#2563eb' : '#059669';
 				
+				// Formatear fecha
+				const fecha = new Date(reg.fecha);
+				const fechaStr = fecha.toLocaleDateString('es-CO');
+				const horaStr = fecha.toLocaleTimeString('es-CO');
+				
 				html += `
 					<tr style="border-bottom: 1px solid var(--border);">
 						<td style="padding: 0.75rem; white-space: nowrap;">
-							<div style="font-weight: 600;">${reg.fechaLocal.split(',')[0]}</div>
-							<div style="font-size: 0.75rem; color: var(--text-secondary);">${reg.fechaLocal.split(',')[1]}</div>
+							<div style="font-weight: 600;">${fechaStr}</div>
+							<div style="font-size: 0.75rem; color: var(--text-secondary);">${horaStr}</div>
 						</td>
 						<td style="padding: 0.75rem; font-family: monospace; font-size: 0.75rem;">
-							${reg.ip}
+							${reg.ip || 'N/A'}
 						</td>
 						<td style="padding: 0.75rem;">
-							<div style="font-weight: 500;">${reg.deviceId}</div>
-							<div style="font-size: 0.75rem; color: var(--text-secondary);">${reg.deviceInfo.plataforma}</div>
+							<div style="font-weight: 500; font-size: 0.75rem;">${reg.deviceId || 'N/A'}</div>
+							<div style="font-size: 0.7rem; color: var(--text-secondary);">${reg.deviceInfo?.plataforma || 'Unknown'}</div>
 						</td>
 						<td style="padding: 0.75rem;">
 							<span style="background: var(--bg-dark); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
@@ -4406,22 +4534,22 @@
 						</td>
 						<td style="padding: 0.75rem;">
 							<span style="background: ${regionalColor}20; color: ${regionalColor}; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-								${reg.regional}
+								${reg.regional || 'N/A'}
 							</span>
 						</td>
 						<td style="padding: 0.75rem;">
 							<span style="background: ${reg.tipo === 'mensual' ? '#8b5cf6' : '#f59e0b'}20; color: ${reg.tipo === 'mensual' ? '#8b5cf6' : '#f59e0b'}; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-								${reg.tipo}
+								${reg.tipo || 'N/A'}
 							</span>
 						</td>
 						<td style="padding: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);">
-							${detallesHtml}
+							${detallesHtml || '-'}
 						</td>
 					</tr>
 				`;
 			});
 
-			tbody.innerHTML = html || '<tr><td colspan="7" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No hay registros</td></tr>';
+			tbody.innerHTML = html || '<tr><td colspan="7" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No hay registros con los filtros aplicados</td></tr>';
 
 			// Actualizar estadísticas
 			document.getElementById('stat-total-hoy').textContent = stats.totalHoy;
@@ -4434,7 +4562,22 @@
 			cargarRegistrosAdmin();
 		}
 
-		function exportarRegistros() {
+		async function exportarRegistros() {
+			// Obtener registros frescos de Firebase
+			if (window.firebaseDB) {
+				try {
+					const snapshot = await window.firebaseGet(getAuditoriaRef());
+					if (snapshot.exists()) {
+						const data = [];
+						snapshot.forEach((child) => data.push(child.val()));
+						data.sort((a, b) => b.timestamp - a.timestamp);
+						registrosAuditoria = data;
+					}
+				} catch (e) {
+					console.error('Error obteniendo datos frescos:', e);
+				}
+			}
+			
 			if (registrosAuditoria.length === 0) {
 				showToast('No hay registros para exportar', 'error');
 				return;
@@ -4442,17 +4585,19 @@
 
 			const data = registrosAuditoria.map(reg => ({
 				'Fecha': reg.fechaLocal,
-				'IP': reg.ip,
-				'Device ID': reg.deviceId,
-				'Plataforma': reg.deviceInfo.plataforma,
-				'Navegador': reg.deviceInfo.userAgent.substring(0, 50),
+				'IP': reg.ip || 'N/A',
+				'Device ID': reg.deviceId || 'N/A',
+				'Plataforma': reg.deviceInfo?.plataforma || 'Unknown',
+				'Navegador': (reg.deviceInfo?.userAgent || '').substring(0, 100),
+				'Pantalla': reg.deviceInfo?.pantalla || 'N/A',
+				'Zona Horaria': reg.deviceInfo?.timezone || 'N/A',
 				'Acción': reg.accion,
 				'Regional': reg.regional,
 				'Tipo': reg.tipo,
-				'Semana(s)': reg.detalles?.semana || reg.detalles?.semanas?.join(', ') || '',
+				'Semana(s)': reg.detalles?.semana || (reg.detalles?.semanas ? reg.detalles.semanas.join(', ') : ''),
 				'Personas': reg.detalles?.personas || '',
 				'Productos': reg.detalles?.totalProductos || '',
-				'URL': reg.url
+				'URL': reg.url || ''
 			}));
 
 			const ws = XLSX.utils.json_to_sheet(data);
@@ -4462,19 +4607,29 @@
 			showToast(`${data.length} registros exportados`, 'success');
 		}
 
-		function limpiarRegistros() {
-			if (!confirm('¿Está seguro de eliminar TODOS los registros de auditoría?')) return;
+		async function limpiarRegistros() {
+			if (!confirm('¿Está seguro de eliminar TODOS los registros de auditoría de Firebase?')) return;
 			
-			registrosAuditoria = [];
-			localStorage.removeItem('smartMenu_auditoria');
-			
-			// También limpiar de Firebase si está disponible
-			if (window.firebaseDB) {
-				window.firebaseSet(window.firebaseRef(window.firebaseDB, 'auditoria'), null);
+			if (!window.firebaseDB) {
+				showToast('Firebase no disponible', 'error');
+				return;
 			}
 			
-			cargarRegistrosAdmin();
-			showToast('Registros eliminados', 'success');
+			try {
+				// Eliminar todo el nodo de auditoría
+				await window.firebaseSet(getAuditoriaRef(), null);
+				
+				// Limpiar variables locales
+				registrosAuditoria = [];
+				localStorage.removeItem('smartMenu_auditoria_backup');
+				localStorage.removeItem('smartMenu_auditoria_pendientes');
+				
+				cargarRegistrosAdmin();
+				showToast('Registros eliminados de Firebase', 'success');
+			} catch (error) {
+				console.error('Error eliminando:', error);
+				showToast('Error al eliminar: ' + error.message, 'error');
+			}
 		}
 
 		// Cerrar admin con ESC
@@ -4483,7 +4638,30 @@
 				cerrarAdmin();
 			}
 		});
-		
+
+		// Inicializar auditoría cuando Firebase esté listo
+		function initAuditoria() {
+			const checkFirebase = setInterval(() => {
+				if (window.firebaseDB) {
+					clearInterval(checkFirebase);
+					console.log('✅ Firebase detectado, inicializando auditoría...');
+					setupAuditoriaListener();
+					sincronizarPendientes();
+				}
+			}, 500);
+			
+			// Timeout después de 10 segundos
+			setTimeout(() => {
+				clearInterval(checkFirebase);
+				if (!window.firebaseDB) {
+					console.warn('⚠️ Firebase no disponible después de 10s');
+				}
+			}, 10000);
+		}
+
+		// Llamar inicialización
+		initAuditoria();	
+
 		
     </script>
 </body>
