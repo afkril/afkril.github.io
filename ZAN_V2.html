@@ -36,349 +36,491 @@
             overflow-x: hidden;
         }
 
-        /* ===== SISTEMA DE TUTORIAL ===== */
-        
-        /* Overlay del tutorial */
-        .tutorial-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.2);
-            z-index: 9998;
-            display: none;
-            backdrop-filter: blur(1px);
-        }
-
-        .tutorial-overlay.active { display: block; }
-
-        /* Spotlight - ilumina el elemento activo */
-        .tutorial-spotlight {
-            position: absolute;
-            border: 3px solid var(--primary-gold);
-            border-radius: 12px;
-            box-shadow: 0 0 30px var(--primary-gold), inset 0 0 20px rgba(212,175,55,0.2);
-            z-index: 9999;
-            pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            animation: pulse-spotlight 2s infinite;
-        }
-
-        @keyframes pulse-spotlight {
-            0%, 100% { box-shadow: 0 0 30px var(--primary-gold), inset 0 0 20px rgba(212,175,55,0.2); }
-            50% { box-shadow: 0 0 50px var(--primary-gold), inset 0 0 30px rgba(212,175,55,0.4); }
-        }
-
-        /* Tooltip del tutorial - CORREGIDO PARA NO CORTARSE */
-        .tutorial-tooltip {
-            position: fixed;
-            background: linear-gradient(135deg, var(--bg-card) 0%, #1a1a2e 100%);
-            border: 2px solid var(--primary-gold);
-            border-radius: 16px;
-            padding: 20px;
-            z-index: 10000;
-            max-width: 350px;
-            min-width: 280px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(212,175,55,0.1);
-            display: none;
-            animation: slideIn 0.4s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .tutorial-tooltip.active { display: block; }
-
-        .tutorial-tooltip::before {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 0;
-            border: 12px solid transparent;
-        }
-
-        /* Flecha del tooltip según posición */
-        .tutorial-tooltip.top::before {
-            bottom: -26px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-top-color: var(--primary-gold);
-        }
-
-        .tutorial-tooltip.bottom::before {
-            top: -26px;
-            left: 50%;
-            transform: translateX(-50%);
-            border-bottom-color: var(--primary-gold);
-        }
-
-        .tutorial-tooltip.left::before {
-            right: -26px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-left-color: var(--primary-gold);
-        }
-
-        .tutorial-tooltip.right::before {
-            left: -26px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-right-color: var(--primary-gold);
-        }
-
-        /* Header del tooltip */
-        .tutorial-header {
+        /* ===== SISTEMA DE GESTIÓN DE ARCHIVOS MEJORADO ===== */
+        .file-manager-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(212,175,55,0.3);
-        }
-
-        .tutorial-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--primary-gold), var(--accent-cyan));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: #000;
-            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
-            flex-shrink: 0;
-        }
-
-        .tutorial-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--primary-gold);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            line-height: 1.2;
-        }
-
-        .tutorial-step {
-            font-size: 10px;
-            color: var(--accent-cyan);
-            background: rgba(0,242,255,0.1);
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-left: auto;
-            flex-shrink: 0;
-        }
-
-        /* Contenido del tooltip */
-        .tutorial-content {
-            color: var(--text-main);
-            line-height: 1.6;
-            font-size: 11px;
             margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .tutorial-content strong {
-            color: var(--accent-cyan);
+        .file-manager-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .breadcrumbs-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 8px 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            flex-wrap: wrap;
+            font-size: 11px;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: rgba(212,175,55,0.1);
+            border-radius: 15px;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .breadcrumb-item:hover {
+            background: rgba(212,175,55,0.2);
+            border-color: var(--primary-gold);
+        }
+
+        .breadcrumb-item.active {
+            background: var(--primary-gold);
+            color: #000;
             font-weight: 600;
         }
 
-        .tutorial-content ul {
-            margin: 8px 0;
-            padding-left: 18px;
-        }
-
-        .tutorial-content li {
-            margin: 6px 0;
+        .breadcrumb-separator {
             color: var(--text-dim);
+            font-size: 10px;
         }
 
-        .tutorial-content li::marker {
+        .file-manager-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 150px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 12px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px 8px 35px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-radius: 20px;
+            color: var(--text-main);
+            font-size: 11px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px rgba(212,175,55,0.1);
+        }
+
+        .select-filtro {
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            border-radius: 20px;
+            color: var(--text-main);
+            font-size: 11px;
+            outline: none;
+            cursor: pointer;
+            min-width: 140px;
+        }
+
+        /* Vista de Carpetas */
+        .folders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            padding: 10px 0;
+        }
+
+        .folder-card {
+            background: linear-gradient(135deg, rgba(30,30,35,0.95), rgba(20,20,25,0.98));
+            border: 2px solid rgba(212,175,55,0.2);
+            border-radius: 12px;
+            padding: 18px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .folder-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-gold), var(--accent-cyan));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .folder-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-gold);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(212,175,55,0.1);
+        }
+
+        .folder-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .folder-card.active {
+            border-color: var(--success);
+            background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(20,20,25,0.98));
+        }
+
+        .folder-icon {
+            font-size: 36px;
+            color: var(--primary-gold);
+            margin-bottom: 8px;
+            filter: drop-shadow(0 0 10px rgba(212,175,55,0.3));
+            transition: transform 0.3s;
+        }
+
+        .folder-card:hover .folder-icon {
+            transform: scale(1.1);
+        }
+
+        .folder-name {
+            font-weight: 600;
+            color: var(--text-main);
+            font-size: 12px;
+            margin-bottom: 4px;
+            word-break: break-word;
+            line-height: 1.2;
+        }
+
+        .folder-meta {
+            font-size: 9px;
+            color: var(--text-dim);
+            line-height: 1.3;
+        }
+
+        .folder-count {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--danger);
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+        }
+
+        /* Vista de Archivos */
+        .files-container {
+            animation: fadeIn 0.3s ease;
+        }
+
+        .folder-info-header {
+            background: linear-gradient(90deg, rgba(212,175,55,0.1), transparent);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--primary-gold);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .folder-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: bold;
             color: var(--primary-gold);
         }
 
-        /* Tip especial */
-        .tutorial-tip {
-            background: rgba(0,255,136,0.1);
-            border-left: 3px solid var(--success);
-            padding: 10px;
-            border-radius: 0 8px 8px 0;
-            margin: 12px 0;
-            font-size: 10px;
-            color: var(--success);
-        }
-
-        .tutorial-tip i {
-            margin-right: 6px;
-        }
-
-        /* Controles del tutorial */
-        .tutorial-controls {
-            display: flex;
-            gap: 8px;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-        }
-
-        .tutorial-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 10px;
-            text-transform: uppercase;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .tutorial-btn-primary {
-            background: linear-gradient(135deg, var(--primary-gold), #b8941f);
-            color: #000;
-            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
-        }
-
-        .tutorial-btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(212,175,55,0.4);
-        }
-
-        .tutorial-btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: var(--text-main);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .tutorial-btn-secondary:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
-        .tutorial-btn-skip {
-            background: transparent;
+        .stat-label {
             color: var(--text-dim);
-            font-size: 9px;
-            text-decoration: underline;
+            font-size: 8px;
+            text-transform: uppercase;
         }
 
-        /* Indicador de progreso */
-        .tutorial-progress {
+        .files-list {
             display: flex;
-            gap: 6px;
-            justify-content: center;
-            margin-top: 12px;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .tutorial-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            transition: all 0.3s;
-        }
-
-        .tutorial-dot.active {
-            background: var(--primary-gold);
-            box-shadow: 0 0 10px var(--primary-gold);
-            transform: scale(1.3);
-        }
-
-        .tutorial-dot.completed {
-            background: var(--success);
-        }
-
-        /* Botón flotante de ayuda (siempre visible) */
-        .help-button {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 8px 25px rgba(212,175,55,0.4);
-            transition: all 0.3s;
-            font-size: 24px;
-            border: 3px solid rgba(255,255,255,0.1);
-        }
-
-        .help-button:hover {
-            transform: scale(1.1) rotate(10deg);
-            box-shadow: 0 12px 35px rgba(212,175,55,0.5);
-        }
-
-        .help-button.pulse {
-            animation: helpPulse 2s infinite;
-        }
-
-        @keyframes helpPulse {
-            0%, 100% { box-shadow: 0 8px 25px rgba(212,175,55,0.4); }
-            50% { box-shadow: 0 8px 35px rgba(212,175,55,0.8), 0 0 20px rgba(0,242,255,0.3); }
-        }
-
-        /* Menú de ayuda contextual */
-        .help-menu {
-            position: fixed;
-            bottom: 90px;
-            right: 25px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 15px;
-            z-index: 999;
-            display: none;
-            min-width: 250px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
-        }
-
-        .help-menu.active { display: block; animation: slideUp 0.3s ease; }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .help-menu-item {
+        .file-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 12px;
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 2px;
-            border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s;
-            margin-bottom: 5px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .help-menu-item:hover {
-            background: rgba(212,175,55,0.1);
+        .file-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--primary-gold);
+            transform: scaleY(0);
+            transition: transform 0.2s;
         }
 
-        .help-menu-item i {
-            width: 30px;
-            height: 30px;
-            background: rgba(212,175,55,0.2);
+        .file-item:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(212,175,55,0.3);
+            transform: translateX(5px);
+        }
+
+        .file-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .file-item.active-file {
+            background: rgba(0,242,255,0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        .file-item.active-file::before {
+            background: var(--accent-cyan);
+            transform: scaleY(1);
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05));
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 18px;
             color: var(--primary-gold);
-            font-size: 14px;
+            flex-shrink: 0;
         }
 
-        .help-menu-item span {
-            font-size: 12px;
+        .file-item.active-file .file-icon {
+            background: linear-gradient(135deg, rgba(0,242,255,0.2), rgba(0,242,255,0.05));
+            color: var(--accent-cyan);
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 600;
             color: var(--text-main);
+            font-size: 12px;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-details {
+            display: flex;
+            gap: 12px;
+            font-size: 9px;
+            color: var(--text-dim);
+            flex-wrap: wrap;
+        }
+
+        .file-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .file-detail-item i {
+            font-size: 8px;
+            color: var(--primary-gold);
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .file-item:hover .file-actions {
+            opacity: 1;
+        }
+
+        .file-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: none;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 10px;
+        }
+
+        .file-btn:hover {
+            background: var(--primary-gold);
+            color: #000;
+            transform: scale(1.1);
+        }
+
+        .file-btn.delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Vista Grid de archivos */
+        .files-grid-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .file-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 18px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .file-card:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: var(--primary-gold);
+            transform: translateY(-3px);
+        }
+
+        .file-card.active-file {
+            background: rgba(0,242,255,0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        .file-card-icon {
+            font-size: 28px;
+            color: var(--primary-gold);
+            margin-bottom: 8px;
+        }
+
+        .file-card-name {
+            font-size: 10px;
             font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-card-date {
+            font-size: 8px;
+            color: var(--text-dim);
+        }
+
+        .file-card-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .file-card:hover .file-card-actions {
+            opacity: 1;
+        }
+
+        /* Estados vacíos y loading */
+        .empty-state, .loading-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-dim);
+        }
+
+        .empty-state p {
+            margin: 12px 0;
+            font-size: 12px;
+        }
+
+        .loading-state p {
+            margin-top: 12px;
+            font-size: 11px;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .folders-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .file-manager-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .file-actions {
+                opacity: 1;
+            }
+            
+            .folder-info-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
 
         /* ===== RESTO DE ESTILOS ORIGINALES ===== */
@@ -836,20 +978,25 @@
 
         /* DRAWERS */
         .drawer {
-            position: fixed;
-            top: 0;
-            width: 90%;
-            max-width: 450px;
-            height: 100%;
-            background: var(--bg-card);
-            z-index: 2000;
-            transition: 0.4s;
-            padding: 20px;
-            overflow-y: auto;
-            right: -500px;
-        }
+			position: fixed;
+			top: 0;
+			width: 90%;
+			max-width: 500px;
+			height: 100%;
+			background: var(--bg-card);
+			z-index: 2000;
+			transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+			padding: 20px;
+			overflow-y: auto;
+			/* Cambiar de right: -100% a right: 0 y usar transform para ocultar */
+			right: 0;
+			transform: translateX(100%);
+			box-shadow: -10px 0 40px rgba(0,0,0,0.8);
+		}
 
-        .drawer.open { right: 0; }
+		.drawer.open { 
+			transform: translateX(0);
+		}
 
         .drawer-overlay {
             position: fixed;
@@ -860,6 +1007,14 @@
             background: rgba(0,0,0,0.7);
             display: none;
             z-index: 1999;
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .drawer-overlay.active {
+            display: block;
+            opacity: 1;
         }
 
         /* MODALS */
@@ -1346,122 +1501,21 @@
             .sidebar.open { transform: translateX(0); }
             .main-wrapper { margin-left: 0; }
             .grid-container { grid-template-columns: 1fr; }
-            .tutorial-tooltip { 
-                max-width: 90%; 
-                min-width: 260px;
-                max-height: 70vh;
+            
+            .drawer {
+                width: 100%;
+                max-width: 100%;
+                right: -100%;
+            }
+            
+            .drawer.open {
+                transform: translateX(0);
+                right: 0;
             }
         }
     </style>
 </head>
 <body>
-
-    <!-- ===== SISTEMA DE TUTORIAL ===== -->
-    
-    <!-- Overlay oscuro -->
-    <div class="tutorial-overlay" id="tutorialOverlay"></div>
-    
-    <!-- Spotlight que ilumina elementos -->
-    <div class="tutorial-spotlight" id="tutorialSpotlight"></div>
-    
-    <!-- Tooltip principal del tutorial - CORREGIDO -->
-    <div class="tutorial-tooltip" id="tutorialTooltip">
-        <div class="tutorial-header">
-            <div class="tutorial-icon" id="tutorialIcon">
-                <i class="fa-solid fa-lightbulb"></i>
-            </div>
-            <div style="flex:1; min-width:0;">
-                <div class="tutorial-title" id="tutorialTitle">Bienvenido</div>
-            </div>
-            <div class="tutorial-step" id="tutorialStep">1/10</div>
-        </div>
-        
-        <div class="tutorial-content" id="tutorialContent">
-            Contenido del tutorial...
-        </div>
-        
-        <div class="tutorial-tip" id="tutorialTip" style="display: none;">
-            <i class="fa-solid fa-star"></i>
-            <span id="tutorialTipText">Tip especial aquí</span>
-        </div>
-        
-        <div class="tutorial-controls">
-            <button class="tutorial-btn tutorial-btn-secondary" onclick="tutorialPrev()" id="btnPrev">
-                <i class="fa-solid fa-chevron-left"></i> Ant
-            </button>
-            
-            <button class="tutorial-btn tutorial-btn-skip" onclick="tutorialSkip()" id="btnSkip">
-                Saltar
-            </button>
-            
-            <button class="tutorial-btn tutorial-btn-primary" onclick="tutorialNext()" id="btnNext">
-                Sig <i class="fa-solid fa-chevron-right"></i>
-            </button>
-            
-            <button class="tutorial-btn tutorial-btn-primary hidden" onclick="tutorialFinish()" id="btnFinish" style="background: var(--success);">
-                <i class="fa-solid fa-check"></i> Fin
-            </button>
-        </div>
-        
-        <div class="tutorial-progress" id="tutorialProgress"></div>
-    </div>
-
-    <!-- Botón flotante de ayuda -->
-    <div class="help-button pulse" id="helpButton" onclick="toggleHelpMenu()">
-        <i class="fa-solid fa-question"></i>
-    </div>
-    
-    <!-- Menú de ayuda contextual -->
-    <div class="help-menu" id="helpMenu">
-        <div class="help-menu-item" onclick="startTutorial('completo')">
-            <i class="fa-solid fa-play"></i>
-            <span>Tutorial completo</span>
-        </div>
-        <div class="help-menu-item" onclick="startTutorial('plegable')">
-            <i class="fa-solid fa-folder-tree"></i>
-            <span>Sistema Plegable</span>
-        </div>
-        <div class="help-menu-item" onclick="startTutorial('precios')">
-            <i class="fa-solid fa-tags"></i>
-            <span>Precios por Semana</span>
-        </div>
-        <div class="help-menu-item" onclick="startTutorial('proveedores')">
-            <i class="fa-solid fa-truck-field"></i>
-            <span>Proveedores</span>
-        </div>
-        <div class="help-menu-item" onclick="startTutorial('productos')">
-            <i class="fa-solid fa-list-check"></i>
-            <span>Productos</span>
-        </div>
-        <div class="help-menu-item" onclick="startTutorial('cl')">
-            <i class="fa-solid fa-leaf"></i>
-            <span>¿Qué es CL?</span>
-        </div>
-        <div class="help-menu-item" onclick="startTutorial('resumen')">
-            <i class="fa-solid fa-chart-pie"></i>
-            <span>Resumen y análisis</span>
-        </div>
-        <div class="help-menu-item" onclick="startTutorial('exportar')">
-            <i class="fa-solid fa-file-export"></i>
-            <span>Exportar datos</span>
-        </div>
-        <div class="help-menu-item" onclick="startTutorial('contabilidad')">
-            <i class="fa-solid fa-calculator"></i>
-            <span>Exportar contabilidad</span>
-        </div>
-        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
-            <div class="help-menu-item" onclick="resetTutorialVisto()" style="color: var(--text-dim); font-size: 10px;">
-                <i class="fa-solid fa-rotate-left"></i>
-                <span>Resetear tutorial</span>
-            </div>
-        </div>
-        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
-            <div class="help-menu-item" onclick="toggleHelpMenu()" style="color: var(--text-dim);">
-                <i class="fa-solid fa-xmark"></i>
-                <span>Cerrar menú</span>
-            </div>
-        </div>
-    </div>
 
     <!-- ===== APLICACIÓN PRINCIPAL ===== -->
 
@@ -1558,10 +1612,6 @@
 
         <div class="nav-section">
             <div class="nav-section-title">Acciones</div>
-            <a class="nav-item" id="nav-tutorial" onclick="toggleHelpMenu(); toggleSidebarMobile();">
-                <i class="fa-solid fa-circle-question"></i>
-                <span>Ayuda / Tutorial</span>
-            </a>
             <a class="nav-item danger" onclick="limpiarTodo(); toggleSidebarMobile();">
                 <i class="fa-solid fa-trash-can"></i>
                 <span>Limpiar Todo</span>
@@ -1637,6 +1687,76 @@
     </div>
 
     <!-- DRAWERS -->
+    <!-- PANEL DE ARCHIVOS MEJORADO CON SISTEMA DE CARPETAS -->
+    <div class="drawer" id="drawer-archivo" style="border-left: 2px solid var(--primary-gold);">
+        <div class="file-manager-header">
+            <h3 style="color: var(--primary-gold); margin: 0; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-folder-open"></i> 
+                <span id="file-manager-title">REGISTROS EN NUBE</span>
+            </h3>
+            <div class="file-manager-actions">
+                <button class="btn btn-sm" onclick="toggleVistaArchivos()" title="Cambiar vista">
+                    <i class="fa-solid fa-grid-2" id="btn-vista-icon"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs-container" id="breadcrumbs">
+            <span class="breadcrumb-item active" onclick="navegarA('root')">
+                <i class="fa-solid fa-house"></i> Inicio
+            </span>
+        </div>
+
+        <!-- Barra de búsqueda y filtros -->
+        <div class="file-manager-toolbar">
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="buscar-archivos" placeholder="Buscar archivos..." oninput="filtrarArchivos(this.value)">
+            </div>
+            <select id="filtro-orden" onchange="aplicarFiltroOrden()" class="select-filtro">
+                <option value="fecha-desc">Más recientes primero</option>
+                <option value="fecha-asc">Más antiguos primero</option>
+                <option value="nombre-asc">Nombre A-Z</option>
+                <option value="nombre-desc">Nombre Z-A</option>
+                <option value="monto-desc">Mayor monto</option>
+            </select>
+        </div>
+
+        <!-- Vista de carpetas (nivel root) -->
+        <div id="vista-carpetas" class="folders-grid">
+            <!-- Se genera dinámicamente -->
+        </div>
+
+        <!-- Vista de archivos (dentro de una carpeta) -->
+        <div id="vista-archivos" class="files-container" style="display: none;">
+            <div class="folder-info-header" id="folder-info">
+                <!-- Info de la carpeta actual -->
+            </div>
+            <div id="lista-archivos-detalle" class="files-list">
+                <!-- Lista de archivos -->
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <i class="fa-regular fa-folder-open" style="font-size: 48px; color: var(--text-dim); opacity: 0.5;"></i>
+            <p>No hay archivos guardados</p>
+            <button class="btn btn-gold btn-sm" onclick="closeAllDrawers()">
+                <i class="fa-solid fa-plus"></i> Crear nuevo archivo
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading-files" class="loading-state" style="display: none;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 24px; color: var(--primary-gold);"></i>
+            <p>Cargando archivos...</p>
+        </div>
+    </div>
+
     <div class="drawer" id="drawer-resumen" style="border-left: 2px solid var(--accent-cyan);">
         <h3 style="color: var(--accent-cyan); margin-bottom: 15px;">
             <i class="fa-solid fa-chart-pie"></i> ANÁLISIS DETALLADO
@@ -1651,13 +1771,6 @@
                 <i class="fa-solid fa-print"></i> IMPRIMIR
             </button>
         </div>
-    </div>
-
-    <div class="drawer" id="drawer-archivo" style="border-left: 2px solid var(--primary-gold);">
-        <h3 style="color: var(--primary-gold); margin-bottom: 15px;">
-            <i class="fa-solid fa-folder-open"></i> REGISTROS EN NUBE
-        </h3>
-        <div id="lista-archivos"></div>
     </div>
 
     <div class="drawer" id="drawer-contabilidad" style="border-left: 2px solid var(--success);">
@@ -1795,8 +1908,6 @@
         let valorCupoBase = 8094;
         let chartInstance = null;
         let sidebarOpen = window.innerWidth > 768;
-		let tutorialEnCurso = false;
-		let tutorialYaVisto = false;
 
         let proveedores = [];
         let productosBase = [];
@@ -1810,7 +1921,7 @@
 
         const PRODUCTOS_INICIALES = [
             { nombre: "Pollo Libra", precio: 9000, cl: true, proveedor: 'prov_3' },
-            { nombre: "Huevo Und", precio: 480, cl: true, proveedor: 'prov_3' },
+            { nombre: "Huevo Und", precio: 470, cl: true, proveedor: 'prov_3' },
             { nombre: "Molleja Libra", precio: 7000, cl: true, proveedor: 'prov_3' },
             { nombre: "Queso Libra", precio: 13000, cl: false, proveedor: 'prov_3' },
             { nombre: "Carne Cerdo Kilo", precio: 20000, cl: true, proveedor: 'prov_1' },
@@ -1824,594 +1935,412 @@
 
         const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
 
-        // ===== SISTEMA DE TUTORIAL - CONFIGURACIÓN =====
-        
-        const TUTORIAL_STEPS = {
-            completo: [
-                {
-                    id: 'bienvenida',
-                    title: '¡Bienvenido a ZAN!',
-                    icon: 'fa-hand-wave',
-                    content: 'Este es el sistema de gestión de compras y presupuestos. Te guiaré paso a paso por todas las funcionalidades principales.',
-                    tip: 'Puedes acceder a este tutorial en cualquier momento desde el botón de ayuda (?) en la esquina inferior derecha.',
-                    position: 'center'
-                },
-                {
-                    id: 'semanas',
-                    target: 'week-selector',
-                    title: 'Configuración de Semanas',
-                    icon: 'fa-calendar-week',
-                    content: 'Aquí seleccionas cuántas semanas trabajarás en el mes. Puedes elegir entre 1 y 5 semanas según tu necesidad.',
-                    tip: 'Cada semana es independiente y tiene su propio presupuesto calculado automáticamente.',
-                    position: 'bottom'
-                },
-                {
-                    id: 'mes-contrato',
-                    target: 'contract-info',
-                    title: 'Mes y Contrato',
-                    icon: 'fa-file-contract',
-                    content: 'Selecciona el mes de trabajo e ingresa el ID del contrato. Estos datos aparecerán en todos los reportes exportados.',
-                    position: 'bottom'
-                },
-                {
-                    id: 'tabla-semanal',
-                    target: 'main-grid',
-                    title: 'Tablas Semanales',
-                    icon: 'fa-table',
-                    content: 'Cada semana muestra los proveedores y sus productos. Ingresa: <strong>Factura</strong>, <strong>Cantidad</strong> y el sistema calcula el <strong>Total</strong> automáticamente.',
-                    tip: 'Los badges muestran: CL (Compra Local) y las siglas del proveedor.',
-                    position: 'top'
-                },
-                {
-                    id: 'proveedores',
-                    target: 'nav-proveedores',
-                    title: 'Gestionar Proveedores',
-                    icon: 'fa-truck-field',
-                    content: 'Crea, edita y organiza tus proveedores. Puedes:<br>• Cambiar nombres y colores<br>• Reordenar con flechas<br>• Eliminar proveedores no usados',
-                    tip: 'El orden de proveedores aquí se refleja en las tablas semanales.',
-                    position: 'right',
-                    action: () => toggleModal('modal-proveedores')
-                },
-                {
-					id: 'productos',
-					target: 'lista-productos-config',
-					title: 'Listado de Productos',
-					icon: 'fa-list-check',
-					content: 'Administra todos los productos disponibles. Cada producto debe tener:<br>• <strong>Nombre</strong> (ej: Pollo Libra)<br>• <strong>Precio</strong> unitario<br>• <strong>Proveedor</strong> asignado<br>• Indicador <strong>CL</strong> (Compra Local)',
-					tip: 'Los productos aparecerán automáticamente en las tablas de su proveedor asignado.',
-					position: 'left',
-					action: () => {
-						document.getElementById('modal-proveedores').style.display = 'none';
-						toggleModal('modal-productos');
-						renderizarProductos();
-						setTimeout(() => {
-							const paso = tutorialActivo[pasoActual];
-							if (paso && paso.target) {
-								posicionarTooltip(paso);
-							}
-						}, 500);
-					}
-				},
-                {
-                    id: 'cl-explicacion',
-                    title: '¿Qué es CL (Compra Local)?',
-                    icon: 'fa-leaf',
-                    content: '<strong>CL = Compra Local</strong><br><br>Indica que el producto se adquiere dentro de la región/localidad, cumpliendo con requisitos de:<br>• Apoyo a productores locales<br>• Menor huella de carbono<br>• Frescura y trazabilidad<br><br>En el resumen se calcula el <strong>% de compras locales</strong> del total.',
-                    tip: 'Productos CL se marcan con check verde ✓ en los reportes.',
-                    position: 'center',
-					action: () => {
-						document.getElementById('modal-proveedores').style.display = 'none';
-						document.getElementById('modal-productos').style.display = 'none';
-					}
-                },
-                {
-                    id: 'resumen',
-                    target: 'nav-resumen',
-                    title: 'Resumen y Análisis',
-                    icon: 'fa-chart-pie',
-                    content: 'Visualiza el análisis completo de gastos:<br>• Total por proveedor y producto<br>• Cantidades acumuladas (kg, lb, und)<br>• Indicador CL por producto<br>• Gráfico de distribución<br>• % de compras locales<br>• <strong>Raciones totales por semana</strong>',
-                    tip: 'Los paneles de proveedores son plegables. Haz clic en el encabezado para expandir/contraer.',
-                    position: 'right',
-                    action: () => toggleDrawer('resumen')
-                },
-                {
-                    id: 'exportar',
-                    target: 'nav-exportar',
-                    title: 'Exportar Datos',
-                    icon: 'fa-file-export',
-                    content: 'Exporta toda la información en formato Excel con 5 hojas:<br>1. <strong>Configuración</strong> (proveedores y productos)<br>2. <strong>Datos Semanales</strong> (todas las transacciones)<br>3. <strong>Resumen por Producto</strong> (consolidado)<br>4. <strong>Resumen de Raciones</strong><br>5. <strong>Validación de Facturas</strong>',
-                    tip: 'El archivo exportado incluye toda la configuración y puede importarse en otro dispositivo.',
-                    position: 'right'
-                },
-                {
-                    id: 'importar',
-                    target: 'nav-importar',
-                    title: 'Importar Datos',
-                    icon: 'fa-file-import',
-                    content: 'Restaura datos desde un archivo Excel exportado previamente. Se importa:<br>• Configuración de proveedores<br>• Listado de productos<br>• Todas las transacciones semanales<br>• Mes y contrato<br>• Valor de ración HCB',
-                    tip: 'Útil para respaldar información o transferir entre dispositivos.',
-                    position: 'right'
-                },
-                {
-                    id: 'contabilidad',
-                    target: 'nav-contabilidad',
-                    title: 'Exportar Contabilidad',
-                    icon: 'fa-calculator',
-                    content: 'Formato especial para el área financiera:<br>• Detalle de facturas por proveedor<br>• Cantidades y valores totales<br>• Indicador de compra local (SI/NO)<br>• Resumen ejecutivo por proveedor',
-                    tip: 'Incluye tanto CSV (datos planos) como Excel (con formato).',
-                    position: 'right',
-                    action: () => toggleDrawer('contabilidad')
-                },
-                {
-                    id: 'final',
-                    title: '¡Tutorial Completado!',
-                    icon: 'fa-trophy',
-                    content: 'Ya conoces todas las funcionalidades de ZAN. Recuerda:<br><br>• El botón <strong>?</strong> siempre está disponible para volver a ver este tutorial<br>• Guarda en la nube periódicamente<br>• Exporta respaldos semanales<br><br>¡Empieza a gestionar tus compras de manera eficiente!',
-                    tip: '¿Tienes dudas? Revisa secciones específicas desde el menú de ayuda.',
-                    position: 'center'
-                }
-            ],
-            
-            // Tutorial de sistema plegable
-            plegable: [
-                {
-                    id: 'plegable-intro',
-                    title: 'Sistema de Paneles Plegables',
-                    icon: 'fa-folder-tree',
-                    content: 'ZAN utiliza un sistema de colapso para organizar la información de manera eficiente. Puedes expandir o contraer secciones según necesites.',
-                    position: 'center'
-                },
-                {
-                    target: 'main-grid',
-                    title: 'Colapsar Semanas',
-                    icon: 'fa-calendar-week',
-                    content: 'Cada tarjeta de semana tiene un botón <i class="fa-solid fa-chevron-down"></i> en la esquina superior izquierda. Haz clic para:<br>• <strong>Contraer</strong> la semana y ver solo el encabezado<br>• <strong>Expandir</strong> para ver todos los proveedores y productos',
-                    tip: 'Útil cuando trabajas con muchas semanas y quieres enfocarte en una específica.',
-                    position: 'top'
-                },
-                {
-                    target: 'main-grid',
-                    title: 'Colapsar Proveedores',
-                    icon: 'fa-truck-field',
-                    content: 'Dentro de cada semana, cada proveedor tiene su propio botón de colapso en el encabezado colorido. Haz clic en el nombre del proveedor para:<br>• Ocultar/mostrar sus productos<br>• Ver solo el total del proveedor',
-                    tip: 'Los colores de los proveedores ayudan a identificarlos rápidamente.',
-                    position: 'top'
-                },
-                {
-                    target: 'nav-resumen',
-                    title: 'Resumen Plegable',
-                    icon: 'fa-chart-pie',
-                    content: 'En el panel de resumen, los proveedores también son plegables. Esto te permite:<br>• Ver el total general primero<br>• Expandir solo los proveedores que te interesan revisar<br>• Navegar más rápido por muchos productos',
-                    tip: 'Los paneles del Análisis Detallado y Validación de Facturas son plegables.',
-                    position: 'right',
-                    action: () => toggleDrawer('resumen')
-                },
-                {
-                    id: 'plegable-final',
-                    title: '¡Navegación Eficiente!',
-                    icon: 'fa-check-circle',
-                    content: 'El sistema plegable te permite:<br><br>✓ Trabajar con menos desplazamiento<br>✓ Enfocarte en lo que necesitas<br>✓ Tener una vista general rápida<br>✓ Personalizar tu espacio de trabajo<br><br>Todos los estados de colapso se mantienen mientras trabajas.',
-                    tip: 'Práctica recomendada: Colapsa las semanas pasadas y mantén expandida solo la semana actual.',
-                    position: 'center',
-                    action: () => closeAllDrawers()
-                }
-            ],
+        // ===== SISTEMA DE ARCHIVOS MEJORADO CON CARPETAS =====
+        let currentPath = 'root';
+        let vistaArchivosActual = 'list'; // 'list' o 'grid'
+        let archivosCache = [];
+        let carpetasCache = {};
+        let ordenActual = 'fecha-desc';
+        let busquedaActual = '';
 
-            // Tutorial de precios dinámicos por semana
-            precios: [
-                {
-                    id: 'precios-intro',
-                    title: 'Precios Variables por Semana',
-                    icon: 'fa-tags',
-                    content: 'Aunque cada producto tiene un precio base configurado, puedes modificar el precio de cualquier producto para una semana específica sin afectar las demás.',
-                    position: 'center'
-                },
-                {
-                    target: 'main-grid',
-                    title: 'Modificar Precio en Tabla',
-                    icon: 'fa-pen-to-square',
-                    content: 'Para cambiar el precio de un producto en una semana específica:<br><br>1. Ingresa la <strong>cantidad</strong> (ej: 1)<br>2. En la columna <strong>Total</strong>, escribe el valor real de la compra<br>3. El sistema calculará automáticamente el precio unitario',
-                    tip: 'Ejemplo: Si el huevo está a $470 pero esta semana pagaste $450, escribe cantidad 1 y total $450.',
-                    position: 'top'
-                },
-                {
-                    target: 'main-grid',
-                    title: 'Cálculo Inverso',
-                    icon: 'fa-calculator',
-                    content: 'El sistema detecta cuando modificas el valor total y recalcula el precio unitario:<br><br><strong>Fórmula:</strong> Precio Unitario = Total ÷ Cantidad<br><br>Esto se guarda solo para esa semana. Las demás semanas mantienen su precio original.',
-                    tip: 'El precio modificado se muestra en azul claro para indicar que es diferente al base.',
-                    position: 'top'
-                },
-                {
-                    id: 'precios-ejemplo',
-                    title: 'Ejemplo Práctico',
-                    icon: 'fa-lightbulb',
-                    content: '<strong>Escenario:</strong> Huevo base = $470/unidad<br><br><strong>Semana 1:</strong> Compras 100 unidades a $450<br>→ Cantidad: 100, Total: $45,000<br>→ Precio unitario se ajusta a $450<br><br><strong>Semana 2:</strong> Compras 100 unidades a $470<br>→ Cantidad: 100, Total: $47,000<br>→ Precio vuelve al base o lo ajustas<br><br>Cada semana es independiente.',
-                    tip: 'Esta función es útil cuando los precios fluctúan semanalmente.',
-                    position: 'center'
-                },
-                {
-                    id: 'precios-final',
-                    title: '¡Flexibilidad Total!',
-                    icon: 'fa-check-circle',
-                    content: 'Recuerda:<br><br>✓ Los precios base se configuran en "Listado de Productos"<br>✓ Los precios por semana se ajustan en las tablas<br>✓ Los cambios se guardan automáticamente en local<br>✓ Al exportar, se registran los precios reales de cada semana',
-                    tip: 'Si necesitas revertir al precio base, borra el valor total y vuelve a ingresar la cantidad.',
-                    position: 'center'
-                }
-            ],
+        async function listarCloud() {
+            mostrarLoadingArchivos(true);
             
-            // Tutoriales específicos por tema
-            proveedores: [
-                {
-                    id: 'prov-intro',
-                    title: 'Gestión de Proveedores',
-                    icon: 'fa-truck-field',
-                    content: 'Los proveedores son las empresas o personas que te venden productos. Cada producto debe estar asignado a un proveedor.',
-                    position: 'center'
-                },
-                {
-                    target: 'nav-proveedores',
-                    title: 'Acceder a Proveedores',
-                    icon: 'fa-arrow-pointer',
-                    content: 'Haz clic aquí para abrir el panel de gestión de proveedores.',
-                    position: 'right',
-                    action: () => toggleModal('modal-proveedores')
-                },
-                {
-                    target: 'lista-proveedores',
-                    title: 'Crear y Editar',
-                    icon: 'fa-pen-to-square',
-                    content: '• <strong>Nombre:</strong> Identificación del proveedor<br>• <strong>Color:</strong> Para visualización en tablas<br>• <strong>Orden:</strong> Usa las flechas para reorganizar<br>• <strong>Sigla:</strong> Se genera automáticamente',
-                    tip: 'Ejemplo: "Carnes Canaima" → sigla "CCA"',
-                    position: 'left'
-                },
-                {
-                    target: 'lista-proveedores',
-                    title: 'Eliminar Proveedores',
-                    icon: 'fa-trash',
-                    content: 'Al eliminar un proveedor, sus productos se reasignan al primer proveedor de la lista. Asegúrate de reasignarlos manualmente si es necesario.',
-                    position: 'left'
+            try {
+                const snap = await db.ref(`files/${currentUser}`).once('value');
+                const archivos = [];
+                
+                if (!snap.exists()) {
+                    mostrarEmptyStateArchivos(true);
+                    return;
                 }
-            ],
-            
-            productos: [
-                {
-                    id: 'prod-intro',
-                    title: 'Gestión de Productos',
-                    icon: 'fa-list-check',
-                    content: 'Los productos son los ítems que compras a los proveedores. Cada uno debe tener precio, unidad y proveedor asignado.',
-                    position: 'center'
-                },
-                {
-                    target: 'nav-productos',
-                    title: 'Acceder a Productos',
-                    icon: 'fa-arrow-pointer',
-                    content: 'Haz clic aquí para gestionar tu catálogo de productos.',
-                    position: 'right',
-                    action: () => toggleModal('modal-productos')
-                },
-                {
-                    target: 'lista-productos-config',
-                    title: 'Configurar Producto',
-                    icon: 'fa-box',
-                    content: '• <strong>Nombre:</strong> Incluye la unidad (Libra, Kilo, Und)<br>• <strong>Precio:</strong> Valor unitario de compra<br>• <strong>Proveedor:</strong> Quién lo suministra<br>• <strong>CL:</strong> ¿Es compra local?',
-                    tip: 'La unidad se detecta automáticamente: kg, lb, lt, und',
-                    position: 'left'
-                }
-            ],
-            
-            cl: [
-                {
-                    id: 'cl-full',
-                    title: 'Compras Locales (CL)',
-                    icon: 'fa-leaf',
-                    content: '<strong>CL = Compra Local</strong><br><br>Es un indicador que identifica productos adquiridos dentro de la región, cumpliendo con políticas de:<br><br>🌱 <strong>Sostenibilidad:</strong> Menor transporte, menos emisiones<br>💚 <strong>Economía local:</strong> Apoyo a productores regionales<br>📋 <strong>Requisitos institucionales:</strong> Muchos contratos exigen % mínimo de CL<br><br>En el resumen se calcula automáticamente el porcentaje de compras locales.',
-                    tip: 'Productos CL se destacan con badge verde en todas las vistas.',
-                    position: 'center'
-                }
-            ],
-            
-            resumen: [
-                {
-                    id: 'res-intro',
-                    title: 'Análisis de Gastos',
-                    icon: 'fa-chart-pie',
-                    content: 'El resumen consolidado te muestra el panorama completo de tus compras del mes.',
-                    position: 'center'
-                },
-                {
-                    target: 'nav-resumen',
-                    title: 'Ver Resumen',
-                    icon: 'fa-arrow-pointer',
-                    content: 'Abre el panel de análisis desde aquí o desde el menú lateral.',
-                    position: 'right',
-                    action: () => toggleDrawer('resumen')
-                },
-                {
-                    target: 'summary-content',
-                    title: 'Detalle por Proveedor',
-                    icon: 'fa-list',
-                    content: 'Cada proveedor muestra:<br>• Productos comprados<br>• Cantidad total (suma de todas las semanas)<br>• Valor total gastado<br>• Indicador CL (✓ o ✗)<br>• <strong>% de participación</strong> en el total<br><br><strong>NUEVO:</strong> Los paneles son plegables. Haz clic en el encabezado para expandir/contraer.',
-                    tip: 'Las cantidades se suman automáticamente: 100 huevos semana 1 + 150 semana 2 = 250 huevos total',
-                    position: 'left'
-                },
-                {
-                    target: 'chartGasto',
-                    title: 'Gráfico Visual',
-                    icon: 'fa-chart-simple',
-                    content: 'Visualiza la distribución de gastos por proveedor en un gráfico circular. El color corresponde a cada proveedor.',
-                    position: 'top'
-                }
-            ],
-            
-            exportar: [
-                {
-                    id: 'exp-intro',
-                    title: 'Exportar Datos',
-                    icon: 'fa-file-export',
-                    content: 'El sistema genera archivos Excel profesionales con toda tu información organizada.',
-                    position: 'center'
-                },
-                {
-                    target: 'nav-exportar',
-                    title: 'Exportar Completo',
-                    icon: 'fa-file-excel',
-                    content: 'Genera un archivo Excel con 5 hojas:<br><br>1. <strong>Configuración:</strong> Proveedores y productos base<br>2. <strong>Datos Semanales:</strong> Todas las facturas y cantidades<br>3. <strong>Resumen:</strong> Consolidado por producto con % CL<br>4. <strong>Raciones:</strong> Resumen de raciones por semana<br>5. <strong>Facturas:</strong> Validación de facturas',
-                    tip: 'Este archivo puede importarse posteriormente como respaldo completo.',
-                    position: 'right'
-                },
-                {
-                    target: 'nav-importar',
-                    title: 'Importar Datos',
-                    icon: 'fa-file-import',
-                    content: 'Restaura toda la configuración y datos desde un archivo Excel exportado previamente. Útil para:<br>• Respaldos<br>• Transferir entre dispositivos<br>• Recuperar información',
-                    position: 'right'
-                }
-            ],
-            
-            contabilidad: [
-                {
-                    id: 'cont-intro',
-                    title: 'Exportación Contable',
-                    icon: 'fa-calculator',
-                    content: 'Formato especial diseñado para el área financiera y contable de tu organización.',
-                    position: 'center'
-                },
-                {
-                    target: 'nav-contabilidad',
-                    title: 'Formato Contable',
-                    icon: 'fa-file-invoice-dollar',
-                    content: 'Incluye:<br>• Fecha, mes y contrato<br>• Proveedor y número de factura<br>• Producto, cantidad y valores<br>• Indicador CL (SI/NO)<br>• Resumen por proveedor',
-                    tip: 'Disponible en CSV (para sistemas contables) y Excel (para revisión humana).',
-                    position: 'right',
-                    action: () => toggleDrawer('contabilidad')
-                }
-            ]
-        };
 
-        let tutorialActivo = null;
-        let pasoActual = 0;
+                snap.forEach(child => {
+                    const data = child.val();
+                    archivos.push({
+                        key: child.key,
+                        ...data,
+                        fechaObj: new Date(data._metadata?.fechaGuardado || data.fechaGuardado || Date.now()),
+                        montoTotal: calcularMontoTotalArchivo(data)
+                    });
+                });
 
-        // ===== FUNCIONES DEL TUTORIAL =====
-
-        function toggleHelpMenu() {
-            const menu = document.getElementById('helpMenu');
-            menu.classList.toggle('active');
-            
-            if (menu.classList.contains('active')) {
-                setTimeout(() => {
-                    document.addEventListener('click', cerrarHelpMenu);
-                }, 100);
+                archivosCache = archivos;
+                organizarEnCarpetas(archivos);
+                
+                if (currentPath === 'root') {
+                    renderizarVistaCarpetas();
+                } else {
+                    renderizarVistaArchivos(currentPath);
+                }
+                
+            } catch (error) {
+                console.error("Error cargando archivos:", error);
+                mostrarErrorArchivos("Error al cargar los archivos");
+            } finally {
+                mostrarLoadingArchivos(false);
             }
         }
 
-        function cerrarHelpMenu(e) {
-            const menu = document.getElementById('helpMenu');
-            const btn = document.getElementById('helpButton');
+        function organizarEnCarpetas(archivos) {
+            carpetasCache = {};
             
-            if (!menu.contains(e.target) && !btn.contains(e.target)) {
-                menu.classList.remove('active');
-                document.removeEventListener('click', cerrarHelpMenu);
-            }
-        }
-
-        function abrirSidebarParaTutorial() {
-            const sidebar = document.getElementById('sidebar');
-            if (window.innerWidth > 768) {
-                sidebar.classList.remove('collapsed');
-                sidebarOpen = true;
-            } else {
-                sidebar.classList.add('open');
-                sidebarOpen = true;
-            }
-        }
-
-        function startTutorial(tipo = 'completo') {
-            document.getElementById('helpMenu').classList.remove('active');
-            tutorialEnCurso = true;
-            abrirSidebarParaTutorial();
-            
-            if (!TUTORIAL_STEPS[tipo]) {
-                console.error('Tutorial no encontrado:', tipo);
-                return;
-            }
-            
-            tutorialActivo = TUTORIAL_STEPS[tipo];
-            pasoActual = 0;
-            
-            document.getElementById('tutorialOverlay').classList.add('active');
-            generarProgreso();
-            mostrarPaso(0);
-            document.getElementById('helpButton').classList.remove('pulse');
-        }
-
-        function generarProgreso() {
-            const cont = document.getElementById('tutorialProgress');
-            cont.innerHTML = tutorialActivo.map((_, i) => 
-                `<div class="tutorial-dot ${i === 0 ? 'active' : ''}" data-step="${i}"></div>`
-            ).join('');
-        }
-
-        function mostrarPaso(index) {
-            if (index < 0 || index >= tutorialActivo.length) return;
-            
-            pasoActual = index;
-            const paso = tutorialActivo[index];
-            
-            if (paso.target && (
-                paso.target.includes('nav-') || 
-                paso.target === 'sidebar' ||
-                paso.target.includes('sidebar')
-            )) {
-                abrirSidebarParaTutorial();
-            }
-            
-            document.getElementById('tutorialIcon').innerHTML = `<i class="fa-solid ${paso.icon || 'fa-circle-info'}"></i>`;
-            document.getElementById('tutorialTitle').textContent = paso.title;
-            document.getElementById('tutorialStep').textContent = `${index + 1}/${tutorialActivo.length}`;
-            document.getElementById('tutorialContent').innerHTML = paso.content;
-            
-            const tipEl = document.getElementById('tutorialTip');
-            if (paso.tip) {
-                document.getElementById('tutorialTipText').textContent = paso.tip;
-                tipEl.style.display = 'block';
-            } else {
-                tipEl.style.display = 'none';
-            }
-            
-            document.getElementById('btnPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
-            
-            if (index === tutorialActivo.length - 1) {
-                document.getElementById('btnNext').classList.add('hidden');
-                document.getElementById('btnFinish').classList.remove('hidden');
-                document.getElementById('btnSkip').style.visibility = 'hidden';
-            } else {
-                document.getElementById('btnNext').classList.remove('hidden');
-                document.getElementById('btnFinish').classList.add('hidden');
-                document.getElementById('btnSkip').style.visibility = 'visible';
-            }
-            
-            document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
-                dot.classList.remove('active', 'completed');
-                if (i < index) dot.classList.add('completed');
-                if (i === index) dot.classList.add('active');
+            archivos.forEach(archivo => {
+                // Organizar por mes (ej: "Abril 2026")
+                const mes = archivo.mes || 'Sin mes';
+                const anio = archivo.fechaObj.getFullYear();
+                const nombreCarpeta = `${mes} ${anio}`;
+                
+                if (!carpetasCache[nombreCarpeta]) {
+                    carpetasCache[nombreCarpeta] = {
+                        nombre: nombreCarpeta,
+                        archivos: [],
+                        fechaUltima: archivo.fechaObj,
+                        montoTotal: 0,
+                        mes: archivo.mes,
+                        anio: anio
+                    };
+                }
+                
+                carpetasCache[nombreCarpeta].archivos.push(archivo);
+                carpetasCache[nombreCarpeta].montoTotal += archivo.montoTotal || 0;
+                
+                if (archivo.fechaObj > carpetasCache[nombreCarpeta].fechaUltima) {
+                    carpetasCache[nombreCarpeta].fechaUltima = archivo.fechaObj;
+                }
             });
-            
-            posicionarTooltip(paso);
-            
-            if (paso.action) {
-                setTimeout(() => paso.action(), 300);
-            }
         }
 
-        function posicionarTooltip(paso) {
-            const tooltip = document.getElementById('tutorialTooltip');
-            const spotlight = document.getElementById('tutorialSpotlight');
-            
-            tooltip.className = 'tutorial-tooltip active';
-            
-            if (paso.position === 'center' || !paso.target) {
-                tooltip.style.left = '50%';
-                tooltip.style.top = '50%';
-                tooltip.style.transform = 'translate(-50%, -50%)';
-                spotlight.style.display = 'none';
-                return;
-            }
-            
-            const target = document.getElementById(paso.target) || document.querySelector(paso.target);
-            if (!target) {
-                tooltip.style.left = '50%';
-                tooltip.style.top = '50%';
-                tooltip.style.transform = 'translate(-50%, -50%)';
-                return;
-            }
-            
-            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            const rect = target.getBoundingClientRect();
-            
-            spotlight.style.display = 'block';
-            spotlight.style.left = `${rect.left - 10}px`;
-            spotlight.style.top = `${rect.top - 10}px`;
-            spotlight.style.width = `${rect.width + 20}px`;
-            spotlight.style.height = `${rect.height + 20}px`;
-            
-            const margin = 20;
-            let left, top;
-            
-            // Ajustar posición para evitar que se corte
-            const tooltipWidth = 350;
-            const tooltipHeight = 400;
-            
-            switch(paso.position) {
-                case 'bottom':
-                    left = rect.left + rect.width / 2 - tooltipWidth / 2;
-                    top = rect.bottom + margin;
-                    tooltip.classList.add('top');
-                    break;
-                case 'top':
-                    left = rect.left + rect.width / 2 - tooltipWidth / 2;
-                    top = rect.top - tooltipHeight - margin;
-                    tooltip.classList.add('bottom');
-                    break;
-                case 'left':
-                    left = rect.left - tooltipWidth - margin;
-                    top = rect.top + rect.height / 2 - tooltipHeight / 2;
-                    tooltip.classList.add('right');
-                    break;
-                case 'right':
-                    left = rect.right + margin;
-                    top = rect.top + rect.height / 2 - tooltipHeight / 2;
-                    tooltip.classList.add('left');
-                    break;
-                default:
-                    left = rect.left + rect.width / 2 - tooltipWidth / 2;
-                    top = rect.bottom + margin;
-            }
-            
-            // Ajustar a límites de pantalla con margen de seguridad
-            left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
-            top = Math.max(10, Math.min(top, window.innerHeight - tooltipHeight - 10));
-            
-            tooltip.style.left = `${left}px`;
-            tooltip.style.top = `${top}px`;
-            tooltip.style.transform = 'none';
-        }
-
-        function tutorialNext() {
-            if (pasoActual < tutorialActivo.length - 1) {
-                mostrarPaso(pasoActual + 1);
-            }
-        }
-
-        function tutorialPrev() {
-            if (pasoActual > 0) {
-                mostrarPaso(pasoActual - 1);
-            }
-        }
-
-        function tutorialSkip() {
-            if (confirm('¿Saltar el tutorial? Puedes volver a verlo desde el botón de ayuda.')) {
-                tutorialEnCurso = false;
-				marcarTutorialVisto();
-                tutorialFinish();
+        function renderizarVistaCarpetas() {
+			const contenedor = document.getElementById('vista-carpetas');
+			const vistaArchivos = document.getElementById('vista-archivos');
+			
+			contenedor.style.display = 'grid';
+			vistaArchivos.style.display = 'none';
+			
+			actualizarBreadcrumbs('root');
+			
+			// Aplicar búsqueda si hay
+			let carpetas = Object.values(carpetasCache);
+			if (busquedaActual) {
+				const termino = busquedaActual.toLowerCase();
+				carpetas = carpetas.filter(c => 
+					c.nombre.toLowerCase().includes(termino) ||
+					c.archivos.some(a => (a.contrato || '').toLowerCase().includes(termino))
+				);
+			}
+			
+			// Aplicar ordenamiento
+			carpetas = ordenarCarpetas(carpetas);
+			
+			if (carpetas.length === 0) {
+				mostrarEmptyStateArchivos(true);
+				return;
+			}
+			
+			mostrarEmptyStateArchivos(false);
+			
+			// Limpiar y usar event listeners en lugar de onclick inline
+			contenedor.innerHTML = '';
+			
+			carpetas.forEach(carpeta => {
+				const esActual = currentFileId && carpeta.archivos.some(a => a.key === currentFileId);
+				const count = carpeta.archivos.length;
+				const fechaStr = carpeta.fechaUltima.toLocaleDateString('es-CO', {day: 'numeric', month: 'short'});
 				
+				const card = document.createElement('div');
+				card.className = `folder-card ${esActual ? 'active' : ''}`;
+				
+				card.innerHTML = `
+					${count > 0 ? `<span class="folder-count">${count}</span>` : ''}
+					<div class="folder-icon">
+						<i class="fa-solid fa-folder${esActual ? '-open' : ''}"></i>
+					</div>
+					<div class="folder-name">${carpeta.mes || 'Sin mes'}</div>
+					<div class="folder-meta">
+						${carpeta.anio} • ${fechaStr}<br>
+						<span style="color: var(--primary-gold);">${formatter.format(carpeta.montoTotal)}</span>
+					</div>
+				`;
+				
+				// Usar addEventListener en lugar de onclick inline para evitar problemas con espacios
+				card.addEventListener('click', function() {
+					navegarA('carpeta', carpeta.nombre);
+				});
+				
+				contenedor.appendChild(card);
+			});
+		}
+
+        function renderizarVistaArchivos(nombreCarpeta) {
+            const contenedorCarpetas = document.getElementById('vista-carpetas');
+            const contenedorArchivos = document.getElementById('vista-archivos');
+            
+            contenedorCarpetas.style.display = 'none';
+            contenedorArchivos.style.display = 'block';
+            
+            actualizarBreadcrumbs('carpeta', nombreCarpeta);
+            
+            const carpeta = carpetasCache[nombreCarpeta];
+            if (!carpeta) {
+                navegarA('root');
+                return;
+            }
+            
+            // Aplicar búsqueda y ordenamiento
+            let archivos = [...carpeta.archivos];
+            if (busquedaActual) {
+                const termino = busquedaActual.toLowerCase();
+                archivos = archivos.filter(a => 
+                    (a.contrato || '').toLowerCase().includes(termino) ||
+                    (a.mes || '').toLowerCase().includes(termino)
+                );
+            }
+            archivos = ordenarArchivos(archivos);
+            
+            // Renderizar info del header
+            const totalArchivos = archivos.length;
+            const montoTotal = archivos.reduce((sum, a) => sum + (a.montoTotal || 0), 0);
+            const archivosActivos = archivos.filter(a => a.key === currentFileId).length;
+            
+            document.getElementById('folder-info').innerHTML = `
+                <div>
+                    <h4 style="margin: 0 0 5px 0; color: var(--primary-gold); font-size: 14px;">${nombreCarpeta}</h4>
+                    <div style="font-size: 9px; color: var(--text-dim);">
+                        ${carpeta.archivos.length} archivo${carpeta.archivos.length !== 1 ? 's' : ''} en total • 
+                        Mostrando ${totalArchivos}
+                    </div>
+                </div>
+                <div class="folder-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">${formatter.format(montoTotal)}</span>
+                        <span class="stat-label">Monto Total</span>
+                    </div>
+                    ${archivosActivos > 0 ? `
+                    <div class="stat-item" style="color: var(--accent-cyan);">
+                        <span class="stat-value"><i class="fa-solid fa-check-circle"></i></span>
+                        <span class="stat-label">Abierto</span>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            // Renderizar lista o grid
+            const listaContenedor = document.getElementById('lista-archivos-detalle');
+            
+            if (vistaArchivosActual === 'grid') {
+                listaContenedor.className = 'files-grid-view';
+                listaContenedor.innerHTML = archivos.map(archivo => renderizarCardArchivo(archivo)).join('');
+            } else {
+                listaContenedor.className = 'files-list';
+                listaContenedor.innerHTML = archivos.map(archivo => renderizarItemArchivo(archivo)).join('');
             }
         }
 
-        function tutorialFinish() {
-            document.getElementById('tutorialOverlay').classList.remove('active');
-            document.getElementById('tutorialTooltip').classList.remove('active');
-            document.getElementById('tutorialSpotlight').style.display = 'none';
+        function renderizarItemArchivo(archivo) {
+            const esActual = archivo.key === currentFileId;
+            const fechaStr = archivo.fechaObj.toLocaleDateString('es-CO');
+            const horaStr = archivo.fechaObj.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
             
-            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
-            document.getElementById('overlay').style.display = 'none';
+            return `
+                <div class="file-item ${esActual ? 'active-file' : ''}" onclick="cargarArchivo('${archivo.key}')">
+                    <div class="file-icon">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">${archivo.contrato || 'Sin contrato'}</div>
+                        <div class="file-details">
+                            <span class="file-detail-item"><i class="fa-regular fa-calendar"></i> ${fechaStr}</span>
+                            <span class="file-detail-item"><i class="fa-regular fa-clock"></i> ${horaStr}</span>
+                            <span class="file-detail-item"><i class="fa-solid fa-tag"></i> ${archivo.mes || 'N/A'}</span>
+                            <span class="file-detail-item" style="color: var(--primary-gold); font-weight: 600;">
+                                <i class="fa-solid fa-sack-dollar"></i> ${formatter.format(archivo.montoTotal || 0)}
+                            </span>
+                            ${archivo.numSemanas ? `<span class="file-detail-item"><i class="fa-solid fa-calendar-week"></i> ${archivo.numSemanas} semanas</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="file-actions" onclick="event.stopPropagation()">
+                        <button class="file-btn" onclick="cargarArchivo('${archivo.key}')" title="Abrir">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </button>
+                        <button class="file-btn delete" onclick="borrarArchivo('${archivo.key}')" title="Eliminar">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderizarCardArchivo(archivo) {
+            const esActual = archivo.key === currentFileId;
+            const fechaStr = archivo.fechaObj.toLocaleDateString('es-CO');
             
-            tutorialEnCurso = false;
-            cerrarSidebarSiAbierto();
-            marcarTutorialVisto();
-            document.getElementById('helpButton').classList.add('pulse');
+            return `
+                <div class="file-card ${esActual ? 'active-file' : ''}" onclick="cargarArchivo('${archivo.key}')">
+                    <div class="file-card-actions" onclick="event.stopPropagation()">
+                        <button class="file-btn" onclick="cargarArchivo('${archivo.key}')" title="Abrir">
+                            <i class="fa-solid fa-folder-open"></i>
+                        </button>
+                        <button class="file-btn delete" onclick="borrarArchivo('${archivo.key}')" title="Eliminar">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="file-card-icon">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="file-card-name">${archivo.contrato || 'Sin contrato'}</div>
+                    <div class="file-card-date">${fechaStr} • ${formatter.format(archivo.montoTotal || 0)}</div>
+                </div>
+            `;
+        }
+
+        function navegarA(destino, parametro = null) {
+            // Limpiar búsqueda al navegar
+            busquedaActual = '';
+            document.getElementById('buscar-archivos').value = '';
+            
+            if (destino === 'root') {
+                currentPath = 'root';
+                renderizarVistaCarpetas();
+            } else if (destino === 'carpeta') {
+                currentPath = parametro;
+                renderizarVistaArchivos(parametro);
+            }
+        }
+
+        function actualizarBreadcrumbs(nivel, parametro = null) {
+			const contenedor = document.getElementById('breadcrumbs');
+			contenedor.innerHTML = '';
+			
+			if (nivel === 'root') {
+				const span = document.createElement('span');
+				span.className = 'breadcrumb-item active';
+				span.innerHTML = '<i class="fa-solid fa-house"></i> Inicio';
+				span.addEventListener('click', () => navegarA('root'));
+				contenedor.appendChild(span);
+			} else if (nivel === 'carpeta') {
+				const homeSpan = document.createElement('span');
+				homeSpan.className = 'breadcrumb-item';
+				homeSpan.innerHTML = '<i class="fa-solid fa-house"></i> Inicio';
+				homeSpan.addEventListener('click', () => navegarA('root'));
+				contenedor.appendChild(homeSpan);
+				
+				const separator = document.createElement('span');
+				separator.className = 'breadcrumb-separator';
+				separator.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+				contenedor.appendChild(separator);
+				
+				const folderSpan = document.createElement('span');
+				folderSpan.className = 'breadcrumb-item active';
+				folderSpan.innerHTML = `<i class="fa-solid fa-folder-open"></i> ${parametro}`;
+				contenedor.appendChild(folderSpan);
+			}
+		}
+
+        function ordenarCarpetas(carpetas) {
+            switch(ordenActual) {
+                case 'fecha-desc':
+                    return carpetas.sort((a, b) => b.fechaUltima - a.fechaUltima);
+                case 'fecha-asc':
+                    return carpetas.sort((a, b) => a.fechaUltima - b.fechaUltima);
+                case 'nombre-asc':
+                    return carpetas.sort((a, b) => a.nombre.localeCompare(b.nombre));
+                case 'nombre-desc':
+                    return carpetas.sort((a, b) => b.nombre.localeCompare(a.nombre));
+                case 'monto-desc':
+                    return carpetas.sort((a, b) => b.montoTotal - a.montoTotal);
+                default:
+                    return carpetas;
+            }
+        }
+
+        function ordenarArchivos(archivos) {
+            switch(ordenActual) {
+                case 'fecha-desc':
+                    return archivos.sort((a, b) => b.fechaObj - a.fechaObj);
+                case 'fecha-asc':
+                    return archivos.sort((a, b) => a.fechaObj - b.fechaObj);
+                case 'nombre-asc':
+                    return archivos.sort((a, b) => (a.contrato || '').localeCompare(b.contrato || ''));
+                case 'nombre-desc':
+                    return archivos.sort((a, b) => (b.contrato || '').localeCompare(a.contrato || ''));
+                case 'monto-desc':
+                    return archivos.sort((a, b) => (b.montoTotal || 0) - (a.montoTotal || 0));
+                default:
+                    return archivos;
+            }
+        }
+
+        function aplicarFiltroOrden() {
+            ordenActual = document.getElementById('filtro-orden').value;
+            
+            if (currentPath === 'root') {
+                renderizarVistaCarpetas();
+            } else {
+                renderizarVistaArchivos(currentPath);
+            }
+        }
+
+        function filtrarArchivos(termino) {
+            busquedaActual = termino;
+            
+            if (currentPath === 'root') {
+                renderizarVistaCarpetas();
+            } else {
+                renderizarVistaArchivos(currentPath);
+            }
+        }
+
+        function toggleVistaArchivos() {
+            vistaArchivosActual = vistaArchivosActual === 'list' ? 'grid' : 'list';
+            document.getElementById('btn-vista-icon').className = vistaArchivosActual === 'list' ? 'fa-solid fa-list' : 'fa-solid fa-grid-2';
+            
+            if (currentPath !== 'root') {
+                renderizarVistaArchivos(currentPath);
+            }
+        }
+
+        function calcularMontoTotalArchivo(data) {
+            let total = 0;
+            if (data.semanas) {
+                Object.values(data.semanas).forEach(semana => {
+                    if (semana.items) {
+                        Object.values(semana.items).forEach(item => {
+                            const cant = parseFloat(item.q) || 0;
+                            const precio = parseFloat(item.p) || 0;
+                            total += cant * precio;
+                        });
+                    }
+                });
+            }
+            return total;
+        }
+
+        function mostrarLoadingArchivos(mostrar) {
+            document.getElementById('loading-files').style.display = mostrar ? 'block' : 'none';
+            document.getElementById('vista-carpetas').style.display = mostrar ? 'none' : 'grid';
+            document.getElementById('vista-archivos').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'none';
+        }
+
+        function mostrarEmptyStateArchivos(mostrar) {
+            document.getElementById('empty-state').style.display = mostrar ? 'block' : 'none';
+            document.getElementById('vista-carpetas').style.display = mostrar ? 'none' : 'grid';
+            document.getElementById('vista-archivos').style.display = 'none';
+            document.getElementById('loading-files').style.display = 'none';
+        }
+
+        function mostrarErrorArchivos(mensaje) {
+            document.getElementById('vista-carpetas').innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--danger);">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 32px; margin-bottom: 10px;"></i>
+                    <p>${mensaje}</p>
+                </div>
+            `;
+            document.getElementById('vista-carpetas').style.display = 'grid';
+            document.getElementById('vista-archivos').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('loading-files').style.display = 'none';
         }
 
         // ===== UTILIDADES =====
@@ -2542,8 +2471,6 @@
                 });
             }
         }
-		
-		// ===== INICIALIZACIÓN MEJORADA =====
 
         function iniciarApp(u) {
 			currentUser = u;
@@ -2557,25 +2484,12 @@
 				sidebarOpen = false;
 			}
 
-			// Cargar archivo actual si existe
 			const savedFileId = localStorage.getItem(`elite_current_file_${currentUser}`);
 			if (savedFileId) {
 				currentFileId = savedFileId;
-				console.log("Archivo actual recordado:", currentFileId);
 			}
 
 			inicializarDatos();
-			
-			const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
-			if (tutorialVisto !== 'true') {
-				setTimeout(() => {
-					if (confirm('¿Deseas ver el tutorial de bienvenida?\n\n(Puedes volver a verlo desde el botón ? en cualquier momento)')) {
-						startTutorial('completo');
-					} else {
-						marcarTutorialVisto();
-					}
-				}, 1000);
-			}
 		}
 
         function inicializarDatos() {
@@ -2611,42 +2525,7 @@
             document.getElementById('reg-form').classList.toggle('hidden', !toReg);
         }
 
-        function debeMostrarTutorial() {
-            if (!currentUser) return false;
-            const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
-            if (tutorialVisto === 'true') {
-                return false;
-            }
-            return true;
-        }
-
-        function marcarTutorialVisto() {
-			if (!currentUser) return;
-			localStorage.setItem(`tutorial_visto_${currentUser}`, 'true');
-			tutorialYaVisto = true;
-			console.log(`Tutorial marcado como visto para usuario: ${currentUser}`);
-		}
-
-        function resetTutorialVisto() {
-			if (!currentUser) return;
-			if (confirm('¿Estás seguro de que deseas ver el tutorial de nuevo?\n\nSe mostrará al siguiente inicio de sesión.')) {
-				localStorage.removeItem(`tutorial_visto_${currentUser}`);
-				tutorialYaVisto = false;
-				alert('Tutorial reseteado. Se mostrará en el próximo inicio de sesión.');
-			}
-		}
-
         function toggleSidebar() {
-            if (tutorialEnCurso && tutorialActivo && pasoActual < tutorialActivo.length) {
-                const pasoActualObj = tutorialActivo[pasoActual];
-                if (pasoActualObj && pasoActualObj.target && (
-                    pasoActualObj.target.includes('nav-') || 
-                    pasoActualObj.target.includes('sidebar')
-                )) {
-                    return;
-                }
-            }
-            
             const sidebar = document.getElementById('sidebar');
             sidebarOpen = !sidebarOpen;
 
@@ -2663,24 +2542,6 @@
             if (window.innerWidth <= 768) {
                 document.getElementById('sidebar').classList.remove('open');
                 sidebarOpen = false;
-            }
-        }
-
-        function cerrarSidebarSiAbierto() {
-            if (tutorialEnCurso) return;
-            
-            const sidebar = document.getElementById('sidebar');
-            
-            if (window.innerWidth > 768) {
-                if (!sidebar.classList.contains('collapsed')) {
-                    sidebar.classList.add('collapsed');
-                    sidebarOpen = false;
-                }
-            } else {
-                if (sidebar.classList.contains('open')) {
-                    sidebar.classList.remove('open');
-                    sidebarOpen = false;
-                }
             }
         }
 
@@ -2883,7 +2744,6 @@
 
         // ===== GRID PRINCIPAL =====
         function initGrid(preservarDatos = false) {
-            // Guardar datos actuales antes de regenerar
             let datosActuales = {};
             if (preservarDatos) {
                 const semanasActuales = parseInt(document.getElementById('num-semanas').value) || 4;
@@ -2971,7 +2831,7 @@
                 });
 
                 grid.innerHTML += `
-                    <div class="semana-card" id="card-${s}" onclick="cerrarSidebarSiAbierto()">
+                    <div class="semana-card" id="card-${s}">
                         <div class="semana-header">
                             <button class="btn-collapse" id="btn-col-${s}" onclick="toggleWeek(${s})">
                                 <i class="fa-solid fa-chevron-down" id="icon-col-${s}"></i>
@@ -3002,18 +2862,15 @@
                 `;
             }
             
-            if (!tutorialEnCurso) {
-                const sidebar = document.getElementById('sidebar');
-                if (window.innerWidth > 768) {
-                    sidebar.classList.add('collapsed');
-                    sidebarOpen = false;
-                } else {
-                    sidebar.classList.remove('open');
-                }
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.add('collapsed');
                 sidebarOpen = false;
+            } else {
+                sidebar.classList.remove('open');
             }
+            sidebarOpen = false;
             
-            // Restaurar datos si se preservaron
             if (preservarDatos && Object.keys(datosActuales).length > 0) {
                 for (let s = 1; s <= semanas; s++) {
                     if (!datosActuales[s]) continue;
@@ -3047,15 +2904,13 @@
             initGrid(true);
             marcarCambio();
             
-            if (!tutorialEnCurso) {
-                const sidebar = document.getElementById('sidebar');
-                if (window.innerWidth > 768) {
-                    sidebar.classList.add('collapsed');
-                } else {
-                    sidebar.classList.remove('open');
-                }
-                sidebarOpen = false;
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.add('collapsed');
+            } else {
+                sidebar.classList.remove('open');
             }
+            sidebarOpen = false;
         }
 
         function toggleWeek(s) {
@@ -3158,7 +3013,6 @@
                 const pVal = document.getElementById(`pres-${s}`);
                 if (pVal) tPres += limpiarNum(pVal.textContent);
 
-                // Calcular raciones de esta semana
                 const dias = parseFloat(document.getElementById(`dias-${s}`)?.value) || 0;
                 const cupos = parseFloat(document.getElementById(`cupos-${s}`)?.value) || 0;
                 const racionesSemana = dias * cupos;
@@ -3192,7 +3046,6 @@
             const porcCL = tPres > 0 ? (tProdCL / tPres) * 100 : 0;
             const ledColor = porcCL >= 30 ? 'var(--success)' : 'var(--danger)';
 
-            // Generar HTML de raciones
             let htmlRaciones = '';
             for (let s = 1; s <= semanas; s++) {
                 const r = racionesPorSemana[s];
@@ -3266,8 +3119,6 @@
             const sumCont = document.getElementById('summary-content');
             if (sumCont) {
                 sumCont.innerHTML = `
-                    
-
                     <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid ${ledColor};">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div>
@@ -3304,7 +3155,7 @@
                             </tr>
                         </table>
                     </div>
-					<!-- SECCIÓN DE RACIONES -->
+
                     <div class="raciones-resumen">
                         <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
                             <i class="fa-solid fa-utensils" style="color: var(--accent-cyan); font-size: 18px;"></i>
@@ -3630,7 +3481,6 @@
 
             const wb = XLSX.utils.book_new();
 
-            // Calcular totales
             let tPresTotal = 0;
             let tProdCL = 0;
             let tProdOtros = 0;
@@ -3656,7 +3506,6 @@
                 const distVal = document.getElementById(`dist-${s}`);
                 if (distVal) tDistTotal += limpiarNum(distVal.value || "0");
 
-                // Calcular raciones
                 const dias = parseFloat(document.getElementById(`dias-${s}`)?.value) || 0;
                 const cupos = parseFloat(document.getElementById(`cupos-${s}`)?.value) || 0;
                 const racionesSemana = dias * cupos;
@@ -3953,7 +3802,6 @@
             XLSX.writeFile(wb, `Contabilidad_${datos.mes}_${datos.contrato}.xlsx`);
         }
 
-        // ===== EXPORTAR FACTURAS =====
         function exportarFacturasCSV() {
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
             const mes = document.getElementById('main-mes').value;
@@ -4584,7 +4432,6 @@
         function limpiarSemana(s) {
             if (!confirm(`¿Borrar datos de la SEMANA ${s}?`)) return;
             
-            // Limpiar facturas y cantidades de productos
             productosBase.forEach((p, i) => {
                 const fac = document.getElementById(`fac-${s}-${i}`);
                 const cant = document.getElementById(`cant-${s}-${i}`);
@@ -4593,11 +4440,10 @@
                 
                 if (fac) fac.value = "";
                 if (cant) cant.value = "";
-                if (punit) punit.value = p.precio; // Restaurar precio base
+                if (punit) punit.value = p.precio;
                 if (val) val.value = "";
             });
             
-            // NO limpiar días y cupos al limpiar solo la semana
             calcular(s);
             marcarCambio();
         }
@@ -4607,19 +4453,15 @@
             
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
             
-            // Limpiar datos de contrato
             document.getElementById('main-contrato').value = "";
-            document.getElementById('main-mes').selectedIndex = 0; // Volver a Enero
+            document.getElementById('main-mes').selectedIndex = 0;
             
-            // Limpiar cada semana completamente (incluyendo días y cupos)
             for (let s = 1; s <= semanas; s++) {
-                // Limpiar días y cupos
                 const diasInput = document.getElementById(`dias-${s}`);
                 const cuposInput = document.getElementById(`cupos-${s}`);
                 if (diasInput) diasInput.value = "";
                 if (cuposInput) cuposInput.value = "";
                 
-                // Limpiar productos
                 productosBase.forEach((p, i) => {
                     const fac = document.getElementById(`fac-${s}-${i}`);
                     const cant = document.getElementById(`cant-${s}-${i}`);
@@ -4635,10 +4477,8 @@
                 calcular(s);
             }
             
-            // Resetear valor cupo al default
             valorCupoBase = 8094;
             
-            // Limpiar localStorage
             localStorage.removeItem(`elite_draft_${currentUser}`);
             
             marcarCambio();
@@ -4647,7 +4487,7 @@
             alert('Espacio de trabajo limpiado completamente.\n\nPuedes empezar a ingresar nuevos datos.');
         }
 
-        // ===== LOCAL STORAGE - GUARDAR CON REFERENCIA AL ARCHIVO =====
+        // ===== LOCAL STORAGE =====
 		function guardarLocal() {
 			const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
 			const data = {
@@ -4657,7 +4497,7 @@
 				valorCupo: valorCupoBase,
 				productosBase,
 				proveedores,
-				currentFileId: currentFileId, // Guardar referencia al archivo actual
+				currentFileId: currentFileId,
 				semanas: {}
 			};
 
@@ -4678,17 +4518,14 @@
 
 			localStorage.setItem(`elite_draft_${currentUser}`, JSON.stringify(data));
 			
-			// También guardar el ID del archivo actual por separado
 			if (currentFileId) {
 				localStorage.setItem(`elite_current_file_${currentUser}`, currentFileId);
 			}
 		}
 
-        // ===== LOCAL STORAGE - CARGAR CON REFERENCIA =====
 		function cargarLocal() {
 			const saved = localStorage.getItem(`elite_draft_${currentUser}`);
 			
-			// Cargar el archivo actual recordado
 			const savedFileId = localStorage.getItem(`elite_current_file_${currentUser}`);
 			if (savedFileId) {
 				currentFileId = savedFileId;
@@ -4697,7 +4534,6 @@
 			if (saved) {
 				const data = JSON.parse(saved);
 				
-				// Restaurar referencia al archivo si existe en los datos antiguos
 				if (data.currentFileId) {
 					currentFileId = data.currentFileId;
 				}
@@ -4744,7 +4580,8 @@
             }
             marcarSincronizado();
         }
-		let currentFileId = null;
+        
+        let currentFileId = null;
 
         // ===== FIREBASE =====
         async function guardarFirebase() {
@@ -4757,14 +4594,10 @@
 				return;
 			}
 			
-			// Generar ID único basado en mes + contrato (sin timestamp)
-			// Esto asegura que siempre se sobrescriba el mismo archivo para el mismo contrato
 			const id = `${mes}_${contrato}`.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '_');
 			
-			// Preparar datos para guardar
 			const data = JSON.parse(localStorage.getItem(`elite_draft_${currentUser}`)) || {};
 			
-			// Actualizar metadata
 			data._metadata = {
 				fechaGuardado: new Date().toISOString(),
 				usuario: currentUser,
@@ -4773,7 +4606,6 @@
 				displayName: `${mes} - ${contrato}`
 			};
 			
-			// Actualizar datos actuales del formulario
 			data.mes = mes;
 			data.contrato = contrato;
 			data.numSemanas = parseInt(document.getElementById('num-semanas').value) || 4;
@@ -4782,7 +4614,6 @@
 			data.productosBase = productosBase;
 			data.semanas = {};
 			
-			// Guardar datos de cada semana
 			const semanas = data.numSemanas;
 			for (let s = 1; s <= semanas; s++) {
 				data.semanas[s] = {
@@ -4797,7 +4628,6 @@
 					const fac = document.getElementById(`fac-${s}-${i}`)?.value || "";
 					const punit = document.getElementById(`punit-${s}-${i}`)?.value || p.precio;
 					
-					// Solo guardar si hay datos
 					if (cant || val || fac) {
 						data.semanas[s].items[p.nombre] = {
 							f: fac,
@@ -4808,93 +4638,20 @@
 				});
 			}
 			
-			// Guardar en Firebase
 			await db.ref(`files/${currentUser}/${id}`).set(data);
 			
-			// Actualizar el currentFileId para saber en qué estamos trabajando
 			currentFileId = id;
 			
-			// Actualizar localStorage con el ID actual
 			localStorage.setItem(`elite_current_file_${currentUser}`, id);
 			
 			alert(`Guardado exitoso:\n${mes} - ${contrato}`);
 			marcarSincronizado();
 			
-			// Actualizar lista si está abierta
 			if (document.getElementById('drawer-archivo').classList.contains('open')) {
 				listarCloud();
 			}
 		}
-		
-		// ===== FIREBASE - LISTAR ARCHIVOS =====
-		
-        async function listarCloud() {
-			const cont = document.getElementById('lista-archivos');
-			const snap = await db.ref(`files/${currentUser}`).once('value');
-			cont.innerHTML = "";
 
-			if (!snap.exists()) {
-				cont.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:20px;">No hay archivos guardados</div>';
-				return;
-			}
-
-			// Convertir a array
-			const archivos = [];
-			snap.forEach(child => {
-				const v = child.val();
-				archivos.push({
-					key: child.key,
-					data: v,
-					fecha: v._metadata?.fechaGuardado || v.fechaGuardado || 'Fecha desconocida',
-					esActual: child.key === currentFileId
-				});
-			});
-			
-			// Ordenar por fecha descendente (más reciente primero)
-			archivos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-			// Mostrar archivos
-			archivos.forEach(archivo => {
-				const v = archivo.data;
-				const fechaFormateada = new Date(archivo.fecha).toLocaleString('es-CO');
-				const esActual = archivo.esActual;
-				
-				const div = document.createElement('div');
-				div.style = `background:${esActual ? 'rgba(212,175,55,0.2)' : 'rgba(255,255,255,0.05)'}; 
-							 padding:10px; 
-							 margin-bottom:8px; 
-							 border-radius:8px; 
-							 display:flex; 
-							 justify-content:space-between; 
-							 align-items:center;
-							 border-left: ${esActual ? '3px solid var(--primary-gold)' : '3px solid transparent'};`;
-				
-				div.innerHTML = `
-					<div onclick="cargarArchivo('${archivo.key}')" style="cursor:pointer; flex:1;">
-						<b style="color:${esActual ? 'var(--primary-gold)' : 'var(--text-main)'};">
-							${v.mes || v.displayName?.split(' - ')[0] || 'Sin mes'} - ${v.contrato || 'Sin contrato'}
-							${esActual ? ' (ACTUAL)' : ''}
-						</b>
-						<div style="font-size:9px; color:var(--text-dim);">${fechaFormateada}</div>
-					</div>
-					<button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); borrarArchivo('${archivo.key}')" style="margin-left:10px;">
-						<i class="fa-solid fa-trash"></i>
-					</button>
-				`;
-				cont.appendChild(div);
-			});
-			
-			// Mostrar indicador de archivo actual
-			if (currentFileId && archivos.find(a => a.key === currentFileId)) {
-				const infoDiv = document.createElement('div');
-				infoDiv.style = "margin-top:15px; padding:10px; background:rgba(0,242,255,0.1); border-radius:8px; font-size:11px; color:var(--accent-cyan); text-align:center;";
-				infoDiv.innerHTML = `<i class="fa-solid fa-info-circle"></i> Archivo actual: ${archivos.find(a => a.key === currentFileId).data.displayName || archivos.find(a => a.key === currentFileId).data.mes + ' - ' + archivos.find(a => a.key === currentFileId).data.contrato}`;
-				cont.appendChild(infoDiv);
-			}
-		}
-		
-		// ===== FIREBASE - CARGAR ARCHIVO =====
-		
         async function cargarArchivo(key) {
 			const snap = await db.ref(`files/${currentUser}/${key}`).once('value');
 			const data = snap.val();
@@ -4904,24 +4661,19 @@
 				return;
 			}
 			
-			// Actualizar el ID del archivo actual
 			currentFileId = key;
 			localStorage.setItem(`elite_current_file_${currentUser}`, key);
 			
-			// Restaurar datos
 			if (data.proveedores) proveedores = data.proveedores;
 			if (data.productosBase) productosBase = data.productosBase;
 			if (data.valorCupo) valorCupoBase = data.valorCupo;
 			
-			// Actualizar UI
 			document.getElementById('main-mes').value = data.mes || "Enero";
 			document.getElementById('main-contrato').value = data.contrato || "";
 			document.getElementById('num-semanas').value = data.numSemanas || 4;
 			
-			// Reinicializar grid
 			initGrid(false);
 			
-			// Cargar datos de semanas
 			const semanas = data.numSemanas || 4;
 			for (let s = 1; s <= semanas; s++) {
 				if (!data.semanas || !data.semanas[s]) continue;
@@ -4934,7 +4686,6 @@
 					document.getElementById(`cupos-${s}`).value = semData.c || "";
 
 				if (semData.items) {
-					// Cargar por nombre de producto (más robusto que por índice)
 					Object.entries(semData.items).forEach(([nombreProducto, item]) => {
 						const idxProducto = productosBase.findIndex(p => 
 							p.nombre.trim().toLowerCase() === nombreProducto.trim().toLowerCase()
@@ -4948,7 +4699,6 @@
 							if (document.getElementById(`punit-${s}-${idxProducto}`)) 
 								document.getElementById(`punit-${s}-${idxProducto}`).value = item.p || productosBase[idxProducto].precio;
 							
-							// Calcular y mostrar valor total
 							const cant = parseFloat(item.q) || 0;
 							const precio = parseFloat(item.p) || productosBase[idxProducto].precio;
 							const total = cant * precio;
@@ -4966,19 +4716,15 @@
 			marcarSincronizado();
 			closeAllDrawers();
 			
-			// Mostrar notificación de archivo cargado
 			const nombreArchivo = data.displayName || `${data.mes} - ${data.contrato}`;
 			alert(`Archivo cargado:\n${nombreArchivo}\n\nAhora los cambios se guardarán en este archivo.`);
 		}
-		
-		// ===== FIREBASE - BORRAR ARCHIVO =====
-		
+
         async function borrarArchivo(key) {
 			if (!confirm("¿Eliminar este registro permanentemente?")) return;
 			
 			await db.ref(`files/${currentUser}/${key}`).remove();
 			
-			// Si borramos el archivo actual, limpiar la referencia
 			if (key === currentFileId) {
 				currentFileId = null;
 				localStorage.removeItem(`elite_current_file_${currentUser}`);
@@ -4997,20 +4743,25 @@
 
             if (!isOpen) {
                 drawer.classList.add('open');
-                overlay.style.display = 'block';
-                if (id === 'archivo') listarCloud();
+                overlay.classList.add('active');
+                if (id === 'archivo') {
+                    currentPath = 'root';
+                    busquedaActual = '';
+                    document.getElementById('buscar-archivos').value = '';
+                    listarCloud();
+                }
                 if (id === 'resumen') actualizarResumen();
                 if (id === 'contabilidad') actualizarVistaContabilidad();
                 if (id === 'distribuidora') renderizarValoresDistribuidora();
                 if (id === 'facturas') renderizarValidadorFacturas();
             } else {
-                overlay.style.display = 'none';
+                overlay.classList.remove('active');
             }
         }
 
         function closeAllDrawers() {
             document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
-            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('overlay').classList.remove('active');
         }
 
         function actualizarVistaContabilidad() {
