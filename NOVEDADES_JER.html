@@ -12,6 +12,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
+        /* --- Your existing CSS styles (unchanged) --- */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         
         body { 
@@ -2639,34 +2640,34 @@
                 </div>            
                 
                 <!-- MODAL DE GRÁFICA OMS - VERSIÓN CORREGIDA Y RESPONSIVE -->
-                <div id="modalGraficaOMS" class="modal-grafica-overlay" onclick="cerrarModalGrafica(event)">
-                    <div class="modal-grafica-content" onclick="event.stopPropagation()">
-                        <div class="modal-grafica-header">
-                            <div>
-                                <h3 class="modal-grafica-title" id="modalGraficaTitle">Gráfica Peso/Talla OMS</h3>
-                                <p class="modal-grafica-subtitle" id="modalGraficaSubtitle">Complete los datos para ver la posición en la curva</p>
-                            </div>
-                            <button type="button" class="modal-grafica-close" onclick="cerrarModalGrafica()">&times;</button>
-                        </div>
-                        
-                        <div class="modal-grafica-body">
-                            <!-- Contenedor responsive del canvas - CORREGIDO -->
-                            <div class="modal-grafica-canvas-wrapper">
-                                <div class="modal-grafica-canvas-container">
-                                    <canvas id="omsChartModal"></canvas>
-                                </div>
-                            </div>
-                            
-                            <div class="modal-grafica-leyenda" id="modalGraficaLeyenda">
-                                <!-- Se llena dinámicamente -->
-                            </div>
-                        </div>
-                        
-                        <div class="modal-grafica-footer">
-                            <button type="button" class="modal-grafica-btn-cerrar" onclick="cerrarModalGrafica()">Cerrar</button>
-                        </div>
-                    </div>
-                </div>
+				<div id="modalGraficaOMS" class="modal-grafica-overlay" onclick="cerrarModalGrafica(event)">
+					<div class="modal-grafica-content" onclick="event.stopPropagation()">
+						<div class="modal-grafica-header">
+							<div>
+								<h3 class="modal-grafica-title" id="modalGraficaTitle">Gráfica Peso/Talla OMS</h3>
+								<p class="modal-grafica-subtitle" id="modalGraficaSubtitle">Complete los datos Para ver la posición en la curva</P>
+							</div>
+							<button Type="button" class="modal-grafica-close" onclick="cerrarModalGrafica()">&times;</button>
+						</div>
+						
+						<div class="modal-grafica-body">
+							<!-- Contenedor responsive del Canvas - CORREGIDO -->
+							<div class="modal-grafica-canvas-wrapper">
+								<div class="modal-grafica-canvas-container">
+									<Canvas Id="omsChartModal"></Canvas>
+								</div>
+							</div>
+							
+							<div class="modal-grafica-leyenda" id="modalGraficaLeyenda">
+								<!-- Se llena dinámicamente -->
+							</div>
+						</div>
+						
+						<div class="modal-grafica-footer">
+							<button Type="button" class="modal-grafica-btn-cerrar" onclick="cerrarModalGrafica()">Cerrar</button>
+						</div>
+					</div>
+				</div>
                 
                 <!-- NUEVO: SEGUIMIENTO NUTRICIONAL MEJORADO CON GRÁFICA FLOTANTE -->
                 <div class="nutricion-card">
@@ -2689,16 +2690,20 @@
                             <input type="date" id="nutricionFecha" name="nutricion_fecha" class="w-full rounded-lg"  onchange="calcularEstadoNutricional()">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Peso (kg) * <span class="text-[10px] font-normal">(5 - 30.5 kg)</span></label>
+                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">
+								Peso (kg) * <span class="text-[10px] font-normal">(5 - 30 kg, 2-5 años)</span>
+							</label>
                             <input type="number" id="nutricionPeso" name="nutricion_peso" placeholder="Ej: 12.5" 
-                                   class="w-full rounded-lg" step="0.1" min="5" max="30.5" 
-                                   oninput="validarRangoNutricion(this, 5, 30.5); calcularEstadoNutricional()">
+							   class="w-full rounded-lg" step="0.1" min="5" max="30" 
+							   oninput="validarRangoNutricion(this, 5, 30); calcularEstadoNutricional()">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">Talla (cm) * <span class="text-[10px] font-normal">(50 - 130.5 cm)</span></label>
+                            <label class="text-[11px] font-bold text-orange-700 ml-1 uppercase">
+								Talla (cm) * <span class="text-[10px] font-normal">(65 - 120 cm, 2-5 años)</span>
+							</label>
                             <input type="number" id="nutricionTalla" name="nutricion_talla" placeholder="Ej: 85.0" 
-                                   class="w-full rounded-lg" step="0.1" min="50" max="130.5" 
-                                   oninput="validarRangoNutricion(this, 50, 130.5); calcularEstadoNutricional()">
+							   class="w-full rounded-lg" step="0.1" min="65" max="120" 
+							   oninput="validarRangoNutricion(this, 65, 120); calcularEstadoNutricional()">
                         </div>
                         <!-- NUEVO CAMPO: PERÍMETRO BRAQUIAL -->
                         <div class="space-y-1">
@@ -3075,6 +3080,42 @@
                     </div>
                 </div>
             </div>
+			
+			<div id="section-configuracion" class="admin-section">
+                <div class="config-bloqueo-card">
+                    <h3 class="config-bloqueo-title">
+                        <span>🔒</span> Configuración de Cierre de Mes
+                    </h3>
+                    
+                    <div class="config-row">
+                        <span class="config-label">Estado:</span>
+                        <div class="toggle-switch" id="toggleBloqueo" onclick="toggleBloqueoSistema()"></div>
+                        <span id="estadoBloqueoText" class="estado-inactivo">DESACTIVADO</span>
+                    </div>
+
+                    <div class="config-row">
+                        <span class="config-label">Fecha Inicio:</span>
+                        <input type="number" id="configFechaInicio" class="config-input" value="28" min="1" max="31" onchange="guardarConfigBloqueo()">
+                        <span>de cada mes</span>
+                    </div>
+
+                    <div class="config-row">
+                        <span class="config-label">Fecha Fin:</span>
+                        <input type="number" id="configFechaFin" class="config-input" value="30" min="1" max="31" onchange="guardarConfigBloqueo()">
+                        <span>de cada mes</span>
+                    </div>
+
+                    <div class="config-row" style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #f59e0b;">
+                        <span class="config-label">Periodo actual:</span>
+                        <strong id="periodoActualDisplay" style="color: #92400e; font-size: 16px;">28 - 30 de cada mes</strong>
+                    </div>
+
+                    <div style="margin-top: 15px; font-size: 12px; color: #78716c;">
+                        * Cuando está activado, el formulario se bloquea automáticamente durante estas fechas.
+                    </div>
+                </div>
+            </div>
+			
             <!-- AGREGAR ESTA SECCIÓN DESPUÉS DE LAS EXISTENTES EN EL ADMIN PANEL -->
             <div id="section-nutricional" class="admin-section">
                 
@@ -3089,6 +3130,7 @@
                             <button onclick="refreshNutricionalData()" class="export-btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white;">
                                 🔄 Actualizar Datos
                             </button>
+							
                         </div>
                     </div>
                     
@@ -3127,105 +3169,108 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4" id="nutricionalResumenRapido">
                         <!-- Se llena dinámicamente -->
                     </div>
+					
                 </div>
 
                 <!-- Dashboard de Gráficas -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                     <!-- Gráfica 1: Distribución por Estado Nutricional -->
                     <div class="stats-card">
-                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">📊 Distribución por Estado Nutricional</h4>
-                        <!-- INFO DE FILTRADO -->
-                        <div id="infoDistribucion" class="filtro-info" style="display: none;"></div>
-                        <div class="chart-container-nutricional">
-                            <canvas id="chartEstadosNutricionales"></canvas>
-                        </div>
-                    </div>
+						<h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">📊 Distribución por Estado Nutricional</h4>
+						<div id="infoDistribucion" class="filtro-info" style="display: none;"></div>
+						<div class="chart-container-nutricional">
+							<canvas id="chartEstadosNutricionales"></Canvas>
+						</div>
+					</div>
                     
                     <!-- Gráfica 2: Por Contrato -->
                     <div class="stats-card">
-                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">📈 Casos por Contrato</h4>
-                        <!-- INFO DE FILTRADO -->
-                        <div id="infoContratos" class="filtro-info" style="display: none;"></div>
-                        <div class="chart-container-nutricional">
-                            <canvas id="chartPorContrato"></canvas>
-                        </div>
-                    </div>
+						<h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">📈 Casos por Contrato</h4>
+						<div id="InfoContratos" class="filtro-info" style="display: none;"></div>
+						<div class="chart-container-nutricional">
+							<Canvas id="chartPorContrato"></Canvas>
+						</div>
+					</div>
                     
                     <!-- Gráfica 3: Evolución Temporal -->
                     <div class="stats-card">
-                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">📉 Evolución Mensual</h4>
-                        <div class="chart-container-nutricional">
-                            <canvas id="chartEvolucionMensual"></canvas>
-                        </div>
-                    </div>
+						<h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">📉 Evolución Mensual</h4>
+						<div class="chart-container-nutricional">
+							<Canvas id="chartEvolucionMensual"></Canvas>
+						</div>
+					</div>
                     
                     <!-- Gráfica 4: Peso vs Talla Scatter -->
                     <div class="stats-card">
-                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">⚖️ Distribución Peso/Talla</h4>
-                        <div class="chart-container-nutricional">
-                            <canvas id="chartPesoTalla"></canvas>
-                        </div>
-                    </div>
+						<h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">⚖️ Distribución Peso/Talla</h4>
+						<div class="chart-container-nutricional">
+							<Canvas id="chartPesoTalla"></Canvas>
+						</div>
+					</div>
                     
                     <!-- Gráfica 5: Casos Críticos por UDS -->
                     <div class="stats-card">
-                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">🏥 UDS con Más Casos Críticos</h4>
-                        <!-- INFO DE FILTRADO -->
-                        <div id="infoCriticosUDS" class="filtro-info" style="display: none;"></div>
-                        <div class="chart-container-nutricional">
-                            <canvas id="chartCriticosUDS"></canvas>
-                        </div>
-                    </div>
+						<h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">🏥 UDS con Más Casos Críticos</h4>
+						<div id="InfoCriticosUDS" class="filtro-info" style="display: none;"></div>
+						<div class="chart-container-nutricional">
+							<Canvas id="chartCriticosUDS"></Canvas>
+						</div>
+					</div>
                     
                     <!-- Gráfica 6: Perímetro Braquial -->
                     <div class="stats-card">
-                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">💪 Distribución Perímetro Braquial</h4>
-                        <div class="chart-container-nutricional">
-                            <canvas id="chartPerimetroBraquial"></canvas>
-                        </div>
-                    </div>
-                </div>
+							<h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-3">💪 Distribución Perímetro Braquial</h4>
+							<div class="chart-container-nutricional">
+								<Canvas id="chartPerimetroBraquial"></Canvas>
+							</div>
+					</div>
+					
+				</div>
+										
+					<!-- Sección de Casos por Estado -->
+					<div class="stats-card mb-4">
+						<h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">👥 Clasificación por Estado Nutricional</h4>
+						
+						<div class="accordion-nutricional" id="accordionEstados">
+							<!-- Se llena dinámicamente con acordeones por estado -->
+						</div>
+					</div>
 
-                <!-- Sección de Casos por Estado -->
-                <div class="stats-card mb-4">
-                    <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-4">👥 Clasificación por Estado Nutricional</h4>
-                    
-                    <div class="accordion-nutricional" id="accordionEstados">
-                        <!-- Se llena dinámicamente con acordeones por estado -->
-                    </div>
-                </div>
+					<!-- Tabla Detallada -->
+					<div class="stats-card">
+						<div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+							<h4 class="text-sm font-bold text-slate-700 dark:text-slate-200">📋 Registros Nutricionales Detallados</h4>
+							<span class="text-xs text-slate-500" id="nutricionalCount">0 registros encontrados</span>
+						</div>
+						
+						<div class="overflow-x-auto">
+							<table class="data-table" id="tablaNutricional">
+								<thead>
+									<tr>
+										<th>Estado</th>
+										<th>Tipo</th>
+										<th>Contrato</th>
+										<th>UDS</th>
+										<th>Nombre Niño</th>
+										<th>Documento</th>
+										<th>Edad</th>
+										<th>Peso</th>
+										<th>Talla</th>
+										<th>Estado Nutricional</th>
+										<th>Acciones</th>
+									</tr>
+								</thead>
+								<tbody id="tbodyNutricional">
+									<!-- Se llena dinámicamente -->
+								</tbody>
+							</table>
+						</div>
+						<div id="paginationNutricional" class="flex justify-center gap-2 mt-4 flex-wrap"></div>
+					</div>
+					
 
-                <!-- Tabla Detallada -->
-                <div class="stats-card">
-                    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
-                        <h4 class="text-sm font-bold text-slate-700 dark:text-slate-200">📋 Registros Nutricionales Detallados</h4>
-                        <span class="text-xs text-slate-500" id="nutricionalCount">0 registros encontrados</span>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="data-table" id="tablaNutricional">
-                            <thead>
-                                <tr>
-                                    <th>Estado</th>
-                                    <th>Tipo</th>
-                                    <th>Contrato</th>
-                                    <th>UDS</th>
-                                    <th>Nombre Niño</th>
-                                    <th>Documento</th>
-                                    <th>Edad</th>
-                                    <th>Peso</th>
-                                    <th>Talla</th>
-                                    <th>Estado Nutricional</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbodyNutricional">
-                                <!-- Se llena dinámicamente -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="paginationNutricional" class="flex justify-center gap-2 mt-4 flex-wrap"></div>
-                </div>
+			</div>
+
             </div>
 
             <!-- MODAL PARA GRÁFICA OMS INDIVIDUAL -->
@@ -3259,40 +3304,7 @@
                 </div>
             </div>
 
-            <div id="section-configuracion" class="admin-section">
-                <div class="config-bloqueo-card">
-                    <h3 class="config-bloqueo-title">
-                        <span>🔒</span> Configuración de Cierre de Mes
-                    </h3>
-                    
-                    <div class="config-row">
-                        <span class="config-label">Estado:</span>
-                        <div class="toggle-switch" id="toggleBloqueo" onclick="toggleBloqueoSistema()"></div>
-                        <span id="estadoBloqueoText" class="estado-inactivo">DESACTIVADO</span>
-                    </div>
-
-                    <div class="config-row">
-                        <span class="config-label">Fecha Inicio:</span>
-                        <input type="number" id="configFechaInicio" class="config-input" value="28" min="1" max="31" onchange="guardarConfigBloqueo()">
-                        <span>de cada mes</span>
-                    </div>
-
-                    <div class="config-row">
-                        <span class="config-label">Fecha Fin:</span>
-                        <input type="number" id="configFechaFin" class="config-input" value="30" min="1" max="31" onchange="guardarConfigBloqueo()">
-                        <span>de cada mes</span>
-                    </div>
-
-                    <div class="config-row" style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #f59e0b;">
-                        <span class="config-label">Periodo actual:</span>
-                        <strong id="periodoActualDisplay" style="color: #92400e; font-size: 16px;">28 - 30 de cada mes</strong>
-                    </div>
-
-                    <div style="margin-top: 15px; font-size: 12px; color: #78716c;">
-                        * Cuando está activado, el formulario se bloquea automáticamente durante estas fechas.
-                    </div>
-                </div>
-            </div>
+            
         </div>
     </div>
 
@@ -3335,32 +3347,73 @@
         let todosLosDatosNovelties = [], todosLosDatosArchivados = [];
 
         const OMS_REFERENCE_DATA = {
-            boys: {
-                50: [2.5, 2.9, 3.4, 3.9, 4.4, 5.1, 5.8], 55: [3.3, 3.8, 4.4, 5.0, 5.7, 6.5, 7.4],
-                60: [4.2, 4.9, 5.6, 6.4, 7.3, 8.3, 9.4], 65: [5.3, 6.1, 7.0, 8.0, 9.1, 10.3, 11.7],
-                70: [6.4, 7.4, 8.5, 9.7, 11.0, 12.5, 14.1], 75: [7.6, 8.8, 10.1, 11.5, 13.0, 14.7, 16.6],
-                80: [8.8, 10.2, 11.6, 13.2, 15.0, 16.9, 19.1], 85: [10.0, 11.5, 13.1, 14.9, 16.8, 19.0, 21.4],
-                90: [11.1, 12.7, 14.5, 16.4, 18.5, 20.9, 23.5], 95: [12.1, 13.9, 15.8, 17.9, 20.2, 22.8, 25.7],
-                100: [13.1, 15.0, 17.0, 19.2, 21.7, 24.4, 27.5], 105: [14.0, 16.0, 18.2, 20.6, 23.2, 26.1, 29.3],
-                110: [14.9, 17.0, 19.3, 21.8, 24.6, 27.7, 31.1], 115: [15.7, 18.0, 20.4, 23.1, 26.0, 29.2, 32.8],
-                120: [16.5, 18.9, 21.5, 24.3, 27.4, 30.8, 34.5], 125: [17.3, 19.8, 22.5, 25.5, 28.8, 32.3, 36.2],
-                130: [18.1, 20.7, 23.5, 26.7, 30.1, 33.8, 37.9]
-            },
-            girls: {
-                50: [2.4, 2.8, 3.3, 3.8, 4.3, 4.9, 5.6], 55: [3.2, 3.7, 4.3, 4.9, 5.6, 6.3, 7.2],
-                60: [4.1, 4.7, 5.4, 6.2, 7.0, 8.0, 9.1], 65: [5.1, 5.9, 6.7, 7.7, 8.7, 9.9, 11.2],
-                70: [6.2, 7.1, 8.1, 9.3, 10.5, 11.9, 13.5], 75: [7.3, 8.4, 9.6, 10.9, 12.4, 14.0, 15.8],
-                80: [8.5, 9.7, 11.1, 12.6, 14.3, 16.1, 18.2], 85: [9.6, 11.0, 12.5, 14.2, 16.1, 18.2, 20.5],
-                90: [10.7, 12.2, 13.9, 15.8, 17.8, 20.1, 22.7], 95: [11.7, 13.4, 15.2, 17.3, 19.5, 22.0, 24.8],
-                100: [12.7, 14.5, 16.5, 18.7, 21.1, 23.8, 26.8], 105: [13.6, 15.6, 17.7, 20.1, 22.7, 25.6, 28.8],
-                110: [14.5, 16.6, 18.9, 21.4, 24.2, 27.3, 30.7], 115: [15.4, 17.6, 20.0, 22.7, 25.7, 28.9, 32.5],
-                120: [16.2, 18.6, 21.1, 24.0, 27.1, 30.5, 34.3], 125: [17.0, 19.5, 22.2, 25.2, 28.5, 32.1, 36.0],
-                130: [17.8, 20.4, 23.2, 26.4, 29.8, 33.6, 37.7]
-            }
-        };
+			// ============================================
+			// TABLAS OMS PESO/TALLA - NIÑOS 2-5 AÑOS (65-120cm)
+			// Fuente: Resolución MINSALUD 2465 de 2016
+			// ============================================
+			boys: {
+				// talla: [-3DE, -2DE, -1DE, Mediana, +1DE, +2DE, +3DE]
+				65: [5.8, 6.3, 6.9, 7.5, 8.2, 9.0, 9.9],      // 2 años aprox
+				70: [6.7, 7.3, 7.9, 8.6, 9.4, 10.3, 11.3],     // ~2.5 años
+				75: [7.6, 8.2, 8.9, 9.7, 10.6, 11.6, 12.7],    // ~2.8 años
+				80: [8.5, 9.2, 10.0, 10.9, 11.9, 13.0, 14.2],  // ~3 años
+				85: [9.5, 10.3, 11.2, 12.2, 13.3, 14.5, 15.9], // ~3.3 años
+				90: [10.5, 11.4, 12.4, 13.5, 14.7, 16.1, 17.6],// ~3.6 años
+				95: [11.6, 12.6, 13.7, 14.9, 16.2, 17.7, 19.4],// ~4 años
+				100: [12.7, 13.8, 15.0, 16.3, 17.8, 19.4, 21.2],// ~4.3 años
+				105: [13.9, 15.1, 16.4, 17.8, 19.4, 21.2, 23.2],// ~4.6 años
+				110: [15.2, 16.5, 17.9, 19.4, 21.1, 23.0, 25.1],// ~5 años
+				115: [16.6, 18.0, 19.5, 21.1, 23.0, 25.0, 27.3],// ~5.3 años
+				120: [18.1, 19.6, 21.2, 23.0, 25.0, 27.2, 29.6] // ~5.6 años
+			},
+			
+			// ============================================
+			// TABLAS OMS PESO/TALLA - NIÑAS 2-5 AÑOS (65-120cm)
+			// Fuente: Resolución MINSALUD 2465 de 2016
+			// ============================================
+			girls: {
+				// talla: [-3DE, -2DE, -1DE, Mediana, +1DE, +2DE, +3DE]
+				65: [5.6, 6.1, 6.7, 7.3, 8.0, 8.7, 9.6],      // 2 años aprox
+				70: [6.4, 7.0, 7.6, 8.3, 9.1, 9.9, 10.9],      // ~2.5 años
+				75: [7.3, 7.9, 8.6, 9.4, 10.3, 11.2, 12.3],    // ~2.8 años
+				80: [8.2, 8.9, 9.7, 10.6, 11.5, 12.6, 13.8],   // ~3 años
+				85: [9.2, 10.0, 10.9, 11.8, 12.9, 14.1, 15.4], // ~3.3 años
+				90: [10.3, 11.2, 12.1, 13.2, 14.4, 15.7, 17.2],// ~3.6 años
+				95: [11.4, 12.4, 13.5, 14.7, 16.0, 17.5, 19.1],// ~4 años
+				100: [12.6, 13.7, 14.9, 16.2, 17.7, 19.3, 21.1],// ~4.3 años
+				105: [13.9, 15.1, 16.4, 17.8, 19.4, 21.2, 23.2],// ~4.6 años
+				110: [15.3, 16.6, 18.0, 19.6, 21.3, 23.2, 25.4],// ~5 años
+				115: [16.8, 18.2, 19.7, 21.4, 23.3, 25.4, 27.8],// ~5.3 años
+				120: [18.4, 20.0, 21.6, 23.4, 25.5, 27.8, 30.3] // ~5.6 años
+			}
+		};
+		const TALLA_REFERENCIA_EDAD = {
+			boys: {
+				// meses: [min, max] en cm aproximado para -2DE y +2DE
+				0: [46, 54], 1: [50, 57], 2: [53, 60], 3: [55, 63], 6: [61, 69],
+				9: [65, 74], 12: [69, 78], 15: [72, 82], 18: [75, 85], 24: [80, 91],
+				30: [84, 96], 36: [88, 101], 42: [91, 105], 48: [94, 109], 54: [97, 113],
+				60: [100, 117]
+			},
+			girls: {
+				0: [45, 53], 1: [49, 56], 2: [52, 59], 3: [54, 62], 6: [60, 68],
+				9: [64, 73], 12: [67, 77], 15: [71, 81], 18: [74, 84], 24: [78, 90],
+				30: [83, 95], 36: [86, 100], 42: [90, 104], 48: [93, 108], 54: [96, 112],
+				60: [99, 116]
+			}
+};
 
-        const DE_COLORS = ['#7f1d1d', '#dc2626', '#f59e0b', '#10b981', '#fbbf24', '#f97316', '#dc2626'];
-        const DE_LABELS = ['-3DE', '-2DE', '-1DE', 'Mediana', '+1DE', '+2DE', '+3DE'];
+        //const DE_COLORS = ['#7f1d1d', '#dc2626', '#f59e0b', '#10b981', '#fbbf24', '#f97316', '#dc2626'];
+		const DE_COLORS = [
+				'#C0392B',  // -3DE (rojo oscuro)
+				'#E74C3C',  // -2DE (rojo)
+				'#F39C12',  // -1DE (naranja)
+				'#27AE60',  // Mediana/0 (verde) - LÍNEA PRINCIPAL
+				'#F1C40F',  // +1DE (amarillo)
+				'#E67E22',  // +2DE (naranja oscuro)
+				'#8E44AD'   // +3DE (púrpura)
+			];
+	   const DE_LABELS = ['-3DE', '-2DE', '-1DE', 'Mediana', '+1DE', '+2DE', '+3DE'];
 
         // Rangos para la leyenda
         const rangos = [
@@ -3597,9 +3650,34 @@
         // ============================================
 		// FUNCIÓN AUXILIAR: Calcular rango OMS (verificar que esté correcta)
 		// ============================================
-		function calcularRangoOMS(talla, peso, genero) {
+		
+		function calcularRangoOMS(talla, peso, genero, edadMeses = null) {
+			
+			if (talla < 65 || talla > 120) {
+				console.warn(`Talla ${talla}cm fuera de rango 65-120cm (tablas 2-5 años)`);
+				return { 
+					nombre: 'Fuera de rango (2-5 años)', 
+					de: 'N/A', 
+					color: '#95A5A6', 
+					clase: 'rango-sin-datos',
+					mensaje: 'Las tablas OMS utilizadas son para niños de 2-5 años (65-120cm)'
+				};
+			}
+		
 			const data = genero === 'M' ? OMS_REFERENCE_DATA.boys : OMS_REFERENCE_DATA.girls;
 			const tallas = Object.keys(data).map(Number).sort((a, b) => a - b);
+			
+			// ===== NUEVO: Validación de edad si se proporciona =====
+			if (edadMeses !== null) {
+				// Validar que la talla sea apropiada para la edad
+				const tallaEsperadaMin = getTallaMinimaEsperada(edadMeses);
+				const tallaEsperadaMax = getTallaMaximaEsperada(edadMeses);
+				
+				if (talla < tallaEsperadaMin || talla > tallaEsperadaMax) {
+					console.warn(`⚠️ Talla ${talla}cm no corresponde a edad ${edadMeses} meses (rango esperado: ${tallaEsperadaMin}-${tallaEsperadaMax}cm)`);
+					// Podrías retornar un estado especial o continuar con advertencia
+				}
+			}
 			
 			// Encontrar talla de referencia más cercana
 			let tallaRef = tallas[0];
@@ -3611,40 +3689,155 @@
 					minDiff = diff;
 					tallaRef = t;
 				}
-			});
+			})
+			
+			if (minDiff > 2) {
+				console.warn(`Talla ${talla}cm no coincide exactamente con tabla OMS (más cercana: ${tallaRef}cm)`);
+			}
 			
 			const pesosRef = data[tallaRef];
-			const mediana = pesosRef[3];
-			const deNeg2 = pesosRef[1];
-			const dePos2 = pesosRef[5];
+			const mediana = pesosRef[3];  // Índice 3 = Mediana (0 DE)
+			const deNeg2 = pesosRef[1];   // Índice 1 = -2DE
+			const dePos2 = pesosRef[5];   // Índice 5 = +2DE
 			
 			// Calcular DE aproximada
 			let de = 0;
 			if (peso < mediana) {
-				de = -2 * (mediana - peso) / (mediana - deNeg2);
+				// Por debajo de la mediana
+				const deNeg3 = pesosRef[0]; // -3DE
+				if (peso < deNeg3) {
+					de = -3 - ((deNeg3 - peso) / (deNeg3 - (pesosRef[0] - (deNeg3 - pesosRef[0]))));
+				} else if (peso < deNeg2) {
+					// Entre -3DE y -2DE
+					de = -3 + ((peso - deNeg3) / (deNeg2 - deNeg3));
+				} else {
+					// Entre -2DE y Mediana
+					de = -2 + ((peso - deNeg2) / (mediana - deNeg2)) * 2;
+				}
 			} else {
-				de = 2 * (peso - mediana) / (dePos2 - mediana);
+				// Por encima de la mediana
+				const dePos3 = pesosRef[6]; // +3DE
+				if (peso > dePos3) {
+					de = 3 + ((peso - dePos3) / ((dePos3 + (dePos3 - dePos2)) - dePos3));
+				} else if (peso > dePos2) {
+					// Entre +2DE y +3DE
+					de = 2 + ((peso - dePos2) / (dePos3 - dePos2));
+				} else {
+					// Entre Mediana y +2DE
+					de = ((peso - mediana) / (dePos2 - mediana)) * 2;
+				}
 			}
 			
-			// Determinar categoría
-			if (de < -3) return { nombre: 'Desnutrición Aguda Severa', de: de.toFixed(1), color: '#C0392B', clase: 'rango-desnutricion-severa' };
-			if (de < -2) return { nombre: 'Desnutrición Aguda Moderada', de: de.toFixed(1), color: '#E74C3C', clase: 'rango-desnutricion-moderada' };
-			if (de < -1) return { nombre: 'Riesgo de Desnutrición', de: de.toFixed(1), color: '#F39C12', clase: 'rango-riesgo-desnutricion' };
-			if (de < 1) return { nombre: 'Peso Normal', de: de.toFixed(1), color: '#27AE60', clase: 'rango-normal' };
-			if (de < 1.5) return { nombre: 'Riesgo de Sobrepeso', de: de.toFixed(1), color: '#F1C40F', clase: 'rango-riesgo-sobrepeso' };
-			if (de < 2) return { nombre: 'Sobrepeso', de: de.toFixed(1), color: '#E67E22', clase: 'rango-sobrepeso' };
-			return { nombre: 'Obesidad', de: de.toFixed(1), color: '#8E44AD', clase: 'rango-obesidad' };
+			// Determinar categoría según DE calculada
+			if (de < -3) return { 
+				nombre: 'Desnutrición Aguda Severa', 
+				de: de.toFixed(2), 
+				color: '#C0392B', 
+				clase: 'rango-desnutricion-severa',
+				alerta: 'ALTA - Requiere intervención inmediata'
+			};
+			if (de < -2) return { 
+				nombre: 'Desnutrición Aguda Moderada', 
+				de: de.toFixed(2), 
+				color: '#E74C3C', 
+				clase: 'rango-desnutricion-moderada',
+				alerta: 'MODERADA - Requiere seguimiento cercano'
+			};
+			if (de < -1) return { 
+				nombre: 'Riesgo de Desnutrición', 
+				de: de.toFixed(2), 
+				color: '#F39C12', 
+				clase: 'rango-riesgo-desnutricion',
+				alerta: 'PREVENTIVO - Monitoreo nutricional'
+			};
+			if (de < 1) return { 
+				nombre: 'Peso Normal', 
+				de: de.toFixed(2), 
+				color: '#27AE60', 
+				clase: 'rango-normal',
+				alerta: 'ÓPTIMO - Mantener hábitos saludables'
+			};
+			if (de < 1.5) return { 
+				nombre: 'Riesgo de Sobrepeso', 
+				de: de.toFixed(2), 
+				color: '#F1C40F', 
+				clase: 'rango-riesgo-sobrepeso',
+				alerta: 'PREVENTIVO - Vigilar alimentación'
+			};
+			if (de < 2) return { 
+				nombre: 'Sobrepeso', 
+				de: de.toFixed(2), 
+				color: '#E67E22', 
+				clase: 'rango-sobrepeso',
+				alerta: 'ATENCIÓN - Ajustar dieta y actividad'
+			};
+			return { 
+				nombre: 'Obesidad', 
+				de: de.toFixed(2), 
+				color: '#8E44AD', 
+				clase: 'rango-obesidad',
+				alerta: 'ALTA - Intervención nutricional necesaria'
+			};
+		}
+		
+		function getTallaMinimaEsperada(edadMeses, genero = 'M') {
+			const data = genero === 'M' ? TALLA_REFERENCIA_EDAD.boys : TALLA_REFERENCIA_EDAD.girls;
+			// Encontrar el rango más cercano
+			const mesesDisponibles = Object.keys(data).map(Number).sort((a, b) => a - b);
+			let mesRef = mesesDisponibles[0];
+			for (const m of mesesDisponibles) {
+				if (Math.abs(edadMeses - m) < Math.abs(edadMeses - mesRef)) {
+					mesRef = m;
+				}
+			}
+			return data[mesRef][0];
+		}
+
+		function getTallaMaximaEsperada(edadMeses, genero = 'M') {
+			const data = genero === 'M' ? TALLA_REFERENCIA_EDAD.boys : TALLA_REFERENCIA_EDAD.girls;
+			const mesesDisponibles = Object.keys(data).map(Number).sort((a, b) => a - b);
+			let mesRef = mesesDisponibles[0];
+			for (const m of mesesDisponibles) {
+				if (Math.abs(edadMeses - m) < Math.abs(edadMeses - mesRef)) {
+					mesRef = m;
+				}
+			}
+			return data[mesRef][1];
+		}
+		
+		function parseEdadAMeses(edadString) {
+			if (!edadString || edadString === 'Esperando fechas...') return null;
+			
+			const match = edadString.match(/(\d+)\s*años?\s*y\s*(\d+)\s*meses?/i);
+			if (match) {
+				const años = parseInt(match[1]);
+				const meses = parseInt(match[2]);
+				return (años * 12) + meses;
+			}
+			
+			// Alternativa: solo meses
+			const matchMeses = edadString.match(/(\d+)\s*meses?/i);
+			if (matchMeses) {
+				return parseInt(matchMeses[1]);
+			}
+			
+			return null;
 		}
 
         function validarRangoNutricion(input, min, max) {
-            const valor = parseFloat(input.value);
-            if (valor < min || valor > max) {
-                input.classList.add('input-error');
-                showToast(`El valor debe estar entre ${min} y ${max}`, 'warning');
-            } else {
-                input.classList.remove('input-error');
-            }
-        }
+			const valor = parseFloat(input.value);
+			
+			// NUEVOS RANGOS PARA 2-5 AÑOS:
+			// Peso: 5-30 kg (aproximado según tablas)
+			// Talla: 65-120 cm (según tablas oficiales)
+			
+			if (valor < min || valor > max) {
+				input.classList.add('input-error');
+				showToast(`⚠️ Valor fuera de rango para 2-5 años: ${min} - ${max}`, 'warning');
+			} else {
+				input.classList.remove('input-error');
+			}
+		}
 
         function calcularEstadoNutricional() {
             const pesoInput = document.getElementById('nutricionPeso');
@@ -3654,8 +3847,17 @@
             const statusEl = document.getElementById('nutricionStatus');
             const detailsEl = document.getElementById('nutricionDetails');
             const legendEl = document.getElementById('nutricionLegend');
+			 
+			const displayAge = document.getElementById('displayAge');
+			const edadCalculada = displayAge ? displayAge.value : '';
+			
             
             const checkIngreso = document.getElementById('checkIngreso');
+			
+			if (!edadCalculada || edadCalculada === 'Esperando fechas...') {
+				
+				console.log('Esperando cálculo de edad...');
+			}
             if (!checkIngreso || !checkIngreso.checked) {
                 if (indicator) indicator.style.display = 'none';
                 return;
@@ -3685,19 +3887,34 @@
                 }
             }
 
-            const estado = calcularRangoOMS(talla, peso, genero);
+            const edadMeses = parseEdadAMeses(edadCalculada);
+			const estado = calcularRangoOMS(talla, peso, genero, edadMeses);
+			
+			// ===== Validar rango de edad =====
+			const validacionEdad = mostrarAdvertenciaEdad(edadMeses);
+			if (!validacionEdad.valido) {
+				// Mostrar advertencia pero permitir cálculo
+				console.warn(validacionEdad.mensaje);
+			}
+			
+			let advertenciaHTML = '';
+			if (!validacionEdad.valido) {
+				advertenciaHTML = `<div style="color: #F39C12; font-size: 11px; margin-top: 8px; padding: 8px; background: #FEF3C7; border-radius: 6px; border: 1px solid #FCD34D;">⚠️ ${validacionEdad.mensaje}</div>`;
+			}
             
             if (indicator) {
                 indicator.style.display = 'block';
                 statusEl.textContent = estado.nombre.toUpperCase();
                 statusEl.className = `nutricion-status ${estado.clase}`;
                 
-                detailsEl.innerHTML = `
-                    <strong>DE (Desviación Estándar):</strong> ${estado.de}<br>
-                    <strong>Peso:</strong> ${peso} kg | <strong>Talla:</strong> ${talla} cm<br>
-                    <strong>Género:</strong> ${genero === 'M' ? 'Masculino' : 'Femenino'}<br>
-                    <em style="font-size: 10px; color: #9ca3af;">* Basado en tablas OMS 0-5 años</em>
-                `;
+				detailsEl.innerHTML = `
+					<strong>DE (Desviación Estándar):</strong> ${estado.de}<br>
+					<strong>Peso:</strong> ${peso} kg | <strong>Talla:</strong> ${talla} cm<br>
+					<strong>Género:</strong> ${genero === 'M' ? 'Masculino' : 'Femenino'}<br>
+					${edadMeses ? `<strong>Edad:</strong> ${Math.floor(edadMeses/12)} años ${edadMeses%12} meses<br>` : ''}
+					<em style="font-size: 10px; color: #9ca3af;">* Tablas OMS Peso/Talla 2-5 años (Res. MINSALUD 2465/2016)</em>
+					${advertenciaHTML}
+				`;
                                 
                 legendEl.innerHTML = rangos.map(r => `
                     <div class="nutricion-legend-item ${r.clase}">
@@ -4419,17 +4636,20 @@
         }
 
         function cerrarModalGrafica(event) {
-            if (event && event.target.closest('.modal-grafica-content')) {
-                return;
-            }
-            
-            const modal = document.getElementById('modalGraficaOMS');
-            modal.classList.remove('active');
-            
-            document.body.classList.remove('modal-open');
-            
-            window.removeEventListener('resize', handleResizeModal);
-        }
+			if (event && event.target.closest('.modal-grafica-content')) {
+				return;
+			}
+			
+			const modal = document.getElementById('modalGraficaOMS');
+			modal.classList.remove('active');
+			document.body.classList.remove('modal-open');
+			
+			// Destruir Gráfica al cerrar
+			if (ChartIndividual) {
+				ChartIndividual.destroy();
+				ChartIndividual = null;
+			}
+		}
 
         let resizeTimeout;
         function handleResizeModal() {
@@ -4445,212 +4665,333 @@
             }, 250);
         }
 
-        function dibujarGraficaEnModal(genero) {
-            const canvas = document.getElementById('omsChartModal');
-            const wrapper = document.querySelector('.modal-grafica-canvas-wrapper');
-            
-            if (!canvas || !wrapper) return;
-            
-            const rect = wrapper.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            
-            canvas.style.width = rect.width + 'px';
-            canvas.style.height = rect.height + 'px';
-            
-            const ctx = canvas.getContext('2d');
-            ctx.scale(dpr, dpr);
-            
-            ctx.clearRect(0, 0, rect.width, rect.height);
-            
-            const width = rect.width;
-            const height = rect.height;
-            
-            const padding = {
-                top: height * 0.12,
-                right: width * 0.15,
-                bottom: height * 0.18,
-                left: width * 0.12
-            };
-            
-            const chartWidth = width - padding.left - padding.right;
-            const chartHeight = height - padding.top - padding.bottom;
-            
-            dibujarGrid(ctx, padding, chartWidth, chartHeight, width, height);
-            dibujarEjes(ctx, padding, chartWidth, chartHeight, width, height);
-            dibujarCurvasOMSModal(ctx, genero, padding, chartWidth, chartHeight);
-            
-            const pesoInput = document.getElementById('nutricionPeso');
-            const tallaInput = document.getElementById('nutricionTalla');
-            
-            if (pesoInput && tallaInput && pesoInput.value && tallaInput.value) {
-                const peso = parseFloat(pesoInput.value);
-                const talla = parseFloat(tallaInput.value);
-                dibujarPuntoEnModal(ctx, talla, peso, padding, chartWidth, chartHeight);
-                
-                const estado = calcularRangoOMS(talla, peso, genero);
-                const subtitle = document.getElementById('modalGraficaSubtitle');
-                subtitle.innerHTML = `<strong style="color: ${estado.color}">${estado.nombre}</strong> (DE: ${estado.de})`;
-            }
-        }
+        function dibujarGraficaOMS(canvasId, genero, peso = null, talla = null, edadMeses = null, nombre = '', datosExtra = {}) {
+			const canvas = document.getElementById(canvasId);
+			if (!canvas) {
+				console.error('Canvas no encontrado:', canvasId);
+				return;
+			}
+			
+			// Obtener el contenedor para dimensiones
+			const wrapper = canvas.closest('.modal-grafica-canvas-wrapper') || 
+							canvas.closest('.chart-container-nutricional') ||
+							canvas.parentElement;
+			
+			if (!wrapper) {
+				console.error('Wrapper no encontrado para canvas:', canvasId);
+				return;
+			}
+			
+			const rect = wrapper.getBoundingClientRect();
+			const dpr = window.devicePixelRatio || 1;
+			
+			// Configurar dimensiones del canvas
+			canvas.width = rect.width * dpr;
+			canvas.height = rect.height * dpr;
+			canvas.style.width = rect.width + 'px';
+			canvas.style.height = rect.height + 'px';
+			
+			const ctx = canvas.getContext('2d');
+			ctx.scale(dpr, dpr);
+			ctx.clearRect(0, 0, rect.width, rect.height);
+			
+			const width = rect.width;
+			const height = rect.height;
+			
+			// Padding proporcional
+			const padding = {
+				top: height * 0.12,
+				right: width * 0.15,
+				bottom: height * 0.18,
+				left: width * 0.12
+			};
+			
+			const chartWidth = width - padding.left - padding.right;
+			const chartHeight = height - padding.top - padding.bottom;
+			
+			// Dibujar elementos base
+			dibujarGridOMS(ctx, padding, chartWidth, chartHeight, width, height);
+			dibujarEjesOMS(ctx, padding, chartWidth, chartHeight, width, height);
+			dibujarCurvasOMS(ctx, genero, padding, chartWidth, chartHeight);
+			
+			// Dibujar punto del niño si hay datos
+			if (peso !== null && talla !== null && !isNaN(peso) && !isNaN(talla)) {
+				dibujarPuntoNinoOMS(ctx, talla, peso, padding, chartWidth, chartHeight, genero, edadMeses, nombre, datosExtra);
+			}
+			
+			// Actualizar leyenda si existe
+			if (document.getElementById('modalGraficaLeyenda')) {
+				llenarLeyendaModal();
+			}
+			if (document.getElementById('leyendaIndividual')) {
+				llenarLeyendaIndividual();
+			}
+		}
 
-        function dibujarGrid(ctx, padding, chartWidth, chartHeight, width, height) {
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = Math.max(0.5, height * 0.002);
-            
-            for (let i = 0; i <= 10; i++) {
-                const y = padding.top + (i * chartHeight / 10);
-                ctx.beginPath();
-                ctx.moveTo(padding.left, y);
-                ctx.lineTo(width - padding.right, y);
-                ctx.stroke();
-            }
-            
-            for (let i = 0; i <= 8; i++) {
-                const x = padding.left + (i * chartWidth / 8);
-                ctx.beginPath();
-                ctx.moveTo(x, padding.top);
-                ctx.lineTo(x, height - padding.bottom);
-                ctx.stroke();
-            }
-        }
+		// ============================================
+		// FUNCIONES AUXILIARES DE DIBUJO (RENOMBRADAS)
+		// ============================================
 
-        function dibujarEjes(ctx, padding, chartWidth, chartHeight, width, height) {
-            ctx.strokeStyle = '#374151';
-            ctx.lineWidth = Math.max(1.5, height * 0.004);
-            ctx.beginPath();
-            ctx.moveTo(padding.left, padding.top);
-            ctx.lineTo(padding.left, height - padding.bottom);
-            ctx.lineTo(width - padding.right, height - padding.bottom);
-            ctx.stroke();
-            
-            ctx.fillStyle = '#1e293b';
-            ctx.font = `bold ${Math.max(10, height * 0.025)}px Inter, sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.fillText('Talla (cm)', padding.left + chartWidth / 2, height - padding.bottom / 3);
-            
-            ctx.save();
-            ctx.translate(padding.left / 2, padding.top + chartHeight / 2);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillText('Peso (kg)', 0, 0);
-            ctx.restore();
-            
-            ctx.fillStyle = '#64748b';
-            ctx.font = `${Math.max(9, height * 0.02)}px Inter, sans-serif`;
-            
-            for (let i = 0; i <= 10; i++) {
-                const peso = 30 - (i * 2.8);
-                const y = padding.top + (i * chartHeight / 10);
-                ctx.textAlign = 'right';
-                ctx.fillText(peso.toFixed(1), padding.left - 8, y + 4);
-            }
-            
-            ctx.textAlign = 'center';
-            for (let i = 0; i <= 8; i++) {
-                const talla = 50 + (i * 10);
-                const x = padding.left + (i * chartWidth / 8);
-                ctx.fillText(talla, x, height - padding.bottom + 20);
-            }
-        }
+		function dibujarGridOMS(ctx, padding, chartWidth, chartHeight, width, height) {
+			ctx.strokeStyle = document.body.classList.contains('dark-mode') ? 'rgba(255,255,255,0.1)' : '#e2e8f0';
+			ctx.lineWidth = Math.max(0.5, height * 0.002);
+			
+			// Líneas horizontales
+			for (let i = 0; i <= 10; i++) {
+				const y = padding.top + (i * chartHeight / 10);
+				ctx.beginPath();
+				ctx.moveTo(padding.left, y);
+				ctx.lineTo(width - padding.right, y);
+				ctx.stroke();
+			}
+			
+			// Líneas verticales
+			for (let i = 0; i <= 8; i++) {
+				const x = padding.left + (i * chartWidth / 8);
+				ctx.beginPath();
+				ctx.moveTo(x, padding.top);
+				ctx.lineTo(x, height - padding.bottom);
+				ctx.stroke();
+			}
+		}
 
-        function dibujarCurvasOMSModal(ctx, genero, padding, chartWidth, chartHeight) {
-            const data = genero === 'M' ? OMS_REFERENCE_DATA.boys : OMS_REFERENCE_DATA.girls;
-            const tallas = Object.keys(data).map(Number).sort((a, b) => a - b);
-            
-            const minTalla = 50;
-            const maxTalla = 130;
-            const minPeso = 2;
-            const maxPeso = 30;
-            
-            const baseLineWidth = Math.max(1, chartHeight * 0.004);
-            
-            for (let deIndex = 0; deIndex < 7; deIndex++) {
-                ctx.strokeStyle = DE_COLORS[deIndex];
-                ctx.lineWidth = deIndex === 3 ? baseLineWidth * 1.8 : baseLineWidth;
-                ctx.beginPath();
-                
-                let firstPoint = true;
-                
-                tallas.forEach(talla => {
-                    const peso = data[talla][deIndex];
-                    
-                    const x = padding.left + ((talla - minTalla) / (maxTalla - minTalla)) * chartWidth;
-                    const y = padding.top + ((maxPeso - peso) / (maxPeso - minPeso)) * chartHeight;
-                    
-                    if (firstPoint) {
-                        ctx.moveTo(x, y);
-                        firstPoint = false;
-                    } else {
-                        ctx.lineTo(x, y);
-                    }
-                });
-                
-                ctx.stroke();
-                
-                const lastTalla = tallas[tallas.length - 1];
-                const lastPeso = data[lastTalla][deIndex];
-                const lastX = padding.left + ((lastTalla - minTalla) / (maxTalla - minTalla)) * chartWidth;
-                const lastY = padding.top + ((maxPeso - lastPeso) / (maxPeso - minPeso)) * chartHeight;
-                
-                ctx.fillStyle = DE_COLORS[deIndex];
-                ctx.font = `bold ${Math.max(8, chartHeight * 0.018)}px Inter, sans-serif`;
-                ctx.textAlign = 'left';
-                ctx.fillText(DE_LABELS[deIndex], lastX + 5, lastY + 3);
-            }
-        }
+		function dibujarEjesOMS(ctx, padding, chartWidth, chartHeight, width, height) {
+			const isDark = document.body.classList.contains('dark-mode');
+			
+			// Ejes principales
+			ctx.strokeStyle = isDark ? '#e2e8f0' : '#374151';
+			ctx.lineWidth = Math.max(1.5, height * 0.004);
+			ctx.beginPath();
+			ctx.moveTo(padding.left, padding.top);
+			ctx.lineTo(padding.left, height - padding.bottom);
+			ctx.lineTo(width - padding.right, height - padding.bottom);
+			ctx.stroke();
+			
+			// Título eje X
+			ctx.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
+			ctx.font = `bold ${Math.max(10, height * 0.025)}px Inter, sans-serif`;
+			ctx.textAlign = 'center';
+			ctx.fillText('Talla (cm)', padding.left + chartWidth / 2, height - padding.bottom / 3);
+			
+			// Título eje Y (rotado)
+			ctx.save();
+			ctx.translate(padding.left / 2, padding.top + chartHeight / 2);
+			ctx.rotate(-Math.PI / 2);
+			ctx.fillText('Peso (kg)', 0, 0);
+			ctx.restore();
+			
+			// Ticks Y (peso: 5-33 kg)
+			ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
+			ctx.font = `${Math.max(9, height * 0.02)}px Inter, sans-serif`;
+			ctx.textAlign = 'right';
+			
+			for (let i = 0; i <= 9; i++) {
+				const peso = 5 + (i * 3); // 5, 8, 11, 14, 17, 20, 23, 26, 29, 32
+				const y = padding.top + ((33 - peso) / (33 - 5)) * chartHeight;
+				ctx.fillText(peso.toFixed(0), padding.left - 8, y + 4);
+			}
+			
+			// Ticks X (talla: 65-120 cm)
+			ctx.textAlign = 'center';
+			for (let i = 0; i <= 11; i++) {
+				const talla = 65 + (i * 5); // 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120
+				const x = padding.left + ((talla - 65) / (120 - 65)) * chartWidth;
+				ctx.fillText(talla, x, height - padding.bottom + 20);
+			}
+		}
 
-        function dibujarPuntoEnModal(ctx, talla, peso, padding, chartWidth, chartHeight) {
-            const minTalla = 50;
-            const maxTalla = 130;
-            const minPeso = 2;
-            const maxPeso = 30;
-            
-            const x = padding.left + ((talla - minTalla) / (maxTalla - minTalla)) * chartWidth;
-            const y = padding.top + ((maxPeso - peso) / (maxPeso - minPeso)) * chartHeight;
-            
-            if (x < padding.left || x > padding.left + chartWidth || 
-                y < padding.top || y > padding.top + chartHeight) {
-                return;
-            }
-            
-            const puntoSize = Math.max(8, chartHeight * 0.025);
-            
-            ctx.beginPath();
-            ctx.arc(x, y, puntoSize * 1.8, 0, 2 * Math.PI);
-            ctx.fillStyle = 'rgba(220, 38, 38, 0.2)';
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.arc(x, y, puntoSize, 0, 2 * Math.PI);
-            ctx.fillStyle = '#dc2626';
-            ctx.fill();
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = Math.max(2, puntoSize * 0.25);
-            ctx.stroke();
-            
-            ctx.fillStyle = '#1e293b';
-            ctx.font = `bold ${Math.max(10, chartHeight * 0.022)}px Inter, sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.fillText(`${peso}kg`, x, y - puntoSize * 1.5);
-            ctx.fillText(`${talla}cm`, x, y + puntoSize * 2);
-        }
+		function dibujarCurvasOMS(ctx, genero, padding, chartWidth, chartHeight) {
+			const data = genero === 'M' ? OMS_REFERENCE_DATA.boys : OMS_REFERENCE_DATA.girls;
+			const tallas = Object.keys(data).map(Number).sort((a, b) => a - b);
+			
+			const minTalla = 65;
+			const maxTalla = 120;
+			const minPeso = 5;
+			const maxPeso = 33;
+			
+			const baseLineWidth = Math.max(1, chartHeight * 0.004);
+			
+			// Dibujar las 7 curvas DE
+			for (let deIndex = 0; deIndex < 7; deIndex++) {
+				ctx.strokeStyle = DE_COLORS[deIndex];
+				ctx.lineWidth = deIndex === 3 ? baseLineWidth * 2.5 : baseLineWidth * 1.5;
+				ctx.setLineDash(deIndex === 3 ? [] : [5, 5]);
+				ctx.beginPath();
+				
+				let firstPoint = true;
+				
+				tallas.forEach(talla => {
+					const peso = data[talla][deIndex];
+					const x = padding.left + ((talla - minTalla) / (maxTalla - minTalla)) * chartWidth;
+					const y = padding.top + ((maxPeso - peso) / (maxPeso - minPeso)) * chartHeight;
+					
+					if (firstPoint) {
+						ctx.moveTo(x, y);
+						firstPoint = false;
+					} else {
+						ctx.lineTo(x, y);
+					}
+				});
+				
+				ctx.stroke();
+				
+				// Etiqueta de la curva al final
+				const lastTalla = tallas[tallas.length - 1];
+				const lastPeso = data[lastTalla][deIndex];
+				const lastX = padding.left + ((lastTalla - minTalla) / (maxTalla - minTalla)) * chartWidth;
+				const lastY = padding.top + ((maxPeso - lastPeso) / (maxPeso - minPeso)) * chartHeight;
+				
+				ctx.fillStyle = DE_COLORS[deIndex];
+				ctx.font = `bold ${Math.max(10, chartHeight * 0.022)}px Inter, sans-serif`;
+				ctx.textAlign = 'left';
+				ctx.fillText(DE_LABELS[deIndex], lastX + 8, lastY + 4);
+			}
+			
+			ctx.setLineDash([]); // Resetear dash
+		}
+
+		function dibujarPuntoNinoOMS(ctx, talla, peso, padding, chartWidth, chartHeight, genero, edadMeses = null, nombre = '', datosExtra = {}) {
+			const minTalla = 65;
+			const maxTalla = 120;
+			const minPeso = 5;
+			const maxPeso = 33;
+			
+			const x = padding.left + ((talla - minTalla) / (maxTalla - minTalla)) * chartWidth;
+			const y = padding.top + ((maxPeso - peso) / (maxPeso - minPeso)) * chartHeight;
+			
+			// Validar que el punto esté dentro del canvas
+			if (x < padding.left || x > padding.left + chartWidth || 
+				y < padding.top || y > padding.top + chartHeight) {
+				console.warn(`Punto (${talla}cm, ${peso}kg) fuera de rango visual`);
+				return;
+			}
+			
+			// Calcular estado nutricional para color
+			const estado = calcularRangoOMS(talla, peso, genero, edadMeses);
+			const colorPunto = estado.color;
+			
+			const puntoSize = Math.max(10, chartHeight * 0.035);
+			
+			// Halo de advertencia si está fuera de rango de edad
+			if (edadMeses !== null && (edadMeses < 24 || edadMeses > 72)) {
+				ctx.beginPath();
+				ctx.arc(x, y, puntoSize * 2.5, 0, 2 * Math.PI);
+				ctx.fillStyle = 'rgba(231, 76, 60, 0.3)';
+				ctx.fill();
+			}
+			
+			// Punto principal con color según estado nutricional
+			ctx.beginPath();
+			ctx.arc(x, y, puntoSize, 0, 2 * Math.PI);
+			ctx.fillStyle = colorPunto;
+			ctx.fill();
+			ctx.strokeStyle = 'white';
+			ctx.lineWidth = Math.max(3, puntoSize * 0.3);
+			ctx.stroke();
+			
+			// Etiqueta con valores
+			ctx.fillStyle = document.body.classList.contains('dark-mode') ? '#f1f5f9' : '#1e293b';
+			ctx.font = `bold ${Math.max(12, chartHeight * 0.028)}px Inter, sans-serif`;
+			ctx.textAlign = 'center';
+			ctx.fillText(`${peso}kg / ${talla}cm`, x, y - puntoSize * 1.8);
+			
+			// Si hay nombre, mostrarlo
+			if (nombre) {
+				ctx.font = `${Math.max(10, chartHeight * 0.022)}px Inter, sans-serif`;
+				ctx.fillText(nombre.toUpperCase(), x, y - puntoSize * 3);
+			}
+			
+			return { x, y, estado };
+		}
+
+		// ============================================
+		// FUNCIONES WRAPPER PARA COMPATIBILIDAD
+		// ============================================
+
+		/**
+		 * Wrapper para el formulario de novedades (modo preview con inputs del form)
+		 */
+		function dibujarGraficaEnModal(genero) {
+			const pesoInput = document.getElementById('nutricionPeso');
+			const tallaInput = document.getElementById('nutricionTalla');
+			const displayAge = document.getElementById('displayAge');
+			
+			let peso = null, talla = null, edadMeses = null;
+			
+			if (pesoInput && pesoInput.value) peso = parseFloat(pesoInput.value);
+			if (tallaInput && tallaInput.value) talla = parseFloat(tallaInput.value);
+			if (displayAge && displayAge.value) edadMeses = parseEdadAMeses(displayAge.value);
+			
+			// Dibujar usando la función unificada
+			dibujarGraficaOMS('omsChartModal', genero, peso, talla, edadMeses);
+			
+			// Actualizar subtítulo si hay datos
+			if (peso !== null && talla !== null) {
+				const estado = calcularRangoOMS(talla, peso, genero, edadMeses);
+				const subtitle = document.getElementById('modalGraficaSubtitle');
+				let edadTexto = edadMeses ? ` • ${Math.floor(edadMeses/12)}a ${edadMeses%12}m` : '';
+				let advertenciaHTML = '';
+				
+				if (edadMeses !== null) {
+					const validacion = mostrarAdvertenciaEdad(edadMeses);
+					if (!validacion.valido) {
+						advertenciaHTML = `<div style="color: #F39C12; font-size: 11px; margin-top: 8px; padding: 8px; background: #FEF3C7; border-radius: 6px; border: 1px solid #FCD34D;">⚠️ ${validacion.mensaje}</div>`;
+					}
+				}
+				
+				if (subtitle) {
+					subtitle.innerHTML = `<strong style="color: ${estado.color}">${estado.nombre}</strong> (DE: ${estado.de})${edadTexto}${advertenciaHTML}`;
+				}
+			}
+		}	
+
+        
 
         function llenarLeyendaModal() {
-            const container = document.getElementById('modalGraficaLeyenda');
-            if (!container) return;
-            
-            container.innerHTML = rangos.map(r => `
-                <div class="leyenda-item">
-                    <div class="leyenda-color" style="background: ${r.color}"></div>
-                    <div>
-                        <div style="font-weight: 700; color: #1e293b; font-size: 10px;">${r.nombre}</div>
-                        <div style="font-size: 9px; color: #64748b;">${r.de}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
+			const container = document.getElementById('modalGraficaLeyenda');
+			if (!container) return;
+			
+			// Leyenda actualizada para tablas 2-5 años
+			const rangos = [
+				{ nombre: 'Desnutrición Severa (<-3DE)', color: '#C0392B', de: '< -3DE', desc: 'Intervención inmediata' },
+				{ nombre: 'Desnutrición Moderada', color: '#E74C3C', de: '-3DE a -2DE', desc: 'Seguimiento cercano' },
+				{ nombre: 'Riesgo Desnutrición', color: '#F39C12', de: '-2DE a -1DE', desc: 'Monitoreo preventivo' },
+				{ nombre: 'Peso Adecuado (Mediana)', color: '#27AE60', de: '-1DE a +1DE', desc: 'Estado óptimo' },
+				{ nombre: 'Riesgo Sobrepeso', color: '#F1C40F', de: '+1DE a +1.5DE', desc: 'Vigilar alimentación' },
+				{ nombre: 'Sobrepeso', color: '#E67E22', de: '+1.5DE a +2DE', desc: 'Ajustar dieta/actividad' },
+				{ nombre: 'Obesidad (>+2DE)', color: '#8E44AD', de: '> +2DE', desc: 'Intervención nutricional' }
+			];
+			
+			container.innerHTML = rangos.map(r => `
+				<div class="leyenda-item" style="border-left: 4px solid ${r.color}; padding-left: 8px;">
+					<div class="leyenda-color" style="background: ${r.color}; width: 20px; height: 20px; border-radius: 50%;"></div>
+					<div style="flex: 1;">
+						<div style="font-weight: 700; color: ${r.color}; font-size: 11px; line-height: 1.2;">${r.nombre}</div>
+						<div style="font-size: 9px; color: #64748b; line-height: 1.2;">${r.de} • ${r.desc}</div>
+					</div>
+				</div>
+			`).join('');
+		}
+		
+		function mostrarAdvertenciaEdad(edadMeses) {
+			// Validar que el niño esté en rango 2-5 años (24-60 meses)
+			if (edadMeses !== null) {
+				if (edadMeses < 24) {
+					return {
+						valido: false,
+						mensaje: `⚠️ Edad ${Math.floor(edadMeses/12)} años ${edadMeses%12} meses: Las tablas OMS son para 2-5 años`,
+						tipo: 'warning'
+					};
+				} else if (edadMeses > 72) { // 6 años = 72 meses, damos margen
+					return {
+						valido: false,
+						mensaje: `⚠️ Edad ${Math.floor(edadMeses/12)} años: Recomendado usar tablas 5-10 años`,
+						tipo: 'warning'
+					};
+				}
+			}
+			return { valido: true, mensaje: '', tipo: 'success' };
+		}
 
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
@@ -6518,299 +6859,135 @@ function toggleAccordion(header) {
     }
 }
 
-// Ver gráfica OMS individual CORREGIDA
-function verGraficaIndividual(id, tipo) {
-    const nino = tipo === 'activa' ? 
-        datosNutricionales.find(d => d.id === id && d.tipo === 'activa') :
-        datosNutricionales.find(d => d.id === id && d.tipo === 'archivada');
-    
-    if (!nino) {
-        showToast('No se encontró el registro del niño', 'error');
-        return;
-    }
-    
-    if (!nino.peso || !nino.talla) {
-        showToast('No hay datos de peso/talla suficientes para generar la gráfica OMS', 'warning');
-        return;
-    }
-    
-    const modal = document.getElementById('modalGraficaIndividual');
-    const title = document.getElementById('modalIndividualTitle');
-    const subtitle = document.getElementById('modalIndividualSubtitle');
-    
-    title.textContent = `Gráfica OMS - ${nino.nombre?.toUpperCase() || 'Niño'}`;
-    subtitle.textContent = `${nino.tipoDoc} ${nino.documento} • ${nino.edad} • ${nino.genero === 'M' ? 'Masculino' : 'Femenino'}`;
-    
-    // Info bar mejorado
-    const infoBar = document.getElementById('infoNinoBar');
-    const colorEstado = getColorPorCategoria(nino.categoriaEstado);
-    
-    infoBar.innerHTML = `
-        <div class="info-nino-item">
-            <span class="info-nino-label">⚖️ Peso</span>
-            <span class="info-nino-valor" style="color: #fbbf24; font-size: 18px;">${nino.peso} kg</span>
-        </div>
-        <div class="info-nino-item">
-            <span class="info-nino-label">📏 Talla</span>
-            <span class="info-nino-valor" style="color: #fbbf24; font-size: 18px;">${nino.talla} cm</span>
-        </div>
-        <div class="info-nino-item">
-            <span class="info-nino-label">📊 Estado Nutricional</span>
-            <span class="info-nino-valor" style="color: ${colorEstado}; font-size: 16px;">${nino.estadoNutricional}</span>
-        </div>
-        <div class="info-nino-item">
-            <span class="info-nino-label">💪 Perímetro Braquial</span>
-            <span class="info-nino-valor">${nino.perimetroBraquial ? nino.perimetroBraquial + ' cm' : 'No registrado'}</span>
-        </div>
-        <div class="info-nino-item">
-            <span class="info-nino-label">🏫 UDS</span>
-            <span class="info-nino-valor" style="font-size: 12px;">${nino.udsName}</span>
-        </div>
-        <div class="info-nino-item">
-            <span class="info-nino-label">📋 Contrato</span>
-            <span class="info-nino-valor" style="color: ${COLORES_GRAFICAS.contratos[nino.contract] || '#64748b'};">${nino.contract}</span>
-        </div>
-    `;
-    
-    modal.classList.add('active');
-    document.body.classList.add('modal-open');
-    
-    // Destruir gráfica anterior si existe
-    if (chartIndividual) {
-        chartIndividual.destroy();
-        chartIndividual = null;
-    }
-    
-    // Dibujar gráfica después de que el modal esté visible
-    setTimeout(() => {
-        dibujarGraficaIndividualCanvas(nino);
-    }, 150);
-}
-
-	// FUNCIÓN PRINCIPAL CORREGIDA
-	function dibujarGraficaIndividualCanvas(nino) {
-		const canvas = document.getElementById('omsChartIndividual');
-		if (!canvas) {
-			console.error('Canvas no encontrado');
+	function verGraficaIndividual(id, tipo) {
+		const nino = tipo === 'activa' ? 
+			datosNutricionales.find(d => d.id === id && d.tipo === 'activa') :
+			datosNutricionales.find(d => d.id === id && d.tipo === 'archivada');
+		
+		if (!nino) {
+			showToast('No se encontró el registro del niño', 'error');
 			return;
 		}
 		
-		// IMPORTANTE: Destruir gráfica anterior completamente
-		if (chartIndividual) {
-			chartIndividual.destroy();
-			chartIndividual = null;
-		}
-		
-		// Verificar que tenemos datos del niño
-		if (!nino || !nino.peso || !nino.talla || !nino.genero) {
-			console.error('Datos del niño incompletos:', nino);
+		if (!nino.peso || !nino.talla) {
+			showToast('No hay datos de peso/talla suficientes para generar la gráfica OMS', 'warning');
 			return;
 		}
 		
-		const genero = nino.genero === 'M' ? 'boys' : 'girls';
-		const dataOMS = OMS_REFERENCE_DATA[genero];
+		const modal = document.getElementById('modalGraficaIndividual');
 		
-		if (!dataOMS) {
-			console.error('No hay datos OMS para el género:', genero);
-			return;
-		}
+		// Abrir modal primero
+		modal.classList.add('active');
+		document.body.classList.add('modal-open');
 		
-		// Preparar datos de las curvas OMS
-		const tallas = Object.keys(dataOMS).map(Number).sort((a, b) => a - b);
-		const deLabels = ['-3DE', '-2DE', '-1DE', 'Mediana', '+1DE', '+2DE', '+3DE'];
-		
-		const datasets = [];
-		
-		// ============================================
-		// CREAR LAS 7 CURVAS OMS (ESTAS NO SE VEN EN TU IMAGEN 1)
-		// ============================================
-		for (let i = 0; i < 7; i++) {
-			const puntosCurva = tallas.map(talla => ({
-				x: talla,
-				y: dataOMS[talla][i]
-			}));
-			
-			datasets.push({
-				label: deLabels[i],
-				data: puntosCurva,
-				borderColor: getColorCurvaDE(i),
-				backgroundColor: 'transparent',
-				borderWidth: i === 3 ? 3 : 2, // Mediana más gruesa
-				pointRadius: 0, // Sin puntos en las curvas
-				pointHoverRadius: 0,
-				tension: 0.4, // Curvas suaves
-				fill: false,
-				showLine: true, // IMPORTANTE: Asegurar que se dibuje la línea
-				spanGaps: true
-			});
-		}
-		
-		// ============================================
-		// CREAR EL PUNTO DEL NIÑO CON COLOR CORRECTO
-		// ============================================
-		
-		// Calcular el estado nutricional si no viene en los datos
-		let estadoNutricional = nino.estadoNutricional;
-		if (!estadoNutricional || estadoNutricional === 'Sin datos') {
-			const calculado = calcularRangoOMS(parseFloat(nino.talla), parseFloat(nino.peso), nino.genero);
-			estadoNutricional = calculado.nombre;
-		}
-		
-		// OBTENER EL COLOR CORRECTO - ESTO ES LO QUE FALLABA
-		const colorPunto = getColorPorEstadoNutricional(estadoNutricional);
-		
-		console.log('Estado nutricional:', estadoNutricional, '-> Color:', colorPunto); // Debug
-		
-		// Agregar dataset del niño (PUNTO INDIVIDUAL)
-		datasets.push({
-			label: `${nino.nombre?.toUpperCase() || 'Niño'} (ACTUAL)`,
-			data: [{ 
-				x: parseFloat(nino.talla), 
-				y: parseFloat(nino.peso) 
-			}],
-			backgroundColor: colorPunto, // Color según estado nutricional (NO ROJO FIJO)
-			borderColor: '#ffffff', // Borde blanco para destacar
-			borderWidth: 3,
-			pointRadius: 12, // Punto grande
-			pointHoverRadius: 15,
-			pointStyle: 'circle',
-			showLine: false, // Solo punto, sin línea
-			// Datos extra para tooltip
-			estadoNutricional: estadoNutricional,
-			de: calcularRangoOMS(parseFloat(nino.talla), parseFloat(nino.peso), nino.genero).de
-		});
-		
-		// ============================================
-		// CREAR LA GRÁFICA CON CHART.JS
-		// ============================================
-		try {
-			const ctx = canvas.getContext('2d');
-			
-			// Limpiar el canvas completamente
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			
-			chartIndividual = new Chart(ctx, {
-				type: 'scatter',
-				data: { datasets: datasets },
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					interaction: {
-						mode: 'point',
-						intersect: false
-					},
-					scales: {
-						x: {
-							type: 'linear',
-							position: 'bottom',
-							title: {
-								display: true,
-								text: 'Talla (cm)',
-								font: { size: 14, weight: 'bold' },
-								color: document.body.classList.contains('dark-mode') ? '#e2e8f0' : '#334155'
-							},
-							min: 45,
-							max: 135,
-							grid: {
-								color: document.body.classList.contains('dark-mode') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-								drawBorder: true
-							},
-							ticks: {
-								color: document.body.classList.contains('dark-mode') ? '#94a3b8' : '#64748b',
-								stepSize: 10
-							}
-						},
-						y: {
-							title: {
-								display: true,
-								text: 'Peso (kg)',
-								font: { size: 14, weight: 'bold' },
-								color: document.body.classList.contains('dark-mode') ? '#e2e8f0' : '#334155'
-							},
-							min: 0,
-							max: 35,
-							grid: {
-								color: document.body.classList.contains('dark-mode') ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-								drawBorder: true
-							},
-							ticks: {
-								color: document.body.classList.contains('dark-mode') ? '#94a3b8' : '#64748b',
-								stepSize: 5
-							}
-						}
-					},
-					plugins: {
-						legend: {
-							position: 'bottom',
-							labels: { 
-								boxWidth: 12, 
-								padding: 10,
-								font: { size: 10 },
-								color: document.body.classList.contains('dark-mode') ? '#e2e8f0' : '#334155',
-								usePointStyle: true,
-								filter: function(item, chart) {
-									// Mostrar solo las curvas DE y el punto actual
-									return item.text.includes('DE') || item.text.includes('ACTUAL');
-								}
-							}
-						},
-						tooltip: {
-							backgroundColor: 'rgba(30, 41, 59, 0.95)',
-							titleColor: '#fbbf24',
-							bodyColor: '#e2e8f0',
-							borderColor: 'rgba(255,255,255,0.1)',
-							borderWidth: 1,
-							padding: 12,
-							callbacks: {
-								label: function(context) {
-									// Si es el punto del niño
-									if (context.dataset.label.includes('ACTUAL')) {
-										const de = context.dataset.de || calcularRangoOMS(context.parsed.x, context.parsed.y, nino.genero).de;
-										return [
-											`👤 ${nino.nombre?.toUpperCase() || 'Niño'}`,
-											`⚖️ Peso: ${context.parsed.y} kg`,
-											`📏 Talla: ${context.parsed.x} cm`,
-											`📊 Estado: ${estadoNutricional}`,
-											`📈 DE: ${de}`
-										];
-									}
-									// Si es una curva DE
-									return `${context.dataset.label}: ${context.parsed.y.toFixed(2)} kg`;
-								}
-							}
-						}
-					},
-					animation: {
-						duration: 800,
-						easing: 'easeOutQuart'
-					}
-				}
-			});
-			
-			console.log('✅ Gráfica creada exitosamente con', datasets.length, 'datasets');
-			
-		} catch (error) {
-			console.error('❌ Error al crear gráfica:', error);
-		}
-		
-		// Actualizar la leyenda visual debajo de la gráfica
-		llenarLeyendaIndividual();
+		// Dibujar la gráfica usando la función unificada (que ahora usa el mismo código que el formulario)
+		setTimeout(() => {
+			dibujarGraficaIndividualCanvas(nino);
+		}, 150);
 	}
+	
+	function dibujarGraficaIndividualCanvas(nino) {
+		if (!nino) {
+			console.error('No se proporcionó datos del niño');
+			return;
+		}
+		
+		if (!nino.peso || !nino.talla || !nino.genero) {
+			console.error('Datos incompletos del niño:', nino);
+			showToast('No hay datos de peso/talla suficientes para generar la gráfica OMS', 'warning');
+			return;
+		}
+		
+		const peso = parseFloat(nino.peso);
+		const talla = parseFloat(nino.talla);
+		const genero = nino.genero;
+		
+		// Calcular edad en meses
+		let edadMeses = null;
+		if (nino.edad) {
+			edadMeses = parseEdadAMeses(nino.edad);
+		} else if (nino.fechaNacimiento) {
+			const hoy = new Date();
+			const nacimiento = new Date(nino.fechaNacimiento);
+			edadMeses = Math.floor((hoy - nacimiento) / (1000 * 60 * 60 * 24 * 30.44));
+		}
+		
+		// Datos extra para mostrar
+		const datosExtra = {
+			uds: nino.udsName,
+			contrato: nino.contract,
+			estadoNutricional: nino.estadoNutricional
+		};
+		
+		// Dibujar usando la función unificada - ESTO ES LO CLAVE
+		dibujarGraficaOMS('omsChartIndividual', genero, peso, talla, edadMeses, nino.nombre, datosExtra);
+		
+		// Actualizar título y subtítulo del modal admin
+		const title = document.getElementById('modalIndividualTitle');
+		const subtitle = document.getElementById('modalIndividualSubtitle');
+		
+		if (title) {
+			title.textContent = `Gráfica OMS - ${nino.nombre?.toUpperCase() || 'Niño'}`;
+		}
+		
+		if (subtitle) {
+			const estado = calcularRangoOMS(talla, peso, genero, edadMeses);
+			let edadTexto = edadMeses ? ` • ${Math.floor(edadMeses/12)}a ${edadMeses%12}m` : '';
+			subtitle.innerHTML = `${nino.tipoDoc} ${nino.documento} • ${nino.edad || '-'}${edadTexto} • <strong style="color: ${estado.color}">${estado.nombre}</strong>`;
+		}
+		
+		// Actualizar info bar
+		const infoBar = document.getElementById('infoNinoBar');
+		if (infoBar) {
+			const colorEstado = getColorPorCategoria(nino.categoriaEstado);
+			
+			infoBar.innerHTML = `
+				<div class="info-nino-item">
+					<span class="info-nino-label">⚖️ Peso</span>
+					<span class="info-nino-valor" style="color: #fbbf24; font-size: 18px;">${peso} kg</span>
+				</div>
+				<div class="info-nino-item">
+					<span class="info-nino-label">📏 Talla</span>
+					<span class="info-nino-valor" style="color: #fbbf24; font-size: 18px;">${talla} cm</span>
+				</div>
+				<div class="info-nino-item">
+					<span class="info-nino-label">📊 Estado</span>
+					<span class="info-nino-valor" style="color: ${colorEstado}; font-size: 16px;">${nino.estadoNutricional || 'No calculado'}</span>
+				</div>
+				<div class="info-nino-item">
+					<span class="info-nino-label">💪 Perímetro Braquial</span>
+					<span class="info-nino-valor">${nino.perimetroBraquial ? nino.perimetroBraquial + ' cm' : 'No registrado'}</span>
+				</div>
+				<div class="info-nino-item">
+					<span class="info-nino-label">🏫 UDS</span>
+					<span class="info-nino-valor" style="font-size: 12px;">${nino.udsName}</span>
+				</div>
+				<div class="info-nino-item">
+					<span class="info-nino-label">📋 Contrato</span>
+					<span class="info-nino-valor" style="color: ${COLORES_GRAFICAS.contratos[nino.contract] || '#64748b'};">${nino.contract}</span>
+				</div>
+			`;
+		}
+	}
+	
+	
 
 	// Función para llenar la leyenda visual (CORREGIDA)
 	function llenarLeyendaIndividual() {
 		const container = document.getElementById('leyendaIndividual');
 		if (!container) return;
 		
-		const rangos = [
-			{ nombre: 'Desnutrición Severa', color: '#C0392B', de: '< -3DE', desc: 'Riesgo vital' },
-			{ nombre: 'Desnutrición Moderada', color: '#E74C3C', de: '-3DE a -2DE', desc: 'Intervención urgente' },
-			{ nombre: 'Riesgo Desnutrición', color: '#F39C12', de: '-2DE a -1DE', desc: 'Monitoreo cercano' },
-			{ nombre: 'Peso Normal', color: '#27AE60', de: '-1DE a +1DE', desc: 'Estado óptimo' },
-			{ nombre: 'Riesgo Sobrepeso', color: '#F1C40F', de: '+1DE a +2DE', desc: 'Prevención' },
-			{ nombre: 'Sobrepeso', color: '#E67E22', de: '+2DE a +3DE', desc: 'Intervención' },
-			{ nombre: 'Obesidad', color: '#8E44AD', de: '> +3DE', desc: 'Tratamiento' }
-		];
+		// Leyenda actualizada para tablas 2-5 años
+		//PANEL ADMINISTRATIVO INFO INDIVIDUAL
+			const rangos = [
+				{ nombre: 'Desnutrición Severa (<-3DE)', color: '#C0392B', de: '< -3DE', desc: 'Intervención inmediata' },
+				{ nombre: 'Desnutrición Moderada', color: '#E74C3C', de: '-3DE a -2DE', desc: 'Seguimiento cercano' },
+				{ nombre: 'Riesgo Desnutrición', color: '#F39C12', de: '-2DE a -1DE', desc: 'Monitoreo preventivo' },
+				{ nombre: 'Peso Adecuado (Mediana)', color: '#27AE60', de: '-1DE a +1DE', desc: 'Estado óptimo' },
+				{ nombre: 'Riesgo Sobrepeso', color: '#F1C40F', de: '+1DE a +1.5DE', desc: 'Vigilar alimentación' },
+				{ nombre: 'Sobrepeso', color: '#E67E22', de: '+1.5DE a +2DE', desc: 'Ajustar dieta/actividad' },
+				{ nombre: 'Obesidad (>+2DE)', color: '#8E44AD', de: '> +2DE', desc: 'Intervención nutricional' }
+			];
 		
 		container.innerHTML = rangos.map(r => `
 			<div class="leyenda-item" style="background: ${r.color}15; border: 2px solid ${r.color}; border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 10px; transition: transform 0.2s;">
@@ -6823,32 +7000,32 @@ function verGraficaIndividual(id, tipo) {
 		`).join('');
 	}
 
-function cerrarModalIndividual(event) {
-    if (event && event.target.closest('.modal-grafica-content')) return;
-    
-    const modal = document.getElementById('modalGraficaIndividual');
-    modal.classList.remove('active');
-    document.body.classList.remove('modal-open');
-    
-    // Destruir gráfica al cerrar
-    if (chartIndividual) {
-        chartIndividual.destroy();
-        chartIndividual = null;
-    }
-}
-
-// Ver detalle del niño (abre el modal de detalles general)
-function verDetalleNino(id, tipo) {
-    const nino = tipo === 'activa' ? 
-        currentNovelties.find(n => n.id === id) :
-        archivedNovelties.find(n => n.id === id);
-    
-    if (nino) {
-        viewNoveltyDetails(nino, tipo === 'archivada');
-    } else {
-        showToast('No se encontró el registro completo', 'error');
-    }
-}
+	function cerrarModalIndividual(event) {
+		if (event && event.target.closest('.modal-grafica-content')) return;
+		
+		const modal = document.getElementById('modalGraficaIndividual');
+		modal.classList.remove('active');
+		document.body.classList.remove('modal-open');
+		
+		// Limpiar canvas (no destruir Chart.js porque ahora usamos canvas nativo)
+		const canvas = document.getElementById('omsChartIndividual');
+		if (canvas) {
+			const ctx = canvas.getContext('2d');
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		}
+	}
+	// Ver detalle del niño (abre el modal de detalles general)
+	function verDetalleNino(id, tipo) {
+		const nino = tipo === 'activa' ? 
+			currentNovelties.find(n => n.id === id) :
+			archivedNovelties.find(n => n.id === id);
+		
+		if (nino) {
+			viewNoveltyDetails(nino, tipo === 'archivada');
+		} else {
+			showToast('No se encontró el registro completo', 'error');
+		}
+	}
 
 // Exportar a Excel con datos filtrados
 function exportNutricionalToExcel() {
@@ -8482,6 +8659,37 @@ function debounce(func, wait) {
             // Placeholder para inicialización de gráfica
             console.log('Gráfica OMS inicializada');
         }
+		
+		// Función para abrir modal de gráfica OMS desde el panel admin
+		function abrirModalGraficaOMSAdmin() {
+			const modal = document.getElementById('modalGraficaOMS');
+			const GeneroInput = document.querySelector('input[name="_ingresoGender"]:checked');
+			
+			if (!GeneroInput) {
+				showToast('Seleccione el género del beneficiario primero', 'warning');
+				return;
+			}
+			
+			document.body.classList.add('modal-open');
+			
+			const Genero = GeneroInput.value;
+			const content = modal.querySelector('.modal-grafica-content');
+			
+			content.classList.remove('boy', 'girl');
+			content.classList.add(Genero === 'M' ? 'boy' : 'girl');
+			
+			const Title = document.getElementById('modalGraficaTitle');
+			const Icon = Genero === 'M' ? '👦' : '👧';
+			Title.textContent = `Gráfica Peso/Talla OMS - ${Genero === 'M' ? 'NIÑOS' : 'NIÑAS'} ${Icon}`;
+			
+			modal.classList.add('active');
+			
+			requestAnimationFrame(() => {
+				setTimeout(() => {
+					dibujarGraficaEnModal(Genero);
+				}, 100);
+			});
+		}
     </script>
 </body>
 </html>
