@@ -35,6 +35,351 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
+		
+		/* ===== SISTEMA DE TUTORIAL ===== */
+        
+        /* Overlay del tutorial */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.2);
+            z-index: 9998;
+            display: none;
+            backdrop-filter: blur(1px);
+        }
+
+        .tutorial-overlay.active { display: block; }
+
+        /* Spotlight - ilumina el elemento activo */
+        .tutorial-spotlight {
+            position: absolute;
+            border: 3px solid var(--primary-gold);
+            border-radius: 12px;
+            box-shadow: 0 0 30px var(--primary-gold), inset 0 0 20px rgba(212,175,55,0.2);
+            z-index: 9999;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: pulse-spotlight 2s infinite;
+        }
+
+        @keyframes pulse-spotlight {
+            0%, 100% { box-shadow: 0 0 30px var(--primary-gold), inset 0 0 20px rgba(212,175,55,0.2); }
+            50% { box-shadow: 0 0 50px var(--primary-gold), inset 0 0 30px rgba(212,175,55,0.4); }
+        }
+
+        /* Tooltip del tutorial - CORREGIDO PARA NO CORTARSE */
+        .tutorial-tooltip {
+            position: fixed;
+            background: linear-gradient(135deg, var(--bg-card) 0%, #1a1a2e 100%);
+            border: 2px solid var(--primary-gold);
+            border-radius: 16px;
+            padding: 20px;
+            z-index: 10000;
+            max-width: 350px;
+            min-width: 280px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(212,175,55,0.1);
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .tutorial-tooltip.active { display: block; }
+
+        .tutorial-tooltip::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 12px solid transparent;
+        }
+
+        /* Flecha del tooltip según posición */
+        .tutorial-tooltip.top::before {
+            bottom: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-top-color: var(--primary-gold);
+        }
+
+        .tutorial-tooltip.bottom::before {
+            top: -26px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-color: var(--primary-gold);
+        }
+
+        .tutorial-tooltip.left::before {
+            right: -26px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left-color: var(--primary-gold);
+        }
+
+        .tutorial-tooltip.right::before {
+            left: -26px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-right-color: var(--primary-gold);
+        }
+
+        /* Header del tooltip */
+        .tutorial-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(212,175,55,0.3);
+        }
+
+        .tutorial-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-gold), var(--accent-cyan));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+            flex-shrink: 0;
+        }
+
+        .tutorial-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.2;
+        }
+
+        .tutorial-step {
+            font-size: 10px;
+            color: var(--accent-cyan);
+            background: rgba(0,242,255,0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        /* Contenido del tooltip */
+        .tutorial-content {
+            color: var(--text-main);
+            line-height: 1.6;
+            font-size: 11px;
+            margin-bottom: 15px;
+        }
+
+        .tutorial-content strong {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .tutorial-content ul {
+            margin: 8px 0;
+            padding-left: 18px;
+        }
+
+        .tutorial-content li {
+            margin: 6px 0;
+            color: var(--text-dim);
+        }
+
+        .tutorial-content li::marker {
+            color: var(--primary-gold);
+        }
+
+        /* Tip especial */
+        .tutorial-tip {
+            background: rgba(0,255,136,0.1);
+            border-left: 3px solid var(--success);
+            padding: 10px;
+            border-radius: 0 8px 8px 0;
+            margin: 12px 0;
+            font-size: 10px;
+            color: var(--success);
+        }
+
+        .tutorial-tip i {
+            margin-right: 6px;
+        }
+
+        /* Controles del tutorial */
+        .tutorial-controls {
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .tutorial-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tutorial-btn-primary {
+            background: linear-gradient(135deg, var(--primary-gold), #b8941f);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+        }
+
+        .tutorial-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212,175,55,0.4);
+        }
+
+        .tutorial-btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .tutorial-btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .tutorial-btn-skip {
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 9px;
+            text-decoration: underline;
+        }
+
+        /* Indicador de progreso */
+        .tutorial-progress {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .tutorial-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+
+        .tutorial-dot.active {
+            background: var(--primary-gold);
+            box-shadow: 0 0 10px var(--primary-gold);
+            transform: scale(1.3);
+        }
+
+        .tutorial-dot.completed {
+            background: var(--success);
+        }
+
+        /* Botón flotante de ayuda (siempre visible) */
+        .help-button {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 8px 25px rgba(212,175,55,0.4);
+            transition: all 0.3s;
+            font-size: 24px;
+            border: 3px solid rgba(255,255,255,0.1);
+        }
+
+        .help-button:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 12px 35px rgba(212,175,55,0.5);
+        }
+
+        .help-button.pulse {
+            animation: helpPulse 2s infinite;
+        }
+
+        @keyframes helpPulse {
+            0%, 100% { box-shadow: 0 8px 25px rgba(212,175,55,0.4); }
+            50% { box-shadow: 0 8px 35px rgba(212,175,55,0.8), 0 0 20px rgba(0,242,255,0.3); }
+        }
+
+        /* Menú de ayuda contextual */
+        .help-menu {
+            position: fixed;
+            bottom: 90px;
+            right: 25px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 15px;
+            z-index: 999;
+            display: none;
+            min-width: 250px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.5);
+        }
+
+        .help-menu.active { display: block; animation: slideUp 0.3s ease; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .help-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 2px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .help-menu-item:hover {
+            background: rgba(212,175,55,0.1);
+        }
+
+        .help-menu-item i {
+            width: 30px;
+            height: 30px;
+            background: rgba(212,175,55,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-gold);
+            font-size: 14px;
+        }
+
+        .help-menu-item span {
+            font-size: 12px;
+            color: var(--text-main);
+            font-weight: 500;
+        }
 
         /* ===== SISTEMA DE GESTIÓN DE ARCHIVOS MEJORADO ===== */
         .file-manager-header {
@@ -716,15 +1061,16 @@
         }
 
         .contract-info input {
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 12px;
-            outline: none;
-            width: 150px;
-            border-left: 1px solid rgba(255,255,255,0.1);
-            padding-left: 10px;
-        }
+			background: transparent;
+			border: none;
+			color: var(--text-main);
+			font-size: 12px;
+			outline: none;
+			width: 200px;          /* Aumentado de 150px a 300px */
+			min-width: 200px;      /* Ancho mínimo garantizado */
+			border-left: 1px solid rgba(255,255,255,0.1);
+			padding-left: 10px;
+		}
 
         .week-selector {
 			display: flex;
@@ -1516,7 +1862,114 @@
     </style>
 </head>
 <body>
+	<!-- ===== SISTEMA DE TUTORIAL ===== -->
+    
+    <!-- Overlay oscuro -->
+    <div class="tutorial-overlay" id="tutorialOverlay"></div>
+    
+    <!-- Spotlight que ilumina elementos -->
+    <div class="tutorial-spotlight" id="tutorialSpotlight"></div>
+    
+    <!-- Tooltip principal del tutorial - CORREGIDO -->
+    <div class="tutorial-tooltip" id="tutorialTooltip">
+        <div class="tutorial-header">
+            <div class="tutorial-icon" id="tutorialIcon">
+                <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div class="tutorial-title" id="tutorialTitle">Bienvenido</div>
+            </div>
+            <div class="tutorial-step" id="tutorialStep">1/10</div>
+        </div>
+        
+        <div class="tutorial-content" id="tutorialContent">
+            Contenido del tutorial...
+        </div>
+        
+        <div class="tutorial-tip" id="tutorialTip" style="display: none;">
+            <i class="fa-solid fa-star"></i>
+            <span id="tutorialTipText">Tip especial aquí</span>
+        </div>
+        
+        <div class="tutorial-controls">
+            <button class="tutorial-btn tutorial-btn-secondary" onclick="tutorialPrev()" id="btnPrev">
+                <i class="fa-solid fa-chevron-left"></i> Ant
+            </button>
+            
+            <button class="tutorial-btn tutorial-btn-skip" onclick="tutorialSkip()" id="btnSkip">
+                Saltar
+            </button>
+            
+            <button class="tutorial-btn tutorial-btn-primary" onclick="tutorialNext()" id="btnNext">
+                Sig <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            
+            <button class="tutorial-btn tutorial-btn-primary hidden" onclick="tutorialFinish()" id="btnFinish" style="background: var(--success);">
+                <i class="fa-solid fa-check"></i> Fin
+            </button>
+        </div>
+        
+        <div class="tutorial-progress" id="tutorialProgress"></div>
+    </div>
 
+    <!-- Botón flotante de ayuda -->
+	<div class="help-button pulse" id="helpButton" onclick="toggleHelpMenu()">
+		<i class="fa-solid fa-question"></i>
+	</div>
+
+	<!-- Menú de ayuda contextual -->
+	<div class="help-menu" id="helpMenu">
+		<div class="help-menu-item" onclick="startTutorial('completo')">
+			<i class="fa-solid fa-play"></i>
+			<span>Tutorial completo</span>
+		</div>
+		<div class="help-menu-item" onclick="startTutorial('plegable')">
+			<i class="fa-solid fa-folder-tree"></i>
+			<span>Sistema Plegable</span>
+		</div>
+		<div class="help-menu-item" onclick="startTutorial('precios')">
+			<i class="fa-solid fa-tags"></i>
+			<span>Precios por Semana</span>
+		</div>
+		<div class="help-menu-item" onclick="startTutorial('proveedores')">
+			<i class="fa-solid fa-truck-field"></i>
+			<span>Proveedores</span>
+		</div>
+		<div class="help-menu-item" onclick="startTutorial('productos')">
+			<i class="fa-solid fa-list-check"></i>
+			<span>Productos</span>
+		</div>
+		<div class="help-menu-item" onclick="startTutorial('cl')">
+			<i class="fa-solid fa-leaf"></i>
+			<span>¿Qué es CL?</span>
+		</div>
+		<div class="help-menu-item" onclick="startTutorial('resumen')">
+			<i class="fa-solid fa-chart-pie"></i>
+			<span>Resumen y análisis</span>
+		</div>
+		<div class="help-menu-item" onclick="startTutorial('exportar')">
+			<i class="fa-solid fa-file-export"></i>
+			<span>Exportar datos</span>
+		</div>
+		<div class="help-menu-item" onclick="startTutorial('contabilidad')">
+			<i class="fa-solid fa-calculator"></i>
+			<span>Exportar contabilidad</span>
+		</div>
+		
+		<div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
+			<div class="help-menu-item" onclick="resetTutorialVisto()" style="color: var(--text-dim); font-size: 10px;">
+				<i class="fa-solid fa-rotate-left"></i>
+				<span>Resetear tutorial</span>
+			</div>
+		</div>
+		<div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
+			<div class="help-menu-item" onclick="toggleHelpMenu()" style="color: var(--text-dim);">
+				<i class="fa-solid fa-xmark"></i>
+				<span>Cerrar menú</span>
+			</div>
+		</div>
+	</div>
+	
     <!-- ===== APLICACIÓN PRINCIPAL ===== -->
 
     <!-- AUTH SCREEN -->
@@ -1562,7 +2015,7 @@
         </div>
 		
         <div class="nav-section">
-            <div class="nav-section-title">Gestión de Datos</div>
+            <div class="nav-section-title">Guardar y Cargar</div>
             <a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
                 <i class="fa-solid fa-cloud"></i>
                 <span>Guardar</span>
@@ -1571,27 +2024,10 @@
                 <i class="fa-solid fa-folder-open"></i>
                 <span>Cargar</span>
             </a>
-            <a class="nav-item" id="nav-exportar" onclick="exportarCompleto(); toggleSidebarMobile();">
-                <i class="fa-solid fa-file-csv"></i>
-                <span>Exportar Excel</span>
-            </a>
-            <a class="nav-item" id="nav-importar" onclick="document.getElementById('import-input').click(); toggleSidebarMobile();">
-                <i class="fa-solid fa-file-import"></i>
-                <span>Importar Excel</span>
-            </a>
-            <input type="file" id="import-input" class="hidden" accept=".csv, .xlsx, .xls" onchange="importarExcel(this)">
         </div>
 
         <div class="nav-section">
-            <div class="nav-section-title">Configuración</div>
-            <a class="nav-item" id="nav-proveedores" onclick="toggleModal('modal-proveedores'); toggleSidebarMobile();">
-                <i class="fa-solid fa-truck-field"></i>
-                <span>Gestionar Proveedores</span>
-            </a>
-            <a class="nav-item" id="nav-productos" onclick="toggleModal('modal-productos'); toggleSidebarMobile();">
-                <i class="fa-solid fa-list-check"></i>
-                <span>Listado de Productos</span>
-            </a>
+            <div class="nav-section-title">Analisis</div>
             <a class="nav-item" id="nav-resumen" onclick="toggleDrawer('resumen'); toggleSidebarMobile();">
                 <i class="fa-solid fa-chart-pie"></i>
                 <span>Resumen y Gráficos</span>
@@ -1609,12 +2045,38 @@
                 <span>Validar Facturas</span>
             </a>
         </div>
+		    <div class="nav-section-title">Configuración</div>
+            <a class="nav-item" id="nav-proveedores" onclick="toggleModal('modal-proveedores'); toggleSidebarMobile();">
+                <i class="fa-solid fa-truck-field"></i>
+                <span>Gestionar Proveedores</span>
+            </a>
+            <a class="nav-item" id="nav-productos" onclick="toggleModal('modal-productos'); toggleSidebarMobile();">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Listado de Productos</span>
+            </a>
+        </div>
+		<div class="nav-section">
+            <div class="nav-section-title">Gestión de Datos</div>
+            <a class="nav-item" id="nav-exportar" onclick="exportarCompleto(); toggleSidebarMobile();">
+                <i class="fa-solid fa-file-csv"></i>
+                <span>Exportar Excel</span>
+            </a>
+            <a class="nav-item" id="nav-importar" onclick="document.getElementById('import-input').click(); toggleSidebarMobile();">
+                <i class="fa-solid fa-file-import"></i>
+                <span>Importar Excel</span>
+            </a>
+            <input type="file" id="import-input" class="hidden" accept=".csv, .xlsx, .xls" onchange="importarExcel(this)">
+        </div>
 
-        <div class="nav-section">
+		 <div class="nav-section">
             <div class="nav-section-title">Acciones</div>
+            <a class="nav-item" id="nav-tutorial" onclick="toggleHelpMenu(); toggleSidebarMobile();">
+                <i class="fa-solid fa-circle-question"></i>
+                <span>Ayuda / Tutorial</span>
+            </a>
             <a class="nav-item danger" onclick="limpiarTodo(); toggleSidebarMobile();">
                 <i class="fa-solid fa-trash-can"></i>
-                <span>Limpiar Todo</span>
+                <span>Limpiar Todo / Hoja en Blanco</span>
             </a>
         </div>
 
@@ -1908,6 +2370,8 @@
         let valorCupoBase = 8094;
         let chartInstance = null;
         let sidebarOpen = window.innerWidth > 768;
+		let tutorialEnCurso = false;
+		let tutorialYaVisto = false;
 
         let proveedores = [];
         let productosBase = [];
@@ -1921,12 +2385,12 @@
 
         const PRODUCTOS_INICIALES = [
             { nombre: "Pollo Libra", precio: 9000, cl: true, proveedor: 'prov_3' },
-            { nombre: "Huevo Und", precio: 470, cl: true, proveedor: 'prov_3' },
+            { nombre: "Huevo Und", precio: 520, cl: true, proveedor: 'prov_3' },
             { nombre: "Molleja Libra", precio: 7000, cl: true, proveedor: 'prov_3' },
             { nombre: "Queso Libra", precio: 13000, cl: false, proveedor: 'prov_3' },
             { nombre: "Carne Cerdo Kilo", precio: 20000, cl: true, proveedor: 'prov_1' },
             { nombre: "Carne Res Kilo", precio: 26000, cl: true, proveedor: 'prov_1' },
-            { nombre: "Higado Kilo", precio: 18000, cl: true, proveedor: 'prov_1' },
+            { nombre: "Higado Kilo", precio: 19000, cl: true, proveedor: 'prov_1' },
             { nombre: "Tilapia Kilo", precio: 24000, cl: true, proveedor: 'prov_1' },
             { nombre: "Leche Litro", precio: 3792, cl: true, proveedor: 'prov_2' },
             { nombre: "Yogurt Litro", precio: 5900, cl: true, proveedor: 'prov_2' },
@@ -1934,6 +2398,599 @@
         ];
 
         const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+		
+		// ===== SISTEMA DE TUTORIAL - CONFIGURACIÓN =====
+        
+        const TUTORIAL_STEPS = {
+			
+            completo: [
+                {
+                    id: 'bienvenida',
+                    title: '¡Bienvenido a ZAN!',
+                    icon: 'fa-hand-wave',
+                    content: 'Este es el sistema de gestión de compras y presupuestos. Te guiaré paso a paso por todas las funcionalidades principales.',
+                    tip: 'Puedes acceder a este tutorial en cualquier momento desde el botón de ayuda (?) en la esquina inferior derecha.',
+                    position: 'center'
+                },
+                {
+                    id: 'semanas',
+                    target: 'week-selector',
+                    title: 'Configuración de Semanas',
+                    icon: 'fa-calendar-week',
+                    content: 'Aquí seleccionas cuántas semanas trabajarás en el mes. Puedes elegir entre 1 y 5 semanas según tu necesidad.',
+                    tip: 'Cada semana es independiente y tiene su propio presupuesto calculado automáticamente.',
+                    position: 'bottom'
+                },
+                {
+                    id: 'mes-contrato',
+                    target: 'contract-info',
+                    title: 'Mes y Contrato',
+                    icon: 'fa-file-contract',
+                    content: 'Selecciona el mes de trabajo e ingresa el ID del contrato. Estos datos aparecerán en todos los reportes exportados.',
+                    position: 'bottom'
+                },
+                {
+                    id: 'tabla-semanal',
+                    target: 'main-grid',
+                    title: 'Tablas Semanales',
+                    icon: 'fa-table',
+                    content: 'Cada semana muestra los proveedores y sus productos. Ingresa: <strong>Factura</strong>, <strong>Cantidad</strong> y el sistema calcula el <strong>Total</strong> automáticamente.',
+                    tip: 'Los badges muestran: CL (Compra Local) y las siglas del proveedor.',
+                    position: 'top'
+                },
+                {
+                    id: 'proveedores',
+                    target: 'nav-proveedores',
+                    title: 'Gestionar Proveedores',
+                    icon: 'fa-truck-field',
+                    content: 'Crea, edita y organiza tus proveedores. Puedes:<br>• Cambiar nombres y colores<br>• Reordenar con flechas<br>• Eliminar proveedores no usados',
+                    tip: 'El orden de proveedores aquí se refleja en las tablas semanales.',
+                    position: 'right',
+                    action: () => toggleModal('modal-proveedores')
+                },
+                {
+					id: 'productos',
+					target: 'lista-productos-config',
+					title: 'Listado de Productos',
+					icon: 'fa-list-check',
+					content: 'Administra todos los productos disponibles. Cada producto debe tener:<br>• <strong>Nombre</strong> (ej: Pollo Libra)<br>• <strong>Precio</strong> unitario<br>• <strong>Proveedor</strong> asignado<br>• Indicador <strong>CL</strong> (Compra Local)',
+					tip: 'Los productos aparecerán automáticamente en las tablas de su proveedor asignado.',
+					position: 'left',
+					action: () => {
+						document.getElementById('modal-proveedores').style.display = 'none';
+						toggleModal('modal-productos');
+						renderizarProductos();
+						setTimeout(() => {
+							const paso = tutorialActivo[pasoActual];
+							if (paso && paso.target) {
+								posicionarTooltip(paso);
+							}
+						}, 500);
+					}
+				},
+                {
+                    id: 'cl-explicacion',
+                    title: '¿Qué es CL (Compra Local)?',
+                    icon: 'fa-leaf',
+                    content: '<strong>CL = Compra Local</strong><br><br>Indica que el producto se adquiere dentro de la región/localidad, cumpliendo con requisitos de:<br>• Apoyo a productores locales<br>• Menor huella de carbono<br>• Frescura y trazabilidad<br><br>En el resumen se calcula el <strong>% de compras locales</strong> del total.',
+                    tip: 'Productos CL se marcan con check verde ✓ en los reportes.',
+                    position: 'center',
+					action: () => {
+						document.getElementById('modal-proveedores').style.display = 'none';
+						document.getElementById('modal-productos').style.display = 'none';
+					}
+                },
+				
+                {
+                    id: 'resumen',
+                    target: 'nav-resumen',
+                    title: 'Resumen y Análisis',
+                    icon: 'fa-chart-pie',
+                    content: 'Visualiza el análisis completo de gastos:<br>• Total por proveedor y producto<br>• Cantidades acumuladas (kg, lb, und)<br>• Indicador CL por producto<br>• Gráfico de distribución<br>• % de compras locales<br>• <strong>Raciones totales por semana</strong>',
+                    tip: 'Los paneles de proveedores son plegables. Haz clic en el encabezado para expandir/contraer.',
+                    position: 'right',
+                    action: () => toggleDrawer('resumen')
+                },
+                {
+                    id: 'exportar',
+                    target: 'nav-exportar',
+                    title: 'Exportar Datos',
+                    icon: 'fa-file-export',
+                    content: 'Exporta toda la información en formato Excel con 5 hojas:<br>1. <strong>Configuración</strong> (proveedores y productos)<br>2. <strong>Datos Semanales</strong> (todas las transacciones)<br>3. <strong>Resumen por Producto</strong> (consolidado)<br>4. <strong>Resumen de Raciones</strong><br>5. <strong>Validación de Facturas</strong>',
+                    tip: 'El archivo exportado incluye toda la configuración y puede importarse en otro dispositivo.',
+                    position: 'right'
+                },
+                {
+                    id: 'importar',
+                    target: 'nav-importar',
+                    title: 'Importar Datos',
+                    icon: 'fa-file-import',
+                    content: 'Restaura datos desde un archivo Excel exportado previamente. Se importa:<br>• Configuración de proveedores<br>• Listado de productos<br>• Todas las transacciones semanales<br>• Mes y contrato<br>• Valor de ración HCB',
+                    tip: 'Útil para respaldar información o transferir entre dispositivos.',
+                    position: 'right'
+                },
+                {
+                    id: 'contabilidad',
+                    target: 'nav-contabilidad',
+                    title: 'Exportar Contabilidad',
+                    icon: 'fa-calculator',
+                    content: 'Formato especial para el área financiera:<br>• Detalle de facturas por proveedor<br>• Cantidades y valores totales<br>• Indicador de compra local (SI/NO)<br>• Resumen ejecutivo por proveedor',
+                    tip: 'Incluye tanto CSV (datos planos) como Excel (con formato).',
+                    position: 'right',
+                    action: () => toggleDrawer('contabilidad')
+                },
+                {
+                    id: 'final',
+                    title: '¡Tutorial Completado!',
+                    icon: 'fa-trophy',
+                    content: 'Ya conoces todas las funcionalidades de ZAN. Recuerda:<br><br>• El botón <strong>?</strong> siempre está disponible para volver a ver este tutorial<br>• Guarda en la nube periódicamente<br>• Exporta respaldos semanales<br><br>¡Empieza a gestionar tus compras de manera eficiente!',
+                    tip: '¿Tienes dudas? Revisa secciones específicas desde el menú de ayuda.',
+                    position: 'center'
+                }
+            ],
+            
+            // Tutorial de sistema plegable
+            plegable: [
+                {
+                    id: 'plegable-intro',
+                    title: 'Sistema de Paneles Plegables',
+                    icon: 'fa-folder-tree',
+                    content: 'ZAN utiliza un sistema de colapso para organizar la información de manera eficiente. Puedes expandir o contraer secciones según necesites.',
+                    position: 'center'
+                },
+                {
+                    target: 'main-grid',
+                    title: 'Colapsar Semanas',
+                    icon: 'fa-calendar-week',
+                    content: 'Cada tarjeta de semana tiene un botón <i class="fa-solid fa-chevron-down"></i> en la esquina superior izquierda. Haz clic para:<br>• <strong>Contraer</strong> la semana y ver solo el encabezado<br>• <strong>Expandir</strong> para ver todos los proveedores y productos',
+                    tip: 'Útil cuando trabajas con muchas semanas y quieres enfocarte en una específica.',
+                    position: 'top'
+                },
+                {
+                    target: 'main-grid',
+                    title: 'Colapsar Proveedores',
+                    icon: 'fa-truck-field',
+                    content: 'Dentro de cada semana, cada proveedor tiene su propio botón de colapso en el encabezado colorido. Haz clic en el nombre del proveedor para:<br>• Ocultar/mostrar sus productos<br>• Ver solo el total del proveedor',
+                    tip: 'Los colores de los proveedores ayudan a identificarlos rápidamente.',
+                    position: 'top'
+                },
+                {
+                    target: 'nav-resumen',
+                    title: 'Resumen Plegable',
+                    icon: 'fa-chart-pie',
+                    content: 'En el panel de resumen, los proveedores también son plegables. Esto te permite:<br>• Ver el total general primero<br>• Expandir solo los proveedores que te interesan revisar<br>• Navegar más rápido por muchos productos',
+                    tip: 'Los paneles del Análisis Detallado y Validación de Facturas son plegables.',
+                    position: 'right',
+                    action: () => toggleDrawer('resumen')
+                },
+                {
+                    id: 'plegable-final',
+                    title: '¡Navegación Eficiente!',
+                    icon: 'fa-check-circle',
+                    content: 'El sistema plegable te permite:<br><br>✓ Trabajar con menos desplazamiento<br>✓ Enfocarte en lo que necesitas<br>✓ Tener una vista general rápida<br>✓ Personalizar tu espacio de trabajo<br><br>Todos los estados de colapso se mantienen mientras trabajas.',
+                    tip: 'Práctica recomendada: Colapsa las semanas pasadas y mantén expandida solo la semana actual.',
+                    position: 'center',
+                    action: () => closeAllDrawers()
+                }
+            ],
+
+            // Tutorial de precios dinámicos por semana
+            precios: [
+                {
+                    id: 'precios-intro',
+                    title: 'Precios Variables por Semana',
+                    icon: 'fa-tags',
+                    content: 'Aunque cada producto tiene un precio base configurado, puedes modificar el precio de cualquier producto para una semana específica sin afectar las demás.',
+                    position: 'center'
+                },
+                {
+                    target: 'main-grid',
+                    title: 'Modificar Precio en Tabla',
+                    icon: 'fa-pen-to-square',
+                    content: 'Para cambiar el precio de un producto en una semana específica:<br><br>1. Ingresa la <strong>cantidad</strong> (ej: 1)<br>2. En la columna <strong>Total</strong>, escribe el valor real de la compra<br>3. El sistema calculará automáticamente el precio unitario',
+                    tip: 'Ejemplo: Si el huevo está a $470 pero esta semana pagaste $450, escribe cantidad 1 y total $450.',
+                    position: 'top'
+                },
+                {
+                    target: 'main-grid',
+                    title: 'Cálculo Inverso',
+                    icon: 'fa-calculator',
+                    content: 'El sistema detecta cuando modificas el valor total y recalcula el precio unitario:<br><br><strong>Fórmula:</strong> Precio Unitario = Total ÷ Cantidad<br><br>Esto se guarda solo para esa semana. Las demás semanas mantienen su precio original.',
+                    tip: 'El precio modificado se muestra en azul claro para indicar que es diferente al base.',
+                    position: 'top'
+                },
+                {
+                    id: 'precios-ejemplo',
+                    title: 'Ejemplo Práctico',
+                    icon: 'fa-lightbulb',
+                    content: '<strong>Escenario:</strong> Huevo base = $470/unidad<br><br><strong>Semana 1:</strong> Compras 100 unidades a $450<br>→ Cantidad: 100, Total: $45,000<br>→ Precio unitario se ajusta a $450<br><br><strong>Semana 2:</strong> Compras 100 unidades a $470<br>→ Cantidad: 100, Total: $47,000<br>→ Precio vuelve al base o lo ajustas<br><br>Cada semana es independiente.',
+                    tip: 'Esta función es útil cuando los precios fluctúan semanalmente.',
+                    position: 'center'
+                },
+                {
+                    id: 'precios-final',
+                    title: '¡Flexibilidad Total!',
+                    icon: 'fa-check-circle',
+                    content: 'Recuerda:<br><br>✓ Los precios base se configuran en "Listado de Productos"<br>✓ Los precios por semana se ajustan en las tablas<br>✓ Los cambios se guardan automáticamente en local<br>✓ Al exportar, se registran los precios reales de cada semana',
+                    tip: 'Si necesitas revertir al precio base, borra el valor total y vuelve a ingresar la cantidad.',
+                    position: 'center'
+                }
+            ],
+            
+            // Tutoriales específicos por tema
+            proveedores: [
+                {
+                    id: 'prov-intro',
+                    title: 'Gestión de Proveedores',
+                    icon: 'fa-truck-field',
+                    content: 'Los proveedores son las empresas o personas que te venden productos. Cada producto debe estar asignado a un proveedor.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-proveedores',
+                    title: 'Acceder a Proveedores',
+                    icon: 'fa-arrow-pointer',
+                    content: 'Haz clic aquí para abrir el panel de gestión de proveedores.',
+                    position: 'right',
+                    action: () => toggleModal('modal-proveedores')
+                },
+                {
+                    target: 'lista-proveedores',
+                    title: 'Crear y Editar',
+                    icon: 'fa-pen-to-square',
+                    content: '• <strong>Nombre:</strong> Identificación del proveedor<br>• <strong>Color:</strong> Para visualización en tablas<br>• <strong>Orden:</strong> Usa las flechas para reorganizar<br>• <strong>Sigla:</strong> Se genera automáticamente',
+                    tip: 'Ejemplo: "Carnes Canaima" → sigla "CCA"',
+                    position: 'left'
+                },
+                {
+                    target: 'lista-proveedores',
+                    title: 'Eliminar Proveedores',
+                    icon: 'fa-trash',
+                    content: 'Al eliminar un proveedor, sus productos se reasignan al primer proveedor de la lista. Asegúrate de reasignarlos manualmente si es necesario.',
+                    position: 'left'
+                }
+            ],
+            
+            productos: [
+                {
+                    id: 'prod-intro',
+                    title: 'Gestión de Productos',
+                    icon: 'fa-list-check',
+                    content: 'Los productos son los ítems que compras a los proveedores. Cada uno debe tener precio, unidad y proveedor asignado.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-productos',
+                    title: 'Acceder a Productos',
+                    icon: 'fa-arrow-pointer',
+                    content: 'Haz clic aquí para gestionar tu catálogo de productos.',
+                    position: 'right',
+                    action: () => toggleModal('modal-productos')
+                },
+                {
+                    target: 'lista-productos-config',
+                    title: 'Configurar Producto',
+                    icon: 'fa-box',
+                    content: '• <strong>Nombre:</strong> Incluye la unidad (Libra, Kilo, Und)<br>• <strong>Precio:</strong> Valor unitario de compra<br>• <strong>Proveedor:</strong> Quién lo suministra<br>• <strong>CL:</strong> ¿Es compra local?',
+                    tip: 'La unidad se detecta automáticamente: kg, lb, lt, und',
+                    position: 'left'
+                }
+            ],
+            
+            cl: [
+                {
+                    id: 'cl-full',
+                    title: 'Compras Locales (CL)',
+                    icon: 'fa-leaf',
+                    content: '<strong>CL = Compra Local</strong><br><br>Es un indicador que identifica productos adquiridos dentro de la región, cumpliendo con políticas de:<br><br>🌱 <strong>Sostenibilidad:</strong> Menor transporte, menos emisiones<br>💚 <strong>Economía local:</strong> Apoyo a productores regionales<br>📋 <strong>Requisitos institucionales:</strong> Muchos contratos exigen % mínimo de CL<br><br>En el resumen se calcula automáticamente el porcentaje de compras locales.',
+                    tip: 'Productos CL se destacan con badge verde en todas las vistas.',
+                    position: 'center'
+                }
+            ],
+            
+            resumen: [
+                {
+                    id: 'res-intro',
+                    title: 'Análisis de Gastos',
+                    icon: 'fa-chart-pie',
+                    content: 'El resumen consolidado te muestra el panorama completo de tus compras del mes.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-resumen',
+                    title: 'Ver Resumen',
+                    icon: 'fa-arrow-pointer',
+                    content: 'Abre el panel de análisis desde aquí o desde el menú lateral.',
+                    position: 'right',
+                    action: () => toggleDrawer('resumen')
+                },
+                {
+                    target: 'summary-content',
+                    title: 'Detalle por Proveedor',
+                    icon: 'fa-list',
+                    content: 'Cada proveedor muestra:<br>• Productos comprados<br>• Cantidad total (suma de todas las semanas)<br>• Valor total gastado<br>• Indicador CL (✓ o ✗)<br>• <strong>% de participación</strong> en el total<br><br><strong>NUEVO:</strong> Los paneles son plegables. Haz clic en el encabezado para expandir/contraer.',
+                    tip: 'Las cantidades se suman automáticamente: 100 huevos semana 1 + 150 semana 2 = 250 huevos total',
+                    position: 'left'
+                },
+                {
+                    target: 'chartGasto',
+                    title: 'Gráfico Visual',
+                    icon: 'fa-chart-simple',
+                    content: 'Visualiza la distribución de gastos por proveedor en un gráfico circular. El color corresponde a cada proveedor.',
+                    position: 'top'
+                }
+            ],
+            
+            exportar: [
+                {
+                    id: 'exp-intro',
+                    title: 'Exportar Datos',
+                    icon: 'fa-file-export',
+                    content: 'El sistema genera archivos Excel profesionales con toda tu información organizada.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-exportar',
+                    title: 'Exportar Completo',
+                    icon: 'fa-file-excel',
+                    content: 'Genera un archivo Excel con 5 hojas:<br><br>1. <strong>Configuración:</strong> Proveedores y productos base<br>2. <strong>Datos Semanales:</strong> Todas las facturas y cantidades<br>3. <strong>Resumen:</strong> Consolidado por producto con % CL<br>4. <strong>Raciones:</strong> Resumen de raciones por semana<br>5. <strong>Facturas:</strong> Validación de facturas',
+                    tip: 'Este archivo puede importarse posteriormente como respaldo completo.',
+                    position: 'right'
+                },
+                {
+                    target: 'nav-importar',
+                    title: 'Importar Datos',
+                    icon: 'fa-file-import',
+                    content: 'Restaura toda la configuración y datos desde un archivo Excel exportado previamente. Útil para:<br>• Respaldos<br>• Transferir entre dispositivos<br>• Recuperar información',
+                    position: 'right'
+                }
+            ],
+            
+            contabilidad: [
+                {
+                    id: 'cont-intro',
+                    title: 'Exportación Contable',
+                    icon: 'fa-calculator',
+                    content: 'Formato especial diseñado para el área financiera y contable de tu organización.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-contabilidad',
+                    title: 'Formato Contable',
+                    icon: 'fa-file-invoice-dollar',
+                    content: 'Incluye:<br>• Fecha, mes y contrato<br>• Proveedor y número de factura<br>• Producto, cantidad y valores<br>• Indicador CL (SI/NO)<br>• Resumen por proveedor',
+                    tip: 'Disponible en CSV (para sistemas contables) y Excel (para revisión humana).',
+                    position: 'right',
+                    action: () => toggleDrawer('contabilidad')
+                }
+            ]
+        };
+
+        let tutorialActivo = null;
+        let pasoActual = 0;
+
+        // ===== FUNCIONES DEL TUTORIAL =====
+
+        function toggleHelpMenu() {
+            const menu = document.getElementById('helpMenu');
+            menu.classList.toggle('active');
+            
+            if (menu.classList.contains('active')) {
+                setTimeout(() => {
+                    document.addEventListener('click', cerrarHelpMenu);
+                }, 100);
+            }
+        }
+
+        function cerrarHelpMenu(e) {
+            const menu = document.getElementById('helpMenu');
+            const btn = document.getElementById('helpButton');
+            
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.remove('active');
+                document.removeEventListener('click', cerrarHelpMenu);
+            }
+        }
+
+        function abrirSidebarParaTutorial() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth > 768) {
+                sidebar.classList.remove('collapsed');
+                sidebarOpen = true;
+            } else {
+                sidebar.classList.add('open');
+                sidebarOpen = true;
+            }
+        }
+
+        function startTutorial(tipo = 'completo') {
+            document.getElementById('helpMenu').classList.remove('active');
+            tutorialEnCurso = true;
+            abrirSidebarParaTutorial();
+            
+            if (!TUTORIAL_STEPS[tipo]) {
+                console.error('Tutorial no encontrado:', tipo);
+                return;
+            }
+            
+            tutorialActivo = TUTORIAL_STEPS[tipo];
+            pasoActual = 0;
+            
+            document.getElementById('tutorialOverlay').classList.add('active');
+            generarProgreso();
+            mostrarPaso(0);
+            document.getElementById('helpButton').classList.remove('pulse');
+        }
+
+        function generarProgreso() {
+            const cont = document.getElementById('tutorialProgress');
+            cont.innerHTML = tutorialActivo.map((_, i) => 
+                `<div class="tutorial-dot ${i === 0 ? 'active' : ''}" data-step="${i}"></div>`
+            ).join('');
+        }
+
+        function mostrarPaso(index) {
+            if (index < 0 || index >= tutorialActivo.length) return;
+            
+            pasoActual = index;
+            const paso = tutorialActivo[index];
+            
+            if (paso.target && (
+                paso.target.includes('nav-') || 
+                paso.target === 'sidebar' ||
+                paso.target.includes('sidebar')
+            )) {
+                abrirSidebarParaTutorial();
+            }
+            
+            document.getElementById('tutorialIcon').innerHTML = `<i class="fa-solid ${paso.icon || 'fa-circle-info'}"></i>`;
+            document.getElementById('tutorialTitle').textContent = paso.title;
+            document.getElementById('tutorialStep').textContent = `${index + 1}/${tutorialActivo.length}`;
+            document.getElementById('tutorialContent').innerHTML = paso.content;
+            
+            const tipEl = document.getElementById('tutorialTip');
+            if (paso.tip) {
+                document.getElementById('tutorialTipText').textContent = paso.tip;
+                tipEl.style.display = 'block';
+            } else {
+                tipEl.style.display = 'none';
+            }
+            
+            document.getElementById('btnPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
+            
+            if (index === tutorialActivo.length - 1) {
+                document.getElementById('btnNext').classList.add('hidden');
+                document.getElementById('btnFinish').classList.remove('hidden');
+                document.getElementById('btnSkip').style.visibility = 'hidden';
+            } else {
+                document.getElementById('btnNext').classList.remove('hidden');
+                document.getElementById('btnFinish').classList.add('hidden');
+                document.getElementById('btnSkip').style.visibility = 'visible';
+            }
+            
+            document.querySelectorAll('.tutorial-dot').forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i < index) dot.classList.add('completed');
+                if (i === index) dot.classList.add('active');
+            });
+            
+            posicionarTooltip(paso);
+            
+            if (paso.action) {
+                setTimeout(() => paso.action(), 300);
+            }
+        }
+
+        function posicionarTooltip(paso) {
+            const tooltip = document.getElementById('tutorialTooltip');
+            const spotlight = document.getElementById('tutorialSpotlight');
+            
+            tooltip.className = 'tutorial-tooltip active';
+            
+            if (paso.position === 'center' || !paso.target) {
+                tooltip.style.left = '50%';
+                tooltip.style.top = '50%';
+                tooltip.style.transform = 'translate(-50%, -50%)';
+                spotlight.style.display = 'none';
+                return;
+            }
+            
+            const target = document.getElementById(paso.target) || document.querySelector(paso.target);
+            if (!target) {
+                tooltip.style.left = '50%';
+                tooltip.style.top = '50%';
+                tooltip.style.transform = 'translate(-50%, -50%)';
+                return;
+            }
+            
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            const rect = target.getBoundingClientRect();
+            
+            spotlight.style.display = 'block';
+            spotlight.style.left = `${rect.left - 10}px`;
+            spotlight.style.top = `${rect.top - 10}px`;
+            spotlight.style.width = `${rect.width + 20}px`;
+            spotlight.style.height = `${rect.height + 20}px`;
+            
+            const margin = 20;
+            let left, top;
+            
+            // Ajustar posición para evitar que se corte
+            const tooltipWidth = 350;
+            const tooltipHeight = 400;
+            
+            switch(paso.position) {
+                case 'bottom':
+                    left = rect.left + rect.width / 2 - tooltipWidth / 2;
+                    top = rect.bottom + margin;
+                    tooltip.classList.add('top');
+                    break;
+                case 'top':
+                    left = rect.left + rect.width / 2 - tooltipWidth / 2;
+                    top = rect.top - tooltipHeight - margin;
+                    tooltip.classList.add('bottom');
+                    break;
+                case 'left':
+                    left = rect.left - tooltipWidth - margin;
+                    top = rect.top + rect.height / 2 - tooltipHeight / 2;
+                    tooltip.classList.add('right');
+                    break;
+                case 'right':
+                    left = rect.right + margin;
+                    top = rect.top + rect.height / 2 - tooltipHeight / 2;
+                    tooltip.classList.add('left');
+                    break;
+                default:
+                    left = rect.left + rect.width / 2 - tooltipWidth / 2;
+                    top = rect.bottom + margin;
+            }
+            
+            // Ajustar a límites de pantalla con margen de seguridad
+            left = Math.max(10, Math.min(left, window.innerWidth - tooltipWidth - 10));
+            top = Math.max(10, Math.min(top, window.innerHeight - tooltipHeight - 10));
+            
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+            tooltip.style.transform = 'none';
+        }
+
+        function tutorialNext() {
+            if (pasoActual < tutorialActivo.length - 1) {
+                mostrarPaso(pasoActual + 1);
+            }
+        }
+
+        function tutorialPrev() {
+            if (pasoActual > 0) {
+                mostrarPaso(pasoActual - 1);
+            }
+        }
+
+        function tutorialSkip() {
+            if (confirm('¿Saltar el tutorial? Puedes volver a verlo desde el botón de ayuda.')) {
+                tutorialEnCurso = false;
+				marcarTutorialVisto();
+                tutorialFinish();
+				
+            }
+        }
+
+        function tutorialFinish() {
+            document.getElementById('tutorialOverlay').classList.remove('active');
+            document.getElementById('tutorialTooltip').classList.remove('active');
+            document.getElementById('tutorialSpotlight').style.display = 'none';
+            
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
+            document.getElementById('overlay').style.display = 'none';
+            
+            tutorialEnCurso = false;
+            cerrarSidebarSiAbierto();
+            marcarTutorialVisto();
+            document.getElementById('helpButton').classList.add('pulse');
+        }
+		
 
         // ===== SISTEMA DE ARCHIVOS MEJORADO CON CARPETAS =====
         let currentPath = 'root';
@@ -2484,12 +3541,26 @@
 				sidebarOpen = false;
 			}
 
+			// Cargar archivo actual si existe
 			const savedFileId = localStorage.getItem(`elite_current_file_${currentUser}`);
 			if (savedFileId) {
 				currentFileId = savedFileId;
+				console.log("Archivo actual recordado:", currentFileId);
 			}
 
 			inicializarDatos();
+			
+			// VERIFICAR SI ES PRIMERA VEZ O SI DEBE MOSTRAR TUTORIAL
+			const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
+			if (tutorialVisto !== 'true') {
+				setTimeout(() => {
+					if (confirm('¿Deseas ver el tutorial de bienvenida?\n\n(Puedes volver a verlo desde el botón ? en cualquier momento)')) {
+						startTutorial('completo');
+					} else {
+						marcarTutorialVisto();
+					}
+				}, 1000);
+			}
 		}
 
         function inicializarDatos() {
@@ -2524,19 +3595,56 @@
             document.getElementById('login-form').classList.toggle('hidden', toReg);
             document.getElementById('reg-form').classList.toggle('hidden', !toReg);
         }
+		
+		function debeMostrarTutorial() {
+			if (!currentUser) return false;
+			const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
+			if (tutorialVisto === 'true') {
+				return false;
+			}
+			return true;
+		}
+
+		function marcarTutorialVisto() {
+			if (!currentUser) return;
+			localStorage.setItem(`tutorial_visto_${currentUser}`, 'true');
+			tutorialYaVisto = true;
+			console.log(`Tutorial marcado como visto para usuario: ${currentUser}`);
+		}
+
+		function resetTutorialVisto() {
+			if (!currentUser) return;
+			if (confirm('¿Estás seguro de que deseas ver el tutorial de nuevo?\n\nSe mostrará al siguiente inicio de sesión.')) {
+				localStorage.removeItem(`tutorial_visto_${currentUser}`);
+				tutorialYaVisto = false;
+				alert('Tutorial reseteado. Se mostrará en el próximo inicio de sesión.');
+			}
+		}
 
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebarOpen = !sidebarOpen;
+			// No cerrar sidebar si el tutorial está mostrando elementos de navegación
+			if (tutorialEnCurso && tutorialActivo && pasoActual < tutorialActivo.length) {
+				const pasoActualObj = tutorialActivo[pasoActual];
+				if (pasoActualObj && pasoActualObj.target && (
+					pasoActualObj.target.includes('nav-') || 
+					pasoActualObj.target === 'sidebar' ||
+					pasoActualObj.target.includes('sidebar')
+				)) {
+					return;
+				}
+			}
+			
+			const sidebar = document.getElementById('sidebar');
+			sidebarOpen = !sidebarOpen;
 
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('open', sidebarOpen);
-                sidebar.classList.remove('collapsed');
-            } else {
-                sidebar.classList.toggle('collapsed', !sidebarOpen);
-                sidebar.classList.remove('open');
-            }
-        }
+			if (window.innerWidth <= 768) {
+				sidebar.classList.toggle('open', sidebarOpen);
+				sidebar.classList.remove('collapsed');
+			} else {
+				sidebar.classList.toggle('collapsed', !sidebarOpen);
+				sidebar.classList.remove('open');
+			}
+		}
 
         function toggleSidebarMobile() {
             if (window.innerWidth <= 768) {
@@ -2898,8 +4006,59 @@
             } else {
                 actualizarResumen();
             }
+			if (!tutorialEnCurso) {
+				const sidebar = document.getElementById('sidebar');
+				if (window.innerWidth > 768) {
+					sidebar.classList.add('collapsed');
+					sidebarOpen = false;
+				} else {
+					sidebar.classList.remove('open');
+				}
+				sidebarOpen = false;
+			}
         }
-
+		
+		// ===== CERRAR SIDEBAR AL HACER CLIC FUERA =====
+		document.addEventListener('click', function(e) {
+			// NO cerrar si el tutorial está activo
+			if (tutorialEnCurso) return;
+			
+			const sidebar = document.getElementById('sidebar');
+			const menuToggle = document.querySelector('.menu-toggle');
+			
+			// Si el tutorial está mostrando elementos de navegación, no cerrar
+			if (tutorialActivo && pasoActual < tutorialActivo.length) {
+				const pasoActualObj = tutorialActivo[pasoActual];
+				if (pasoActualObj && pasoActualObj.target && (
+					pasoActualObj.target.includes('nav-') || 
+					pasoActualObj.target === 'sidebar' ||
+					pasoActualObj.target.includes('sidebar')
+				)) {
+					return;
+				}
+			}
+			
+			// Verificar si el sidebar está abierto
+			const isSidebarOpen = window.innerWidth > 768 
+				? !sidebar.classList.contains('collapsed')
+				: sidebar.classList.contains('open');
+			
+			// Verificar si el clic fue fuera del sidebar y fuera del botón de menú
+			const clickFueraSidebar = !sidebar.contains(e.target);
+			const clickFueraBoton = !menuToggle.contains(e.target);
+			
+			if (isSidebarOpen && clickFueraSidebar && clickFueraBoton) {
+				// Cerrar sidebar según el modo (desktop o móvil)
+				if (window.innerWidth > 768) {
+					sidebar.classList.add('collapsed');
+					sidebarOpen = false;
+				} else {
+					sidebar.classList.remove('open');
+					sidebarOpen = false;
+				}
+			}
+		});
+		
         function cambiarSemanas() {
             initGrid(true);
             marcarCambio();
@@ -4477,7 +5636,11 @@
                 calcular(s);
             }
             
-            valorCupoBase = 8094;
+            proveedores = JSON.parse(JSON.stringify(PROVEEDORES_INICIALES));
+			productosBase = JSON.parse(JSON.stringify(PRODUCTOS_INICIALES));
+			valorCupoBase = 8094;
+			
+			initGrid(false);
             
             localStorage.removeItem(`elite_draft_${currentUser}`);
             
