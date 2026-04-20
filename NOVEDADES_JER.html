@@ -2588,7 +2588,7 @@
                         <!-- Fila 2: Comuna (izquierda) + Barrio (derecha) -->
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Comuna *</label>
-                            <select id="ingresoComuna" name="ingreso_comuna" class="w-full rounded-lg" required>
+                            <select id="ingresoComuna" name="ingreso_comuna" class="w-full rounded-lg">
                                 <option value="">Seleccione Comuna...</option>
                                 <option value="Comuna 1">Comuna 1</option>
                                 <option value="Comuna 2">Comuna 2</option>
@@ -2604,17 +2604,17 @@
                         </div>
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Barrio *</label>
-                            <input type="text" id="ingresoBarrio" name="ingreso_barrio" placeholder="Nombre del Barrio" class="w-full rounded-lg" required>
+                            <input type="text" id="ingresoBarrio" name="ingreso_barrio" placeholder="Nombre del Barrio" class="w-full rounded-lg" >
                         </div>
                         
                         <!-- Fila 3: Dirección (izquierda) + Teléfono (derecha) -->
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Dirección *</label>
-                            <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección completa" class="w-full rounded-lg" required>
+                            <input type="text" id="ingresoAddress" name="ingreso_direccion" placeholder="Dirección completa" class="w-full rounded-lg" >
                         </div>
                         <div class="space-y-1">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Teléfono *</label>
-                            <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg" required>
+                            <input type="tel" id="ingresoPhone" name="ingreso_telefono" placeholder="Teléfono de Contacto" class="w-full rounded-lg" >
                         </div>
                         <div class="md:col-span-2 space-y-2">
                             <label class="text-[11px] font-bold text-green-600 ml-1 uppercase">Soporte Documental (PDF o Imagen)</label>
@@ -8455,80 +8455,113 @@ function debounce(func, wait) {
                     }
 
                     // ============================================
-                    // CONSTRUIR DATOS PARA ENVÍO
-                    // ============================================
-                    const udsName = uds.value.split(' - ')[0];
-                    const noveltyData = {
-                        contract: contract.value,
-                        udsName: udsName,
-                        udsFull: uds.value,
-                        timestamp: new Date().toISOString(),
-                        date: new Date().toISOString().split('T')[0],
-                        cuentameStatus: 'pendiente'
-                    };
+					// CONSTRUIR DATOS PARA ENVÍO
+					// ============================================
+					const udsName = uds.value.split(' - ')[0];
+					const noveltyData = {
+						contract: contract.value,
+						udsName: udsName,
+						udsFull: uds.value,
+						timestamp: new Date().toISOString(),
+						date: new Date().toISOString().split('T')[0],
+						cuentameStatus: 'pendiente'
+					};
 
-                    // Determinar tipo
-                    if (isRetiro && isIngreso) {
-                        noveltyData.type = 'ambos';
-                        noveltyData.hasRetiro = true;
-                        noveltyData.hasIngreso = true;
-                    } else if (isRetiro) {
-                        noveltyData.type = 'retiro';
-                        noveltyData.hasRetiro = true;
-                        noveltyData.hasIngreso = false;
-                    } else if (isIngreso) {
-                        noveltyData.type = 'ingreso';
-                        noveltyData.hasRetiro = false;
-                        noveltyData.hasIngreso = true;
-                    }
+					// Determinar tipo
+					if (isRetiro && isIngreso) {
+						noveltyData.type = 'ambos';
+						noveltyData.hasRetiro = true;
+						noveltyData.hasIngreso = true;
+					} else if (isRetiro) {
+						noveltyData.type = 'retiro';
+						noveltyData.hasRetiro = true;
+						noveltyData.hasIngreso = false;
+					} else if (isIngreso) {
+						noveltyData.type = 'ingreso';
+						noveltyData.hasRetiro = false;
+						noveltyData.hasIngreso = true;
+					}
 
-                    // Datos de retiro (solo si aplica)
-                    if (isRetiro) {
-                        noveltyData.retiro = {
-                            docType: document.getElementById('retiroDocType')?.value || 'RC',
-                            document: document.getElementById('retiroDocNumber')?.value?.trim() || '',
-                            name: document.getElementById('retiroFullName')?.value?.trim() || '',
-                            gender: document.querySelector('input[name="_retiroGender"]:checked')?.value || '',
-                            retiroDate: document.getElementById('retiroDate')?.value || ''
-                        };
-                        noveltyData.document = noveltyData.retiro.document;
-                        noveltyData.name = noveltyData.retiro.name;
-                    }
+					// Datos de retiro (solo si aplica)
+					if (isRetiro) {
+						const retiroDocType = document.getElementById('retiroDocType');
+						const retiroDocNumber = document.getElementById('retiroDocNumber');
+						const retiroFullName = document.getElementById('retiroFullName');
+						const retiroDate = document.getElementById('retiroDate');
+						const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
+						
+						noveltyData.retiro = {
+							docType: retiroDocType?.value || 'RC',
+							document: retiroDocNumber?.value?.trim() || '',
+							name: retiroFullName?.value?.trim() || '',
+							gender: retiroGender?.value || '',
+							retiroDate: retiroDate?.value || ''
+						};
+						
+						// ✅ CORREGIDO: Asignar documento y nombre PRINCIPAL desde retiro
+						noveltyData.document = noveltyData.retiro.document;
+						noveltyData.name = noveltyData.retiro.name;
+					}	
 
                     // Datos de ingreso (solo si aplica)
-                    if (isIngreso) {
-                        noveltyData.ingreso = {
-                            docType: document.getElementById('ingresoDocType')?.value || 'RC',
-                            document: document.getElementById('ingresoDocNumber')?.value?.trim() || '',
-                            name: document.getElementById('ingresoFullName')?.value?.trim() || '',
-                            dob: document.getElementById('ingresoDOB')?.value || '',
-                            age: document.getElementById('displayAge')?.value || '',
-                            gender: document.querySelector('input[name="_ingresoGender"]:checked')?.value || '',
-                            comuna: document.getElementById('ingresoComuna')?.value || '',
-                            barrio: document.getElementById('ingresoBarrio')?.value?.trim() || '',
-                            address: document.getElementById('ingresoAddress')?.value?.trim() || '',
-                            phone: document.getElementById('ingresoPhone')?.value?.trim() || '',
-                            acudiente: document.getElementById('acudienteName')?.value?.trim() || '',
-                            acudienteDoc: document.getElementById('acudienteDoc')?.value?.trim() || '',
-                            acudienteDOB: document.getElementById('acudienteDOB')?.value || '',
-                            ingresoDate: document.getElementById('ingresoDate')?.value || ''
-                        };
-                        
-                        noveltyData.nutricion = {
-                            fecha: document.getElementById('nutricionFecha')?.value || '',
-                            peso: document.getElementById('nutricionPeso')?.value || '',
-                            talla: document.getElementById('nutricionTalla')?.value || '',
-                            perimetroBraquial: document.getElementById('nutricionPerimetroBraquial')?.value || '',
-                            regimen: document.getElementById('nutricionRegimen')?.value || '',
-                            eps: document.getElementById('nutricionEPS')?.value || '',
-                            estadoNutricional: document.getElementById('nutricionStatus')?.textContent || 'No calculado'
-                        };
-
-                        if (!isRetiro) {
-                            noveltyData.document = noveltyData.ingreso.document;
-                            noveltyData.name = noveltyData.ingreso.name;
-                        }
-                    }
+					if (isIngreso) {
+						const ingresoDocType = document.getElementById('ingresoDocType');
+						const ingresoDocNumber = document.getElementById('ingresoDocNumber');
+						const ingresoFullName = document.getElementById('ingresoFullName');
+						const ingresoDOB = document.getElementById('ingresoDOB');
+						const ingresoGender = document.querySelector('input[name="_ingresoGender"]:checked');
+						const ingresoDate = document.getElementById('ingresoDate');
+						const ingresoAddress = document.getElementById('ingresoAddress');
+						const ingresoPhone = document.getElementById('ingresoPhone');
+						const acudienteName = document.getElementById('acudienteName');
+						const acudienteDoc = document.getElementById('acudienteDoc');
+						const acudienteDOB = document.getElementById('acudienteDOB');
+						const ingresoComuna = document.getElementById('ingresoComuna');
+						const ingresoBarrio = document.getElementById('ingresoBarrio');
+						
+						noveltyData.ingreso = {
+							docType: ingresoDocType?.value || 'RC',
+							document: ingresoDocNumber?.value?.trim() || '',
+							name: ingresoFullName?.value?.trim() || '',
+							dob: ingresoDOB?.value || '',
+							age: document.getElementById('displayAge')?.value || '',
+							gender: ingresoGender?.value || '',
+							comuna: ingresoComuna?.value || '',
+							barrio: ingresoBarrio?.value?.trim() || '',
+							address: ingresoAddress?.value?.trim() || '',
+							phone: ingresoPhone?.value?.trim() || '',
+							acudiente: acudienteName?.value?.trim() || '',
+							acudienteDoc: acudienteDoc?.value?.trim() || '',
+							acudienteDOB: acudienteDOB?.value || '',
+							ingresoDate: ingresoDate?.value || ''
+						};
+						
+						// ✅ CORREGIDO: Solo asignar documento/name principal si NO hay retiro
+						// (si hay ambos, ya se asignó desde retiro arriba)
+						if (!isRetiro) {
+							noveltyData.document = noveltyData.ingreso.document;
+							noveltyData.name = noveltyData.ingreso.name;
+						}
+						
+						// Nutrición solo si hay ingreso
+						const nutricionFecha = document.getElementById('nutricionFecha');
+						const nutricionPeso = document.getElementById('nutricionPeso');
+						const nutricionTalla = document.getElementById('nutricionTalla');
+						const nutricionPerimetroBraquial = document.getElementById('nutricionPerimetroBraquial');
+						const nutricionRegimen = document.getElementById('nutricionRegimen');
+						const nutricionEPS = document.getElementById('nutricionEPS');
+						const nutricionStatus = document.getElementById('nutricionStatus');
+						
+						noveltyData.nutricion = {
+							fecha: nutricionFecha?.value || '',
+							peso: nutricionPeso?.value || '',
+							talla: nutricionTalla?.value || '',
+							perimetroBraquial: nutricionPerimetroBraquial?.value || '',
+							regimen: nutricionRegimen?.value || '',
+							eps: nutricionEPS?.value || '',
+							estadoNutricional: nutricionStatus?.textContent || 'No calculado'
+						};
+					}
 
                     // Preparar datos para Google Apps Script
                     const googleData = {
