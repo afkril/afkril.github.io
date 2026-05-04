@@ -1182,6 +1182,7 @@
             padding: 8px 16px;
             border-radius: 8px;
             display: inline-block;
+			text-transform: uppercase;
         }
 
         .nutricion-details {
@@ -3132,7 +3133,7 @@
             <div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
             
             <footer class="mt-10 mb-2 text-[11px] font-black text-slate-400 tracking-[0.4em] text-center uppercase">
-                 Asociacion J.E.R - Neiva, Huila 2026
+                 Asociacion J.E.R - Neiva, Huila 2025 V3.0.1
             </footer>
         </form>
     </main>
@@ -4364,7 +4365,7 @@
             
             if (indicator) {
                 indicator.style.display = 'block';
-                statusEl.textContent = estado.nombre.toUpperCase();
+                statusEl.textContent = estado.nombre;
                 statusEl.className = `nutricion-status ${estado.clase}`;
                 
 				detailsEl.innerHTML = `
