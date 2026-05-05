@@ -10,6 +10,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+		#auth-screen::before {
+			content: '';
+			position: absolute;
+			top: -50%;
+			left: -50%;
+			width: 200%;
+			height: 200%;
+			background-image: 
+				linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+				linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+			background-size: 50px 50px;
+			transform: perspective(500px) rotateX(60deg);
+			animation: gridMove 20s linear infinite;
+			pointer-events: none;
+		}
+
+		@keyframes gridMove {
+			0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+			100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+		}
+	
         /* ===== VARIABLES Y ESTILOS BASE ===== */
         :root {
             --bg-body: #0a0a0c;
@@ -1419,6 +1440,29 @@
             align-items: center;
             gap: 5px;
         }
+		
+		.btn-gold {
+			position: relative;
+			overflow: hidden;
+		}
+
+		.btn-gold::after {
+			content: '';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			width: 0;
+			height: 0;
+			background: rgba(255,255,255,0.3);
+			border-radius: 50%;
+			transform: translate(-50%, -50%);
+			transition: width 0.6s, height 0.6s;
+		}
+
+		.btn-gold:active::after {
+			width: 300px;
+			height: 300px;
+		}
 
         .btn-gold { background: var(--primary-gold); color: black; }
         .btn-cyan { background: var(--accent-cyan); color: black; }
@@ -1792,6 +1836,20 @@
             max-width: 340px;
             text-align: center;
         }
+		.auth-box img {
+    animation: logoBreathe 4s ease-in-out infinite;
+}
+
+@keyframes logoBreathe {
+    0%, 100% { 
+        transform: scale(1); 
+        filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));
+    }
+    50% { 
+        transform: scale(1.03); 
+        filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.8));
+    }
+}
 
         .auth-box input {
             width: 100%;
@@ -1801,7 +1859,9 @@
             border: 1px solid #444;
             color: white;
             border-radius: 6px;
+			
         }
+		
 
         .hidden { display: none !important; }
 
@@ -2004,6 +2064,8 @@
                 Volver al login
             </p>
         </div>
+		
+		
     </div>
 
     <!-- SIDEBAR -->
@@ -2011,20 +2073,24 @@
         
 		<div class="sidebar-header">
             <img src="Logo/ZAN.png" alt="ZAN" style="width: 35px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));">
-            <span class="sidebar-title">|Tabla Valores</span>
+            <span class="sidebar-title">|Tabla Valores v3.1</span>
         </div>
 		
         <div class="nav-section">
-            <div class="nav-section-title">Guardar y Cargar</div>
-            <a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
-                <i class="fa-solid fa-cloud"></i>
-                <span>Guardar</span>
-            </a>
-            <a class="nav-item" id="nav-cargar" onclick="toggleDrawer('archivo'); toggleSidebarMobile();">
-                <i class="fa-solid fa-folder-open"></i>
-                <span>Cargar</span>
-            </a>
-        </div>
+			<div class="nav-section-title">Guardar y Cargar</div>
+			<a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
+				<i class="fa-solid fa-cloud"></i>
+				<span>Guardar</span>
+			</a>
+			<a class="nav-item" id="nav-sincronizar" onclick="sincronizarPendientes(); toggleSidebarMobile();" style="display: none;">
+				<i class="fa-solid fa-rotate" style="color: #d4af37;"></i>
+				<span style="color: #d4af37;">Sincronizar pendientes</span>
+			</a>
+			<a class="nav-item" id="nav-cargar" onclick="toggleDrawer('archivo'); toggleSidebarMobile();">
+				<i class="fa-solid fa-folder-open"></i>
+				<span>Cargar</span>
+			</a>
+		</div>
 
         <div class="nav-section">
             <div class="nav-section-title">Analisis</div>
@@ -2220,74 +2286,95 @@
     </div>
 
     <div class="drawer" id="drawer-resumen" style="border-left: 2px solid var(--accent-cyan);">
-        <h3 style="color: var(--accent-cyan); margin-bottom: 15px;">
-            <i class="fa-solid fa-chart-pie"></i> ANÁLISIS DETALLADO
-        </h3>
-        <div id="summary-content"></div>
-        <canvas id="chartGasto" style="margin-top:20px; max-height: 200px;"></canvas>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
-            <button class="btn btn-cyan" onclick="exportarCompleto()">
-                <i class="fa-solid fa-download"></i> EXCEL
-            </button>
-            <button class="btn btn-gold" onclick="window.print()">
-                <i class="fa-solid fa-print"></i> IMPRIMIR
-            </button>
-        </div>
-    </div>
+		<div class="file-manager-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+			<h3 style="color: var(--accent-cyan); margin: 0; display: flex; align-items: center; gap: 10px;">
+				<i class="fa-solid fa-chart-pie"></i> ANÁLISIS DETALLADO
+			</h3>
+			<button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+				<i class="fa-solid fa-xmark"></i>
+			</button>
+		</div>
+		<div id="summary-content"></div>
+		<canvas id="chartGasto" style="margin-top:20px; max-height: 200px;"></canvas>
+		<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+			<button class="btn btn-cyan" onclick="exportarCompleto()">
+				<i class="fa-solid fa-download"></i> EXCEL
+			</button>
+			<button class="btn btn-gold" onclick="window.print()">
+				<i class="fa-solid fa-print"></i> IMPRIMIR
+			</button>
+		</div>
+	</div>
+	
 
     <div class="drawer" id="drawer-contabilidad" style="border-left: 2px solid var(--success);">
-        <h3 style="color: var(--success); margin-bottom: 15px;">
-            <i class="fa-solid fa-calculator"></i> EXPORTACIÓN CONTABLE
-        </h3>
-        <div id="accounting-content"></div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
-            <button class="btn btn-cyan" onclick="exportarContabilidadCSV()">
-                <i class="fa-solid fa-file-csv"></i> CSV
-            </button>
-            <button class="btn btn-gold" onclick="exportarContabilidadExcel()">
-                <i class="fa-solid fa-file-excel"></i> EXCEL
-            </button>
-        </div>
-    </div>
+		<div class="file-manager-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+			<h3 style="color: var(--success); margin: 0; display: flex; align-items: center; gap: 10px;">
+				<i class="fa-solid fa-calculator"></i> EXPORTACIÓN CONTABLE
+			</h3>
+			<button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+				<i class="fa-solid fa-xmark"></i>
+			</button>
+		</div>
+		<div id="accounting-content"></div>
+		<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+			<button class="btn btn-cyan" onclick="exportarContabilidadCSV()">
+				<i class="fa-solid fa-file-csv"></i> CSV
+			</button>
+			<button class="btn btn-gold" onclick="exportarContabilidadExcel()">
+				<i class="fa-solid fa-file-excel"></i> EXCEL
+			</button>
+		</div>
+	</div>
 
     <!-- PANEL DE VALORES DISTRIBUIDORA -->
     <div class="drawer" id="drawer-distribuidora" style="border-left: 2px solid var(--primary-gold);">
-        <h3 style="color: var(--primary-gold); margin-bottom: 15px;">
-            <i class="fa-solid fa-sack-dollar"></i> VALORES DISTRIBUIDORA
-        </h3>
-        <p style="color: var(--text-dim); font-size: 11px; margin-bottom: 15px;">
-            Selecciona las semanas para sumar sus valores de distribuidora:
-        </p>
-        <div id="distribuidora-semanas"></div>
-        <div class="total-distribuidora" id="total-distribuidora">
-            $0
-        </div>
-        <div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
-            <small style="color: var(--text-dim);">
-                <i class="fa-solid fa-info-circle"></i> 
-                La distribuidora es el valor restante del presupuesto después de compras
-            </small>
-        </div>
-    </div>
+		<div class="file-manager-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+			<h3 style="color: var(--primary-gold); margin: 0; display: flex; align-items: center; gap: 10px;">
+				<i class="fa-solid fa-sack-dollar"></i> VALORES DISTRIBUIDORA
+			</h3>
+			<button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+				<i class="fa-solid fa-xmark"></i>
+			</button>
+		</div>
+		<p style="color: var(--text-dim); font-size: 11px; margin-bottom: 15px;">
+			Selecciona las semanas para sumar sus valores de distribuidora:
+		</p>
+		<div id="distribuidora-semanas"></div>
+		<div class="total-distribuidora" id="total-distribuidora">
+			$0
+		</div>
+		<div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+			<small style="color: var(--text-dim);">
+				<i class="fa-solid fa-info-circle"></i> 
+				La distribuidora es el valor restante del presupuesto después de compras
+			</small>
+		</div>
+	</div>
 
     <!-- PANEL DE VALIDAR FACTURAS - CORREGIDO -->
     <div class="drawer" id="drawer-facturas" style="border-left: 2px solid var(--accent-cyan);">
-        <h3 style="color: var(--accent-cyan); margin-bottom: 15px;">
-            <i class="fa-solid fa-file-invoice"></i> VALIDACIÓN DE FACTURAS
-        </h3>
-        <p style="color: var(--text-dim); font-size: 11px; margin-bottom: 15px;">
-            Resumen agrupado por proveedor, factura y productos:
-        </p>
-        <div id="facturas-content"></div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
-            <button class="btn btn-cyan" onclick="exportarFacturasCSV()">
-                <i class="fa-solid fa-file-csv"></i> CSV
-            </button>
-            <button class="btn btn-gold" onclick="exportarFacturasExcel()">
-                <i class="fa-solid fa-file-excel"></i> EXCEL
-            </button>
-        </div>
-    </div>
+		<div class="file-manager-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+			<h3 style="color: var(--accent-cyan); margin: 0; display: flex; align-items: center; gap: 10px;">
+				<i class="fa-solid fa-file-invoice"></i> VALIDACIÓN DE FACTURAS
+			</h3>
+			<button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+				<i class="fa-solid fa-xmark"></i>
+			</button>
+		</div>
+		<p style="color: var(--text-dim); font-size: 11px; margin-bottom: 15px;">
+			Resumen agrupado por proveedor, factura y productos:
+		</p>
+		<div id="facturas-content"></div>
+		<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px;">
+			<button class="btn btn-cyan" onclick="exportarFacturasCSV()">
+				<i class="fa-solid fa-file-csv"></i> CSV
+			</button>
+			<button class="btn btn-gold" onclick="exportarFacturasExcel()">
+				<i class="fa-solid fa-file-excel"></i> EXCEL
+			</button>
+		</div>
+	</div>
 
     <!-- MODAL: PROVEEDORES -->
     <div class="modal" id="modal-proveedores">
@@ -2296,9 +2383,9 @@
                 <div class="modal-title">
                     <i class="fa-solid fa-truck-field"></i> GESTIÓN DE PROVEEDORES
                 </div>
-                <button class="btn btn-sm" onclick="toggleModal('modal-proveedores')" style="background:#333;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+				<button class="btn btn-sm btn-danger" onclick="toggleModal('modal-proveedores')">
+					<i class="fa-solid fa-xmark"></i>
+				</button>
             </div>
 
             <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
@@ -2329,9 +2416,9 @@
                 <div class="modal-title">
                     <i class="fa-solid fa-list-check"></i> LISTADO DE PRODUCTOS BASE
                 </div>
-                <button class="btn btn-sm" onclick="toggleModal('modal-productos')" style="background:#333;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+				<button class="btn btn-sm btn-danger" onclick="toggleModal('modal-productos')">
+					<i class="fa-solid fa-xmark"></i>
+				</button>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -2366,12 +2453,20 @@
         const db = firebase.database();
 
         // ===== VARIABLES GLOBALES =====
-        let currentUser = "";
-        let valorCupoBase = 8094;
-        let chartInstance = null;
-        let sidebarOpen = window.innerWidth > 768;
+		let currentUser = "";
+		let valorCupoBase = 8094;
+		let chartInstance = null;
+		let sidebarOpen = window.innerWidth > 768;
 		let tutorialEnCurso = false;
 		let tutorialYaVisto = false;
+
+		// NUEVAS VARIABLES PARA SINCRONIZACIÓN OFFLINE
+		let hayPendientesSinSincronizar = false;
+		let sincronizacionEnProgreso = false;
+		let ultimoGuardadoLocal = null;
+		let ultimoGuardadoConfirmado = null;
+		let cambiosSinGuardar = false; 
+		let cambiosSinGuardarLocal = false;
 
         let proveedores = [];
         let productosBase = [];
@@ -2991,6 +3086,62 @@
             document.getElementById('helpButton').classList.add('pulse');
         }
 		
+		// ===== DETECCIÓN DE CONEXIÓN =====
+		function estaOnline() {
+			return navigator.onLine;
+		}
+
+		function iniciarMonitoreoConexion() {
+			window.addEventListener('online', () => {
+				console.log("🌐 Conexión restablecida");
+				mostrarNotificacionConexionRestablecida();
+			});
+			
+			window.addEventListener('offline', () => {
+				console.log("📴 Sin conexión");
+				mostrarNotificacionSinConexion();
+			});
+		}
+
+		function mostrarNotificacionSinConexion() {
+			const dotTop = document.getElementById('sync-dot-top');
+			const textTop = document.getElementById('sync-text-top');
+			const dot = document.getElementById('sync-dot');
+			const text = document.getElementById('sync-text');
+			
+			if (dotTop) {
+				dotTop.style.background = '#d4af37'; // Dorado
+				dotTop.style.boxShadow = '0 0 8px #d4af37';
+			}
+			if (textTop) {
+				textTop.textContent = "Sin conexión";
+				textTop.style.color = '#d4af37';
+			}
+			if (dot) {
+				dot.style.background = '#d4af37';
+				dot.style.boxShadow = '0 0 5px #d4af37';
+			}
+			if (text) {
+				text.textContent = "Sin conexión";
+			}
+		}
+
+		function mostrarNotificacionConexionRestablecida() {
+			// Solo mostrar diálogo si hay datos pendientes
+			if (hayPendientesSinSincronizar && ultimoGuardadoLocal) {
+				const contrato = ultimoGuardadoLocal.contrato || "Sin contrato";
+				const mes = ultimoGuardadoLocal.mes || "Sin mes";
+				
+				if (confirm(`🌐 ¡Conexión restablecida!\n\n¿Deseas sincronizar ahora el contrato?\n📄 ${contrato}\n📅 ${mes}\n\nSe subirán los datos guardados localmente.`)) {
+					sincronizarPendientes();
+				}
+			} else {
+				// Solo actualizar indicador visual
+				marcarSincronizado();
+			}
+		}
+		
+		
 
         // ===== SISTEMA DE ARCHIVOS MEJORADO CON CARPETAS =====
         let currentPath = 'root';
@@ -3456,21 +3607,108 @@
 			const dotTop = document.getElementById('sync-dot-top');
 			const textTop = document.getElementById('sync-text-top');
 			
-			if (dot) {
-				dot.classList.add('unsaved');
-				text.textContent = "Cambios pendientes";
-			}
-			if (dotTop) {
-				dotTop.classList.add('unsaved');
-				dotTop.style.background = 'var(--danger)';
-				dotTop.style.boxShadow = '0 0 8px var(--danger)';
-				textTop.textContent = "Cambios pendientes";
-				textTop.style.color = 'var(--danger)';
-			}
+			// Siempre guardar en draft local automáticamente (para no perder datos)
 			guardarLocal();
+			
+			// Verificar si hay diferencias respecto al último guardado confirmado
+			const tieneCambiosNuevos = detectarCambiosRespectoUltimoGuardado();
+			
+			if (!tieneCambiosNuevos) {
+				// No hay cambios nuevos, mantener estado actual
+				return;
+			}
+			
+			cambiosSinGuardar = true;
+			
+			if (hayPendientesSinSincronizar) {
+				// Ya hay guardado local previo SIN subir a Firebase + nuevas modificaciones
+				if (dot) {
+					dot.classList.add('unsaved');
+					dot.style.background = '#ff4655';
+					dot.style.boxShadow = '0 0 8px #ff4655';
+					text.textContent = "Cambios pendientes por guardar en local";
+					text.style.color = '#ff4655';
+				}
+				if (dotTop) {
+					dotTop.classList.add('unsaved');
+					dotTop.style.background = '#ff4655';
+					dotTop.style.boxShadow = '0 0 12px #ff4655';
+					textTop.textContent = "Cambios pendientes por guardar en local";
+					textTop.style.color = '#ff4655';
+					textTop.style.fontWeight = 'bold';
+				}
+			} else {
+				// Hay internet pero aún no se ha presionado Guardar
+				if (dot) {
+					dot.classList.add('unsaved');
+					text.textContent = "Cambios pendientes";
+				}
+				if (dotTop) {
+					dotTop.classList.add('unsaved');
+					dotTop.style.background = 'var(--danger)';
+					dotTop.style.boxShadow = '0 0 8px var(--danger)';
+					textTop.textContent = "Cambios pendientes";
+					textTop.style.color = 'var(--danger)';
+				}
+			}
+		}
+		
+		function detectarCambiosRespectoUltimoGuardado() {
+			// Si no hay último guardado confirmado, cualquier dato es un cambio
+			if (!ultimoGuardadoConfirmado) {
+				// Verificar si hay datos en el formulario (no está vacío)
+				const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+				for (let s = 1; s <= semanas; s++) {
+					if (document.getElementById(`dias-${s}`)?.value) return true;
+					if (document.getElementById(`cupos-${s}`)?.value) return true;
+					for (let i = 0; i < productosBase.length; i++) {
+						if (document.getElementById(`cant-${s}-${i}`)?.value) return true;
+						if (document.getElementById(`fac-${s}-${i}`)?.value) return true;
+					}
+				}
+				return false;
+			}
+			
+			// Comparar datos actuales vs último guardado confirmado
+			const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+			const guardado = ultimoGuardadoConfirmado;
+			
+			// Comparar metadata básica
+			if (document.getElementById('main-mes')?.value !== guardado.mes) return true;
+			if (document.getElementById('main-contrato')?.value !== guardado.contrato) return true;
+			if (semanas !== (guardado.numSemanas || 4)) return true;
+			if (valorCupoBase !== (guardado.valorCupo || 8094)) return true;
+			
+			// Comparar datos por semana
+			for (let s = 1; s <= semanas; s++) {
+				const diasActual = document.getElementById(`dias-${s}`)?.value || "";
+				const cuposActual = document.getElementById(`cupos-${s}`)?.value || "";
+				const diasGuardado = guardado.semanas?.[s]?.d || "";
+				const cuposGuardado = guardado.semanas?.[s]?.c || "";
+				
+				if (diasActual !== diasGuardado) return true;
+				if (cuposActual !== cuposGuardado) return true;
+				
+				for (let i = 0; i < productosBase.length; i++) {
+					const cantActual = document.getElementById(`cant-${s}-${i}`)?.value || "";
+					const facActual = document.getElementById(`fac-${s}-${i}`)?.value || "";
+					const punitActual = document.getElementById(`punit-${s}-${i}`)?.value || "";
+					
+					const itemGuardado = guardado.semanas?.[s]?.items?.[productosBase[i].nombre];
+					const cantGuardado = itemGuardado?.q || "";
+					const facGuardado = itemGuardado?.f || "";
+					const punitGuardado = itemGuardado?.p || "";
+					
+					if (cantActual !== String(cantGuardado)) return true;
+					if (facActual !== String(facGuardado)) return true;
+					if (punitActual !== String(punitGuardado)) return true;
+				}
+			}
+			
+			return false;
 		}
 
-        function marcarSincronizado() {
+		function marcarSincronizado() {
 			const dot = document.getElementById('sync-dot');
 			const text = document.getElementById('sync-text');
 			const dotTop = document.getElementById('sync-dot-top');
@@ -3486,6 +3724,13 @@
 				dotTop.style.boxShadow = '0 0 8px var(--success)';
 				textTop.textContent = "Sincronizado";
 				textTop.style.color = 'var(--text-dim)';
+				textTop.style.fontWeight = 'normal';
+			}
+			
+			// Restaurar botón de guardar
+			const btnGuardar = document.querySelector('#nav-guardar span');
+			if (btnGuardar) {
+				btnGuardar.innerHTML = 'Guardar';
 			}
 		}
 
@@ -3548,6 +3793,12 @@
 				console.log("Archivo actual recordado:", currentFileId);
 			}
 
+			// INICIALIZAR MONITOREO DE CONEXIÓN
+			iniciarMonitoreoConexion();
+
+			// VERIFICAR SI HAY PENDIENTES DE SINCRONIZAR
+			verificarPendientesAlIniciar();
+
 			inicializarDatos();
 			
 			// VERIFICAR SI ES PRIMERA VEZ O SI DEBE MOSTRAR TUTORIAL
@@ -3560,6 +3811,48 @@
 						marcarTutorialVisto();
 					}
 				}, 1000);
+			}
+		}
+
+		function verificarPendientesAlIniciar() {
+			const pendienteJSON = localStorage.getItem(`elite_pending_sync_${currentUser}`);
+			const draftJSON = localStorage.getItem(`elite_draft_${currentUser}`);
+			
+			if (pendienteJSON) {
+				try {
+					const data = JSON.parse(pendienteJSON);
+					ultimoGuardadoConfirmado = JSON.parse(JSON.stringify(data)); // El pending es el último confirmado
+					hayPendientesSinSincronizar = true;
+					cambiosSinGuardar = false;
+					
+					// Verificar si el draft actual tiene cambios adicionales
+					if (draftJSON) {
+						const draft = JSON.parse(draftJSON);
+						// Comparar draft vs pending para ver si hay cambios nuevos
+						const draftStr = JSON.stringify(draft.semanas) + draft.mes + draft.contrato;
+						const pendingStr = JSON.stringify(data.semanas) + data.mes + data.contrato;
+						
+						if (draftStr !== pendingStr) {
+							// El draft tiene cambios diferentes al pending
+							cambiosSinGuardar = true;
+						}
+					}
+					
+					if (!estaOnline()) {
+						mostrarEstadoGuardadoLocal(data.mes, data.contrato);
+					} else {
+						setTimeout(() => {
+							if (confirm(`📤 Datos pendientes de sincronización detectados:\n\n📄 Contrato: ${data.contrato}\n📅 Mes: ${data.mes}\n\n¿Deseas sincronizarlos ahora?`)) {
+								sincronizarPendientes();
+							} else {
+								mostrarEstadoGuardadoLocal(data.mes, data.contrato);
+							}
+						}, 1500);
+					}
+				} catch (e) {
+					console.error("Error al verificar pendientes:", e);
+					localStorage.removeItem(`elite_pending_sync_${currentUser}`);
+				}
 			}
 		}
 
@@ -5652,39 +5945,44 @@
 
         // ===== LOCAL STORAGE =====
 		function guardarLocal() {
-			const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
-			const data = {
-				mes: document.getElementById('main-mes').value,
-				contrato: document.getElementById('main-contrato').value,
-				numSemanas: semanas,
-				valorCupo: valorCupoBase,
-				productosBase,
-				proveedores,
-				currentFileId: currentFileId,
-				semanas: {}
+		
+		const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+		const data = {
+			mes: document.getElementById('main-mes').value,
+			contrato: document.getElementById('main-contrato').value,
+			numSemanas: semanas,
+			valorCupo: valorCupoBase,
+			productosBase,
+			proveedores,
+			currentFileId: currentFileId,
+			_metadata: {
+				fechaGuardadoDraft: new Date().toISOString(),
+				version: '2.0'
+			},
+			semanas: {}
+		};
+
+		for (let s = 1; s <= semanas; s++) {
+			data.semanas[s] = {
+				d: document.getElementById(`dias-${s}`)?.value || "",
+				c: document.getElementById(`cupos-${s}`)?.value || "",
+				items: {}
 			};
-
-			for (let s = 1; s <= semanas; s++) {
-				data.semanas[s] = {
-					d: document.getElementById(`dias-${s}`)?.value || "",
-					c: document.getElementById(`cupos-${s}`)?.value || "",
-					items: {}
+			productosBase.forEach((p, i) => {
+				data.semanas[s].items[p.nombre] = {
+					f: document.getElementById(`fac-${s}-${i}`)?.value || "",
+					q: document.getElementById(`cant-${s}-${i}`)?.value || "",
+					p: document.getElementById(`punit-${s}-${i}`)?.value || p.precio
 				};
-				productosBase.forEach((p, i) => {
-					data.semanas[s].items[p.nombre] = {
-						f: document.getElementById(`fac-${s}-${i}`)?.value || "",
-						q: document.getElementById(`cant-${s}-${i}`)?.value || "",
-						p: document.getElementById(`punit-${s}-${i}`)?.value || p.precio
-					};
-				});
-			}
-
-			localStorage.setItem(`elite_draft_${currentUser}`, JSON.stringify(data));
-			
-			if (currentFileId) {
-				localStorage.setItem(`elite_current_file_${currentUser}`, currentFileId);
-			}
+			});
 		}
+
+		localStorage.setItem(`elite_draft_${currentUser}`, JSON.stringify(data));
+		
+		if (currentFileId) {
+			localStorage.setItem(`elite_current_file_${currentUser}`, currentFileId);
+		}
+	}
 
 		function cargarLocal() {
 			const saved = localStorage.getItem(`elite_draft_${currentUser}`);
@@ -5701,6 +5999,11 @@
 					currentFileId = data.currentFileId;
 				}
 				
+				// Al cargar desde local, considerar esto como el último estado conocido
+				// pero NO como guardado confirmado (el usuario debe presionar Guardar)
+				ultimoGuardadoConfirmado = null; // Forzar al usuario a guardar explícitamente
+				cambiosSinGuardar = true;
+				
 				restaurar(data);
 			} else {
 				initGrid();
@@ -5708,41 +6011,48 @@
 		}
 
         function restaurar(data) {
-            if (data.proveedores) proveedores = data.proveedores;
-            if (data.productosBase) productosBase = data.productosBase;
-            if (data.valorCupo) valorCupoBase = data.valorCupo;
+			if (data.proveedores) proveedores = data.proveedores;
+			if (data.productosBase) productosBase = data.productosBase;
+			if (data.valorCupo) valorCupoBase = data.valorCupo;
 
-            document.getElementById('main-mes').value = data.mes || "Enero";
-            document.getElementById('main-contrato').value = data.contrato || "";
-            document.getElementById('num-semanas').value = data.numSemanas || 4;
+			document.getElementById('main-mes').value = data.mes || "Enero";
+			document.getElementById('main-contrato').value = data.contrato || "";
+			document.getElementById('num-semanas').value = data.numSemanas || 4;
 
-            initGrid();
+			initGrid();
 
-            for (let s = 1; s <= (data.numSemanas || 4); s++) {
-                if (!data.semanas || !data.semanas[s]) continue;
-                
-                if (document.getElementById(`dias-${s}`)) 
-                    document.getElementById(`dias-${s}`).value = data.semanas[s].d || "";
-                if (document.getElementById(`cupos-${s}`)) 
-                    document.getElementById(`cupos-${s}`).value = data.semanas[s].c || "";
+			for (let s = 1; s <= (data.numSemanas || 4); s++) {
+				if (!data.semanas || !data.semanas[s]) continue;
+				
+				if (document.getElementById(`dias-${s}`)) 
+					document.getElementById(`dias-${s}`).value = data.semanas[s].d || "";
+				if (document.getElementById(`cupos-${s}`)) 
+					document.getElementById(`cupos-${s}`).value = data.semanas[s].c || "";
 
-                if (data.semanas[s].items) {
-                    productosBase.forEach((pb, i) => {
-                        const item = data.semanas[s].items[pb.nombre];
-                        if (item) {
-                            if (document.getElementById(`fac-${s}-${i}`)) 
-                                document.getElementById(`fac-${s}-${i}`).value = item.f || "";
-                            if (document.getElementById(`cant-${s}-${i}`)) 
-                                document.getElementById(`cant-${s}-${i}`).value = item.q || "";
-                            if (document.getElementById(`punit-${s}-${i}`)) 
-                                document.getElementById(`punit-${s}-${i}`).value = item.p || pb.precio;
-                        }
-                    });
-                }
-                calcular(s);
-            }
-            marcarSincronizado();
-        }
+				if (data.semanas[s].items) {
+					productosBase.forEach((pb, i) => {
+						const item = data.semanas[s].items[pb.nombre];
+						if (item) {
+							if (document.getElementById(`fac-${s}-${i}`)) 
+								document.getElementById(`fac-${s}-${i}`).value = item.f || "";
+							if (document.getElementById(`cant-${s}-${i}`)) 
+								document.getElementById(`cant-${s}-${i}`).value = item.q || "";
+							if (document.getElementById(`punit-${s}-${i}`)) 
+								document.getElementById(`punit-${s}-${i}`).value = item.p || pb.precio;
+						}
+					});
+				}
+				calcular(s);
+			}
+			
+			// Después de restaurar, verificar si hay pendientes de sincronización
+			verificarPendientesAlIniciar();
+			
+			// Si no hay pendientes, mostrar cambios pendientes normales
+			if (!hayPendientesSinSincronizar) {
+				marcarCambio();
+			}
+		}
         
         let currentFileId = null;
 
@@ -5757,25 +6067,26 @@
 				return;
 			}
 			
+			// Preparar datos para guardar
 			const id = `${mes}_${contrato}`.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '_');
 			
-			const data = JSON.parse(localStorage.getItem(`elite_draft_${currentUser}`)) || {};
-			
-			data._metadata = {
-				fechaGuardado: new Date().toISOString(),
-				usuario: currentUser,
-				version: '2.0',
-				fileId: id,
-				displayName: `${mes} - ${contrato}`
+			const data = {
+				_metadata: {
+					fechaGuardado: new Date().toISOString(),
+					usuario: currentUser,
+					version: '2.0',
+					fileId: id,
+					displayName: `${mes} - ${contrato}`,
+					sincronizado: false
+				},
+				mes: mes,
+				contrato: contrato,
+				numSemanas: parseInt(document.getElementById('num-semanas').value) || 4,
+				valorCupo: valorCupoBase,
+				proveedores: JSON.parse(JSON.stringify(proveedores)),
+				productosBase: JSON.parse(JSON.stringify(productosBase)),
+				semanas: {}
 			};
-			
-			data.mes = mes;
-			data.contrato = contrato;
-			data.numSemanas = parseInt(document.getElementById('num-semanas').value) || 4;
-			data.valorCupo = valorCupoBase;
-			data.proveedores = proveedores;
-			data.productosBase = productosBase;
-			data.semanas = {};
 			
 			const semanas = data.numSemanas;
 			for (let s = 1; s <= semanas; s++) {
@@ -5801,17 +6112,203 @@
 				});
 			}
 			
-			await db.ref(`files/${currentUser}/${id}`).set(data);
+			// ESTE ES EL MOMENTO CLAVE: El usuario presionó "Guardar"
+			// Guardar como último confirmado
+			ultimoGuardadoConfirmado = JSON.parse(JSON.stringify(data));
+			cambiosSinGuardar = false;
 			
-			currentFileId = id;
+			// SIEMPRE guardar en draft local
+			localStorage.setItem(`elite_draft_${currentUser}`, JSON.stringify(data));
 			
-			localStorage.setItem(`elite_current_file_${currentUser}`, id);
+			// Verificar conexión
+			if (!estaOnline()) {
+				// SIN INTERNET: Guardar como pendiente de sincronización
+				localStorage.setItem(`elite_pending_sync_${currentUser}`, JSON.stringify(data));
+				hayPendientesSinSincronizar = true;
+				mostrarEstadoGuardadoLocal(mes, contrato);
+				return;
+			}
 			
-			alert(`Guardado exitoso:\n${mes} - ${contrato}`);
-			marcarSincronizado();
+			// CON INTERNET: Intentar subir a Firebase
+			try {
+				await db.ref(`files/${currentUser}/${id}`).set(data);
+				
+				// Éxito en Firebase
+				currentFileId = id;
+				localStorage.setItem(`elite_current_file_${currentUser}`, id);
+				localStorage.removeItem(`elite_pending_sync_${currentUser}`);
+				
+				hayPendientesSinSincronizar = false;
+				
+				mostrarEstadoSincronizado();
+				alert(`✅ Guardado exitoso en la nube:\n${mes} - ${contrato}`);
+				
+				if (document.getElementById('drawer-archivo').classList.contains('open')) {
+					listarCloud();
+				}
+				
+			} catch (error) {
+				console.error("Error al guardar en Firebase:", error);
+				
+				// Falló Firebase, guardar como pendiente
+				localStorage.setItem(`elite_pending_sync_${currentUser}`, JSON.stringify(data));
+				hayPendientesSinSincronizar = true;
+				mostrarEstadoGuardadoLocal(mes, contrato);
+				
+				alert(`⚠️ No se pudo guardar en la nube.\n\nLos datos se han guardado localmente y se sincronizarán automáticamente cuando recuperes la conexión.`);
+			}
+		}
+
+		function mostrarEstadoGuardadoLocal(mes, contrato) {
+			const dotTop = document.getElementById('sync-dot-top');
+			const textTop = document.getElementById('sync-text-top');
+			const dot = document.getElementById('sync-dot');
+			const text = document.getElementById('sync-text');
 			
-			if (document.getElementById('drawer-archivo').classList.contains('open')) {
-				listarCloud();
+			// Determinar mensaje según si hay cambios sin guardar
+			const mensaje = cambiosSinGuardar 
+				? "Cambios pendientes por guardar en local" 
+				: "Guardado local (sin Internet)";
+			
+			const color = cambiosSinGuardar ? '#ff4655' : '#d4af37';
+			
+			if (dotTop) {
+				dotTop.style.background = color;
+				dotTop.style.boxShadow = `0 0 12px ${color}`;
+			}
+			if (textTop) {
+				textTop.textContent = mensaje;
+				textTop.style.color = color;
+				textTop.style.fontWeight = cambiosSinGuardar ? 'bold' : '500';
+			}
+			if (dot) {
+				dot.style.background = color;
+				dot.style.boxShadow = `0 0 8px ${color}`;
+			}
+			if (text) {
+				text.textContent = mensaje;
+				text.style.color = color;
+			}
+			
+			// Actualizar botón de guardar en sidebar
+			const btnGuardar = document.querySelector('#nav-guardar span');
+			if (btnGuardar) {
+				if (cambiosSinGuardar) {
+					btnGuardar.innerHTML = '<i class="fa-solid fa-floppy-disk" style="color: #ff4655;"></i> Guardar cambios';
+				} else {
+					btnGuardar.innerHTML = '<i class="fa-solid fa-floppy-disk" style="color: #d4af37;"></i> Guardado local';
+				}
+			}
+			
+			actualizarVisibilidadBotonSincronizar();
+		}
+
+		function mostrarEstadoSincronizando() {
+			const dotTop = document.getElementById('sync-dot-top');
+			const textTop = document.getElementById('sync-text-top');
+			
+			if (dotTop) {
+				dotTop.style.background = '#00f2ff';
+				dotTop.style.boxShadow = '0 0 12px #00f2ff';
+			}
+			if (textTop) {
+				textTop.textContent = "Sincronizando...";
+				textTop.style.color = '#00f2ff';
+			}
+		}
+
+		function mostrarEstadoSincronizado() {
+			const dot = document.getElementById('sync-dot');
+			const text = document.getElementById('sync-text');
+			const dotTop = document.getElementById('sync-dot-top');
+			const textTop = document.getElementById('sync-text-top');
+			
+			if (dot) {
+				dot.classList.remove('unsaved');
+				dot.style.background = '#00ff88';
+				dot.style.boxShadow = '0 0 5px #00ff88';
+				text.textContent = "Sincronizado";
+				text.style.color = 'var(--text-dim)';
+			}
+			if (dotTop) {
+				dotTop.classList.remove('unsaved');
+				dotTop.style.background = 'var(--success)';
+				dotTop.style.boxShadow = '0 0 8px var(--success)';
+				textTop.textContent = "Sincronizado";
+				textTop.style.color = 'var(--text-dim)';
+				textTop.style.fontWeight = 'normal';
+			}
+			
+			// Restaurar botón de guardar
+			const btnGuardar = document.querySelector('#nav-guardar span');
+			if (btnGuardar) {
+				btnGuardar.innerHTML = 'Guardar';
+			}
+			
+			hayPendientesSinSincronizar = false;
+			cambiosSinGuardar = false;
+			
+			actualizarVisibilidadBotonSincronizar();
+		}
+		
+		async function sincronizarPendientes() {
+			if (sincronizacionEnProgreso) return;
+			if (!estaOnline()) {
+				alert("📴 Aún no hay conexión a Internet");
+				return;
+			}
+			
+			const pendienteJSON = localStorage.getItem(`elite_pending_sync_${currentUser}`);
+			if (!pendienteJSON) {
+				hayPendientesSinSincronizar = false;
+				cambiosSinGuardar = false;
+				return;
+			}
+			
+			sincronizacionEnProgreso = true;
+			mostrarEstadoSincronizando();
+			
+			try {
+				const data = JSON.parse(pendienteJSON);
+				const id = data._metadata?.fileId || `${data.mes}_${data.contrato}`.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '_');
+				
+				data._metadata.fechaSincronizacion = new Date().toISOString();
+				data._metadata.sincronizado = true;
+				
+				await db.ref(`files/${currentUser}/${id}`).set(data);
+				
+				currentFileId = id;
+				localStorage.setItem(`elite_current_file_${currentUser}`, id);
+				localStorage.removeItem(`elite_pending_sync_${currentUser}`);
+				
+				hayPendientesSinSincronizar = false;
+				// Mantener cambiosSinGuardar según si hay modificaciones nuevas
+				
+				mostrarEstadoSincronizado();
+				
+				alert(`✅ Sincronización completada:\n${data.mes} - ${data.contrato}`);
+				
+				if (document.getElementById('drawer-archivo').classList.contains('open')) {
+					listarCloud();
+				}
+				
+			} catch (error) {
+				console.error("Error en sincronización:", error);
+				alert(`❌ Error al sincronizar:\n${error.message}`);
+				
+				hayPendientesSinSincronizar = true;
+				mostrarEstadoGuardadoLocal(ultimoGuardadoConfirmado?.mes, ultimoGuardadoConfirmado?.contrato);
+				
+			} finally {
+				sincronizacionEnProgreso = false;
+				actualizarVisibilidadBotonSincronizar();
+			}
+		}
+		
+		function actualizarVisibilidadBotonSincronizar() {
+			const btnSync = document.getElementById('nav-sincronizar');
+			if (btnSync) {
+				btnSync.style.display = hayPendientesSinSincronizar ? 'flex' : 'none';
 			}
 		}
 
@@ -5962,7 +6459,7 @@
             }
 
             cont.innerHTML = html;
-        }
-    </script>
+        }	
+    </script>	
 </body>
 </html>
