@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAN — Gestión de Pedidos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // ══════════════════════════════════════════════
+        // 🔥 CONFIGURA TU FIREBASE AQUÍ
+        // ══════════════════════════════════════════════
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROJECT.firebaseapp.com",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_PROJECT.appspot.com",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+        // ══════════════════════════════════════════════
+
+        let app, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            window._db = db;
+            window._fbReady = true;
+            window.dispatchEvent(new Event('firebase-ready'));
+        } catch(e) {
+            console.warn('Firebase no configurado, usando modo local:', e.message);
+            window._fbReady = false;
+            window.dispatchEvent(new Event('firebase-ready'));
+        }
+
+        window._saveToFirebase = async (contractId, data) => {
+            if (!db) throw new Error('Firebase no disponible');
+            const ref = doc(db, 'pedidos', contractId);
+            await setDoc(ref, data);
+        };
+
+        window._loadFromFirebase = async (contractId) => {
+            if (!db) throw new Error('Firebase no disponible');
+            const ref = doc(db, 'pedidos', contractId);
+            const snap = await getDoc(ref);
+            return snap.exists() ? snap.data() : null;
+        };
+
+        window._listFromFirebase = async () => {
+            if (!db) throw new Error('Firebase no disponible');
+            const col = collection(db, 'pedidos');
+            const q = query(col, orderBy('savedAt', 'desc'));
+            const snap = await getDocs(q);
+            return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        };
+
+        window._deleteFromFirebase = async (contractId) => {
+            if (!db) throw new Error('Firebase no disponible');
+            const ref = doc(db, 'pedidos', contractId);
+            await deleteDoc(ref);
+        };
+    </script>
+
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --bg2: #111827;
+            --bg3: #1a2236;
+            --bg4: #223;
+            --border: #1e2d47;
+            --text: #e8edf5;
+            --text2: #8899bb;
+            --text3: #4a5a7a;
+            --accent: #f97316;
+            --accent2: #ea580c;
+            --accent-glow: rgba(249,115,22,0.18);
+            --green: #22c55e;
+            --green-bg: #052e16;
+            --yellow: #eab308;
+            --yellow-bg: #1c1a00;
+            --red: #ef4444;
+            --blue: #3b82f6;
+
+            /* Table colors — editables */
+            --tbl-header: #f97316;
+            --tbl-header-text: #fff;
+            --tbl-col-cupos: #d1fae5;
+            --tbl-col-cupos-text: #064e3b;
+            --tbl-col-uds: #fef3c7;
+            --tbl-col-uds-text: #78350f;
+            --tbl-row-even: #0b0f1a;
+            --tbl-row-odd: #111827;
+            --tbl-total-bg: #1c1a00;
+            --tbl-total-text: #eab308;
+
+            --r: 8px;
+            --r2: 14px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── SIDEBAR ── */
+        .layout { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            transition: transform .3s ease;
+        }
+
+        .sidebar-logo {
+            padding: 24px 20px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-mark {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--accent), #dc2626);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; color: white; font-size: 15px;
+            letter-spacing: -1px;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .logo-text { font-size: 17px; font-weight: 700; }
+        .logo-sub { font-size: 10px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; }
+
+        .nav-section { padding: 16px 12px 8px; }
+        .nav-label { font-size: 10px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+
+        .nav-btn {
+            width: 100%;
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--r);
+            border: none;
+            background: transparent;
+            color: var(--text2);
+            font-family: inherit; font-size: 13.5px; font-weight: 500;
+            cursor: pointer; text-align: left;
+            transition: all .2s;
+        }
+        .nav-btn i { width: 18px; text-align: center; font-size: 13px; }
+        .nav-btn:hover { background: var(--bg3); color: var(--text); }
+        .nav-btn.active { background: var(--accent-glow); color: var(--accent); border: 1px solid rgba(249,115,22,.25); }
+        .nav-btn.active i { color: var(--accent); }
+
+        .sidebar-contract-badge {
+            margin: auto 12px 16px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px;
+        }
+        .scb-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+        .scb-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+        .scb-period { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+        /* ── MAIN ── */
+        .main { flex: 1; margin-left: 260px; padding: 28px 32px; }
+
+        .topbar {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+        }
+        .page-title { font-size: 24px; font-weight: 700; }
+        .page-sub { color: var(--text2); font-size: 13px; margin-top: 3px; }
+        .topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 9px 18px;
+            border-radius: var(--r);
+            border: 1px solid var(--border);
+            background: var(--bg3);
+            color: var(--text);
+            font-family: inherit; font-size: 13px; font-weight: 500;
+            cursor: pointer; transition: all .2s; white-space: nowrap;
+        }
+        .btn:hover { background: var(--bg4); border-color: var(--text3); }
+        .btn-primary { background: var(--accent); color: white; border-color: var(--accent2); }
+        .btn-primary:hover { background: var(--accent2); }
+        .btn-success { background: #15803d; color: white; border-color: #166534; }
+        .btn-success:hover { background: #166534; }
+        .btn-danger { background: #b91c1c; color: white; border-color: #991b1b; }
+        .btn-danger:hover { background: #991b1b; }
+        .btn-ghost { background: transparent; border-color: transparent; color: var(--text2); }
+        .btn-ghost:hover { background: var(--bg3); color: var(--text); border-color: var(--border); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r2);
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+        .card-title {
+            font-size: 14px; font-weight: 600;
+            color: var(--text2); text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .card-title i { color: var(--accent); }
+
+        /* ── FORM ── */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+        .form-group input, .form-group select {
+            padding: 10px 14px;
+            border-radius: var(--r);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Mono', monospace; font-size: 13px;
+            transition: all .2s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* ── STATS ── */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; margin-bottom: 20px; }
+        .stat {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 16px; text-align: center;
+            transition: all .2s;
+        }
+        .stat:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .stat-val { font-size: 22px; font-weight: 700; color: var(--accent); font-family: 'DM Mono', monospace; }
+        .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: var(--r2); overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .tbl-header-bar {
+            background: var(--tbl-header);
+            color: var(--tbl-header-text);
+            padding: 14px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .tbl-contract-name { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+        .tbl-contract-period { font-size: 12px; opacity: .85; }
+
+        .table-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+        thead th {
+            background: var(--tbl-header);
+            color: var(--tbl-header-text);
+            font-weight: 600; padding: 12px 10px;
+            text-align: center; border: 1px solid rgba(0,0,0,.2);
+            font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+            white-space: nowrap; position: sticky; top: 0; z-index: 5;
+            min-width: 90px;
+        }
+        thead th:first-child {
+            background: var(--tbl-col-cupos);
+            color: var(--tbl-col-cupos-text);
+            min-width: 65px;
+        }
+        thead th:nth-child(2) {
+            background: var(--tbl-col-uds);
+            color: var(--tbl-col-uds-text);
+            min-width: 75px;
+        }
+
+        tbody tr:nth-child(even) td { background: var(--tbl-row-even); }
+        tbody tr:nth-child(odd) td { background: var(--tbl-row-odd); }
+        tbody tr:hover td { filter: brightness(1.15); }
+
+        tbody td {
+            padding: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+            color: var(--text);
+            transition: background .15s;
+            min-width: 90px;
+        }
+        tbody td:first-child {
+            background: var(--tbl-col-cupos) !important;
+            color: var(--tbl-col-cupos-text);
+            font-weight: 700; font-size: 14px;
+            min-width: 65px;
+        }
+        tbody td:nth-child(2) {
+            background: var(--tbl-col-uds) !important;
+            color: var(--tbl-col-uds-text);
+            font-weight: 700; font-size: 14px;
+            min-width: 75px;
+        }
+
+        tbody td input {
+            width: 100%; padding: 8px 4px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: inherit;
+            font-family: 'DM Mono', monospace; font-size: 13px;
+            text-align: center; font-weight: 500;
+            border-radius: 4px; transition: all .2s;
+        }
+        tbody td input:focus {
+            outline: none; background: rgba(255,255,255,.08);
+            border-color: var(--accent);
+        }
+        tbody td input.editable-base {
+            background: rgba(249,115,22,.08);
+            border: 1px dashed rgba(249,115,22,.4);
+        }
+
+        .total-row td {
+            background: var(--tbl-total-bg) !important;
+            color: var(--tbl-total-text) !important;
+            font-weight: 700; font-size: 13px;
+            border-top: 2px solid var(--yellow);
+        }
+        .total-row td:first-child { font-size: 11px; letter-spacing: 1px; }
+
+        tbody tr.uds-zero td { opacity: .35; }
+        tbody tr.uds-zero td:first-child, tbody tr.uds-zero td:nth-child(2) { opacity: 1; }
+
+        /* ── EDIT TOGGLE ── */
+        .toggle-bar {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 16px; background: var(--bg3);
+            border: 1px solid var(--border); border-radius: var(--r);
+            margin-bottom: 16px;
+        }
+        .switch { position: relative; display: inline-block; width: 42px; height: 23px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: var(--bg2); border: 1px solid var(--border);
+            transition: .3s; border-radius: 23px;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 17px; width: 17px; left: 2px; bottom: 2px;
+            background: var(--text3); transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(19px); background: white; }
+        .toggle-label { font-size: 13px; color: var(--text2); }
+
+        /* ══════════════════════════
+           PRODUCTS SECTION — NEW
+        ══════════════════════════ */
+        .products-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+        }
+
+        .products-kanban {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .prod-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--r2);
+            overflow: hidden;
+            transition: all .2s;
+            position: relative;
+        }
+        .prod-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 8px 24px rgba(0,0,0,.3); }
+
+        .prod-card-header {
+            padding: 14px 14px 10px;
+            display: flex; align-items: flex-start; justify-content: space-between;
+            gap: 8px;
+        }
+        .prod-number {
+            width: 28px; height: 28px; min-width: 28px;
+            background: var(--accent-glow); border: 1px solid rgba(249,115,22,.3);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: var(--accent);
+            font-family: 'DM Mono', monospace;
+        }
+        .prod-delete-btn {
+            width: 26px; height: 26px; min-width: 26px;
+            background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.2);
+            border-radius: 6px; cursor: pointer; transition: all .2s;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--red); font-size: 11px;
+        }
+        .prod-delete-btn:hover { background: rgba(239,68,68,.25); }
+
+        .prod-card-body { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+        .prod-field { display: flex; flex-direction: column; gap: 5px; }
+        .prod-field-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+        .prod-field input {
+            padding: 9px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            color: var(--text);
+            font-family: 'DM Mono', monospace; font-size: 13px;
+            transition: all .2s; width: 100%;
+        }
+        .prod-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+
+        .prod-base-value {
+            background: rgba(249,115,22,.06);
+            border: 1px solid rgba(249,115,22,.2);
+            border-radius: var(--r);
+            padding: 10px 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px;
+        }
+        .prod-base-label { font-size: 11px; color: var(--accent); font-weight: 600; }
+        .prod-base-value input {
+            background: transparent; border: none;
+            color: var(--accent); font-weight: 700;
+            font-family: 'DM Mono', monospace; font-size: 16px;
+            text-align: right; width: 80px;
+            padding: 0;
+        }
+        .prod-base-value input:focus { outline: none; box-shadow: none; border: none; }
+
+        .add-prod-btn {
+            border: 2px dashed var(--border);
+            border-radius: var(--r2);
+            background: transparent;
+            color: var(--text3);
+            font-family: inherit; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all .2s;
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; padding: 28px;
+            min-height: 140px;
+        }
+        .add-prod-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+        /* ══════════════════════════
+           SAVE / LOAD PANEL
+        ══════════════════════════ */
+        .save-panel { display: flex; flex-direction: column; gap: 20px; }
+
+        .save-form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+
+        .saved-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .saved-item {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 12px 16px;
+            transition: all .2s;
+        }
+        .saved-item:hover { border-color: var(--text3); }
+
+        .si-info { flex: 1; min-width: 0; }
+        .si-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .si-meta { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+        .si-tag {
+            font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+            text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+        }
+        .si-tag.contract { background: rgba(59,130,246,.15); color: var(--blue); border: 1px solid rgba(59,130,246,.3); }
+        .si-tag.month { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+
+        .si-actions { display: flex; gap: 6px; }
+
+        /* ══════════════════════════
+           COLOR EDITOR
+        ══════════════════════════ */
+        .color-editor { display: flex; flex-direction: column; gap: 20px; }
+
+        .color-presets {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 4px;
+        }
+        .preset-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 14px; border-radius: var(--r);
+            border: 1px solid var(--border);
+            background: var(--bg); color: var(--text2);
+            font-family: inherit; font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all .2s;
+        }
+        .preset-btn:hover { border-color: var(--text3); color: var(--text); }
+        .preset-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        .color-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px;
+        }
+        .color-row {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: var(--r); padding: 10px 14px;
+        }
+        .color-row-label { font-size: 12px; color: var(--text2); font-weight: 500; flex: 1; }
+        .color-pair { display: flex; gap: 6px; align-items: center; }
+        .color-input-wrap { position: relative; }
+        .color-input-wrap label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 3px; text-align: center; }
+        .color-input-wrap input[type="color"] {
+            width: 36px; height: 32px;
+            border: 1px solid var(--border); border-radius: 6px;
+            cursor: pointer; padding: 2px; background: var(--bg2);
+        }
+
+        /* Table preview */
+        .table-preview {
+            border-radius: var(--r); overflow: hidden;
+            border: 1px solid var(--border); font-size: 12px;
+        }
+        .tp-header { background: var(--tbl-header); color: var(--tbl-header-text); padding: 8px 14px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        .tp-row { display: flex; }
+        .tp-cell { flex: 1; padding: 6px 8px; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; border: 1px solid var(--border); }
+        .tp-cell.cupos { background: var(--tbl-col-cupos); color: var(--tbl-col-cupos-text); }
+        .tp-cell.uds { background: var(--tbl-col-uds); color: var(--tbl-col-uds-text); }
+        .tp-cell.data { background: var(--tbl-row-odd); color: var(--text); }
+        .tp-cell.total { background: var(--tbl-total-bg); color: var(--tbl-total-text); }
+
+        /* ── TOAST ── */
+        .toast-stack {
+            position: fixed; bottom: 24px; right: 24px;
+            display: flex; flex-direction: column; gap: 8px;
+            z-index: 9999;
+        }
+        .toast {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            border-radius: var(--r); padding: 14px 18px;
+            box-shadow: var(--shadow);
+            display: flex; align-items: center; gap: 10px;
+            animation: toastIn .3s ease;
+            min-width: 280px;
+        }
+        .toast.success { border-left-color: var(--green); }
+        .toast.error { border-left-color: var(--red); }
+        .toast.info { border-left-color: var(--blue); }
+        .toast i { font-size: 14px; }
+        .toast.success i { color: var(--green); }
+        .toast.error i { color: var(--red); }
+        .toast.info i { color: var(--blue); }
+        .toast span { font-size: 13px; color: var(--text); }
+        @keyframes toastIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes toastOut { to { transform: translateX(120%); opacity: 0; } }
+
+        /* ── MODAL ── */
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,.7);
+            z-index: 500; display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal {
+            background: var(--bg2); border: 1px solid var(--border);
+            border-radius: var(--r2); width: 100%; max-width: 520px;
+            box-shadow: var(--shadow);
+            animation: modalIn .2s ease;
+        }
+        @keyframes modalIn { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-header {
+            padding: 20px 24px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .modal-title { font-size: 16px; font-weight: 700; }
+        .modal-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+        /* ── MOBILE ── */
+        .mob-toggle {
+            display: none; position: fixed; top: 14px; left: 14px; z-index: 200;
+            width: 38px; height: 38px; border-radius: 8px;
+            background: var(--accent); color: white; border: none;
+            cursor: pointer; align-items: center; justify-content: center; font-size: 16px;
+        }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 90; }
+        .overlay.on { display: block; }
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main { margin-left: 0; padding: 16px; padding-top: 60px; }
+            .mob-toggle { display: flex; }
+            .form-grid { grid-template-columns: 1fr; }
+            .save-form-row { grid-template-columns: 1fr 1fr; }
+        }
+        @media print {
+            .sidebar, .topbar, .card:not(.print-keep), .mob-toggle, .toast-stack { display: none !important; }
+            .main { margin-left: 0; padding: 0; }
+        }
+
+        /* Section visibility */
+        .section { display: none; }
+        .section.active { display: block; }
+
+        /* Firebase status */
+        .fb-status {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 11px; padding: 4px 10px; border-radius: 20px;
+            font-weight: 600;
+        }
+        .fb-status.ok { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+        .fb-status.off { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+        .fb-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+        .empty-state {
+            text-align: center; padding: 40px 20px;
+            color: var(--text3); font-size: 14px;
+        }
+        .empty-state i { font-size: 32px; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+<body>
+<button class="mob-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="layout">
+    <!-- ══ SIDEBAR ══ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-mark">ZAN</div>
+            <div>
+                <div class="logo-text">Pedidos</div>
+                <div class="logo-sub">Gestión</div>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-label">Vista</div>
+            <button class="nav-btn active" onclick="showSection('dashboard', this)">
+                <i class="fas fa-table-cells"></i> Tabla de Pedidos
+            </button>
+            <button class="nav-btn" onclick="showSection('productos', this)">
+                <i class="fas fa-boxes-stacked"></i> Productos
+            </button>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-label">Gestión</div>
+            <button class="nav-btn" onclick="showSection('guardados', this)">
+                <i class="fas fa-database"></i> Guardados / Cargar
+            </button>
+            <button class="nav-btn" onclick="showSection('colores', this)">
+                <i class="fas fa-palette"></i> Colores de Tabla
+            </button>
+            <button class="nav-btn" onclick="showSection('config', this)">
+                <i class="fas fa-sliders"></i> Configuración
+            </button>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-label">Acciones</div>
+            <button class="nav-btn" onclick="exportCSV()">
+                <i class="fas fa-file-csv"></i> Exportar CSV
+            </button>
+            <button class="nav-btn" onclick="window.print()">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+            <button class="nav-btn" onclick="toggleTheme()">
+                <i class="fas fa-circle-half-stroke" id="theme-icon"></i>
+                <span id="theme-text">Modo Claro</span>
+            </button>
+        </div>
+
+        <div class="sidebar-contract-badge">
+            <div class="scb-label">Contrato Activo</div>
+            <div class="scb-name" id="scb-name">—</div>
+            <div class="scb-period" id="scb-period">—</div>
+        </div>
+    </aside>
+
+    <!-- ══ MAIN ══ -->
+    <main class="main">
+
+        <!-- ── DASHBOARD ── -->
+        <div class="section active" id="sec-dashboard">
+            <div class="topbar">
+                <div>
+                    <div class="page-title">Tabla de Pedidos</div>
+                    <div class="page-sub">Cupos · Unidades · Gramajes</div>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-primary" onclick="calculateAll()"><i class="fas fa-calculator"></i> Calcular</button>
+                    <button class="btn btn-success" onclick="saveLocalAndToast()"><i class="fas fa-floppy-disk"></i> Guardar Local</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-file-contract"></i> Datos del Contrato</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nombre del Contrato</label>
+                        <input type="text" id="contract-name" value="PALMAS NEIVA SEMANA 3" oninput="updateHeader()">
+                    </div>
+                    <div class="form-group">
+                        <label>Periodo</label>
+                        <input type="text" id="contract-period" value="19 AL 22 MAYO" oninput="updateHeader()">
+                    </div>
+                    <div class="form-group">
+                        <label>Año / Código</label>
+                        <input type="text" id="contract-code" value="2024" oninput="updateHeader()">
+                    </div>
+                    <div class="form-group">
+                        <label>Total UDS</label>
+                        <input type="number" id="total-uds" value="5" min="0" oninput="updateStats()">
+                    </div>
+                </div>
+            </div>
+
+            <div class="toggle-bar">
+                <label class="switch">
+                    <input type="checkbox" id="edit-toggle" onchange="toggleEditMode()">
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label">Habilitar edición manual de todas las filas</span>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat"><div class="stat-val" id="stat-uds">5</div><div class="stat-lbl">Total UDS</div></div>
+                <div class="stat"><div class="stat-val" id="stat-cupos">13</div><div class="stat-lbl">Cupos Base</div></div>
+                <div class="stat"><div class="stat-val" id="stat-prods">11</div><div class="stat-lbl">Productos</div></div>
+                <div class="stat"><div class="stat-val" id="stat-grams">0</div><div class="stat-lbl">Total Gramos</div></div>
+            </div>
+
+            <div class="table-wrap">
+                <div class="tbl-header-bar">
+                    <div>
+                        <div class="tbl-contract-name" id="hdr-name">CONTRATO PALMAS NEIVA SEMANA 3</div>
+                        <div class="tbl-contract-period" id="hdr-period">(19 AL 22 MAYO) (2024)</div>
+                    </div>
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="table-scroll">
+                    <table id="pedidos-table">
+                        <thead><tr id="thead-row"><th>CUPOS</th><th>TOTAL<br>UDS</th></tr></thead>
+                        <tbody id="tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── PRODUCTOS ── -->
+        <div class="section" id="sec-productos">
+            <div class="topbar">
+                <div>
+                    <div class="page-title">Configurar Productos</div>
+                    <div class="page-sub">Nombre, unidad y valor base por 13 cupos</div>
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-primary" onclick="addProduct()"><i class="fas fa-plus"></i> Agregar Producto</button>
+                </div>
+            </div>
+            <div class="products-kanban" id="prod-grid"></div>
+        </div>
+
+        <!-- ── GUARDADOS ── -->
+        <div class="section" id="sec-guardados">
+            <div class="topbar">
+                <div>
+                    <div class="page-title">Guardados</div>
+                    <div class="page-sub">Guarda y carga pedidos por contrato o mes</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <div class="fb-status off" id="fb-status"><div class="fb-dot"></div> <span id="fb-status-text">Sin Firebase</span></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-cloud-arrow-up"></i> Guardar Pedido Actual</div>
+                <div class="save-form-row">
+                    <div class="form-group">
+                        <label>Nombre / Contrato</label>
+                        <input type="text" id="save-name" placeholder="ej: PALMAS NEIVA S3">
+                    </div>
+                    <div class="form-group">
+                        <label>Mes</label>
+                        <input type="month" id="save-month">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="save-category">
+                            <option value="contract">Por Contrato</option>
+                            <option value="month">Por Mes</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="saveRecord()"><i class="fas fa-floppy-disk"></i> Guardar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-folder-open"></i> Listados Guardados</div>
+                <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+                    <button class="btn btn-sm" onclick="loadRecordsList('all')" id="filt-all" style="background:var(--accent);color:white;border-color:var(--accent)">Todos</button>
+                    <button class="btn btn-sm" onclick="loadRecordsList('contract')" id="filt-contract">Contratos</button>
+                    <button class="btn btn-sm" onclick="loadRecordsList('month')" id="filt-month">Por Mes</button>
+                    <button class="btn btn-sm btn-ghost" onclick="loadRecordsList('all')" style="margin-left:auto"><i class="fas fa-refresh"></i> Actualizar</button>
+                </div>
+                <div class="saved-list" id="saved-list">
+                    <div class="empty-state"><i class="fas fa-inbox"></i>Cargando guardados...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── COLORES ── -->
+        <div class="section" id="sec-colores">
+            <div class="topbar">
+                <div>
+                    <div class="page-title">Colores de Tabla</div>
+                    <div class="page-sub">Personaliza colores para diferenciar contratos</div>
+                </div>
+                <button class="btn" onclick="resetColors()"><i class="fas fa-rotate-left"></i> Restablecer</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-wand-magic-sparkles"></i> Presets Rápidos</div>
+                <div class="color-presets" id="color-presets"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-eyedropper"></i> Editor de Colores</div>
+                <div class="color-editor">
+                    <div class="color-grid" id="color-grid"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><i class="fas fa-eye"></i> Vista Previa</div>
+                <div class="table-preview">
+                    <div class="tp-header" id="tp-header">CONTRATO EJEMPLO — (MAYO) (2024)</div>
+                    <div class="tp-row">
+                        <div class="tp-cell cupos" id="tp-c1">CUPOS</div>
+                        <div class="tp-cell uds" id="tp-c2">TOTAL UDS</div>
+                        <div class="tp-cell data">HUEVOS</div>
+                        <div class="tp-cell data">PECHUGA</div>
+                        <div class="tp-cell data">QUESO</div>
+                    </div>
+                    <div class="tp-row">
+                        <div class="tp-cell cupos">13</div>
+                        <div class="tp-cell uds">2</div>
+                        <div class="tp-cell data">52</div>
+                        <div class="tp-cell data">650</div>
+                        <div class="tp-cell data">500</div>
+                    </div>
+                    <div class="tp-row">
+                        <div class="tp-cell cupos">10</div>
+                        <div class="tp-cell uds">3</div>
+                        <div class="tp-cell data">40</div>
+                        <div class="tp-cell data">500</div>
+                        <div class="tp-cell data">385</div>
+                    </div>
+                    <div class="tp-row">
+                        <div class="tp-cell total">TOTAL</div>
+                        <div class="tp-cell total">5</div>
+                        <div class="tp-cell total">224</div>
+                        <div class="tp-cell total">2800</div>
+                        <div class="tp-cell total">2155</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── CONFIG ── -->
+        <div class="section" id="sec-config">
+            <div class="topbar">
+                <div>
+                    <div class="page-title">Configuración</div>
+                    <div class="page-sub">Parámetros de cálculo</div>
+                </div>
+                <button class="btn btn-danger" onclick="resetAll()"><i class="fas fa-rotate-left"></i> Restablecer Todo</button>
+            </div>
+            <div class="card">
+                <div class="card-title"><i class="fas fa-sliders"></i> Parámetros de Tabla</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Cupos Mínimos</label>
+                        <input type="number" id="min-cupos" value="6" min="1" max="20" onchange="initTable()">
+                    </div>
+                    <div class="form-group">
+                        <label>Cupos Máximos</label>
+                        <input type="number" id="max-cupos" value="13" min="1" max="30" onchange="initTable()">
+                    </div>
+                    <div class="form-group">
+                        <label>Cupos Base (referencia)</label>
+                        <input type="number" id="base-cupos" value="13" min="1" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Decimales en cálculo</label>
+                        <input type="number" id="decimals" value="0" min="0" max="4">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div class="toast-stack" id="toasts"></div>
+
+<!-- ── LOAD MODAL ── -->
+<div class="modal-backdrop" id="load-modal" style="display:none">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="load-modal-title">Cargar Pedido</div>
+            <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="load-modal-body">
+            <p style="color:var(--text2);font-size:14px">¿Deseas cargar este pedido? Los datos actuales no guardados se perderán.</p>
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-top:14px;">
+                <div style="font-size:14px;font-weight:600;" id="lm-name">—</div>
+                <div style="font-size:12px;color:var(--text3);margin-top:4px;font-family:'DM Mono',monospace;" id="lm-meta">—</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeModal()">Cancelar</button>
+            <button class="btn btn-primary" id="lm-confirm-btn">Cargar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const defaultProducts = [
+    { id: 'huevos',      name: 'HUEVOS UNIDAD',           unit: 'unidad',  baseValue: 52  },
+    { id: 'pechuga1',    name: 'PECHUGA 1 GRAMOS',         unit: 'gramos',  baseValue: 650 },
+    { id: 'pechuga2',    name: 'PECHUGA 2 GRAMOS',         unit: 'gramos',  baseValue: 650 },
+    { id: 'pechuga3',    name: 'PECHUGA 3 GRAMOS',         unit: 'gramos',  baseValue: 650 },
+    { id: 'queso',       name: 'QUESO GRAMOS',             unit: 'gramos',  baseValue: 500 },
+    { id: 'leche',       name: 'LECHE 900 CC',             unit: 'cc',      baseValue: 13  },
+    { id: 'yogurt',      name: 'YOGURT 150 ML',            unit: 'ml',      baseValue: 13  },
+    { id: 'carne_res',   name: 'CARNE RES GRAMOS',         unit: 'gramos',  baseValue: 520 },
+    { id: 'carne_molida',name: 'CARNE RES MOLIDA GRAMOS',  unit: 'gramos',  baseValue: 520 },
+    { id: 'carne_cerdo', name: 'CARNE CERDO GRAMOS',       unit: 'gramos',  baseValue: 520 },
+    { id: 'tilapia',     name: 'TILAPIA GRAMOS',           unit: 'gramos',  baseValue: 850 }
+];
+
+let products     = JSON.parse(JSON.stringify(defaultProducts));
+let editMode     = false;
+let customValues = {};
+const BASE_CUPOS = 13;
+
+// Color presets
+const COLOR_PRESETS = [
+    { name: 'Naranja (Default)', header: '#f97316', headerText: '#ffffff', cupos: '#d1fae5', cuposText: '#064e3b', uds: '#fef3c7', udsText: '#78350f', rowOdd: '#111827', rowEven: '#0b0f1a', totalBg: '#1c1a00', totalText: '#eab308' },
+    { name: 'Azul Marino',      header: '#1e40af', headerText: '#ffffff', cupos: '#dbeafe', cuposText: '#1e3a8a', uds: '#e0f2fe', udsText: '#075985', rowOdd: '#111827', rowEven: '#0b0f1a', totalBg: '#0c1a40', totalText: '#60a5fa' },
+    { name: 'Verde Esmeralda',  header: '#15803d', headerText: '#ffffff', cupos: '#dcfce7', cuposText: '#14532d', uds: '#f0fdf4', udsText: '#166534', rowOdd: '#111827', rowEven: '#0b0f1a', totalBg: '#052e16', totalText: '#4ade80' },
+    { name: 'Violeta',          header: '#7c3aed', headerText: '#ffffff', cupos: '#ede9fe', cuposText: '#4c1d95', uds: '#faf5ff', udsText: '#581c87', rowOdd: '#111827', rowEven: '#0b0f1a', totalBg: '#1a0938', totalText: '#a78bfa' },
+    { name: 'Rosa Fucsia',      header: '#be185d', headerText: '#ffffff', cupos: '#fce7f3', cuposText: '#831843', uds: '#fff1f2', udsText: '#881337', rowOdd: '#111827', rowEven: '#0b0f1a', totalBg: '#3b0a1e', totalText: '#f472b6' },
+    { name: 'Ámbar',            header: '#b45309', headerText: '#ffffff', cupos: '#fef3c7', cuposText: '#78350f', uds: '#fffbeb', udsText: '#92400e', rowOdd: '#111827', rowEven: '#0b0f1a', totalBg: '#2a1500', totalText: '#fbbf24' },
+];
+
+const COLOR_VARS = [
+    { key: '--tbl-header',      label: 'Encabezado',        type: 'bg' },
+    { key: '--tbl-header-text', label: 'Texto Encabezado',  type: 'text' },
+    { key: '--tbl-col-cupos',   label: 'Columna Cupos',     type: 'bg' },
+    { key: '--tbl-col-cupos-text', label: 'Texto Cupos',    type: 'text' },
+    { key: '--tbl-col-uds',     label: 'Columna UDS',       type: 'bg' },
+    { key: '--tbl-col-uds-text',label: 'Texto UDS',         type: 'text' },
+    { key: '--tbl-row-odd',     label: 'Filas impares',     type: 'bg' },
+    { key: '--tbl-row-even',    label: 'Filas pares',       type: 'bg' },
+    { key: '--tbl-total-bg',    label: 'Fila Total',        type: 'bg' },
+    { key: '--tbl-total-text',  label: 'Texto Total',       type: 'text' },
+];
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    // Default save-month to current month
+    const now = new Date();
+    document.getElementById('save-month').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+    loadFromLocal();
+    initTable();
+    initProductsGrid();
+    updateHeader();
+    updateStats();
+    initColorEditor();
+    initColorPresets();
+
+    // Set current month filter default
+    document.getElementById('save-name').value = document.getElementById('contract-name').value;
+});
+
+window.addEventListener('firebase-ready', () => {
+    const ok = window._fbReady;
+    const el = document.getElementById('fb-status');
+    const tx = document.getElementById('fb-status-text');
+    el.className = 'fb-status ' + (ok ? 'ok' : 'off');
+    tx.textContent = ok ? 'Firebase Conectado' : 'Solo Local';
+    loadRecordsList('all');
+});
+
+// ══════════════════════════════════════════
+// TABLE
+// ══════════════════════════════════════════
+function initTable() {
+    const tbody = document.getElementById('tbody');
+    const theadRow = document.getElementById('thead-row');
+    tbody.innerHTML = '';
+    theadRow.innerHTML = '<th>CUPOS</th><th>TOTAL<br>UDS</th>';
+
+    products.forEach(prod => {
+        const th = document.createElement('th');
+        th.innerHTML = prod.name.replace(/ /g, '<br>');
+        theadRow.appendChild(th);
+    });
+
+    const minC = parseInt(document.getElementById('min-cupos').value) || 6;
+    const maxC = parseInt(document.getElementById('max-cupos').value) || 13;
+
+    for (let c = maxC; c >= minC; c--) {
+        const row = document.createElement('tr');
+        row.dataset.cupos = c;
+
+        const tdC = document.createElement('td');
+        tdC.textContent = c;
+        row.appendChild(tdC);
+
+        const tdU = document.createElement('td');
+        const inU = document.createElement('input');
+        inU.type = 'number'; inU.value = 0; inU.min = 0;
+        inU.dataset.cupos = c; inU.dataset.type = 'uds';
+        inU.onchange = () => updateRowUds(c);
+        tdU.appendChild(inU);
+        row.appendChild(tdU);
+
+        products.forEach((prod, idx) => {
+            const td = document.createElement('td');
+            const inp = document.createElement('input');
+            inp.type = 'number'; inp.min = 0;
+            inp.dataset.cupos = c; inp.dataset.product = prod.id; inp.dataset.index = idx;
+
+            if (c === BASE_CUPOS) {
+                inp.value = prod.baseValue;
+                inp.classList.add('editable-base');
+                inp.onchange = () => updateBaseValue(idx, inp.value);
+            } else {
+                const key = `${c}_${prod.id}`;
+                inp.value = (editMode && customValues[key] !== undefined)
+                    ? customValues[key]
+                    : Math.round((prod.baseValue / BASE_CUPOS) * c);
+
+                if (!editMode) {
+                    inp.readOnly = true;
+                } else {
+                    inp.classList.add('editable-base');
+                    inp.onchange = () => { customValues[key] = parseFloat(inp.value)||0; calcTotals(); updateStats(); };
+                }
+            }
+            td.appendChild(inp);
+            row.appendChild(td);
+        });
+        tbody.appendChild(row);
+    }
+
+    // Total row
+    const tr = document.createElement('tr');
+    tr.className = 'total-row';
+    const tdL = document.createElement('td'); tdL.textContent = 'TOTAL'; tr.appendChild(tdL);
+    const tdTU = document.createElement('td');
+    const inTU = document.createElement('input'); inTU.type='number'; inTU.readOnly=true; inTU.id='disp-total-uds';
+    tdTU.appendChild(inTU); tr.appendChild(tdTU);
+
+    products.forEach(prod => {
+        const td = document.createElement('td');
+        const inp = document.createElement('input'); inp.type='number'; inp.readOnly=true; inp.id=`tot-${prod.id}`;
+        td.appendChild(inp); tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+
+    calcTotals();
+    updateRowVisuals();
+    updateStats();
+    document.getElementById('stat-cupos').textContent = maxC;
+}
+
+function updateBaseValue(idx, val) {
+    products[idx].baseValue = parseFloat(val)||0;
+    if (!editMode) { customValues = {}; recalcAll(); }
+    calcTotals(); updateStats(); saveLocalQuiet();
+}
+
+function recalcAll() {
+    document.querySelectorAll('input[data-cupos][data-product]').forEach(inp => {
+        const c = parseInt(inp.dataset.cupos);
+        const prod = products.find(p => p.id === inp.dataset.product);
+        if (c !== BASE_CUPOS && prod && !editMode)
+            inp.value = Math.round((prod.baseValue / BASE_CUPOS) * c);
+    });
+}
+
+function updateRowUds(c) {
+    const inp = document.querySelector(`input[data-cupos="${c}"][data-type="uds"]`);
+    const row = document.querySelector(`tr[data-cupos="${c}"]`);
+    if (inp && row) {
+        row.classList.toggle('uds-zero', parseInt(inp.value)===0);
+        calcTotals(); updateStats(); saveLocalQuiet();
+    }
+}
+
+function updateRowVisuals() {
+    document.querySelectorAll('#tbody tr:not(.total-row)').forEach(row => {
+        const inp = row.querySelector('input[data-type="uds"]');
+        row.classList.toggle('uds-zero', !inp || parseInt(inp.value)===0);
+    });
+}
+
+function calcTotals() {
+    products.forEach(prod => {
+        let total = 0;
+        document.querySelectorAll('#tbody tr:not(.total-row)').forEach(row => {
+            const uds = parseInt(row.querySelector('input[data-type="uds"]')?.value)||0;
+            if (uds > 0) {
+                const v = parseFloat(row.querySelector(`input[data-product="${prod.id}"]`)?.value)||0;
+                total += v * uds;
+            }
+        });
+        const el = document.getElementById(`tot-${prod.id}`);
+        if (el) el.value = total;
+    });
+
+    let udsSum = 0;
+    document.querySelectorAll('input[data-type="uds"]').forEach(i => {
+        const v = parseInt(i.value)||0; if (v>0) udsSum+=v;
+    });
+    const dispEl = document.getElementById('disp-total-uds');
+    if (dispEl) dispEl.value = udsSum;
+}
+
+function calculateAll() {
+    if (!editMode) recalcAll();
+    calcTotals(); updateStats();
+    toast('Cálculos actualizados', 'success');
+}
+
+function updateStats() {
+    const uds = parseInt(document.getElementById('total-uds').value)||0;
+    document.getElementById('stat-uds').textContent = uds;
+    document.getElementById('stat-prods').textContent = products.length;
+
+    let g = 0;
+    products.forEach(p => { g += parseFloat(document.getElementById(`tot-${p.id}`)?.value)||0; });
+    document.getElementById('stat-grams').textContent = g >= 1000 ? (g/1000).toFixed(1)+'K' : g;
+}
+
+function toggleEditMode() {
+    editMode = document.getElementById('edit-toggle').checked;
+    if (!editMode) customValues = {};
+    initTable();
+    toast(editMode ? 'Modo edición activado' : 'Modo edición desactivado', 'info');
+}
+
+// ══════════════════════════════════════════
+// HEADER / SIDEBAR
+// ══════════════════════════════════════════
+function updateHeader() {
+    const n = document.getElementById('contract-name').value;
+    const p = document.getElementById('contract-period').value;
+    const c = document.getElementById('contract-code').value;
+    document.getElementById('hdr-name').textContent   = `CONTRATO ${n}`;
+    document.getElementById('hdr-period').textContent = `(${p}) (${c})`;
+    document.getElementById('scb-name').textContent   = n;
+    document.getElementById('scb-period').textContent = `${p} · ${c}`;
+}
+
+// ══════════════════════════════════════════
+// PRODUCTS
+// ══════════════════════════════════════════
+function initProductsGrid() {
+    const grid = document.getElementById('prod-grid');
+    grid.innerHTML = '';
+
+    products.forEach((prod, idx) => {
+        const card = document.createElement('div');
+        card.className = 'prod-card';
+
+        card.innerHTML = `
+            <div class="prod-card-header">
+                <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+                    <div class="prod-number">${String(idx+1).padStart(2,'0')}</div>
+                    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${prod.unit}</div>
+                </div>
+                <button class="prod-delete-btn" onclick="removeProduct(${idx})" title="Eliminar"><i class="fas fa-trash-can"></i></button>
+            </div>
+            <div class="prod-card-body">
+                <div class="prod-field">
+                    <div class="prod-field-label">Nombre</div>
+                    <input type="text" value="${prod.name}" placeholder="Nombre del producto"
+                        onchange="products[${idx}].name=this.value; updateTableHeaders(); saveLocalQuiet();">
+                </div>
+                <div class="prod-field">
+                    <div class="prod-field-label">Unidad</div>
+                    <input type="text" value="${prod.unit}" placeholder="gramos, unidad, ml…"
+                        onchange="products[${idx}].unit=this.value; saveLocalQuiet();">
+                </div>
+                <div class="prod-base-value">
+                    <div class="prod-base-label"><i class="fas fa-hashtag"></i> Valor Base<br><span style="font-size:9px;color:var(--text3)">(${BASE_CUPOS} cupos)</span></div>
+                    <input type="number" value="${prod.baseValue}"
+                        onchange="products[${idx}].baseValue=parseFloat(this.value)||0; customValues={}; recalcAll(); calcTotals(); updateStats(); saveLocalQuiet();">
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+
+    // Add button
+    const addCard = document.createElement('button');
+    addCard.className = 'add-prod-btn';
+    addCard.innerHTML = '<i class="fas fa-plus-circle" style="font-size:20px"></i> Agregar Producto';
+    addCard.onclick = addProduct;
+    grid.appendChild(addCard);
+}
+
+function addProduct() {
+    products.push({ id: 'prod_'+Date.now(), name: 'NUEVO PRODUCTO', unit: 'unidad', baseValue: 100 });
+    initTable(); initProductsGrid(); updateStats(); saveLocalQuiet();
+    toast('Producto agregado', 'success');
+}
+
+function removeProduct(idx) {
+    if (products.length <= 1) { toast('Debe haber al menos un producto', 'error'); return; }
+    if (confirm(`¿Eliminar "${products[idx].name}"?`)) {
+        products.splice(idx, 1);
+        initTable(); initProductsGrid(); updateStats(); saveLocalQuiet();
+        toast('Producto eliminado', 'success');
+    }
+}
+
+function updateTableHeaders() {
+    const ths = document.getElementById('thead-row').querySelectorAll('th');
+    products.forEach((p, i) => { if (ths[i+2]) ths[i+2].innerHTML = p.name.replace(/ /g,'<br>'); });
+}
+
+// ══════════════════════════════════════════
+// SAVE / LOAD
+// ══════════════════════════════════════════
+function collectCurrentData() {
+    const udsInputs = {};
+    document.querySelectorAll('input[data-type="uds"]').forEach(i => {
+        udsInputs[i.dataset.cupos] = parseInt(i.value)||0;
+    });
+
+    return {
+        contract: {
+            name:     document.getElementById('contract-name').value,
+            period:   document.getElementById('contract-period').value,
+            code:     document.getElementById('contract-code').value,
+            totalUds: document.getElementById('total-uds').value
+        },
+        products, customValues, editMode, udsInputs,
+        tableColors: getCurrentColors(),
+        minCupos: document.getElementById('min-cupos').value,
+        maxCupos: document.getElementById('max-cupos').value,
+        savedAt:  new Date().toISOString()
+    };
+}
+
+function applyData(data) {
+    if (data.contract) {
+        document.getElementById('contract-name').value   = data.contract.name   || '';
+        document.getElementById('contract-period').value = data.contract.period || '';
+        document.getElementById('contract-code').value   = data.contract.code   || '';
+        document.getElementById('total-uds').value       = data.contract.totalUds || 5;
+    }
+    if (data.products && data.products.length > 0) products = data.products;
+    if (data.customValues) customValues = data.customValues;
+    if (data.editMode !== undefined) {
+        editMode = data.editMode;
+        document.getElementById('edit-toggle').checked = editMode;
+    }
+    if (data.minCupos) document.getElementById('min-cupos').value = data.minCupos;
+    if (data.maxCupos) document.getElementById('max-cupos').value = data.maxCupos;
+
+    updateHeader(); initTable(); initProductsGrid(); updateStats();
+
+    // Restore UDS inputs
+    if (data.udsInputs) {
+        Object.entries(data.udsInputs).forEach(([c, v]) => {
+            const inp = document.querySelector(`input[data-cupos="${c}"][data-type="uds"]`);
+            if (inp) { inp.value = v; }
+        });
+        updateRowVisuals(); calcTotals(); updateStats();
+    }
+
+    // Restore table colors
+    if (data.tableColors) applyColors(data.tableColors);
+}
+
+function saveLocalQuiet() {
+    localStorage.setItem('zan_v2_current', JSON.stringify(collectCurrentData()));
+}
+
+function saveLocalAndToast() {
+    saveLocalQuiet();
+    toast('Guardado local exitoso', 'success');
+}
+
+function loadFromLocal() {
+    const raw = localStorage.getItem('zan_v2_current');
+    if (raw) { try { applyData(JSON.parse(raw)); } catch(e) { console.warn(e); } }
+}
+
+// Firebase / local save system
+let _allRecords = [];
+let _activeFilter = 'all';
+
+async function saveRecord() {
+    const name     = document.getElementById('save-name').value.trim();
+    const month    = document.getElementById('save-month').value;
+    const category = document.getElementById('save-category').value;
+
+    if (!name) { toast('Ingresa un nombre para el guardado', 'error'); return; }
+
+    const id = `${category}_${name.replace(/\s+/g,'_').toUpperCase()}_${month}`;
+    const data = { ...collectCurrentData(), saveName: name, saveMonth: month, saveCategory: category, savedAt: new Date().toISOString() };
+
+    // Try Firebase first
+    let savedToCloud = false;
+    if (window._fbReady) {
+        try {
+            await window._saveToFirebase(id, data);
+            savedToCloud = true;
+        } catch(e) { console.warn('Firebase save failed:', e); }
+    }
+
+    // Always save to local as backup
+    const localKey = 'zan_v2_records';
+    const existing = JSON.parse(localStorage.getItem(localKey)||'{}');
+    existing[id] = data;
+    localStorage.setItem(localKey, JSON.stringify(existing));
+
+    toast(`Guardado: "${name}" ${savedToCloud ? '(Firebase + Local)' : '(Solo Local)'}`, 'success');
+    loadRecordsList(_activeFilter);
+}
+
+async function loadRecordsList(filter) {
+    _activeFilter = filter;
+    ['all','contract','month'].forEach(f => {
+        const btn = document.getElementById('filt-'+f);
+        if (btn) btn.style.cssText = f===filter ? 'background:var(--accent);color:white;border-color:var(--accent)' : '';
+    });
+
+    const list = document.getElementById('saved-list');
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Cargando…</div>';
+
+    let records = [];
+
+    // Try Firebase
+    if (window._fbReady) {
+        try {
+            records = await window._listFromFirebase();
+        } catch(e) { console.warn(e); }
+    }
+
+    // Merge local
+    const localKey = 'zan_v2_records';
+    const localRecs = JSON.parse(localStorage.getItem(localKey)||'{}');
+    Object.entries(localRecs).forEach(([id, data]) => {
+        if (!records.find(r => r.id === id)) records.push({ id, ...data });
+    });
+
+    // Sort newest first
+    records.sort((a,b) => new Date(b.savedAt||0) - new Date(a.savedAt||0));
+    _allRecords = records;
+
+    const filtered = filter === 'all' ? records : records.filter(r => r.saveCategory === filter);
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i>No hay guardados' + (filter!=='all' ? ' en esta categoría' : '') + '</div>';
+        return;
+    }
+
+    list.innerHTML = '';
+    filtered.forEach(rec => {
+        const div = document.createElement('div');
+        div.className = 'saved-item';
+        const dateStr = rec.savedAt ? new Date(rec.savedAt).toLocaleString('es-CO', {dateStyle:'short',timeStyle:'short'}) : '—';
+        const cat = rec.saveCategory || 'contract';
+        div.innerHTML = `
+            <div class="si-info">
+                <div class="si-name">${rec.saveName || rec.id}</div>
+                <div class="si-meta">📅 ${rec.saveMonth||'—'} · ${dateStr}</div>
+            </div>
+            <div class="si-tag ${cat}">${cat === 'contract' ? 'Contrato' : 'Mes'}</div>
+            <div class="si-actions">
+                <button class="btn btn-sm btn-primary" onclick="openLoadModal('${rec.id}')"><i class="fas fa-upload"></i> Cargar</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteRecord('${rec.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function openLoadModal(id) {
+    const rec = _allRecords.find(r => r.id === id);
+    if (!rec) return;
+    document.getElementById('lm-name').textContent = rec.saveName || id;
+    document.getElementById('lm-meta').textContent = `Mes: ${rec.saveMonth||'—'} | Guardado: ${rec.savedAt ? new Date(rec.savedAt).toLocaleString('es-CO') : '—'}`;
+    document.getElementById('lm-confirm-btn').onclick = () => { applyData(rec); saveLocalQuiet(); closeModal(); toast(`"${rec.saveName}" cargado`, 'success'); };
+    document.getElementById('load-modal').style.display = 'flex';
+}
+
+function closeModal() { document.getElementById('load-modal').style.display = 'none'; }
+
+async function deleteRecord(id) {
+    if (!confirm('¿Eliminar este guardado?')) return;
+
+    if (window._fbReady) {
+        try { await window._deleteFromFirebase(id); } catch(e) { console.warn(e); }
+    }
+    const localKey = 'zan_v2_records';
+    const recs = JSON.parse(localStorage.getItem(localKey)||'{}');
+    delete recs[id];
+    localStorage.setItem(localKey, JSON.stringify(recs));
+
+    toast('Guardado eliminado', 'success');
+    loadRecordsList(_activeFilter);
+}
+
+// ══════════════════════════════════════════
+// COLORS
+// ══════════════════════════════════════════
+function getCurrentColors() {
+    const root = document.documentElement;
+    const obj = {};
+    COLOR_VARS.forEach(v => { obj[v.key] = getComputedStyle(root).getPropertyValue(v.key).trim(); });
+    return obj;
+}
+
+function applyColors(colors) {
+    const root = document.documentElement;
+    Object.entries(colors).forEach(([k, v]) => {
+        root.style.setProperty(k, v);
+        const inp = document.querySelector(`input[data-color-var="${k}"]`);
+        if (inp) inp.value = cssColorToHex(v) || v;
+    });
+    updatePreview();
+}
+
+function cssColorToHex(color) {
+    const d = document.createElement('div');
+    d.style.color = color;
+    document.body.appendChild(d);
+    const computed = getComputedStyle(d).color;
+    document.body.removeChild(d);
+    const m = computed.match(/\d+/g);
+    if (!m) return null;
+    return '#' + m.slice(0,3).map(x => parseInt(x).toString(16).padStart(2,'0')).join('');
+}
+
+function initColorEditor() {
+    const grid = document.getElementById('color-grid');
+    grid.innerHTML = '';
+
+    COLOR_VARS.forEach(v => {
+        const row = document.createElement('div');
+        row.className = 'color-row';
+
+        const currentVal = getComputedStyle(document.documentElement).getPropertyValue(v.key).trim();
+        const hexVal = cssColorToHex(currentVal) || '#000000';
+
+        row.innerHTML = `
+            <div class="color-row-label">${v.label}</div>
+            <div class="color-input-wrap">
+                <label>Color</label>
+                <input type="color" value="${hexVal}" data-color-var="${v.key}"
+                    oninput="document.documentElement.style.setProperty('${v.key}', this.value); updatePreview(); saveLocalQuiet();">
+            </div>
+        `;
+        grid.appendChild(row);
+    });
+}
+
+function initColorPresets() {
+    const container = document.getElementById('color-presets');
+    COLOR_PRESETS.forEach(preset => {
+        const btn = document.createElement('button');
+        btn.className = 'preset-btn';
+        btn.innerHTML = `<div class="preset-dot" style="background:${preset.header}"></div> ${preset.name}`;
+        btn.onclick = () => {
+            const colors = {
+                '--tbl-header': preset.header,
+                '--tbl-header-text': preset.headerText,
+                '--tbl-col-cupos': preset.cupos,
+                '--tbl-col-cupos-text': preset.cuposText,
+                '--tbl-col-uds': preset.uds,
+                '--tbl-col-uds-text': preset.udsText,
+                '--tbl-row-odd': preset.rowOdd,
+                '--tbl-row-even': preset.rowEven,
+                '--tbl-total-bg': preset.totalBg,
+                '--tbl-total-text': preset.totalText,
+            };
+            applyColors(colors);
+            saveLocalQuiet();
+            toast(`Preset "${preset.name}" aplicado`, 'success');
+        };
+        container.appendChild(btn);
+    });
+}
+
+function updatePreview() {
+    // Update preview elements via CSS vars (they inherit automatically)
+    // Also update header bar color
+    const headerBar = document.querySelector('.tbl-header-bar');
+    if (headerBar) headerBar.style.background = getComputedStyle(document.documentElement).getPropertyValue('--tbl-header').trim();
+}
+
+function resetColors() {
+    if (!confirm('¿Restablecer colores de tabla a los valores por defecto?')) return;
+    COLOR_VARS.forEach(v => document.documentElement.style.removeProperty(v.key));
+    initColorEditor();
+    updatePreview();
+    saveLocalQuiet();
+    toast('Colores restablecidos', 'success');
+}
+
+// ══════════════════════════════════════════
+// NAV / SECTIONS
+// ══════════════════════════════════════════
+function showSection(name, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-'+name).classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    if (name === 'guardados') loadRecordsList(_activeFilter);
+    if (window.innerWidth <= 1024) toggleSidebar();
+}
+
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('on');
+}
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const isLight = html.getAttribute('data-theme') === 'light';
+    html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+    document.getElementById('theme-icon').className = isLight ? 'fas fa-circle-half-stroke' : 'fas fa-sun';
+    document.getElementById('theme-text').textContent = isLight ? 'Modo Claro' : 'Modo Oscuro';
+}
+
+// ══════════════════════════════════════════
+// EXPORT / RESET
+// ══════════════════════════════════════════
+function exportCSV() {
+    let csv = 'CUPOS,TOTAL UDS,' + products.map(p=>p.name).join(',') + '\n';
+    document.querySelectorAll('#tbody tr:not(.total-row)').forEach(row => {
+        const uds = parseInt(row.querySelector('input[data-type="uds"]')?.value)||0;
+        if (uds > 0) {
+            const cells = row.querySelectorAll('td');
+            csv += Array.from(cells).map(td => { const i=td.querySelector('input'); return i?i.value:td.textContent; }).join(',') + '\n';
+        }
+    });
+    const tr = document.querySelector('.total-row');
+    if (tr) {
+        const cells = tr.querySelectorAll('td');
+        csv += Array.from(cells).map(td => { const i=td.querySelector('input'); return i?i.value:td.textContent; }).join(',') + '\n';
+    }
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `pedido_${document.getElementById('contract-name').value.replace(/\s+/g,'_')}.csv`;
+    a.click();
+    toast('CSV exportado', 'success');
+}
+
+function resetAll() {
+    if (!confirm('¿Restablecer todos los datos? Esta acción no se puede deshacer.')) return;
+    localStorage.removeItem('zan_v2_current');
+    products = JSON.parse(JSON.stringify(defaultProducts));
+    customValues = {}; editMode = false;
+    document.getElementById('edit-toggle').checked = false;
+    document.getElementById('contract-name').value  = 'PALMAS NEIVA SEMANA 3';
+    document.getElementById('contract-period').value = '19 AL 22 MAYO';
+    document.getElementById('contract-code').value   = '2024';
+    document.getElementById('total-uds').value       = '5';
+    document.getElementById('min-cupos').value       = '6';
+    document.getElementById('max-cupos').value       = '13';
+    updateHeader(); initTable(); initProductsGrid(); updateStats();
+    resetColors();
+    toast('Datos restablecidos', 'success');
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function toast(msg, type='info') {
+    const icons = { success:'fa-circle-check', error:'fa-circle-exclamation', info:'fa-circle-info' };
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<i class="fas ${icons[type]||icons.info}"></i><span>${msg}</span>`;
+    document.getElementById('toasts').appendChild(t);
+    setTimeout(() => { t.style.animation='toastOut .3s ease forwards'; setTimeout(()=>t.remove(),300); }, 3000);
+}
+
+// Auto-save on unload
+window.addEventListener('beforeunload', saveLocalQuiet);
+</script>
+</body>
+</html>
