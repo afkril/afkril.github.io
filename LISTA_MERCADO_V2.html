@@ -2381,33 +2381,55 @@
 			gap: 0.25rem;
 		}
 		.dp-tl-dot {
-			width: 28px;
-			height: 28px;
+			width: 38px;
+			height: 38px;
 			border-radius: 50%;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			font-size: 0.6rem;
-			font-weight: 700;
+			font-size: 0.62rem;
+			font-weight: 800;
 			border: 2px solid transparent;
 			transition: all 0.2s;
+			position: relative;
 		}
+		/* Estado 1: Día seleccionado Y tiene gramaje → activo, destacado */
 		.dp-tl-dot.has-data {
-			background: rgba(139,92,246,0.2);
+			background: rgba(139,92,246,0.18);
 			border-color: #a78bfa;
 			color: #a78bfa;
+			box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
 		}
-		.dp-tl-dot.no-data {
-			background: var(--bg-hover);
+		/* Estado 2: Día seleccionado pero SIN gramaje → gris neutro */
+		.dp-tl-dot.no-data-selected {
+			background: rgba(255,255,255,0.04);
+			border-color: rgba(255,255,255,0.12);
 			color: var(--text-secondary);
-			opacity: 0.4;
+		}
+		/* Estado 3: Día NO seleccionado → rojo apagado, cruzado */
+		.dp-tl-dot.not-selected {
+			background: rgba(239,68,68,0.08);
+			border-color: rgba(239,68,68,0.3);
+			color: rgba(239,68,68,0.45);
+			opacity: 0.7;
+		}
+		.dp-tl-dot.not-selected::after {
+			content: '';
+			position: absolute;
+			width: 60%;
+			height: 2px;
+			background: rgba(239,68,68,0.4);
+			border-radius: 1px;
+			transform: rotate(-45deg);
 		}
 		.dp-tl-label {
-			font-size: 0.55rem;
-			color: var(--text-secondary);
+			font-size: 0.58rem;
 			text-align: center;
-			line-height: 1.1;
+			line-height: 1.2;
 		}
+		.dp-tl-label.lbl-selected   { color: var(--text-primary); font-weight: 600; }
+		.dp-tl-label.lbl-no-gram    { color: var(--text-secondary); }
+		.dp-tl-label.lbl-not-selected { color: rgba(239,68,68,0.5); }
 
 		.dp-section-title {
 			font-size: 0.7rem;
@@ -2444,7 +2466,7 @@
         </div>
         <div class="mobile-title">
             <span id="headerIcon">🍽️</span>
-            <span id="headerTitle">Lista Mercados v2.1</span>
+            <span id="headerTitle">Lista Mercadosv2.1</span>
             <span class="monthly-badge" id="monthlyBadge">MENSUAL</span>
             <span class="calendar-badge" id="calendarBadge">CALENDARIO</span>
             <span class="editor-badge" id="editorBadge">EDITOR</span>
@@ -2517,104 +2539,194 @@
 		
 		<!-- PANEL ADMINISTRATIVO (Oculto por defecto) -->
 		<div id="admin-panel" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 1000; overflow-y: auto;">
-			<div style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+			<div style="max-width: 1400px; margin: 0 auto; padding: 1rem;">
 				<!-- Header Admin -->
-				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border);">
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 2px solid rgba(99,102,241,0.3); background: linear-gradient(135deg, rgba(99,102,241,0.05), transparent); border-radius: 0.5rem; padding: 1rem;">
 					<div>
-						<h2 style="font-size: 1.5rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-							🔐 Panel Administrativo
+						<h2 style="font-size: 1.4rem; margin: 0; display: flex; align-items: center; gap: 0.5rem; color: #818cf8;">
+							🛡️ Panel Administrativo <span style="font-size: 0.65rem; background: #6366f1; color: white; padding: 0.2rem 0.5rem; border-radius: 1rem; font-weight: 700; letter-spacing: 0.05em;">v2.0</span>
 						</h2>
-						<p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0.25rem 0 0 0;">
-							Registro de auditoría de accesos y generación de listas
+						<p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0.25rem 0 0 0;">
+							Auditoría de accesos • Generación de listas • Monitoreo en tiempo real
 						</p>
 					</div>
-					<button class="btn btn-danger" onclick="cerrarAdmin()">
-						<span>✕</span> Cerrar
-					</button>
+					<div style="display: flex; gap: 0.5rem; align-items: center;">
+						<div id="admin-firebase-indicator" style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--text-secondary);">
+							<span id="admin-fb-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #6b7280; display: inline-block;"></span>
+							<span id="admin-fb-text">Conectando...</span>
+						</div>
+						<button class="btn btn-secondary" onclick="refrescarAdmin()" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">
+							🔄 Actualizar
+						</button>
+						<button class="btn btn-danger" onclick="cerrarAdmin()" style="font-size: 0.75rem;">
+							✕ Cerrar
+						</button>
+					</div>
 				</div>
 
 				<!-- Login Admin -->
-				<div id="admin-login" style="max-width: 400px; margin: 3rem auto; background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid var(--border);">
+				<div id="admin-login" style="max-width: 400px; margin: 3rem auto; background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid rgba(99,102,241,0.3); box-shadow: 0 0 40px rgba(99,102,241,0.1);">
 					<div style="text-align: center; margin-bottom: 1.5rem;">
-						<div style="font-size: 3rem; margin-bottom: 0.5rem;">🔐</div>
-						<h3 style="margin: 0;">Acceso Administrativo</h3>
+						<div style="font-size: 3rem; margin-bottom: 0.5rem;">🛡️</div>
+						<h3 style="margin: 0; color: #818cf8;">Acceso Administrativo</h3>
+						<p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">Ingrese su clave para continuar</p>
 					</div>
 					<div class="form-group" style="margin-bottom: 1rem;">
 						<label class="form-label">Clave de acceso</label>
-						<input type="password" id="admin-clave" class="form-input" style="width: 100%;" placeholder="Ingrese clave..." onkeypress="if(event.key==='Enter')validarAdmin()">
+						<input type="password" id="admin-clave" class="form-input" style="width: 100%;" placeholder="••••••" onkeypress="if(event.key==='Enter')validarAdmin()">
 					</div>
-					<button class="btn btn-primary btn-block" onclick="validarAdmin()" style="width: 100%;">
-						<span>🔓</span> Acceder
+					<button class="btn btn-primary btn-block" onclick="validarAdmin()" style="width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+						<span>🔓</span> Acceder al Panel
 					</button>
-					<div id="admin-error" style="color: var(--danger); text-align: center; margin-top: 1rem; display: none;">
-						Clave incorrecta
+					<div id="admin-error" style="color: var(--danger); text-align: center; margin-top: 1rem; display: none; background: rgba(239,68,68,0.1); padding: 0.5rem; border-radius: 0.375rem; font-size: 0.875rem;">
+						⚠️ Clave incorrecta. Intente nuevamente.
 					</div>
 				</div>
 
 				<!-- Dashboard Admin (Oculto inicialmente) -->
 				<div id="admin-dashboard" style="display: none;">
-					<!-- Estadísticas rápidas -->
-					<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-						<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; border-left: 4px solid var(--primary-neiva);">
-							<div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Total Accesos Hoy</div>
-							<div style="font-size: 2rem; font-weight: 700;" id="stat-total-hoy">0</div>
+
+					<!-- === FILA 1: STATS PRINCIPALES === -->
+					<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #6366f1; position: relative; overflow: hidden;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Total Histórico</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #818cf8;" id="stat-total-historico">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);">registros</div>
+							<div style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1.75rem; opacity: 0.15;">📊</div>
 						</div>
-						<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; border-left: 4px solid var(--primary-gaitana);">
-							<div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Regional Neiva</div>
-							<div style="font-size: 2rem; font-weight: 700;" id="stat-neiva">0</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #f59e0b;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Accesos Hoy</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #fbbf24;" id="stat-total-hoy">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-hoy-fecha">—</div>
 						</div>
-						<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; border-left: 4px solid var(--success);">
-							<div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Regional Gaitana</div>
-							<div style="font-size: 2rem; font-weight: 700;" id="stat-gaitana">0</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #2563eb;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Regional Neiva</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #60a5fa;" id="stat-neiva">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-neiva-pct">—</div>
 						</div>
-						<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; border-left: 4px solid #8b5cf6;">
-							<div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Listas Mensuales</div>
-							<div style="font-size: 2rem; font-weight: 700;" id="stat-mensual">0</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #059669;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Regional Gaitana</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #34d399;" id="stat-gaitana">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-gaitana-pct">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #8b5cf6;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Listas Mensuales</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #a78bfa;" id="stat-mensual">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-mensual-pct">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #ec4899;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">IPs Únicas</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #f472b6;" id="stat-ips-unicas">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);">dispositivos</div>
 						</div>
 					</div>
 
-					<!-- Filtros -->
-					<div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem; margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
-						<div class="form-group" style="margin: 0;">
-							<label class="form-label">Filtrar por Regional</label>
-							<select class="form-select" id="admin-filter-regional" onchange="filtrarRegistros()">
-								<option value="todos">Todas</option>
-								<option value="neiva">Neiva</option>
-								<option value="gaitana">Gaitana</option>
-							</select>
+					<!-- === FILA 2: ESTADÍSTICAS SECUNDARIAS === -->
+					<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+						<!-- Top IPs -->
+						<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; border: 1px solid var(--border);">
+							<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem; display: flex; align-items: center; gap: 0.375rem;">
+								🌐 Top IPs más activas
+							</div>
+							<div id="admin-top-ips" style="font-size: 0.75rem;">
+								<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem;">Cargando...</div>
+							</div>
 						</div>
-						<div class="form-group" style="margin: 0;">
-							<label class="form-label">Tipo</label>
-							<select class="form-select" id="admin-filter-tipo" onchange="filtrarRegistros()">
-								<option value="todos">Todos</option>
-								<option value="semanal">Semanal</option>
-								<option value="mensual">Mensual</option>
-							</select>
+						<!-- Por Modalidad -->
+						<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; border: 1px solid var(--border);">
+							<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem;">
+								📋 Por Modalidad
+							</div>
+							<div id="admin-por-modalidad" style="font-size: 0.75rem;">
+								<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem;">Cargando...</div>
+							</div>
 						</div>
-						<div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
-							<label class="form-label">Buscar IP/Usuario</label>
-							<input type="text" class="form-input" id="admin-filter-buscar" placeholder="IP o identificador..." oninput="filtrarRegistros()">
+						<!-- Actividad reciente -->
+						<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; border: 1px solid var(--border);">
+							<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem;">
+								⚡ Actividad últimos 7 días
+							</div>
+							<div id="admin-actividad-reciente" style="font-size: 0.75rem;">
+								<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem;">Cargando...</div>
+							</div>
 						</div>
-						<button class="btn btn-secondary" onclick="exportarRegistros()" style="margin-top: 1.25rem;">
-							<span>📊</span> Exportar Excel
-						</button>
-						<button class="btn btn-danger" onclick="limpiarRegistros()" style="margin-top: 1.25rem;">
-							<span>🗑️</span> Limpiar
-						</button>
+					</div>
+
+					<!-- === FILA 3: FILTROS === -->
+					<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; margin-bottom: 0.75rem; border: 1px solid var(--border);">
+						<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem; font-weight: 600;">🔍 Filtros de búsqueda</div>
+						<div style="display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: flex-end;">
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Regional</label>
+								<select class="form-select" id="admin-filter-regional" onchange="filtrarRegistros()" style="min-width: 110px;">
+									<option value="todos">Todas</option>
+									<option value="neiva">Neiva</option>
+									<option value="gaitana">Gaitana</option>
+								</select>
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Tipo</label>
+								<select class="form-select" id="admin-filter-tipo" onchange="filtrarRegistros()" style="min-width: 100px;">
+									<option value="todos">Todos</option>
+									<option value="semanal">Semanal</option>
+									<option value="mensual">Mensual</option>
+								</select>
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Modalidad</label>
+								<select class="form-select" id="admin-filter-modalidad" onchange="filtrarRegistros()" style="min-width: 100px;">
+									<option value="todos">Todas</option>
+									<option value="hcb">HCB</option>
+									<option value="cdi">CDI</option>
+									<option value="hi">HI</option>
+								</select>
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Fecha desde</label>
+								<input type="date" class="form-input" id="admin-filter-fecha-desde" oninput="filtrarRegistros()" style="min-width: 130px;">
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Fecha hasta</label>
+								<input type="date" class="form-input" id="admin-filter-fecha-hasta" oninput="filtrarRegistros()" style="min-width: 130px;">
+							</div>
+							<div class="form-group" style="margin: 0; flex: 1; min-width: 160px;">
+								<label class="form-label">Buscar IP / Device / Plataforma</label>
+								<input type="text" class="form-input" id="admin-filter-buscar" placeholder="Ej: 192.168, Android, DEV_..." oninput="filtrarRegistros()">
+							</div>
+							<button class="btn btn-secondary" onclick="limpiarFiltrosAdmin()" title="Limpiar todos los filtros" style="font-size: 0.75rem;">
+								🧹 Limpiar
+							</button>
+							<div style="display: flex; gap: 0.375rem; margin-left: auto;">
+								<button class="btn btn-secondary" onclick="exportarRegistros()" style="font-size: 0.75rem;">
+									📊 Excel
+								</button>
+								<button class="btn btn-danger" onclick="limpiarRegistros()" style="font-size: 0.75rem;">
+									🗑️ Borrar todo
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Contador de resultados filtrados -->
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); padding: 0 0.25rem;">
+						<span id="admin-count-label">Mostrando todos los registros</span>
+						<span id="admin-paginacion-info" style="font-size: 0.7rem;"></span>
 					</div>
 
 					<!-- Tabla de registros -->
-					<div class="table-container" style="max-height: 60vh; overflow-y: auto;">
-						<table style="width: 100%; font-size: 0.8125rem;">
+					<div class="table-container" style="max-height: 55vh; overflow-y: auto; border-radius: 0.75rem; border: 1px solid var(--border);">
+						<table style="width: 100%; font-size: 0.775rem; border-collapse: collapse;">
 							<thead style="position: sticky; top: 0; background: var(--bg-dark); z-index: 10;">
-								<tr>
-									<th style="padding: 0.75rem; text-align: left;">Fecha/Hora</th>
-									<th style="padding: 0.75rem; text-align: left;">IP</th>
-									<th style="padding: 0.75rem; text-align: left;">Usuario/PC</th>
-									<th style="padding: 0.75rem; text-align: left;">Acción</th>
-									<th style="padding: 0.75rem; text-align: left;">Regional</th>
-									<th style="padding: 0.75rem; text-align: left;">Tipo</th>
-									<th style="padding: 0.75rem; text-align: left;">Detalles</th>
+								<tr style="border-bottom: 2px solid var(--border);">
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600; white-space: nowrap;">Fecha / Hora</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">IP</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Dispositivo</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Acción</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Regional</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Tipo</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Modalidad</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Detalles</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: center; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Info</th>
 								</tr>
 							</thead>
 							<tbody id="admin-registros-tbody">
@@ -2622,7 +2734,21 @@
 							</tbody>
 						</table>
 					</div>
+
+					<!-- Paginación -->
+					<div id="admin-paginacion" style="display: flex; justify-content: center; gap: 0.375rem; margin-top: 0.75rem; flex-wrap: wrap;"></div>
 				</div>
+			</div>
+		</div>
+
+		<!-- Modal detalle de registro -->
+		<div id="admin-detail-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+			<div style="background: var(--bg-card); border-radius: 1rem; padding: 1.5rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(99,102,241,0.3); box-shadow: 0 0 60px rgba(99,102,241,0.2);">
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+					<h3 style="margin: 0; font-size: 1rem; color: #818cf8;">🔍 Detalle del Registro</h3>
+					<button onclick="cerrarDetalleRegistro()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.25rem; line-height: 1;">✕</button>
+				</div>
+				<div id="admin-detail-content" style="font-size: 0.8125rem;"></div>
 			</div>
 		</div>
     </aside>
@@ -5292,6 +5418,18 @@
 				document.getElementById('admin-login').style.display = 'none';
 				document.getElementById('admin-dashboard').style.display = 'block';
 				
+				// Actualizar indicador Firebase
+				const dot = document.getElementById('admin-fb-dot');
+				const txt = document.getElementById('admin-fb-text');
+				if (window.firebaseDB) {
+					dot.style.background = '#10b981';
+					dot.style.boxShadow = '0 0 6px #10b981';
+					txt.textContent = 'Firebase conectado';
+				} else {
+					dot.style.background = '#ef4444';
+					txt.textContent = 'Sin conexión Firebase';
+				}
+				
 				// Asegurar que el listener esté activo
 				setupAuditoriaListener();
 				
@@ -5308,121 +5446,413 @@
 			}
 		}
 
+		// Paginación admin
+		let adminPaginaActual = 1;
+		const ADMIN_POR_PAGINA = 30;
+
 		function cargarRegistrosAdmin() {
 			const tbody = document.getElementById('admin-registros-tbody');
 			const filtroRegional = document.getElementById('admin-filter-regional').value;
 			const filtroTipo = document.getElementById('admin-filter-tipo').value;
+			const filtroModalidad = document.getElementById('admin-filter-modalidad').value;
 			const filtroBuscar = document.getElementById('admin-filter-buscar').value.toLowerCase();
+			const filtroFechaDesde = document.getElementById('admin-filter-fecha-desde').value;
+			const filtroFechaHasta = document.getElementById('admin-filter-fecha-hasta').value;
 
-			// Calcular estadísticas
 			const hoy = new Date().toDateString();
 			const stats = {
+				totalHistorico: 0,
 				totalHoy: 0,
 				neiva: 0,
 				gaitana: 0,
-				mensual: 0
+				mensual: 0,
+				semanal: 0,
+				ipsUnicas: new Set(),
+				porModalidad: { hcb: 0, cdi: 0, hi: 0, unknown: 0 },
+				porIP: {},
+				porDia: {}
 			};
 
-			let html = '';
-			
-			// Usar registros de Firebase (variable global)
 			const registros = registrosAuditoria || [];
 			
 			if (registros.length === 0) {
-				tbody.innerHTML = '<tr><td colspan="7" style="padding: 2rem; text-align: center; color: var(--text-secondary);">Cargando registros de Firebase...<br><small>Si no aparecen datos, verifica la conexión</small></td></tr>';
-				
-				// Actualizar stats en 0
-				document.getElementById('stat-total-hoy').textContent = '0';
-				document.getElementById('stat-neiva').textContent = '0';
-				document.getElementById('stat-gaitana').textContent = '0';
-				document.getElementById('stat-mensual').textContent = '0';
+				tbody.innerHTML = `<tr><td colspan="9" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+					<div style="font-size: 2rem; margin-bottom: 0.5rem;">📭</div>
+					Cargando registros de Firebase...<br>
+					<small style="font-size: 0.7rem;">Si no aparecen datos en unos segundos, verifica la conexión a Firebase</small>
+				</td></tr>`;
+				actualizarStatsAdmin(stats);
+				actualizarWidgetsSecundarios(stats);
 				return;
 			}
-			
+
+			// Calcular stats globales (sin filtros)
 			registros.forEach(reg => {
-				// Estadísticas
+				stats.totalHistorico++;
 				const fechaReg = new Date(reg.fecha).toDateString();
 				if (fechaReg === hoy) stats.totalHoy++;
 				if (reg.regional === 'neiva') stats.neiva++;
 				if (reg.regional === 'gaitana') stats.gaitana++;
 				if (reg.tipo === 'mensual') stats.mensual++;
+				if (reg.tipo === 'semanal') stats.semanal++;
+				if (reg.ip && reg.ip !== 'N/A') {
+					stats.ipsUnicas.add(reg.ip);
+					stats.porIP[reg.ip] = (stats.porIP[reg.ip] || 0) + 1;
+				}
+				const mod = (reg.modalidad || 'unknown').toLowerCase();
+				if (stats.porModalidad[mod] !== undefined) stats.porModalidad[mod]++;
+				else stats.porModalidad.unknown++;
 
-				// Filtros
-				if (filtroRegional !== 'todos' && reg.regional !== filtroRegional) return;
-				if (filtroTipo !== 'todos' && reg.tipo !== filtroTipo) return;
+				// Actividad por día (últimos 7 días)
+				const fechaObj = new Date(reg.fecha);
+				const diffDias = Math.floor((new Date() - fechaObj) / (1000 * 60 * 60 * 24));
+				if (diffDias < 7) {
+					const diaKey = fechaObj.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' });
+					stats.porDia[diaKey] = (stats.porDia[diaKey] || 0) + 1;
+				}
+			});
+
+			// Filtrar registros
+			const filtrados = registros.filter(reg => {
+				if (filtroRegional !== 'todos' && reg.regional !== filtroRegional) return false;
+				if (filtroTipo !== 'todos' && reg.tipo !== filtroTipo) return false;
+				if (filtroModalidad !== 'todos' && (reg.modalidad || '').toLowerCase() !== filtroModalidad) return false;
+				if (filtroFechaDesde) {
+					const regDate = reg.fecha.split('T')[0];
+					if (regDate < filtroFechaDesde) return false;
+				}
+				if (filtroFechaHasta) {
+					const regDate = reg.fecha.split('T')[0];
+					if (regDate > filtroFechaHasta) return false;
+				}
 				if (filtroBuscar) {
 					const buscarEn = [
 						reg.ip,
 						reg.deviceId,
 						reg.deviceInfo?.plataforma,
-						reg.deviceInfo?.userAgent
+						reg.deviceInfo?.userAgent,
+						reg.deviceInfo?.timezone,
+						reg.modalidad
 					].join(' ').toLowerCase();
-					if (!buscarEn.includes(filtroBuscar)) return;
+					if (!buscarEn.includes(filtroBuscar)) return false;
 				}
-
-				// Formatear detalles
-				let detallesHtml = '';
-				if (reg.detalles) {
-					if (reg.detalles.semana) detallesHtml += `Semana ${reg.detalles.semana}<br>`;
-					if (reg.detalles.semanas) detallesHtml += `Semanas: ${reg.detalles.semanas.join(', ')}<br>`;
-					if (reg.detalles.personas) detallesHtml += `${reg.detalles.personas} niños<br>`;
-					if (reg.detalles.totalProductos) detallesHtml += `${reg.detalles.totalProductos} productos`;
-				}
-
-				// Badge de regional
-				const regionalColor = reg.regional === 'neiva' ? '#2563eb' : '#059669';
-				
-				// Formatear fecha
-				const fecha = new Date(reg.fecha);
-				const fechaStr = fecha.toLocaleDateString('es-CO');
-				const horaStr = fecha.toLocaleTimeString('es-CO');
-				
-				html += `
-					<tr style="border-bottom: 1px solid var(--border);">
-						<td style="padding: 0.75rem; white-space: nowrap;">
-							<div style="font-weight: 600;">${fechaStr}</div>
-							<div style="font-size: 0.75rem; color: var(--text-secondary);">${horaStr}</div>
-						</td>
-						<td style="padding: 0.75rem; font-family: monospace; font-size: 0.75rem;">
-							${reg.ip || 'N/A'}
-						</td>
-						<td style="padding: 0.75rem;">
-							<div style="font-weight: 500; font-size: 0.75rem;">${reg.deviceId || 'N/A'}</div>
-							<div style="font-size: 0.7rem; color: var(--text-secondary);">${reg.deviceInfo?.plataforma || 'Unknown'}</div>
-						</td>
-						<td style="padding: 0.75rem;">
-							<span style="background: var(--bg-dark); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
-								${reg.accion === 'GENERAR_LISTA' ? '📋 Generar Lista' : '📅 Generar Mensual'}
-							</span>
-						</td>
-						<td style="padding: 0.75rem;">
-							<span style="background: ${regionalColor}20; color: ${regionalColor}; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-								${reg.regional || 'N/A'}
-							</span>
-						</td>
-						<td style="padding: 0.75rem;">
-							<span style="background: ${reg.tipo === 'mensual' ? '#8b5cf6' : '#f59e0b'}20; color: ${reg.tipo === 'mensual' ? '#8b5cf6' : '#f59e0b'}; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-								${reg.tipo || 'N/A'}
-							</span>
-						</td>
-						<td style="padding: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);">
-							${detallesHtml || '-'}
-						</td>
-					</tr>
-				`;
+				return true;
 			});
 
-			tbody.innerHTML = html || '<tr><td colspan="7" style="padding: 2rem; text-align: center; color: var(--text-secondary);">No hay registros con los filtros aplicados</td></tr>';
+			// Paginación
+			const totalFiltrados = filtrados.length;
+			const totalPaginas = Math.ceil(totalFiltrados / ADMIN_POR_PAGINA);
+			if (adminPaginaActual > totalPaginas) adminPaginaActual = 1;
+			const inicio = (adminPaginaActual - 1) * ADMIN_POR_PAGINA;
+			const fin = inicio + ADMIN_POR_PAGINA;
+			const pagina = filtrados.slice(inicio, fin);
 
-			// Actualizar estadísticas
+			// Actualizar contadores
+			const hayFiltros = filtroRegional !== 'todos' || filtroTipo !== 'todos' || filtroModalidad !== 'todos' || filtroBuscar || filtroFechaDesde || filtroFechaHasta;
+			document.getElementById('admin-count-label').textContent = hayFiltros
+				? `Mostrando ${totalFiltrados} de ${stats.totalHistorico} registros (filtrados)`
+				: `Mostrando todos los registros: ${stats.totalHistorico} total`;
+			document.getElementById('admin-paginacion-info').textContent = totalPaginas > 1
+				? `Página ${adminPaginaActual} de ${totalPaginas}`
+				: '';
+
+			// Generar filas
+			let html = '';
+			if (pagina.length === 0) {
+				html = `<tr><td colspan="9" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+					<div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔍</div>
+					No hay registros con los filtros aplicados
+				</td></tr>`;
+			} else {
+				pagina.forEach((reg, idx) => {
+					const regionalColor = reg.regional === 'neiva' ? '#2563eb' : '#059669';
+					const fecha = new Date(reg.fecha);
+					const fechaStr = fecha.toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: '2-digit' });
+					const horaStr = fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+					const esPar = idx % 2 === 0;
+
+					let detallesTexto = '';
+					if (reg.detalles) {
+						if (reg.detalles.semana) detallesTexto += `Sem ${reg.detalles.semana} `;
+						if (reg.detalles.semanas?.length) detallesTexto += `Sems ${reg.detalles.semanas.join('+')} `;
+						if (reg.detalles.personas) detallesTexto += `• ${reg.detalles.personas}👦 `;
+						if (reg.detalles.totalProductos) detallesTexto += `• ${reg.detalles.totalProductos}🛒`;
+					}
+
+					const modalidadColors = { hcb: '#f97316', cdi: '#06b6d4', hi: '#ec4899' };
+					const modColor = modalidadColors[(reg.modalidad || '').toLowerCase()] || '#6b7280';
+					const modLabel = (reg.modalidad || 'N/A').toUpperCase();
+
+					// Detectar SO/navegador simplificado
+					const ua = reg.deviceInfo?.userAgent || '';
+					let soBrief = '❓';
+					if (/Android/i.test(ua)) soBrief = '🤖 Android';
+					else if (/iPhone|iPad|iPod/i.test(ua)) soBrief = '🍎 iOS';
+					else if (/Windows/i.test(ua)) soBrief = '🪟 Win';
+					else if (/Mac/i.test(ua)) soBrief = '🍎 Mac';
+					else if (/Linux/i.test(ua)) soBrief = '🐧 Linux';
+
+					const regIdx = inicio + idx;
+					html += `
+						<tr style="border-bottom: 1px solid var(--border); background: ${esPar ? 'transparent' : 'rgba(255,255,255,0.02)'}; transition: background 0.15s;" 
+							onmouseover="this.style.background='rgba(99,102,241,0.06)'" 
+							onmouseout="this.style.background='${esPar ? 'transparent' : 'rgba(255,255,255,0.02)'}'">
+							<td style="padding: 0.5rem 0.75rem; white-space: nowrap;">
+								<div style="font-weight: 600; font-size: 0.75rem;">${fechaStr}</div>
+								<div style="font-size: 0.7rem; color: var(--text-secondary); font-family: monospace;">${horaStr}</div>
+							</td>
+							<td style="padding: 0.5rem 0.75rem;">
+								<div style="font-family: monospace; font-size: 0.7rem; color: #60a5fa; font-weight: 600;">${reg.ip || 'N/A'}</div>
+								<div style="font-size: 0.65rem; color: var(--text-secondary);">${soBrief}</div>
+							</td>
+							<td style="padding: 0.5rem 0.75rem; max-width: 140px;">
+								<div style="font-size: 0.7rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${reg.deviceId || ''}">${(reg.deviceId || 'N/A').substring(0, 18)}${(reg.deviceId || '').length > 18 ? '…' : ''}</div>
+								<div style="font-size: 0.65rem; color: var(--text-secondary);">${reg.deviceInfo?.pantalla || ''} ${reg.deviceInfo?.timezone ? '• ' + reg.deviceInfo.timezone.split('/').pop() : ''}</div>
+							</td>
+							<td style="padding: 0.5rem 0.75rem;">
+								<span style="background: rgba(99,102,241,0.12); color: #818cf8; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; white-space: nowrap;">
+									${reg.accion === 'GENERAR_LISTA' ? '📋 Semanal' : '📅 Mensual'}
+								</span>
+							</td>
+							<td style="padding: 0.5rem 0.75rem;">
+								<span style="background: ${regionalColor}20; color: ${regionalColor}; padding: 0.2rem 0.5rem; border-radius: 1rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; white-space: nowrap;">
+									${reg.regional === 'neiva' ? '🏢' : '🌿'} ${reg.regional || 'N/A'}
+								</span>
+							</td>
+							<td style="padding: 0.5rem 0.75rem;">
+								<span style="background: ${reg.tipo === 'mensual' ? '#8b5cf6' : '#f59e0b'}18; color: ${reg.tipo === 'mensual' ? '#a78bfa' : '#fbbf24'}; padding: 0.2rem 0.5rem; border-radius: 1rem; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;">
+									${reg.tipo || 'N/A'}
+								</span>
+							</td>
+							<td style="padding: 0.5rem 0.75rem;">
+								<span style="background: ${modColor}18; color: ${modColor}; padding: 0.2rem 0.5rem; border-radius: 1rem; font-size: 0.7rem; font-weight: 700;">
+									${modLabel}
+								</span>
+							</td>
+							<td style="padding: 0.5rem 0.75rem; font-size: 0.7rem; color: var(--text-secondary); max-width: 130px;">
+								${detallesTexto || '—'}
+							</td>
+							<td style="padding: 0.5rem 0.75rem; text-align: center;">
+								<button onclick="verDetalleRegistro(${regIdx})" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; border-radius: 0.375rem; cursor: pointer; padding: 0.2rem 0.5rem; font-size: 0.7rem; transition: all 0.2s;" 
+									onmouseover="this.style.background='rgba(99,102,241,0.3)'" 
+									onmouseout="this.style.background='rgba(99,102,241,0.15)'">
+									🔍
+								</button>
+							</td>
+						</tr>
+					`;
+				});
+			}
+
+			tbody.innerHTML = html;
+
+			// Renderizar paginación
+			renderizarPaginacionAdmin(totalPaginas);
+
+			// Actualizar estadísticas y widgets
+			actualizarStatsAdmin(stats);
+			actualizarWidgetsSecundarios(stats);
+		}
+
+		function actualizarStatsAdmin(stats) {
+			const total = stats.totalHistorico || 0;
+			document.getElementById('stat-total-historico').textContent = total;
 			document.getElementById('stat-total-hoy').textContent = stats.totalHoy;
+			document.getElementById('stat-hoy-fecha').textContent = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
 			document.getElementById('stat-neiva').textContent = stats.neiva;
+			document.getElementById('stat-neiva-pct').textContent = total > 0 ? `${Math.round(stats.neiva * 100 / total)}% del total` : '—';
 			document.getElementById('stat-gaitana').textContent = stats.gaitana;
+			document.getElementById('stat-gaitana-pct').textContent = total > 0 ? `${Math.round(stats.gaitana * 100 / total)}% del total` : '—';
 			document.getElementById('stat-mensual').textContent = stats.mensual;
+			document.getElementById('stat-mensual-pct').textContent = total > 0 ? `${stats.semanal} semanales` : '—';
+			document.getElementById('stat-ips-unicas').textContent = stats.ipsUnicas.size;
+
+			// Estado Firebase
+			const dot = document.getElementById('admin-fb-dot');
+			const txt = document.getElementById('admin-fb-text');
+			if (window.firebaseDB) {
+				dot.style.background = '#10b981';
+				dot.style.boxShadow = '0 0 6px #10b981';
+				txt.textContent = 'Firebase conectado';
+			} else {
+				dot.style.background = '#ef4444';
+				txt.textContent = 'Sin conexión';
+			}
+		}
+
+		function actualizarWidgetsSecundarios(stats) {
+			// Top IPs
+			const topIPs = Object.entries(stats.porIP)
+				.sort((a, b) => b[1] - a[1])
+				.slice(0, 5);
+			const maxIP = topIPs[0]?.[1] || 1;
+			const ipHTML = topIPs.length > 0
+				? topIPs.map(([ip, count]) => `
+					<div style="margin-bottom: 0.5rem;">
+						<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+							<span style="font-family: monospace; color: #60a5fa; font-size: 0.7rem;">${ip}</span>
+							<span style="font-weight: 700; color: var(--text-primary); font-size: 0.75rem;">${count}</span>
+						</div>
+						<div style="height: 4px; background: var(--bg-dark); border-radius: 2px; overflow: hidden;">
+							<div style="height: 100%; width: ${Math.round(count * 100 / maxIP)}%; background: linear-gradient(90deg, #6366f1, #818cf8); border-radius: 2px; transition: width 0.5s;"></div>
+						</div>
+					</div>
+				`).join('')
+				: '<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem; font-size: 0.7rem;">Sin datos</div>';
+			document.getElementById('admin-top-ips').innerHTML = ipHTML;
+
+			// Por modalidad
+			const modColors = { hcb: '#f97316', cdi: '#06b6d4', hi: '#ec4899', unknown: '#6b7280' };
+			const modLabels = { hcb: '🏠 HCB', cdi: '🏫 CDI', hi: '👶 HI', unknown: '❓ N/D' };
+			const totalMod = Object.values(stats.porModalidad).reduce((a, b) => a + b, 0) || 1;
+			const modHTML = Object.entries(stats.porModalidad)
+				.filter(([, v]) => v > 0)
+				.sort((a, b) => b[1] - a[1])
+				.map(([mod, count]) => `
+					<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+						<span style="background: ${modColors[mod]}20; color: ${modColors[mod]}; padding: 0.15rem 0.5rem; border-radius: 1rem; font-size: 0.65rem; font-weight: 700; min-width: 50px; text-align: center;">${modLabels[mod] || mod}</span>
+						<div style="flex: 1; height: 6px; background: var(--bg-dark); border-radius: 3px; overflow: hidden;">
+							<div style="height: 100%; width: ${Math.round(count * 100 / totalMod)}%; background: ${modColors[mod]}; border-radius: 3px;"></div>
+						</div>
+						<span style="font-weight: 700; font-size: 0.75rem; min-width: 24px; text-align: right;">${count}</span>
+					</div>
+				`).join('') || '<div style="color: var(--text-secondary); font-size: 0.7rem; text-align: center; padding: 0.5rem;">Sin datos</div>';
+			document.getElementById('admin-por-modalidad').innerHTML = modHTML;
+
+			// Actividad últimos 7 días
+			const diasEntries = Object.entries(stats.porDia).sort((a, b) => {
+				// ordenar por fecha aproximada
+				return 0;
+			});
+			const maxDia = Math.max(...diasEntries.map(([, v]) => v), 1);
+			const diaHTML = diasEntries.length > 0
+				? diasEntries.map(([dia, count]) => `
+					<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+						<span style="font-size: 0.65rem; color: var(--text-secondary); min-width: 80px;">${dia}</span>
+						<div style="flex: 1; height: 5px; background: var(--bg-dark); border-radius: 3px; overflow: hidden;">
+							<div style="height: 100%; width: ${Math.round(count * 100 / maxDia)}%; background: linear-gradient(90deg, #f59e0b, #fbbf24); border-radius: 3px;"></div>
+						</div>
+						<span style="font-size: 0.7rem; font-weight: 700; min-width: 20px; text-align: right;">${count}</span>
+					</div>
+				`).join('')
+				: '<div style="color: var(--text-secondary); font-size: 0.7rem; text-align: center; padding: 0.5rem;">Sin actividad reciente</div>';
+			document.getElementById('admin-actividad-reciente').innerHTML = diaHTML;
+		}
+
+		function renderizarPaginacionAdmin(totalPaginas) {
+			const container = document.getElementById('admin-paginacion');
+			if (totalPaginas <= 1) { container.innerHTML = ''; return; }
+			let html = '';
+			for (let i = 1; i <= totalPaginas; i++) {
+				const esActual = i === adminPaginaActual;
+				html += `<button onclick="irAPaginaAdmin(${i})" style="min-width: 32px; height: 32px; border-radius: 0.375rem; border: 1px solid ${esActual ? '#6366f1' : 'var(--border)'}; background: ${esActual ? '#6366f1' : 'var(--bg-card)'}; color: ${esActual ? 'white' : 'var(--text-secondary)'}; cursor: pointer; font-size: 0.75rem; font-weight: ${esActual ? '700' : '400'}; transition: all 0.2s;">${i}</button>`;
+			}
+			container.innerHTML = html;
+		}
+
+		function irAPaginaAdmin(pagina) {
+			adminPaginaActual = pagina;
+			cargarRegistrosAdmin();
 		}
 
 		function filtrarRegistros() {
+			adminPaginaActual = 1;
 			cargarRegistrosAdmin();
+		}
+
+		function limpiarFiltrosAdmin() {
+			document.getElementById('admin-filter-regional').value = 'todos';
+			document.getElementById('admin-filter-tipo').value = 'todos';
+			document.getElementById('admin-filter-modalidad').value = 'todos';
+			document.getElementById('admin-filter-fecha-desde').value = '';
+			document.getElementById('admin-filter-fecha-hasta').value = '';
+			document.getElementById('admin-filter-buscar').value = '';
+			adminPaginaActual = 1;
+			cargarRegistrosAdmin();
+		}
+
+		function refrescarAdmin() {
+			if (window.firebaseDB) {
+				sincronizarPendientes();
+			}
+			cargarRegistrosAdmin();
+			showToast('Panel actualizado', 'success');
+		}
+
+		// Ver detalle completo de un registro
+		function verDetalleRegistro(idx) {
+			const reg = registrosAuditoria[idx];
+			if (!reg) return;
+			const modal = document.getElementById('admin-detail-modal');
+			const content = document.getElementById('admin-detail-content');
+
+			const ua = reg.deviceInfo?.userAgent || 'N/A';
+			let navegador = 'Desconocido';
+			if (/Chrome\/(\d+)/i.test(ua)) navegador = `Chrome ${ua.match(/Chrome\/(\d+)/)?.[1] || ''}`;
+			else if (/Firefox\/(\d+)/i.test(ua)) navegador = `Firefox ${ua.match(/Firefox\/(\d+)/)?.[1] || ''}`;
+			else if (/Safari\/(\d+)/i.test(ua) && !/Chrome/i.test(ua)) navegador = 'Safari';
+			else if (/Edge\/(\d+)/i.test(ua)) navegador = `Edge ${ua.match(/Edge\/(\d+)/)?.[1] || ''}`;
+
+			const seccion = (key, label, val) => val && val !== 'N/A' && val !== 'unknown'
+				? `<div style="display: flex; gap: 0.5rem; padding: 0.375rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);">
+						<span style="min-width: 130px; color: var(--text-secondary); font-size: 0.75rem;">${label}</span>
+						<span style="font-weight: 500; font-size: 0.75rem; word-break: break-all;">${val}</span>
+					</div>` : '';
+
+			const diasStr = reg.detalles?.diasSeleccionados
+				? reg.detalles.diasSeleccionados.map(d => ['','Lun','Mar','Mié','Jue','Vie'][d]).join(', ')
+				: '';
+
+			content.innerHTML = `
+				<div style="margin-bottom: 0.75rem; padding: 0.75rem; background: rgba(99,102,241,0.08); border-radius: 0.5rem; border-left: 3px solid #6366f1;">
+					<div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em;">Registro #${reg.id}</div>
+					<div style="font-weight: 700; font-size: 0.9rem;">${reg.fechaLocal || new Date(reg.fecha).toLocaleString('es-CO')}</div>
+				</div>
+
+				<div style="margin-bottom: 0.875rem;">
+					<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; font-weight: 600;">🌐 Red</div>
+					${seccion('ip', 'Dirección IP', reg.ip)}
+					${seccion('url', 'URL de acceso', reg.url)}
+				</div>
+
+				<div style="margin-bottom: 0.875rem;">
+					<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; font-weight: 600;">💻 Dispositivo</div>
+					${seccion('dev', 'Device ID', reg.deviceId)}
+					${seccion('plat', 'Plataforma', reg.deviceInfo?.plataforma)}
+					${seccion('nav', 'Navegador', navegador)}
+					${seccion('pant', 'Pantalla', reg.deviceInfo?.pantalla)}
+					${seccion('tz', 'Zona Horaria', reg.deviceInfo?.timezone)}
+					${seccion('mem', 'Memoria RAM', reg.deviceInfo?.memoria !== 'unknown' ? reg.deviceInfo?.memoria + ' GB' : null)}
+					${seccion('cpu', 'Núcleos CPU', reg.deviceInfo?.nucleos !== 'unknown' ? reg.deviceInfo?.nucleos : null)}
+					${seccion('lang', 'Idioma', reg.deviceInfo?.idioma)}
+				</div>
+
+				<div style="margin-bottom: 0.875rem;">
+					<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; font-weight: 600;">📋 Acción</div>
+					${seccion('accion', 'Acción', reg.accion)}
+					${seccion('reg', 'Regional', reg.regional?.toUpperCase())}
+					${seccion('mod', 'Modalidad', reg.modalidad?.toUpperCase())}
+					${seccion('tipo', 'Tipo de lista', reg.tipo?.toUpperCase())}
+					${seccion('sem', 'Semana', reg.detalles?.semana ? `Semana ${reg.detalles.semana}` : null)}
+					${seccion('sems', 'Semanas', reg.detalles?.semanas?.length ? reg.detalles.semanas.join(', ') : null)}
+					${seccion('dias', 'Días seleccionados', diasStr || null)}
+					${seccion('pers', 'Niños', reg.detalles?.personas ? `${reg.detalles.personas} niños` : null)}
+					${seccion('prod', 'Productos', reg.detalles?.totalProductos ? `${reg.detalles.totalProductos} productos` : null)}
+				</div>
+
+				<details style="margin-top: 0.5rem;">
+					<summary style="cursor: pointer; font-size: 0.75rem; color: var(--text-secondary); padding: 0.375rem 0;">Ver User Agent completo</summary>
+					<div style="font-family: monospace; font-size: 0.65rem; color: var(--text-secondary); word-break: break-all; margin-top: 0.375rem; padding: 0.5rem; background: var(--bg-dark); border-radius: 0.375rem; line-height: 1.5;">${ua}</div>
+				</details>
+			`;
+
+			modal.style.display = 'flex';
+			document.body.style.overflow = 'hidden';
+		}
+
+		function cerrarDetalleRegistro() {
+			document.getElementById('admin-detail-modal').style.display = 'none';
+			document.body.style.overflow = '';
 		}
 
 		async function exportarRegistros() {
@@ -5447,7 +5877,7 @@
 			}
 
 			const data = registrosAuditoria.map(reg => ({
-				'Fecha': reg.fechaLocal,
+				'Fecha': reg.fechaLocal || new Date(reg.fecha).toLocaleString('es-CO'),
 				'IP': reg.ip || 'N/A',
 				'Device ID': reg.deviceId || 'N/A',
 				'Plataforma': reg.deviceInfo?.plataforma || 'Unknown',
@@ -5455,9 +5885,11 @@
 				'Pantalla': reg.deviceInfo?.pantalla || 'N/A',
 				'Zona Horaria': reg.deviceInfo?.timezone || 'N/A',
 				'Acción': reg.accion,
-				'Regional': reg.regional,
-				'Tipo': reg.tipo,
+				'Regional': (reg.regional || '').toUpperCase(),
+				'Modalidad': (reg.modalidad || 'N/A').toUpperCase(),
+				'Tipo': (reg.tipo || '').toUpperCase(),
 				'Semana(s)': reg.detalles?.semana || (reg.detalles?.semanas ? reg.detalles.semanas.join(', ') : ''),
+				'Días seleccionados': reg.detalles?.diasSeleccionados ? reg.detalles.diasSeleccionados.map(d => ['','Lun','Mar','Mié','Jue','Vie'][d]).join(',') : '',
 				'Personas': reg.detalles?.personas || '',
 				'Productos': reg.detalles?.totalProductos || '',
 				'URL': reg.url || ''
@@ -5495,11 +5927,21 @@
 			}
 		}
 
-		// Cerrar admin con ESC
+		// Cerrar admin / modal detalle con ESC
 		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape' && document.getElementById('admin-panel').style.display === 'block') {
-				cerrarAdmin();
+			if (e.key === 'Escape') {
+				const detailModal = document.getElementById('admin-detail-modal');
+				if (detailModal && detailModal.style.display === 'flex') {
+					cerrarDetalleRegistro();
+				} else if (document.getElementById('admin-panel').style.display === 'block') {
+					cerrarAdmin();
+				}
 			}
+		});
+
+		// Cerrar modal detalle al hacer clic fuera
+		document.getElementById('admin-detail-modal').addEventListener('click', function(e) {
+			if (e.target === this) cerrarDetalleRegistro();
 		});
 
 		// Inicializar auditoría cuando Firebase esté listo
@@ -5635,6 +6077,11 @@
 						<div class="dp-week-title">📅 Semana ${sem}</div>
 						<div class="dp-week-total">${totalGrupal.toFixed(2)} ${product.u}</div>
 					</div>
+					<div style="display:flex; gap:0.5rem; padding:0.375rem 0.875rem 0.25rem; font-size:0.6rem; color:var(--text-secondary);">
+						<span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:8px;height:8px;border-radius:50%;background:#a78bfa;display:inline-block;"></span> Seleccionado con gramaje</span>
+						<span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);display:inline-block;"></span> Sin gramaje ese día</span>
+						<span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:8px;height:8px;border-radius:50%;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);display:inline-block;"></span> No seleccionado</span>
+					</div>
 					<div class="dp-timeline">`;
 			
 			for (let d = 1; d <= 5; d++) {
@@ -5643,26 +6090,67 @@
 				const esSeleccionado = diasSeleccionados.includes(d);
 				const hasData = gram > 0 && esSeleccionado;
 				const menuNum = ((sem - 1) * 5) + d;
+
+				let dotClass, lblClass, dotContent, titleTxt;
+				if (!esSeleccionado) {
+					dotClass = 'not-selected';
+					lblClass = 'lbl-not-selected';
+					dotContent = '✕';
+					titleTxt = `Menú ${menuNum}: no seleccionado${gram > 0 ? ` (tiene ${gram} ${product.u} disponible)` : ''}`;
+				} else if (hasData) {
+					dotClass = 'has-data';
+					lblClass = 'lbl-selected';
+					dotContent = gram.toFixed(gram % 1 === 0 ? 0 : 1);
+					titleTxt = `Menú ${menuNum}: ${gram} ${product.u}/niño`;
+				} else {
+					dotClass = 'no-data-selected';
+					lblClass = 'lbl-no-gram';
+					dotContent = '—';
+					titleTxt = `Menú ${menuNum}: seleccionado pero sin gramaje`;
+				}
+
 				tlHTML += `
 					<div class="dp-tl-item">
-						<div class="dp-tl-dot ${hasData ? 'has-data' : 'no-data'}" title="Menú ${menuNum}: ${gram} ${product.u}">
-							${hasData ? gram.toFixed(gram % 1 === 0 ? 0 : 1) : '—'}
-						</div>
-						<div class="dp-tl-label">${DIAS_NOMBRES[d].substring(0,3)}<br>${esSeleccionado ? '✓' : '○'}</div>
+						<div class="dp-tl-dot ${dotClass}" title="${titleTxt}">${dotContent}</div>
+						<div class="dp-tl-label ${lblClass}">${DIAS_NOMBRES[d].substring(0,3)}<br>${esSeleccionado ? '✓' : '✕'}</div>
 					</div>`;
 			}
 			tlHTML += `</div>`;
 
-			// Detalle por día
+			// Detalle por día — los 5 días con 3 estados visuales
 			tlHTML += `<div class="dp-days-list">`;
-			detallesDias.forEach(({ dayNum, mId, menuNum, gram, total }) => {
-				tlHTML += `
-					<div class="dp-day-row">
-						<div class="dp-day-pill ${DIAS_CLASES[dayNum]}">${DIAS_NOMBRES[dayNum]}</div>
-						<span class="dp-menu-tag">Menú ${menuNum}</span>
-						<div class="dp-gramaje">${gram.toFixed(2)}<span class="dp-gramaje-unit">${product.u}/niño</span></div>
-					</div>`;
-			});
+			for (let d = 1; d <= 5; d++) {
+				const mId = `m${((sem - 1) * 5) + d}`;
+				const gram = product.g[mId] || 0;
+				const esSeleccionado = diasSeleccionados.includes(d);
+				const menuNum = ((sem - 1) * 5) + d;
+				const hasData = gram > 0 && esSeleccionado;
+
+				if (!esSeleccionado) {
+					tlHTML += `
+						<div class="dp-day-row" style="opacity:0.45;border:1px solid rgba(239,68,68,0.25);background:rgba(239,68,68,0.04);">
+							<div style="min-width:72px;padding:0.2rem 0.5rem;border-radius:0.375rem;font-size:0.65rem;font-weight:700;text-align:center;text-transform:uppercase;background:rgba(239,68,68,0.12);color:rgba(239,68,68,0.65);">${DIAS_NOMBRES[d]}</div>
+							<span class="dp-menu-tag" style="color:rgba(239,68,68,0.4);">Menú ${menuNum}</span>
+							<div style="margin-left:auto;display:flex;align-items:center;gap:0.4rem;font-size:0.68rem;color:rgba(239,68,68,0.5);font-weight:600;">
+								✕ No seleccionado${gram > 0 ? `<span style="font-size:0.62rem;opacity:0.6;">(${gram} ${product.u} disp.)</span>` : ''}
+							</div>
+						</div>`;
+				} else if (hasData) {
+					tlHTML += `
+						<div class="dp-day-row">
+							<div class="dp-day-pill ${DIAS_CLASES[d]}">${DIAS_NOMBRES[d]}</div>
+							<span class="dp-menu-tag">Menú ${menuNum}</span>
+							<div class="dp-gramaje">${gram.toFixed(2)}<span class="dp-gramaje-unit">${product.u}/niño</span></div>
+						</div>`;
+				} else {
+					tlHTML += `
+						<div class="dp-day-row" style="opacity:0.45;">
+							<div class="dp-day-pill ${DIAS_CLASES[d]}" style="opacity:0.4;">${DIAS_NOMBRES[d]}</div>
+							<span class="dp-menu-tag">Menú ${menuNum}</span>
+							<div style="margin-left:auto;font-size:0.7rem;color:var(--text-secondary);font-style:italic;">sin gramaje</div>
+						</div>`;
+				}
+			}
 			tlHTML += `</div>
 				<div class="dp-total-row">
 					<strong>Total grupo (${personas} niños)</strong>
@@ -5739,6 +6227,11 @@
 							<div class="dp-week-title">📅 Semana ${weekNum}</div>
 							<div class="dp-week-total">${totalSemGrupal.toFixed(2)} ${product.u}</div>
 						</div>
+						<div style="display:flex;gap:0.5rem;padding:0.25rem 0.875rem 0.1rem;font-size:0.6rem;color:var(--text-secondary);">
+							<span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:7px;height:7px;border-radius:50%;background:#a78bfa;display:inline-block;"></span> Con gramaje</span>
+							<span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);display:inline-block;"></span> Sin gramaje</span>
+							<span style="display:flex;align-items:center;gap:0.25rem;"><span style="width:7px;height:7px;border-radius:50%;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);display:inline-block;"></span> No seleccionado</span>
+						</div>
 						<div class="dp-timeline">`;
 
 				for (let d = 1; d <= 5; d++) {
@@ -5746,25 +6239,68 @@
 					const mId = `m${((weekNum - 1) * 5) + d}`;
 					const gram = product.g[mId] || 0;
 					const hasData = gram > 0 && esSeleccionado;
+					const menuNum = ((weekNum - 1) * 5) + d;
+
+					let dotClass, lblClass, dotContent, titleTxt;
+					if (!esSeleccionado) {
+						dotClass = 'not-selected';
+						lblClass = 'lbl-not-selected';
+						dotContent = '✕';
+						titleTxt = `Menú ${menuNum}: no seleccionado${gram > 0 ? ` (${gram} ${product.u} disp.)` : ''}`;
+					} else if (hasData) {
+						dotClass = 'has-data';
+						lblClass = 'lbl-selected';
+						dotContent = gram.toFixed(gram % 1 === 0 ? 0 : 1);
+						titleTxt = `Menú ${menuNum}: ${gram} ${product.u}/niño`;
+					} else {
+						dotClass = 'no-data-selected';
+						lblClass = 'lbl-no-gram';
+						dotContent = '—';
+						titleTxt = `Menú ${menuNum}: seleccionado pero sin gramaje`;
+					}
+
 					html += `
 						<div class="dp-tl-item">
-							<div class="dp-tl-dot ${hasData ? 'has-data' : 'no-data'}">
-								${hasData ? gram.toFixed(gram % 1 === 0 ? 0 : 1) : '—'}
-							</div>
-							<div class="dp-tl-label">${DIAS_NOMBRES[d].substring(0,3)}<br>${esSeleccionado ? '✓' : '○'}</div>
+							<div class="dp-tl-dot ${dotClass}" title="${titleTxt}">${dotContent}</div>
+							<div class="dp-tl-label ${lblClass}">${DIAS_NOMBRES[d].substring(0,3)}<br>${esSeleccionado ? '✓' : '✕'}</div>
 						</div>`;
 				}
 				html += `</div>`;
 
+				// Lista de días con 3 estados
 				html += `<div class="dp-days-list">`;
-				diasConDato.forEach(({ dayNum, menuNum, gram, total }) => {
-					html += `
-						<div class="dp-day-row">
-							<div class="dp-day-pill ${DIAS_CLASES[dayNum]}">${DIAS_NOMBRES[dayNum]}</div>
-							<span class="dp-menu-tag">Menú ${menuNum}</span>
-							<div class="dp-gramaje">${gram.toFixed(2)}<span class="dp-gramaje-unit">${product.u}/niño</span></div>
-						</div>`;
-				});
+				for (let d = 1; d <= 5; d++) {
+					const esSeleccionado = selectedDays.includes(d);
+					const mId = `m${((weekNum - 1) * 5) + d}`;
+					const gram = product.g[mId] || 0;
+					const menuNum = ((weekNum - 1) * 5) + d;
+					const hasData = gram > 0 && esSeleccionado;
+
+					if (!esSeleccionado) {
+						html += `
+							<div class="dp-day-row" style="opacity:0.45;border:1px solid rgba(239,68,68,0.25);background:rgba(239,68,68,0.04);">
+								<div style="min-width:72px;padding:0.2rem 0.5rem;border-radius:0.375rem;font-size:0.65rem;font-weight:700;text-align:center;text-transform:uppercase;background:rgba(239,68,68,0.12);color:rgba(239,68,68,0.65);">${DIAS_NOMBRES[d]}</div>
+								<span class="dp-menu-tag" style="color:rgba(239,68,68,0.4);">Menú ${menuNum}</span>
+								<div style="margin-left:auto;display:flex;align-items:center;gap:0.4rem;font-size:0.68rem;color:rgba(239,68,68,0.5);font-weight:600;">
+									✕ No seleccionado${gram > 0 ? `<span style="font-size:0.62rem;opacity:0.6;">(${gram} ${product.u} disp.)</span>` : ''}
+								</div>
+							</div>`;
+					} else if (hasData) {
+						html += `
+							<div class="dp-day-row">
+								<div class="dp-day-pill ${DIAS_CLASES[d]}">${DIAS_NOMBRES[d]}</div>
+								<span class="dp-menu-tag">Menú ${menuNum}</span>
+								<div class="dp-gramaje">${gram.toFixed(2)}<span class="dp-gramaje-unit">${product.u}/niño</span></div>
+							</div>`;
+					} else {
+						html += `
+							<div class="dp-day-row" style="opacity:0.45;">
+								<div class="dp-day-pill ${DIAS_CLASES[d]}" style="opacity:0.4;">${DIAS_NOMBRES[d]}</div>
+								<span class="dp-menu-tag">Menú ${menuNum}</span>
+								<div style="margin-left:auto;font-size:0.7rem;color:var(--text-secondary);font-style:italic;">sin gramaje</div>
+							</div>`;
+					}
+				}
 				html += `</div>
 					<div class="dp-total-row">
 						<strong>Subtotal semana ${weekNum} (${personas} niños)</strong>
