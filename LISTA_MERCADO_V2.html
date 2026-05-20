@@ -1182,7 +1182,7 @@
         }
 
         .week-day-chip {
-            padding: 0.25rem 0.5rem;
+            padding: 0.2rem 0.25rem;
             background: var(--bg-dark);
             border: 1px solid var(--border);
             border-radius: 0.25rem;
@@ -2125,9 +2125,314 @@
 				display: none;
 			}
 		}
-		
-		
-		
+
+		/* ==================== PANEL VER DETALLES ==================== */
+		.detail-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.25rem;
+			padding: 0.2rem 0.5rem;
+			border-radius: 0.375rem;
+			font-size: 0.65rem;
+			font-weight: 600;
+			cursor: pointer;
+			border: 1px solid rgba(139, 92, 246, 0.4);
+			background: rgba(139, 92, 246, 0.1);
+			color: #a78bfa;
+			transition: all 0.2s;
+			white-space: nowrap;
+		}
+		.detail-btn:hover {
+			background: rgba(139, 92, 246, 0.25);
+			border-color: #a78bfa;
+			transform: scale(1.05);
+		}
+
+		/* Overlay oscuro */
+		#detailOverlay {
+			position: fixed;
+			inset: 0;
+			background: rgba(0,0,0,0.6);
+			backdrop-filter: blur(4px);
+			z-index: 200;
+			opacity: 0;
+			visibility: hidden;
+			transition: all 0.3s;
+		}
+		#detailOverlay.open {
+			opacity: 1;
+			visibility: visible;
+		}
+
+		/* Panel lateral */
+		#detailPanel {
+			position: fixed;
+			top: 0;
+			right: -100%;
+			width: min(480px, 100vw);
+			height: 100vh;
+			background: var(--bg-card);
+			border-left: 1px solid var(--border);
+			z-index: 201;
+			display: flex;
+			flex-direction: column;
+			transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+			box-shadow: -20px 0 60px rgba(0,0,0,0.4);
+		}
+		#detailPanel.open {
+			right: 0;
+		}
+
+		.dp-header {
+			padding: 1rem 1.25rem 0.75rem;
+			border-bottom: 1px solid var(--border);
+			background: var(--bg-dark);
+			position: relative;
+		}
+		.dp-close {
+			position: absolute;
+			top: 0.75rem;
+			right: 1rem;
+			width: 28px;
+			height: 28px;
+			border-radius: 50%;
+			border: 1px solid var(--border);
+			background: var(--bg-hover);
+			color: var(--text-secondary);
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 0.875rem;
+			transition: all 0.2s;
+		}
+		.dp-close:hover {
+			background: var(--danger);
+			color: white;
+			border-color: transparent;
+		}
+		.dp-product-name {
+			font-size: 1.1rem;
+			font-weight: 700;
+			color: var(--text-primary);
+			margin-bottom: 0.25rem;
+			padding-right: 2rem;
+		}
+		.dp-meta {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+			flex-wrap: wrap;
+		}
+		.dp-badge {
+			padding: 0.2rem 0.6rem;
+			border-radius: 1rem;
+			font-size: 0.65rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+		}
+		.dp-badge-cat { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+		.dp-badge-reg { background: rgba(37,99,235,0.15); color: #60a5fa; border: 1px solid rgba(37,99,235,0.3); }
+		.dp-badge-reg.gaitana { background: rgba(5,150,105,0.15); color: #34d399; border: 1px solid rgba(5,150,105,0.3); }
+
+		.dp-body {
+			flex: 1;
+			overflow-y: auto;
+			padding: 1rem 1.25rem;
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		/* Resumen de totales */
+		.dp-summary-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 0.5rem;
+		}
+		.dp-summary-card {
+			background: var(--bg-dark);
+			border: 1px solid var(--border);
+			border-radius: 0.5rem;
+			padding: 0.625rem;
+			text-align: center;
+		}
+		.dp-summary-card .dp-sum-val {
+			font-size: 1rem;
+			font-weight: 700;
+			color: var(--text-primary);
+		}
+		.dp-summary-card .dp-sum-label {
+			font-size: 0.6rem;
+			color: var(--text-secondary);
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			margin-top: 0.125rem;
+		}
+
+		/* Sección por semana */
+		.dp-week-section {
+			background: var(--bg-dark);
+			border: 1px solid var(--border);
+			border-radius: 0.625rem;
+			overflow: hidden;
+		}
+		.dp-week-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0.625rem 0.875rem;
+			background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(245,158,11,0.08));
+			border-bottom: 1px solid var(--border);
+		}
+		.dp-week-title {
+			font-size: 0.8125rem;
+			font-weight: 700;
+			color: #a78bfa;
+			display: flex;
+			align-items: center;
+			gap: 0.4rem;
+		}
+		.dp-week-total {
+			font-size: 0.75rem;
+			font-weight: 600;
+			color: #fbbf24;
+		}
+		.dp-days-list {
+			padding: 0.625rem 0.875rem;
+			display: flex;
+			flex-direction: column;
+			gap: 0.375rem;
+		}
+		.dp-day-row {
+			display: flex;
+			align-items: center;
+			gap: 0.625rem;
+			padding: 0.4rem 0.5rem;
+			border-radius: 0.375rem;
+			background: rgba(255,255,255,0.02);
+			border: 1px solid transparent;
+			transition: all 0.15s;
+		}
+		.dp-day-row:hover {
+			background: rgba(255,255,255,0.04);
+			border-color: var(--border);
+		}
+		.dp-day-pill {
+			min-width: 72px;
+			padding: 0.2rem 0.5rem;
+			border-radius: 0.375rem;
+			font-size: 0.65rem;
+			font-weight: 700;
+			text-align: center;
+			text-transform: uppercase;
+		}
+		.dp-day-lunes    { background: rgba(37,99,235,0.2); color: #60a5fa; }
+		.dp-day-martes   { background: rgba(16,185,129,0.2); color: #34d399; }
+		.dp-day-miercoles{ background: rgba(245,158,11,0.2); color: #fbbf24; }
+		.dp-day-jueves   { background: rgba(239,68,68,0.2); color: #f87171; }
+		.dp-day-viernes  { background: rgba(139,92,246,0.2); color: #a78bfa; }
+
+		.dp-menu-tag {
+			font-size: 0.65rem;
+			color: var(--text-secondary);
+			background: var(--bg-hover);
+			padding: 0.15rem 0.4rem;
+			border-radius: 0.25rem;
+			font-weight: 600;
+		}
+		.dp-gramaje {
+			margin-left: auto;
+			font-size: 0.75rem;
+			font-weight: 700;
+			color: var(--text-primary);
+		}
+		.dp-gramaje-unit {
+			font-size: 0.65rem;
+			color: var(--text-secondary);
+			margin-left: 0.2rem;
+		}
+		.dp-total-row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 0.5rem 0.875rem;
+			border-top: 1px solid var(--border);
+			background: rgba(139,92,246,0.05);
+			font-size: 0.75rem;
+		}
+		.dp-total-row strong { color: #a78bfa; }
+		.dp-total-val { font-weight: 700; color: #fbbf24; }
+
+		/* Timeline visual */
+		.dp-timeline {
+			display: flex;
+			gap: 0.25rem;
+			padding: 0.625rem 0.875rem 0.75rem;
+			flex-wrap: wrap;
+		}
+		.dp-tl-item {
+			flex: 1;
+			min-width: 44px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.25rem;
+		}
+		.dp-tl-dot {
+			width: 28px;
+			height: 28px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 0.6rem;
+			font-weight: 700;
+			border: 2px solid transparent;
+			transition: all 0.2s;
+		}
+		.dp-tl-dot.has-data {
+			background: rgba(139,92,246,0.2);
+			border-color: #a78bfa;
+			color: #a78bfa;
+		}
+		.dp-tl-dot.no-data {
+			background: var(--bg-hover);
+			color: var(--text-secondary);
+			opacity: 0.4;
+		}
+		.dp-tl-label {
+			font-size: 0.55rem;
+			color: var(--text-secondary);
+			text-align: center;
+			line-height: 1.1;
+		}
+
+		.dp-section-title {
+			font-size: 0.7rem;
+			font-weight: 700;
+			color: var(--text-secondary);
+			text-transform: uppercase;
+			letter-spacing: 0.1em;
+			margin-bottom: 0.25rem;
+			display: flex;
+			align-items: center;
+			gap: 0.4rem;
+		}
+		.dp-section-title::before {
+			content: '';
+			display: inline-block;
+			width: 3px;
+			height: 12px;
+			border-radius: 2px;
+			background: #a78bfa;
+		}
+
+		@media (max-width: 480px) {
+			#detailPanel { width: 100vw; }
+			.dp-summary-grid { grid-template-columns: repeat(3, 1fr); }
+		}
     </style>
 </head>
 <body class="reg-neiva" data-theme="dark">
@@ -2139,7 +2444,7 @@
         </div>
         <div class="mobile-title">
             <span id="headerIcon">🍽️</span>
-            <span id="headerTitle">Lista Mercados</span>
+            <span id="headerTitle">Lista Mercados v2.1</span>
             <span class="monthly-badge" id="monthlyBadge">MENSUAL</span>
             <span class="calendar-badge" id="calendarBadge">CALENDARIO</span>
             <span class="editor-badge" id="editorBadge">EDITOR</span>
@@ -2458,6 +2763,7 @@
                 <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
                     Planificacion y consolidacion de compras por semanas
                 </div>
+				
             </div>
 
             <div class="config-panel no-print">
@@ -2895,6 +3201,24 @@
     </main>
 
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ==================== PANEL VER DETALLES ==================== -->
+    <div id="detailOverlay" onclick="cerrarDetalleProducto()"></div>
+    <div id="detailPanel">
+        <div class="dp-header">
+            <button class="dp-close" onclick="cerrarDetalleProducto()">✕</button>
+            <div class="dp-product-name" id="dp-product-name">—</div>
+            <div class="dp-meta">
+                <span class="dp-badge dp-badge-cat" id="dp-badge-cat"></span>
+                <span class="dp-badge" id="dp-badge-unit" style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.3);"></span>
+                <span class="dp-badge dp-badge-reg" id="dp-badge-reg"></span>
+            </div>
+        </div>
+        <div class="dp-body" id="dp-body">
+            <!-- contenido dinámico -->
+        </div>
+    </div>
+    <!-- ============================================================ -->
 
     <script>
         // ==================== BASE DE DATOS ORIGINALES ====================
@@ -3850,16 +4174,19 @@
                 let resumen = {};
 
                 checks.forEach(ch => {
-                    const mId = `m${((sem - 1) * 5) + parseInt(ch.value)}`;
+                    const dayNum = parseInt(ch.value);
+                    const mId = `m${((sem - 1) * 5) + dayNum}`;
+                    const menuNum = ((sem - 1) * 5) + dayNum;
                     db.forEach(p => {
                         const baseIndividual = (p.g[mId] || 0);
                         const cantTotal = baseIndividual * personas;
                         if(cantTotal > 0) {
                             if(!resumen[p.n]) {
-                                resumen[p.n] = { qTotal: 0, qIndividual: 0, u: p.u, c: p.c };
+                                resumen[p.n] = { qTotal: 0, qIndividual: 0, u: p.u, c: p.c, dias: [] };
                             }
                             resumen[p.n].qTotal += cantTotal;
                             resumen[p.n].qIndividual += baseIndividual;
+                            resumen[p.n].dias.push({ dayNum, mId, menuNum, gram: baseIndividual });
                         }
                     });
                 });
@@ -3904,11 +4231,12 @@
                 (ORDER_CATEGORIES[a[1].c] || 99) - (ORDER_CATEGORIES[b[1].c] || 99)
             );
 
-            let html = `<table><thead><tr><th>Producto</th><th>xNiño</th><th>Total</th><th>Sugerido</th><th>Entrega</th></tr></thead><tbody>`;
+            let html = `<table><thead><tr><th>Producto</th><th>xNiño</th><th>Total</th><th>Sugerido</th><th>Entrega</th><th class="no-print">Detalles</th></tr></thead><tbody>`;
 
             sorted.forEach(([name, item], index) => {
                 const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
                 const valorPrevio = localStorage.getItem(`entrega_${idRef}`) || "";
+                const nameEscaped = name.replace(/'/g, "\\'");
                 
                 html += `<tr style="animation-delay: ${index * 50}ms">
                     <td><div class="product-name"><div class="category-badge badge-${item.c}"></div>${name}</div></td>
@@ -3916,6 +4244,7 @@
                     <td><strong>${item.qTotal.toFixed(2)} ${item.u}</strong></td>
                     <td><span class="suggested-amount">${redondearComercial(item.qTotal, item.u)}</span></td>
                     <td><input type="text" class="input-entrega ${valorPrevio ? 'saved' : ''}" value="${valorPrevio}" oninput="guardarEntrega('${idRef}', this.value, this)" placeholder="..."></td>
+                    <td class="no-print"><button class="detail-btn" onclick="abrirDetalleProducto('${nameEscaped}')">🔍 Ver</button></td>
                 </tr>`;
             });
 
@@ -4101,7 +4430,7 @@
                 theadHtml += `<th class="week-header-col">S${week}<br><small>Sug.</small></th>
                              <th class="week-header-col">S${week}<br><small>Ent.</small></th>`;
             });
-            theadHtml += `<th class="total-header">Total<br>Sug.</th><th class="total-header">Total<br>Ent.</th></tr>`;
+            theadHtml += `<th class="total-header">Total<br>Sug.</th><th class="total-header">Total<br>Ent.</th><th class="no-print" style="min-width:60px;">Det.</th></tr>`;
             document.getElementById('monthlyTableHead').innerHTML = theadHtml;
             
             // Body
@@ -4113,6 +4442,7 @@
             sorted.forEach(([name, item], index) => {
                 const idBase = `${currentRegional}_monthly_${name.replace(/\s/g, '')}`;
                 const displayName = name.length > 18 ? name.substring(0, 16) + '...' : name;
+                const nameEscaped = name.replace(/'/g, "\\'");
                 
                 tbodyHtml += `<tr style="animation-delay: ${index * 30}ms">
                     <td title="${name}"><div class="product-name"><div class="category-badge badge-${item.c}"></div>${displayName}</div></td>
@@ -4138,7 +4468,8 @@
                 });
                 
                 tbodyHtml += `<td class="total-suggested">${formatCompacto(totalSugerido, item.u)}</td>
-                             <td class="total-entrega" id="total-entrega-${idBase}">${totalEntrega > 0 ? totalEntrega.toFixed(1) + ' ' + item.u : '-'}</td></tr>`;
+                             <td class="total-entrega" id="total-entrega-${idBase}">${totalEntrega > 0 ? totalEntrega.toFixed(1) + ' ' + item.u : '-'}</td>
+                             <td class="no-print" style="text-align:center;"><button class="detail-btn" onclick="abrirDetalleProducto('${nameEscaped}')">🔍</button></td></tr>`;
             });
             
             document.getElementById('monthlyTableBody').innerHTML = tbodyHtml;
@@ -5194,7 +5525,280 @@
 		// Llamar inicialización
 		initAuditoria();	
 
-		
+		// ==================== PANEL VER DETALLES ====================
+		const DIAS_NOMBRES = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+		const DIAS_CLASES = ['', 'dp-day-lunes', 'dp-day-martes', 'dp-day-miercoles', 'dp-day-jueves', 'dp-day-viernes'];
+		const CAT_ICONS = { granos:'🌾', proteinas:'🥩', lacteos:'🥛', verduras:'🥦', frutas:'🍎', panaderia:'🥖' };
+
+		function abrirDetalleProducto(productName) {
+			const db = getCurrentDB();
+			const product = db.find(p => p.n === productName);
+			if (!product) return;
+
+			// Determinar contexto: semanal o mensual
+			const esMensual = document.getElementById('section-monthly').classList.contains('active');
+
+			const panel = document.getElementById('detailPanel');
+			const overlay = document.getElementById('detailOverlay');
+			
+			// Categoría badge color
+			const catClass = `badge-${product.c}`;
+			const catIcon = CAT_ICONS[product.c] || '📦';
+			const regLabel = currentRegional === 'neiva' ? 'Neiva' : 'Gaitana';
+			const regClass = currentRegional === 'gaitana' ? 'gaitana' : '';
+
+			// Encabezado
+			document.getElementById('dp-product-name').textContent = productName;
+			document.getElementById('dp-badge-cat').textContent = `${catIcon} ${product.c}`;
+			document.getElementById('dp-badge-unit').textContent = product.u;
+			document.getElementById('dp-badge-reg').textContent = `📍 ${regLabel}`;
+			document.getElementById('dp-badge-reg').className = `dp-badge dp-badge-reg ${regClass}`;
+
+			const bodyEl = document.getElementById('dp-body');
+			bodyEl.innerHTML = '';
+
+			if (esMensual) {
+				renderDetallesMensual(product, bodyEl);
+			} else {
+				renderDetallesSemanal(product, bodyEl);
+			}
+
+			overlay.classList.add('open');
+			panel.classList.add('open');
+			document.body.style.overflow = 'hidden';
+		}
+
+		function cerrarDetalleProducto() {
+			document.getElementById('detailPanel').classList.remove('open');
+			document.getElementById('detailOverlay').classList.remove('open');
+			document.body.style.overflow = '';
+		}
+
+		function renderDetallesSemanal(product, container) {
+			const sem = parseInt(document.getElementById('sem').value);
+			const checks = document.querySelectorAll('.d-ch:checked');
+			const personas = parseInt(document.getElementById('num-p').value) || 0;
+			const diasSeleccionados = Array.from(checks).map(ch => parseInt(ch.value));
+
+			// Usar datos pre-calculados si existen en currentData
+			const stored = currentData && currentData[product.n];
+			let detallesDias = [];
+			
+			if (stored && stored.dias) {
+				detallesDias = stored.dias.map(d => ({ ...d, total: d.gram * personas }));
+			} else {
+				diasSeleccionados.forEach(dayNum => {
+					const mId = `m${((sem - 1) * 5) + dayNum}`;
+					const gram = product.g[mId] || 0;
+					if (gram > 0) {
+						detallesDias.push({ dayNum, mId, menuNum: ((sem - 1) * 5) + dayNum, gram, total: gram * personas });
+					}
+				});
+			}
+
+			let totalIndividual = detallesDias.reduce((s, d) => s + d.gram, 0);
+			let totalGrupal = detallesDias.reduce((s, d) => s + d.total, 0);
+
+			if (detallesDias.length === 0) {
+				container.innerHTML = `<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">
+					<div style="font-size: 2rem; margin-bottom: 0.5rem;">🔍</div>
+					<div>Este producto no aplica para los días seleccionados en la semana ${sem}.</div>
+				</div>`;
+				return;
+			}
+
+			// Resumen
+			const sumHTML = `
+				<div>
+					<div class="dp-section-title">Resumen</div>
+					<div class="dp-summary-grid">
+						<div class="dp-summary-card">
+							<div class="dp-sum-val">${detallesDias.length}</div>
+							<div class="dp-sum-label">Días aplica</div>
+						</div>
+						<div class="dp-summary-card">
+							<div class="dp-sum-val">${totalIndividual.toFixed(2)}</div>
+							<div class="dp-sum-label">Total x niño (${product.u})</div>
+						</div>
+						<div class="dp-summary-card">
+							<div class="dp-sum-val">${totalGrupal.toFixed(2)}</div>
+							<div class="dp-sum-label">Total grupo (${product.u})</div>
+						</div>
+					</div>
+				</div>`;
+
+			// Timeline visual de los 5 días
+			let tlHTML = `<div>
+				<div class="dp-section-title">Vista semanal — Semana ${sem}</div>
+				<div class="dp-week-section">
+					<div class="dp-week-header">
+						<div class="dp-week-title">📅 Semana ${sem}</div>
+						<div class="dp-week-total">${totalGrupal.toFixed(2)} ${product.u}</div>
+					</div>
+					<div class="dp-timeline">`;
+			
+			for (let d = 1; d <= 5; d++) {
+				const mId = `m${((sem - 1) * 5) + d}`;
+				const gram = product.g[mId] || 0;
+				const esSeleccionado = diasSeleccionados.includes(d);
+				const hasData = gram > 0 && esSeleccionado;
+				const menuNum = ((sem - 1) * 5) + d;
+				tlHTML += `
+					<div class="dp-tl-item">
+						<div class="dp-tl-dot ${hasData ? 'has-data' : 'no-data'}" title="Menú ${menuNum}: ${gram} ${product.u}">
+							${hasData ? gram.toFixed(gram % 1 === 0 ? 0 : 1) : '—'}
+						</div>
+						<div class="dp-tl-label">${DIAS_NOMBRES[d].substring(0,3)}<br>${esSeleccionado ? '✓' : '○'}</div>
+					</div>`;
+			}
+			tlHTML += `</div>`;
+
+			// Detalle por día
+			tlHTML += `<div class="dp-days-list">`;
+			detallesDias.forEach(({ dayNum, mId, menuNum, gram, total }) => {
+				tlHTML += `
+					<div class="dp-day-row">
+						<div class="dp-day-pill ${DIAS_CLASES[dayNum]}">${DIAS_NOMBRES[dayNum]}</div>
+						<span class="dp-menu-tag">Menú ${menuNum}</span>
+						<div class="dp-gramaje">${gram.toFixed(2)}<span class="dp-gramaje-unit">${product.u}/niño</span></div>
+					</div>`;
+			});
+			tlHTML += `</div>
+				<div class="dp-total-row">
+					<strong>Total grupo (${personas} niños)</strong>
+					<span class="dp-total-val">${totalGrupal.toFixed(2)} ${product.u}</span>
+				</div>
+			</div></div>`;
+
+			container.innerHTML = sumHTML + tlHTML;
+		}
+
+		function renderDetallesMensual(product, container) {
+			const personas = parseInt(document.getElementById('monthly-num-p').value) || 0;
+			const sortedWeeks = Array.from(monthlyActiveWeeks.keys()).sort((a, b) => a - b);
+
+			let totalIndividualGlobal = 0;
+			let totalGrupalGlobal = 0;
+			let totalDiasGlobal = 0;
+
+			// Calcular datos por semana
+			const datosPorSemana = sortedWeeks.map(weekNum => {
+				const selectedDays = Array.from(monthlyActiveWeeks.get(weekNum)).sort();
+				const diasConDato = [];
+				selectedDays.forEach(dayNum => {
+					const mId = `m${((weekNum - 1) * 5) + dayNum}`;
+					const gram = product.g[mId] || 0;
+					if (gram > 0) {
+						const menuNum = ((weekNum - 1) * 5) + dayNum;
+						diasConDato.push({ dayNum, mId, menuNum, gram, total: gram * personas });
+					}
+				});
+				const totalSemIndividual = diasConDato.reduce((s, d) => s + d.gram, 0);
+				const totalSemGrupal = diasConDato.reduce((s, d) => s + d.total, 0);
+				totalIndividualGlobal += totalSemIndividual;
+				totalGrupalGlobal += totalSemGrupal;
+				totalDiasGlobal += diasConDato.length;
+				return { weekNum, selectedDays, diasConDato, totalSemIndividual, totalSemGrupal };
+			}).filter(s => s.diasConDato.length > 0);
+
+			if (datosPorSemana.length === 0) {
+				container.innerHTML = `<div style="text-align:center; padding: 2rem; color: var(--text-secondary);">
+					<div style="font-size: 2rem; margin-bottom: 0.5rem;">🔍</div>
+					<div>Este producto no aplica para las semanas y días seleccionados.</div>
+				</div>`;
+				return;
+			}
+
+			// Resumen global
+			let html = `
+				<div>
+					<div class="dp-section-title">Resumen total</div>
+					<div class="dp-summary-grid">
+						<div class="dp-summary-card">
+							<div class="dp-sum-val">${totalDiasGlobal}</div>
+							<div class="dp-sum-label">Días aplica</div>
+						</div>
+						<div class="dp-summary-card">
+							<div class="dp-sum-val">${totalIndividualGlobal.toFixed(2)}</div>
+							<div class="dp-sum-label">Total x niño (${product.u})</div>
+						</div>
+						<div class="dp-summary-card">
+							<div class="dp-sum-val">${totalGrupalGlobal.toFixed(2)}</div>
+							<div class="dp-sum-label">Total grupo (${product.u})</div>
+						</div>
+					</div>
+				</div>`;
+
+			// Sección por semana
+			html += `<div><div class="dp-section-title">Detalle por semana</div>`;
+
+			datosPorSemana.forEach(({ weekNum, selectedDays, diasConDato, totalSemIndividual, totalSemGrupal }) => {
+				html += `
+					<div class="dp-week-section" style="margin-bottom: 0.625rem;">
+						<div class="dp-week-header">
+							<div class="dp-week-title">📅 Semana ${weekNum}</div>
+							<div class="dp-week-total">${totalSemGrupal.toFixed(2)} ${product.u}</div>
+						</div>
+						<div class="dp-timeline">`;
+
+				for (let d = 1; d <= 5; d++) {
+					const esSeleccionado = selectedDays.includes(d);
+					const mId = `m${((weekNum - 1) * 5) + d}`;
+					const gram = product.g[mId] || 0;
+					const hasData = gram > 0 && esSeleccionado;
+					html += `
+						<div class="dp-tl-item">
+							<div class="dp-tl-dot ${hasData ? 'has-data' : 'no-data'}">
+								${hasData ? gram.toFixed(gram % 1 === 0 ? 0 : 1) : '—'}
+							</div>
+							<div class="dp-tl-label">${DIAS_NOMBRES[d].substring(0,3)}<br>${esSeleccionado ? '✓' : '○'}</div>
+						</div>`;
+				}
+				html += `</div>`;
+
+				html += `<div class="dp-days-list">`;
+				diasConDato.forEach(({ dayNum, menuNum, gram, total }) => {
+					html += `
+						<div class="dp-day-row">
+							<div class="dp-day-pill ${DIAS_CLASES[dayNum]}">${DIAS_NOMBRES[dayNum]}</div>
+							<span class="dp-menu-tag">Menú ${menuNum}</span>
+							<div class="dp-gramaje">${gram.toFixed(2)}<span class="dp-gramaje-unit">${product.u}/niño</span></div>
+						</div>`;
+				});
+				html += `</div>
+					<div class="dp-total-row">
+						<strong>Subtotal semana ${weekNum} (${personas} niños)</strong>
+						<span class="dp-total-val">${totalSemGrupal.toFixed(2)} ${product.u}</span>
+					</div>
+				</div>`;
+			});
+
+			html += `</div>`;
+
+			// Barra resumen final
+			html += `
+				<div style="background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(245,158,11,0.08)); border: 1px solid rgba(139,92,246,0.25); border-radius: 0.625rem; padding: 0.875rem;">
+					<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem;">TOTAL MENSUAL — ${personas} niños</div>
+					<div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+						<div>
+							<div style="font-size: 1.25rem; font-weight: 800; color: #fbbf24;">${totalGrupalGlobal.toFixed(2)} ${product.u}</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);">Cantidad total</div>
+						</div>
+						<div>
+							<div style="font-size: 1.25rem; font-weight: 800; color: #a78bfa;">${totalIndividualGlobal.toFixed(2)} ${product.u}</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);">Por niño en total</div>
+						</div>
+					</div>
+				</div>`;
+
+			container.innerHTML = html;
+		}
+
+		// Cerrar con ESC
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') cerrarDetalleProducto();
+		});
+
     </script>
 </body>
 </html>
