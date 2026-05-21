@@ -35,18 +35,72 @@
         :root {
             --bg-body: #0a0a0c;
             --bg-card: rgba(30, 30, 35, 0.95);
+            --bg-card-solid: #1e1e23;
+            --bg-input: rgba(0,0,0,0.4);
+            --bg-input-solid: #0d0d10;
+            --bg-subtle: rgba(255,255,255,0.03);
+            --bg-subtle-hover: rgba(255,255,255,0.06);
+            --bg-overlay: rgba(0,0,0,0.2);
             --primary-gold: #d4af37;
+            --primary-gold-light: rgba(212,175,55,0.15);
+            --primary-gold-subtle: rgba(212,175,55,0.08);
             --accent-cyan: #00f2ff;
+            --accent-cyan-light: rgba(0,242,255,0.1);
             --text-main: #e2e8f0;
             --text-dim: #94a3b8;
+            --text-on-dark: #e2e8f0;
             --danger: #ff4655;
             --success: #00ff88;
             --border-color: rgba(212, 175, 55, 0.3);
+            --border-subtle: rgba(255,255,255,0.05);
+            --border-input: #444;
+            --sidebar-bg: linear-gradient(180deg, rgba(20,20,25,0.98) 0%, rgba(15,15,20,0.99) 100%);
             --sidebar-width: 280px;
+            /* Patrón de fondo semana */
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* ===== MODO CLARO ===== */
+        [data-theme="light"] {
+            --bg-body: #f4f4f6;
+            --bg-card: rgba(255, 255, 255, 0.98);
+            --bg-card-solid: #ffffff;
+            --bg-input: rgba(245,245,250,0.95);
+            --bg-input-solid: #f5f5fa;
+            --bg-subtle: rgba(180,150,60,0.07);
+            --bg-subtle-hover: rgba(180,150,60,0.13);
+            --bg-overlay: rgba(0,0,0,0.04);
+            --primary-gold: #9a7800;
+            --primary-gold-light: rgba(154,120,0,0.14);
+            --primary-gold-subtle: rgba(154,120,0,0.07);
+            --accent-cyan: #006e9e;
+            --accent-cyan-light: rgba(0,110,158,0.1);
+            --text-main: #1a1a22;
+            --text-dim: #666680;
+            --text-on-dark: #ffffff;
+            --danger: #cc1a2e;
+            --success: #007a40;
+            --border-color: rgba(154,120,0,0.28);
+            --border-subtle: rgba(0,0,0,0.08);
+            --border-input: #d0cfe8;
+            --sidebar-bg: linear-gradient(180deg, #1e1e28 0%, #16161f 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239a7800' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            /* Variable especial: fondo neutro para etiquetas de proveedor */
+            --provider-header-bg: #2e2e3a;
+            --provider-header-text: #ffffff;
+        }
+
+        [data-theme="light"] body {
+            background-image: radial-gradient(circle at 50% 0%, #eeeef6 0%, #f4f4f6 100%);
+        }
+
+        [data-theme="light"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(138,108,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(138,108,0,0.05) 1px, transparent 1px);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-body);
@@ -55,6 +109,7 @@
             font-size: 11px;
             min-height: 100vh;
             overflow-x: hidden;
+            transition: background-color 0.4s, color 0.3s;
         }
 		
 		/* ===== SISTEMA DE TUTORIAL ===== */
@@ -1190,9 +1245,9 @@
         }
 
         .semana-info input {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid #444;
-            color: white;
+            background: var(--bg-input);
+            border: 1px solid var(--border-input, #444);
+            color: var(--text-main);
             padding: 6px;
             border-radius: 4px;
         }
@@ -1245,41 +1300,60 @@
         /* TABLAS */
         .product-table {
             width: 100%;
+            table-layout: fixed;
             border-collapse: separate;
-            border-spacing: 0 3px;
+            border-spacing: 0 2px;
             font-size: 10px;
         }
 
         .product-table th {
-            padding: 4px 2px;
-            background: rgba(255,255,255,0.05);
+            padding: 5px 6px;
+            background: rgba(255,255,255,0.04);
             font-size: 8px;
             text-transform: uppercase;
             color: var(--text-dim);
             text-align: left;
+            letter-spacing: 0.5px;
+        }
+
+        .product-table th.col-cantidad,
+        .product-table th.col-total {
+            text-align: right;
         }
 
         .product-table td {
-            padding: 4px 2px;
+            padding: 3px 6px;
             background: rgba(255,255,255,0.02);
             border-radius: 3px;
-            vertical-align: top;
+            vertical-align: middle;
+        }
+
+        .product-table tr:hover td {
+            background: rgba(255,255,255,0.04);
         }
 
         .product-table input {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid #444;
-            color: white;
-            padding: 4px;
-            border-radius: 3px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-input, #444);
+            color: var(--text-main);
+            padding: 4px 6px;
+            border-radius: 4px;
             width: 100%;
             font-size: 10px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        .col-factura { width: 20%; }
-        .col-producto { width: 40%; }
-        .col-cantidad { width: 15%; }
-        .col-total { width: 25%; }
+        .product-table input:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 1px rgba(212,175,55,0.15);
+        }
+
+        /* Columnas: layout fixed elimina el espacio vacío */
+        .col-factura  { width: 21%; }
+        .col-producto { width: 37%; }
+        .col-cantidad { width: 14%; text-align: right; }
+        .col-total    { width: 28%; text-align: right; }
 
         .product-info {
             display: flex;
@@ -1291,14 +1365,15 @@
 
         .product-badges {
             display: flex;
-            gap: 4px;
+            gap: 3px;
             flex-wrap: wrap;
+            margin-top: 1px;
         }
 
         .badge {
             font-size: 7px;
             padding: 1px 4px;
-            border-radius: 2px;
+            border-radius: 3px;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -1309,16 +1384,20 @@
         }
 
         .badge-sigla {
-            font-size: 8px;
-            padding: 2px 6px;
+            font-size: 7px;
+            padding: 1px 5px;
+        }
+
+        .col-cantidad input {
+            text-align: right;
         }
 
         .total-input {
             font-weight: bold;
             text-align: right;
             color: var(--accent-cyan) !important;
-            background: rgba(0, 242, 255, 0.05) !important;
-            border: 1px solid rgba(0, 242, 255, 0.2) !important;
+            background: rgba(0, 242, 255, 0.06) !important;
+            border: 1px solid rgba(0, 242, 255, 0.25) !important;
             font-size: 11px !important;
         }
 
@@ -1919,6 +1998,539 @@
                 right: 0;
             }
         }
+        /* ===== MODO CLARO: OVERRIDES COMPLETOS ===== */
+
+        /* El sidebar se mantiene oscuro en modo claro para legibilidad del menú */
+        .sidebar {
+            background: var(--sidebar-bg) !important;
+        }
+
+        /* En modo claro el sidebar es oscuro — los textos de nav deben ser claros */
+        [data-theme="light"] .nav-section-title { color: #888; }
+        [data-theme="light"] .nav-item { color: #ccc; }
+        [data-theme="light"] .nav-item:hover {
+            background: rgba(212,175,55,0.12);
+            border-left-color: var(--primary-gold);
+            color: #fff;
+        }
+        [data-theme="light"] .nav-item i { color: var(--primary-gold); }
+        [data-theme="light"] .sidebar-footer {
+            background: rgba(0,0,0,0.25);
+            border-top-color: rgba(255,255,255,0.07);
+        }
+        [data-theme="light"] .user-name { color: #eee; }
+        [data-theme="light"] .sync-status { color: #aaa; }
+        [data-theme="light"] .sidebar-title { color: var(--primary-gold); }
+
+        /* Top bar */
+        [data-theme="light"] .top-bar {
+            background: rgba(255,255,255,0.97);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        [data-theme="light"] .menu-toggle { color: var(--text-main); }
+        [data-theme="light"] .contract-info {
+            background: #f0f0f8 !important;
+            border-color: var(--border-input) !important;
+        }
+        [data-theme="light"] .contract-info select,
+        [data-theme="light"] .contract-info input {
+            background: transparent !important;
+            color: var(--text-main) !important;
+        }
+        [data-theme="light"] .week-selector { background: rgba(0,0,0,0.04); }
+        [data-theme="light"] .week-selector small { color: var(--text-dim); }
+        [data-theme="light"] .week-selector select {
+            background: #f0f0f8 !important;
+            color: var(--accent-cyan) !important;
+            border-color: var(--accent-cyan) !important;
+        }
+        [data-theme="light"] .sync-indicator-top {
+            background: rgba(0,0,0,0.04) !important;
+            border-color: var(--border-subtle) !important;
+        }
+
+        /* Semana card / panel */
+        [data-theme="light"] .semana-card {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        [data-theme="light"] .semana-card.excedido {
+            border-color: var(--danger);
+            box-shadow: 0 0 15px rgba(204,26,46,0.18);
+        }
+        [data-theme="light"] .presupuesto-display {
+            background: rgba(0,122,64,0.08);
+            color: var(--success);
+        }
+        [data-theme="light"] .semana-info input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .btn-collapse {
+            background: var(--accent-cyan-light);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        /* ============================================================
+           CABECERA DE PROVEEDOR: fondo gris oscuro neutro para que
+           cualquier color personalizado de etiqueta sea legible.
+           El color del texto viene inline del JS (color del proveedor),
+           y contrasta bien sobre el gris oscuro.
+        ============================================================ */
+        [data-theme="light"] .provider-section {
+            border-color: rgba(0,0,0,0.08) !important;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        [data-theme="light"] .provider-header {
+            background: #2e2e3a !important;
+            filter: none !important;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+        }
+        [data-theme="light"] .provider-header * {
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+        [data-theme="light"] .provider-total {
+            background: rgba(0,0,0,0.35) !important;
+            color: #fff !important;
+            text-shadow: none;
+        }
+        [data-theme="light"] .provider-content {
+            background: rgba(0,0,0,0.02);
+        }
+
+        /* Tabla de productos */
+        [data-theme="light"] .product-table th {
+            background: rgba(0,0,0,0.04);
+            color: var(--text-dim);
+        }
+        [data-theme="light"] .product-table td {
+            background: transparent;
+        }
+        [data-theme="light"] .product-table tr:hover td {
+            background: rgba(154,120,0,0.05);
+        }
+        [data-theme="light"] .product-table input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .product-table input:focus {
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px var(--primary-gold-subtle);
+        }
+        [data-theme="light"] .total-input {
+            color: var(--accent-cyan) !important;
+            background: var(--accent-cyan-light) !important;
+            border-color: rgba(0,110,158,0.25) !important;
+        }
+        [data-theme="light"] .product-name { color: var(--text-main); }
+
+        /* Badges — sobre fondo gris oscuro del header quedan bien en su color original */
+        [data-theme="light"] .badge-sigla {
+            filter: none;
+        }
+        [data-theme="light"] .badge-cl {
+            background: rgba(0,110,158,0.15);
+            color: var(--accent-cyan);
+        }
+
+        /* Distribuidora */
+        [data-theme="light"] .distribuidora-row {
+            background: var(--primary-gold-light);
+            border-color: var(--primary-gold);
+        }
+        [data-theme="light"] .distribuidora-value {
+            color: var(--primary-gold) !important;
+        }
+
+        /* Tabs de semana */
+        [data-theme="light"] .semana-tab-btn {
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.1);
+            color: var(--text-dim);
+        }
+        [data-theme="light"] .semana-tab-btn:hover {
+            background: rgba(0,0,0,0.09);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .semana-tab-btn.active {
+            background: var(--bg-card);
+            color: var(--primary-gold);
+            border-color: var(--primary-gold);
+            border-bottom-color: var(--bg-card);
+        }
+        [data-theme="light"] .semanas-panel-container {
+            background: var(--bg-card);
+            border-color: var(--primary-gold);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        [data-theme="light"] .panel-info-chip {
+            background: rgba(0,0,0,0.04);
+            border-color: rgba(0,0,0,0.1);
+        }
+        [data-theme="light"] .panel-info-chip label { color: var(--text-dim); }
+        [data-theme="light"] .panel-info-chip input { color: var(--text-main); }
+        [data-theme="light"] .panel-semana-title { color: var(--primary-gold); }
+
+        /* Modales */
+        [data-theme="light"] .modal-container {
+            background: #ffffff;
+            border-color: var(--primary-gold);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        [data-theme="light"] .modal-header { border-bottom-color: var(--border-subtle); }
+        [data-theme="light"] .provider-config-item { background: var(--bg-subtle); }
+        [data-theme="light"] .provider-name-input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .sigla-preview { background: rgba(0,0,0,0.06); }
+        [data-theme="light"] .order-btn {
+            background: rgba(0,0,0,0.06);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .order-btn:hover { background: rgba(0,0,0,0.11); }
+        [data-theme="light"] .product-config-item { background: var(--bg-subtle); }
+        [data-theme="light"] .product-config-item input,
+        [data-theme="light"] .product-config-item select {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .cl-checkbox { color: var(--text-dim); }
+
+        /* Drawers */
+        [data-theme="light"] .drawer {
+            background: #ffffff;
+            border-left-color: var(--primary-gold);
+        }
+        [data-theme="light"] .search-box input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .select-filtro {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .breadcrumbs-container { background: rgba(0,0,0,0.04); }
+        [data-theme="light"] .breadcrumb-item {
+            background: var(--primary-gold-light);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .breadcrumb-item:hover { background: rgba(154,120,0,0.2); }
+        [data-theme="light"] .folder-card {
+            background: linear-gradient(135deg, #ffffff, #f8f8fc);
+            border-color: rgba(0,0,0,0.1);
+        }
+        [data-theme="light"] .folder-card:hover {
+            border-color: var(--primary-gold);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        [data-theme="light"] .folder-name { color: var(--text-main); }
+        [data-theme="light"] .file-item {
+            background: var(--bg-subtle);
+            border-color: var(--border-subtle);
+        }
+        [data-theme="light"] .file-item:hover {
+            background: var(--bg-subtle-hover);
+            border-color: var(--border-color);
+        }
+        [data-theme="light"] .file-name { color: var(--text-main); }
+        [data-theme="light"] .file-btn {
+            background: rgba(0,0,0,0.06);
+            color: var(--text-main);
+        }
+
+        /* Resumen / drawers internos */
+        [data-theme="light"] .resumen-proveedor { border-color: var(--border-subtle); }
+        [data-theme="light"] .resumen-proveedor-content { background: rgba(0,0,0,0.03); }
+        [data-theme="light"] .producto-resumen { border-bottom-color: var(--border-subtle); }
+        [data-theme="light"] .raciones-semana { border-bottom-color: var(--border-subtle); }
+        [data-theme="light"] .raciones-resumen { border-color: var(--accent-cyan); }
+        [data-theme="light"] .cl-yes { background: rgba(0,122,64,0.1); color: var(--success); }
+        [data-theme="light"] .cl-no { background: rgba(204,26,46,0.1); color: var(--danger); }
+        [data-theme="light"] .porcentaje-cl { background: rgba(0,122,64,0.08); color: var(--success); }
+        [data-theme="light"] .porcentaje-cl.bajo { background: rgba(204,26,46,0.08); color: var(--danger); }
+
+        /* Facturas */
+        [data-theme="light"] .factura-group { border-color: var(--border-subtle); }
+        [data-theme="light"] .factura-header {
+            background: var(--bg-subtle);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .factura-header:hover { background: var(--bg-subtle-hover); }
+        [data-theme="light"] .factura-content { background: rgba(0,0,0,0.02); }
+        [data-theme="light"] .factura-item { border-bottom-color: var(--border-subtle); }
+        [data-theme="light"] .producto-nombre { color: var(--text-main); }
+
+        /* Misc */
+        [data-theme="light"] .semana-checkbox { background: var(--bg-subtle); }
+        [data-theme="light"] .semana-checkbox:hover { background: var(--bg-subtle-hover); }
+
+        /* Help menu */
+        [data-theme="light"] .help-menu {
+            background: #ffffff;
+            border-color: var(--border-color);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+        }
+        [data-theme="light"] .help-menu-item span { color: var(--text-main); }
+        [data-theme="light"] .help-menu-item:hover { background: var(--primary-gold-light); }
+
+        /* Tutorial */
+        [data-theme="light"] .tutorial-tooltip {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f8fc 100%);
+        }
+        [data-theme="light"] .tutorial-content { color: var(--text-main); }
+        [data-theme="light"] .tutorial-content li { color: var(--text-dim); }
+        [data-theme="light"] .tutorial-btn-secondary {
+            background: rgba(0,0,0,0.07);
+            color: var(--text-main);
+            border-color: rgba(0,0,0,0.15);
+        }
+
+        /* Auth */
+        [data-theme="light"] .auth-box {
+            background: #ffffff;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        [data-theme="light"] .auth-box input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+
+        /* Sync top */
+        [data-theme="light"] .sync-indicator-top {
+            background: rgba(0,0,0,0.04) !important;
+            border-color: rgba(0,0,0,0.1) !important;
+        }
+
+        /* TARJETA SEMANA: patrón de fondo en ambos modos */
+        .semana-card {
+            background-image: var(--card-pattern);
+        }
+
+        /* ===== SISTEMA DE TABS POR SEMANA ===== */
+        .semanas-tabs-wrapper {
+            padding: 16px 16px 0 16px;
+        }
+
+        .semanas-tabs-nav {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            position: relative;
+        }
+
+        .semanas-tabs-nav::-webkit-scrollbar { display: none; }
+
+        .semana-tab-btn {
+            flex-shrink: 0;
+            padding: 10px 18px;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            background: var(--bg-subtle);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.25s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            min-width: 90px;
+            position: relative;
+        }
+
+        .semana-tab-btn:hover {
+            background: var(--bg-subtle-hover);
+            color: var(--text-main);
+        }
+
+        .semana-tab-btn.active {
+            background: var(--bg-card);
+            color: var(--primary-gold);
+            border-color: var(--primary-gold);
+            border-bottom: 2px solid var(--bg-card);
+            box-shadow: 0 -4px 15px rgba(212,175,55,0.15);
+            z-index: 2;
+            margin-bottom: -1px;
+        }
+
+        .semana-tab-btn.excedido-tab {
+            border-color: var(--danger) !important;
+            color: var(--danger) !important;
+        }
+
+        .semana-tab-btn .tab-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .semana-tab-btn .tab-meta {
+            font-size: 9px;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .semana-tab-btn.active .tab-meta {
+            color: rgba(212,175,55,0.6);
+        }
+
+        .semana-tab-btn .tab-total {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            font-family: monospace;
+        }
+
+        /* Panel del tab activo */
+        .semanas-panel-container {
+            background: var(--bg-card);
+            border: 1px solid var(--primary-gold);
+            border-radius: 0 12px 12px 12px;
+            padding: 16px;
+            min-height: 200px;
+            position: relative;
+            background-image: var(--card-pattern);
+        }
+
+        .semana-panel {
+            display: none;
+        }
+
+        .semana-panel.active {
+            display: block;
+            animation: panelFadeIn 0.25s ease;
+        }
+
+        @keyframes panelFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cabecera del panel */
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .panel-semana-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-info-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .panel-info-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 10px;
+        }
+
+        .panel-info-chip label {
+            color: var(--text-dim);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-info-chip input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 11px;
+            font-weight: 600;
+            width: 50px;
+            outline: none;
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+        .panel-info-chip input::-webkit-outer-spin-button,
+        .panel-info-chip input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .presupuesto-chip {
+            background: linear-gradient(90deg, rgba(0,255,136,0.1), rgba(0,255,136,0.05));
+            border-color: rgba(0,255,136,0.3);
+            padding: 6px 14px;
+        }
+
+        .presupuesto-chip .pres-valor {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .semana-panel.excedido .presupuesto-chip {
+            background: linear-gradient(90deg, rgba(255,70,85,0.15), rgba(255,70,85,0.05));
+            border-color: rgba(255,70,85,0.4);
+        }
+
+        .semana-panel.excedido .presupuesto-chip .pres-valor {
+            color: var(--danger);
+        }
+
+        /* Light mode tab overrides ya incluidos arriba en el bloque de overrides */
+
+        /* ===== BOTÓN MODO CLARO/OSCURO ===== */
+        .theme-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: var(--primary-gold-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--primary-gold);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .theme-toggle-btn:hover {
+            background: var(--primary-gold-light);
+            border-color: var(--primary-gold);
+        }
+        .theme-toggle-btn i { font-size: 13px; }
+
+        /* validacion proveedor */
+        [data-theme="light"] .validacion-proveedor-content {
+            background: rgba(0,0,0,0.03);
+        }
     </style>
 </head>
 <body>
@@ -2034,13 +2646,21 @@
 
     <!-- AUTH SCREEN -->
     <div id="auth-screen">
-        <div class="auth-box" id="login-form">
 		
+	
+        <div class="auth-box" id="login-form">
+			
 			<div style="text-align: center; margin-bottom: 20px;">
                 <img src="Logo/ZAN--.png" alt="ZAN Logo" style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5));">
             </div>
+			
             <h2 style="color:var(--primary-gold); margin-bottom:20px;">ZAN TABLA DE VALORES</h2>
-		
+			<!-- Botón modo claro/oscuro -->
+			<button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+				<i class="fa-solid fa-moon" id="theme-icon"></i>
+				<span id="theme-label">Oscuro</span>
+			</button>
+			
             <input type="text" id="user-login" placeholder="Usuario">
             <input type="password" id="pass-login" placeholder="Contraseña">
             <button class="btn btn-gold btn-block" style="margin-top:15px;" onclick="handleAuth('login')">
@@ -2073,7 +2693,7 @@
         
 		<div class="sidebar-header">
             <img src="Logo/ZAN.png" alt="ZAN" style="width: 35px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));">
-            <span class="sidebar-title">|Tabla Valores v3.1</span>
+            <span class="sidebar-title">|Tabla Valores v3.2</span>
         </div>
 		
         <div class="nav-section">
@@ -2157,6 +2777,10 @@
                     </div>
                 </div>
             </div>
+            <button class="btn btn-block" onclick="toggleTheme()" style="margin-bottom:8px; background: var(--primary-gold-subtle); border: 1px solid var(--border-color); color: var(--primary-gold); gap: 8px; justify-content: center; padding: 7px 12px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; display: flex; align-items: center; cursor: pointer; transition: all 0.3s;">
+                <i id="theme-icon" class="fa-solid fa-moon"></i>
+                <span id="theme-label">Modo Oscuro</span>
+            </button>
             <button class="btn btn-danger btn-block" onclick="cerrarSesion()">
                 <i class="fa-solid fa-right-from-bracket"></i> CERRAR SESIÓN
             </button>
@@ -2191,7 +2815,7 @@
 				<span class="sync-dot" id="sync-dot-top" style="width: 10px; height: 10px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); transition: all 0.3s;"></span>
 				<span id="sync-text-top" style="font-size: 10px; color: var(--text-dim); font-weight: 500;">Sincronizado</span>
 			</div>
-
+			
 			<div class="week-selector" id="week-selector">
 				<a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
 	                <i class="fa-solid fa-cloud"></i>
@@ -2210,7 +2834,12 @@
         </header>
 
         <div id="app-content">
-            <div id="main-grid" class="grid-container"></div>
+            <div class="semanas-tabs-wrapper">
+                <!-- Barra de tabs (generada por JS) -->
+                <div class="semanas-tabs-nav" id="semanas-tabs-nav"></div>
+                <!-- Paneles de cada semana (generados por JS) -->
+                <div class="semanas-panel-container" id="main-grid"></div>
+            </div>
         </div>
     </div>
 
@@ -4166,9 +4795,11 @@
             }
 
             const grid = document.getElementById('main-grid');
+            const tabsNav = document.getElementById('semanas-tabs-nav');
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
 
             grid.innerHTML = '';
+            if (tabsNav) tabsNav.innerHTML = '';
 
             for (let s = 1; s <= semanas; s++) {
                 let providersHTML = '';
@@ -4211,7 +4842,7 @@
                         <div class="provider-section" style="border-color: ${prov.color}30;">
                             <div class="provider-header" style="background: linear-gradient(90deg, ${prov.color}20, ${prov.color}05); color: ${prov.color}; border-left: 3px solid ${prov.color};" 
                                 onclick="toggleProvider('${s}-${prov.id}')">
-                                <span>${prov.nombre} <small style="opacity:0.7;">(${sigla})</small></span>
+                                <span style="color: var(--data-theme, inherit); filter: var(--prov-text-filter, none);">${prov.nombre} <small style="opacity:0.7;">(${sigla})</small></span>
                                 <span class="provider-total" id="prov-total-${s}-${prov.id}">$0</span>
                             </div>
                             <div class="provider-content" id="prov-content-${s}-${prov.id}">
@@ -4231,33 +4862,49 @@
                     `;
                 });
 
+                // Tab button
+                if (tabsNav) {
+                    tabsNav.innerHTML += `
+                        <button class="semana-tab-btn ${s === 1 ? 'active' : ''}" id="tab-btn-${s}" onclick="cambiarTab(${s})">
+                            <span class="tab-label">SEM ${s}</span>
+                            <span class="tab-meta" id="tab-meta-${s}">— d · — c</span>
+                            <span class="tab-total" id="tab-total-${s}">$0</span>
+                        </button>
+                    `;
+                }
+
+                // Panel content
                 grid.innerHTML += `
-                    <div class="semana-card" id="card-${s}">
-                        <div class="semana-header">
-                            <button class="btn-collapse" id="btn-col-${s}" onclick="toggleWeek(${s})">
-                                <i class="fa-solid fa-chevron-down" id="icon-col-${s}"></i>
-                            </button>
-                            <div class="semana-title-group">
-                                <h3 style="color:var(--primary-gold); margin:0; font-size:14px;">SEMANA ${s}</h3>
+                    <div class="semana-panel ${s === 1 ? 'active' : ''}" id="panel-${s}">
+                        <div class="panel-header">
+                            <div class="panel-semana-title">
+                                <i class="fa-solid fa-calendar-week"></i>
+                                SEMANA ${s}
                             </div>
-                            <button class="btn btn-sm btn-danger" onclick="limpiarSemana(${s})" style="background:rgba(255,70,85,0.1);">
-                                <i class="fa-solid fa-broom"></i>
-                            </button>
+                            <div class="panel-info-row">
+                                <div class="panel-info-chip">
+                                    <label>Días</label>
+                                    <input type="number" id="dias-${s}" placeholder="0" oninput="calcular(${s})" onchange="marcarCambio()">
+                                </div>
+                                <div class="panel-info-chip">
+                                    <label>Cupos</label>
+                                    <input type="number" id="cupos-${s}" placeholder="0" oninput="calcular(${s})" onchange="marcarCambio()">
+                                </div>
+                                <div class="panel-info-chip presupuesto-chip">
+                                    <label>Presupuesto</label>
+                                    <span class="pres-valor" id="pres-${s}">$0</span>
+                                </div>
+                                <button class="btn btn-sm btn-danger" onclick="limpiarSemana(${s})" style="background:rgba(255,70,85,0.1);" title="Limpiar semana">
+                                    <i class="fa-solid fa-broom"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <div id="content-${s}" class="semana-content">
-                            <div class="semana-info">
-                                <input type="number" id="dias-${s}" placeholder="Días" oninput="calcular(${s})" onchange="marcarCambio()">
-                                <input type="number" id="cupos-${s}" placeholder="Cupos" oninput="calcular(${s})" onchange="marcarCambio()">
-                                <div class="presupuesto-display" id="pres-${s}">$0</div>
-                            </div>
+                        ${providersHTML}
 
-                            ${providersHTML}
-
-                            <div class="distribuidora-row">
-                                <span class="distribuidora-value" style="color:var(--primary-gold); font-weight:bold;">DISTRIBUIDORA</span>
-                                <input type="text" id="dist-${s}" class="distribuidora-value" readonly value="$0">
-                            </div>
+                        <div class="distribuidora-row">
+                            <span class="distribuidora-value" style="color:var(--primary-gold); font-weight:bold;">DISTRIBUIDORA</span>
+                            <input type="text" id="dist-${s}" class="distribuidora-value" readonly value="$0">
                         </div>
                     </div>
                 `;
@@ -4382,6 +5029,55 @@
             }
         }
 
+        // ===== SISTEMA DE TABS =====
+        function cambiarTab(s) {
+            // Desactivar todos los tabs y paneles
+            const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
+            for (let i = 1; i <= semanas; i++) {
+                const btn = document.getElementById(`tab-btn-${i}`);
+                const panel = document.getElementById(`panel-${i}`);
+                if (btn) btn.classList.remove('active');
+                if (panel) panel.classList.remove('active');
+            }
+            // Activar el seleccionado
+            const btnActivo = document.getElementById(`tab-btn-${s}`);
+            const panelActivo = document.getElementById(`panel-${s}`);
+            if (btnActivo) btnActivo.classList.add('active');
+            if (panelActivo) panelActivo.classList.add('active');
+        }
+
+        function actualizarTabIndicadores(s) {
+            const dias = parseFloat(document.getElementById(`dias-${s}`)?.value) || 0;
+            const cupos = parseFloat(document.getElementById(`cupos-${s}`)?.value) || 0;
+            const distVal = document.getElementById(`dist-${s}`)?.value || '$0';
+            
+            const tabMeta = document.getElementById(`tab-meta-${s}`);
+            if (tabMeta) {
+                tabMeta.textContent = dias > 0 || cupos > 0 ? `${dias}d · ${cupos}c` : '— d · — c';
+            }
+
+            // Calcular total gastado en la semana
+            let totalSemana = 0;
+            productosBase.forEach((p, i) => {
+                const val = document.getElementById(`val-${s}-${i}`);
+                if (val) totalSemana += limpiarNum(val.value);
+            });
+
+            const tabTotal = document.getElementById(`tab-total-${s}`);
+            if (tabTotal) {
+                tabTotal.textContent = totalSemana > 0 ? formatter.format(totalSemana) : '$0';
+            }
+
+            // Marcar excedido en el tab
+            const tabBtn = document.getElementById(`tab-btn-${s}`);
+            const panel = document.getElementById(`panel-${s}`);
+            const pres = parseFloat(document.getElementById(`dias-${s}`)?.value || 0) *
+                         parseFloat(document.getElementById(`cupos-${s}`)?.value || 0) * valorCupoBase;
+            const dist = pres - totalSemana;
+            if (tabBtn) tabBtn.classList.toggle('excedido-tab', dist < 0 && pres > 0);
+            if (panel) panel.classList.toggle('excedido', dist < 0 && pres > 0);
+        }
+
         function toggleProvider(id) {
             const content = document.getElementById(`prov-content-${id}`);
             if (content) content.classList.toggle('collapsed');
@@ -4438,6 +5134,7 @@
             const card = document.getElementById(`card-${s}`);
             if (card) card.classList.toggle('excedido', dist < 0);
 
+            actualizarTabIndicadores(s);
             actualizarResumen();
         }
 
@@ -6459,7 +7156,52 @@
             }
 
             cont.innerHTML = html;
-        }	
+        }
+		// ===== MODO CLARO/OSCURO =====
+        (function initTheme() {
+            const saved = localStorage.getItem('zan_theme') || 'dark';
+            applyTheme(saved);
+        })();
+
+        function applyTheme(mode) {
+            const html = document.documentElement;
+            const icons = document.querySelectorAll('#theme-icon');
+            const labels = document.querySelectorAll('#theme-label');
+            if (mode === 'light') {
+                html.setAttribute('data-theme', 'light');
+                icons.forEach(el => el.className = 'fa-solid fa-sun');
+                labels.forEach(el => el.textContent = 'Modo Claro');
+            } else {
+                html.removeAttribute('data-theme');
+                icons.forEach(el => el.className = 'fa-solid fa-moon');
+                labels.forEach(el => el.textContent = 'Modo Oscuro');
+            }
+            localStorage.setItem('zan_theme', mode);
+        }
+
+        function toggleTheme() {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            applyTheme(isLight ? 'dark' : 'light');
+        }
+
+        // ===== HELPER: contraste de color de proveedor en modo claro =====
+        // Cuando hay modo claro, el color del proveedor (elegido por el usuario para fondo oscuro)
+        // puede ser demasiado claro. Esta función devuelve el color ajustado.
+        function getProvColorForMode(hexColor) {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            if (!isLight) return hexColor;
+            // Oscurecer el color para que sea legible sobre fondos claros
+            return darkenColor(hexColor, 0.35);
+        }
+
+        function darkenColor(hex, amount) {
+            let col = hex.replace('#', '');
+            if (col.length === 3) col = col.split('').map(c => c+c).join('');
+            const r = Math.max(0, Math.round(parseInt(col.substring(0,2),16) * (1-amount)));
+            const g = Math.max(0, Math.round(parseInt(col.substring(2,4),16) * (1-amount)));
+            const b = Math.max(0, Math.round(parseInt(col.substring(4,6),16) * (1-amount)));
+            return '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
+        }
     </script>	
 </body>
 </html>
