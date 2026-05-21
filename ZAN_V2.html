@@ -979,7 +979,7 @@
         }
 
         .nav-section {
-            padding: 15px 0;
+            padding: 8px 0;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
@@ -987,40 +987,95 @@
             font-size: 9px;
             text-transform: uppercase;
             color: var(--text-dim);
-            padding: 0 20px;
-            margin-bottom: 10px;
+            padding: 0 12px;
+            margin-bottom: 4px;
             letter-spacing: 1px;
+        }
+
+        /* Grid 2 columnas para los nav-items */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            padding: 0 6px;
         }
 
         .nav-item {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 12px;
-            padding: 5px 20px;
+            justify-content: center;
+            gap: 4px;
+            padding: 8px 4px;
             color: var(--text-main);
             text-decoration: none;
             transition: all 0.2s;
             cursor: pointer;
-            border-left: 3px solid transparent;
+            border-radius: 8px;
+            border-left: none;
+            border: 2px solid transparent;
             position: relative;
+            text-align: center;
+            font-size: 9px;
+            min-height: 52px;
         }
 
         .nav-item:hover {
             background: rgba(212, 175, 55, 0.1);
-            border-left-color: var(--primary-gold);
+            border-color: var(--primary-gold);
         }
 
         .nav-item i {
-            font-size: 16px;
-            width: 24px;
+            font-size: 18px;
+            width: auto;
             text-align: center;
             color: var(--primary-gold);
         }
 
+        .nav-item span {
+            font-size: 9px;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
         .nav-item.danger { color: var(--danger); }
+        .nav-item.danger i { color: var(--danger); }
         .nav-item.danger:hover {
             background: rgba(255, 70, 85, 0.1);
+            border-color: var(--danger);
+        }
+
+        /* Items de ancho completo (para acciones especiales) */
+        .nav-item.full-width {
+            grid-column: 1 / -1;
+            flex-direction: row;
+            text-align: left;
+            padding: 7px 12px;
+            gap: 10px;
+            min-height: auto;
+            border-radius: 6px;
+            border-left: 3px solid transparent;
+            border-right: none;
+            border-top: none;
+            border-bottom: none;
+            font-size: 10px;
+        }
+        .nav-item.full-width:hover {
+            border-left-color: var(--primary-gold);
+            background: rgba(212,175,55,0.1);
+            border-right: none;
+            border-top: none;
+            border-bottom: none;
+        }
+        .nav-item.full-width.danger:hover {
             border-left-color: var(--danger);
+        }
+        .nav-item.full-width i {
+            font-size: 14px;
+            width: 20px;
+        }
+        .nav-item.full-width span {
+            font-size: 10px;
         }
 
         .sidebar-footer {
@@ -1088,7 +1143,7 @@
 
         .top-bar {
             background: var(--bg-card);
-            padding: 12px 20px;
+            padding: 8px 12px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
@@ -1097,12 +1152,38 @@
             top: 0;
             z-index: 100;
             backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+            gap: 6px;
         }
 
         .top-bar-left {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex: 1;
+            min-width: 0;
+        }
+
+        @media (max-width: 600px) {
+            .top-bar {
+                padding: 6px 8px;
+                gap: 4px;
+            }
+            .top-bar-left {
+                gap: 5px;
+            }
+            .contract-info {
+                flex: 1;
+                min-width: 0;
+            }
+            .contract-info input {
+                width: 100px !important;
+                min-width: 80px !important;
+            }
+            .sync-indicator-top {
+                display: none !important;
+            }
         }
 
         .menu-toggle {
@@ -1128,8 +1209,8 @@
         }
 
         .contract-info select {
-            background-color: #1a1a2e !important;
-            color: #e2e8f0 !important;
+            background-color: transparent !important;
+            color: var(--text-main) !important;
             border: none;
             font-size: 12px;
             outline: none;
@@ -1142,8 +1223,8 @@
 			color: var(--text-main);
 			font-size: 12px;
 			outline: none;
-			width: 200px;          /* Aumentado de 150px a 300px */
-			min-width: 200px;      /* Ancho mínimo garantizado */
+			width: 200px;
+			min-width: 200px;
 			border-left: 1px solid rgba(255,255,255,0.1);
 			padding-left: 10px;
 		}
@@ -2000,26 +2081,38 @@
         }
         /* ===== MODO CLARO: OVERRIDES COMPLETOS ===== */
 
-        /* El sidebar se mantiene oscuro en modo claro para legibilidad del menú */
+        /* Sidebar base siempre usa su variable de fondo */
         .sidebar {
             background: var(--sidebar-bg) !important;
         }
 
-        /* En modo claro el sidebar es oscuro — los textos de nav deben ser claros */
-        [data-theme="light"] .nav-section-title { color: #888; }
-        [data-theme="light"] .nav-item { color: #ccc; }
+        /* En modo oscuro: textos claros (por defecto ya funcionan) */
+        /* En modo CLARO: sidebar también claro */
+        [data-theme="light"] .sidebar {
+            background: linear-gradient(180deg, #ffffff 0%, #f4f4f8 100%) !important;
+            border-right: 1px solid rgba(154,120,0,0.2) !important;
+        }
+        [data-theme="light"] .sidebar-header {
+            border-bottom-color: rgba(154,120,0,0.18);
+            background: rgba(255,255,255,0.9);
+        }
+        [data-theme="light"] .nav-section-title { color: #999; }
+        [data-theme="light"] .nav-item { color: #333; }
         [data-theme="light"] .nav-item:hover {
-            background: rgba(212,175,55,0.12);
+            background: rgba(154,120,0,0.09);
             border-left-color: var(--primary-gold);
-            color: #fff;
+            color: #111;
         }
         [data-theme="light"] .nav-item i { color: var(--primary-gold); }
+        [data-theme="light"] .nav-item.danger { color: var(--danger); }
+        [data-theme="light"] .nav-item.danger i { color: var(--danger); }
+        [data-theme="light"] .nav-section { border-bottom-color: rgba(0,0,0,0.06); }
         [data-theme="light"] .sidebar-footer {
-            background: rgba(0,0,0,0.25);
-            border-top-color: rgba(255,255,255,0.07);
+            background: rgba(0,0,0,0.03);
+            border-top-color: rgba(0,0,0,0.08);
         }
-        [data-theme="light"] .user-name { color: #eee; }
-        [data-theme="light"] .sync-status { color: #aaa; }
+        [data-theme="light"] .user-name { color: #222; }
+        [data-theme="light"] .sync-status { color: #777; }
         [data-theme="light"] .sidebar-title { color: var(--primary-gold); }
 
         /* Top bar */
@@ -2029,6 +2122,10 @@
             box-shadow: 0 2px 12px rgba(0,0,0,0.06);
         }
         [data-theme="light"] .menu-toggle { color: var(--text-main); }
+        /* Dark mode explicit for contract-info */
+        :root .contract-info {
+            background: #1a1a2e;
+        }
         [data-theme="light"] .contract-info {
             background: #f0f0f8 !important;
             border-color: var(--border-input) !important;
@@ -2037,6 +2134,9 @@
         [data-theme="light"] .contract-info input {
             background: transparent !important;
             color: var(--text-main) !important;
+        }
+        [data-theme="light"] .contract-info input {
+            border-left-color: rgba(0,0,0,0.1);
         }
         [data-theme="light"] .week-selector { background: rgba(0,0,0,0.04); }
         [data-theme="light"] .week-selector small { color: var(--text-dim); }
@@ -2086,16 +2186,15 @@
             overflow: hidden;
         }
         [data-theme="light"] .provider-header {
-            background: #2e2e3a !important;
+            background: #d0d0dc !important;
             filter: none !important;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.7);
         }
         [data-theme="light"] .provider-header * {
-            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+            text-shadow: none;
         }
         [data-theme="light"] .provider-total {
-            background: rgba(0,0,0,0.35) !important;
-            color: #fff !important;
+            background: rgba(0,0,0,0.12) !important;
+            color: #222 !important;
             text-shadow: none;
         }
         [data-theme="light"] .provider-content {
@@ -2158,10 +2257,16 @@
             color: var(--text-main);
         }
         [data-theme="light"] .semana-tab-btn.active {
-            background: var(--bg-card);
-            color: var(--primary-gold);
+            background: var(--primary-gold);
+            color: #000;
             border-color: var(--primary-gold);
-            border-bottom-color: var(--bg-card);
+            border-bottom-color: var(--primary-gold);
+            box-shadow: 0 -6px 20px rgba(154,120,0,0.4), 0 4px 0 var(--primary-gold);
+        }
+        [data-theme="light"] .semana-tab-btn.active .tab-label,
+        [data-theme="light"] .semana-tab-btn.active .tab-meta,
+        [data-theme="light"] .semana-tab-btn.active .tab-total {
+            color: #ffffff;
         }
         [data-theme="light"] .semanas-panel-container {
             background: var(--bg-card);
@@ -2360,13 +2465,27 @@
         }
 
         .semana-tab-btn.active {
-            background: var(--bg-card);
-            color: var(--primary-gold);
+            background: var(--primary-gold);
+            color: #000;
             border-color: var(--primary-gold);
-            border-bottom: 2px solid var(--bg-card);
-            box-shadow: 0 -4px 15px rgba(212,175,55,0.15);
+            border-bottom: 3px solid var(--primary-gold);
+            box-shadow: 0 -6px 20px rgba(212,175,55,0.45), 0 4px 0 var(--primary-gold);
             z-index: 2;
             margin-bottom: -1px;
+            transform: translateY(-4px);
+            font-size: 12px;
+        }
+
+        .semana-tab-btn.active .tab-label {
+            color: #000;
+            font-size: 13px;
+        }
+
+        
+
+        .semana-tab-btn.active .tab-total {
+            color: #000;
+            font-weight: 900;
         }
 
         .semana-tab-btn.excedido-tab {
@@ -2381,17 +2500,13 @@
         }
 
         .semana-tab-btn .tab-meta {
-            font-size: 9px;
+            font-size: 12px;
             color: var(--text-dim);
             font-weight: 400;
         }
 
-        .semana-tab-btn.active .tab-meta {
-            color: rgba(212,175,55,0.6);
-        }
-
         .semana-tab-btn .tab-total {
-            font-size: 9px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--accent-cyan);
             font-family: monospace;
@@ -2530,6 +2645,109 @@
         /* validacion proveedor */
         [data-theme="light"] .validacion-proveedor-content {
             background: rgba(0,0,0,0.03);
+        }
+
+        /* ===== CAJA DE PROVEEDOR: fondo gris neutro siempre ===== */
+        /* Modo oscuro: gris oscuro */
+        .provider-box-header {
+            background: #2a2a32 !important;
+        }
+        /* Modo claro: gris medio */
+        [data-theme="light"] .provider-box-header {
+            background: #d0d0dc !important;
+        }
+        /* El texto (color del proveedor) y border-left (inline) se mantienen */
+
+        /* ===== MODO CLARO: FONDOS GRISES EN PANELES DE DRAWERS ===== */
+        /* Fondo gris para los drawers en modo claro */
+        [data-theme="light"] .drawer {
+            background: #f0f0f5;
+        }
+
+        /* Fondo gris para contenido de proveedores en resumen/análisis */
+        [data-theme="light"] .resumen-proveedor {
+            background: #e8e8ef;
+            border-color: rgba(0,0,0,0.08);
+        }
+        [data-theme="light"] .resumen-proveedor-content {
+            background: #e2e2ea;
+        }
+        [data-theme="light"] .resumen-proveedor-header {
+            /* El color viene inline del JS, se mantiene */
+        }
+
+        /* Fondo gris para contabilidad */
+        [data-theme="light"] #accounting-content > div[style*="rgba(255,255,255,0.03)"],
+        [data-theme="light"] #accounting-content > div {
+            background: #e2e2ea !important;
+        }
+
+        /* Fondo gris para validación de facturas */
+        [data-theme="light"] .validacion-proveedor {
+            background: #e8e8ef;
+            border-color: rgba(0,0,0,0.08);
+        }
+        [data-theme="light"] .validacion-proveedor-content {
+            background: #e2e2ea !important;
+        }
+        [data-theme="light"] .factura-group {
+            background: #d8d8e2;
+            border-color: rgba(0,0,0,0.06);
+        }
+        [data-theme="light"] .factura-header {
+            background: rgba(0,0,0,0.05);
+        }
+        [data-theme="light"] .factura-header:hover {
+            background: rgba(0,0,0,0.09);
+        }
+        [data-theme="light"] .factura-content {
+            background: rgba(0,0,0,0.03);
+        }
+        [data-theme="light"] .factura-item {
+            border-bottom-color: rgba(0,0,0,0.07);
+        }
+
+        /* Fondo gris para distribuidora drawer */
+        [data-theme="light"] .semana-checkbox {
+            background: rgba(0,0,0,0.05);
+            border-color: transparent;
+        }
+        [data-theme="light"] .semana-checkbox:hover {
+            background: rgba(0,0,0,0.08);
+            border-color: var(--primary-gold);
+        }
+        [data-theme="light"] .semana-checkbox.selected {
+            background: rgba(154,120,0,0.1);
+            border-color: var(--primary-gold);
+        }
+
+        /* File manager en modo claro */
+        [data-theme="light"] .folder-card {
+            background: linear-gradient(135deg, #ffffff, #f0f0f8);
+            border-color: rgba(154,120,0,0.2);
+        }
+        [data-theme="light"] .file-item {
+            background: rgba(0,0,0,0.03);
+            border-color: rgba(0,0,0,0.06);
+        }
+        [data-theme="light"] .file-item:hover {
+            background: rgba(0,0,0,0.06);
+            border-color: rgba(154,120,0,0.3);
+        }
+        [data-theme="light"] .file-item.active-file {
+            background: rgba(0,110,158,0.06);
+        }
+        [data-theme="light"] .file-btn {
+            background: rgba(0,0,0,0.07);
+            color: var(--text-main);
+        }
+
+        /* Raciones resumen */
+        [data-theme="light"] .raciones-resumen {
+            background: rgba(0,110,158,0.05);
+        }
+        [data-theme="light"] .raciones-semana {
+            border-bottom-color: rgba(0,0,0,0.06);
         }
     </style>
 </head>
@@ -2693,77 +2911,90 @@
         
 		<div class="sidebar-header">
             <img src="Logo/ZAN.png" alt="ZAN" style="width: 35px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));">
-            <span class="sidebar-title">|Tabla Valores v3.2</span>
+            <span class="sidebar-title">|Tabla Valores v3.3</span>
         </div>
 		
         <div class="nav-section">
 			<div class="nav-section-title">Guardar y Cargar</div>
-			<a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
-				<i class="fa-solid fa-cloud"></i>
-				<span>Guardar</span>
-			</a>
-			<a class="nav-item" id="nav-sincronizar" onclick="sincronizarPendientes(); toggleSidebarMobile();" style="display: none;">
-				<i class="fa-solid fa-rotate" style="color: #d4af37;"></i>
-				<span style="color: #d4af37;">Sincronizar pendientes</span>
-			</a>
-			<a class="nav-item" id="nav-cargar" onclick="toggleDrawer('archivo'); toggleSidebarMobile();">
-				<i class="fa-solid fa-folder-open"></i>
-				<span>Cargar</span>
-			</a>
+			<div class="nav-grid">
+				<a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
+					<i class="fa-solid fa-cloud"></i>
+					<span>Guardar</span>
+				</a>
+				<a class="nav-item" id="nav-cargar" onclick="toggleDrawer('archivo'); toggleSidebarMobile();">
+					<i class="fa-solid fa-folder-open"></i>
+					<span>Cargar</span>
+				</a>
+				<a class="nav-item full-width" id="nav-sincronizar" onclick="sincronizarPendientes(); toggleSidebarMobile();" style="display: none;">
+					<i class="fa-solid fa-rotate" style="color: #d4af37;"></i>
+					<span style="color: #d4af37;">Sincronizar pendientes</span>
+				</a>
+			</div>
 		</div>
 
         <div class="nav-section">
-            <div class="nav-section-title">Analisis</div>
-            <a class="nav-item" id="nav-resumen" onclick="toggleDrawer('resumen'); toggleSidebarMobile();">
-                <i class="fa-solid fa-chart-pie"></i>
-                <span>Resumen y Gráficos</span>
-            </a>
-            <a class="nav-item" id="nav-contabilidad" onclick="toggleDrawer('contabilidad'); toggleSidebarMobile();">
-                <i class="fa-solid fa-calculator"></i>
-                <span>Exportar Contabilidad</span>
-            </a>
-            <a class="nav-item" id="nav-distribuidora" onclick="toggleDrawer('distribuidora'); toggleSidebarMobile();">
-                <i class="fa-solid fa-sack-dollar"></i>
-                <span>Valores Distribuidora</span>
-            </a>
-            <a class="nav-item" id="nav-facturas" onclick="toggleDrawer('facturas'); toggleSidebarMobile();">
-                <i class="fa-solid fa-file-invoice"></i>
-                <span>Validar Facturas</span>
-            </a>
+            <div class="nav-section-title">Análisis</div>
+            <div class="nav-grid">
+	            <a class="nav-item" id="nav-resumen" onclick="toggleDrawer('resumen'); toggleSidebarMobile();">
+	                <i class="fa-solid fa-chart-pie"></i>
+	                <span>Resumen y Gráficos</span>
+	            </a>
+	            <a class="nav-item" id="nav-contabilidad" onclick="toggleDrawer('contabilidad'); toggleSidebarMobile();">
+	                <i class="fa-solid fa-calculator"></i>
+	                <span>Exportar Contabilidad</span>
+	            </a>
+	            <a class="nav-item" id="nav-distribuidora" onclick="toggleDrawer('distribuidora'); toggleSidebarMobile();">
+	                <i class="fa-solid fa-sack-dollar"></i>
+	                <span>Valores Distribuidora</span>
+	            </a>
+	            <a class="nav-item" id="nav-facturas" onclick="toggleDrawer('facturas'); toggleSidebarMobile();">
+	                <i class="fa-solid fa-file-invoice"></i>
+	                <span>Validar Facturas</span>
+	            </a>
+            </div>
         </div>
-		    <div class="nav-section-title">Configuración</div>
-            <a class="nav-item" id="nav-proveedores" onclick="toggleModal('modal-proveedores'); toggleSidebarMobile();">
-                <i class="fa-solid fa-truck-field"></i>
-                <span>Gestionar Proveedores</span>
-            </a>
-            <a class="nav-item" id="nav-productos" onclick="toggleModal('modal-productos'); toggleSidebarMobile();">
-                <i class="fa-solid fa-list-check"></i>
-                <span>Listado de Productos</span>
-            </a>
+
+		<div class="nav-section">
+            <div class="nav-section-title">Configuración</div>
+            <div class="nav-grid">
+	            <a class="nav-item" id="nav-proveedores" onclick="toggleModal('modal-proveedores'); toggleSidebarMobile();">
+	                <i class="fa-solid fa-truck-field"></i>
+	                <span>Gestionar Proveedores</span>
+	            </a>
+	            <a class="nav-item" id="nav-productos" onclick="toggleModal('modal-productos'); toggleSidebarMobile();">
+	                <i class="fa-solid fa-list-check"></i>
+	                <span>Listado de Productos</span>
+	            </a>
+            </div>
         </div>
+
 		<div class="nav-section">
             <div class="nav-section-title">Gestión de Datos</div>
-            <a class="nav-item" id="nav-exportar" onclick="exportarCompleto(); toggleSidebarMobile();">
-                <i class="fa-solid fa-file-csv"></i>
-                <span>Exportar Excel</span>
-            </a>
-            <a class="nav-item" id="nav-importar" onclick="document.getElementById('import-input').click(); toggleSidebarMobile();">
-                <i class="fa-solid fa-file-import"></i>
-                <span>Importar Excel</span>
-            </a>
-            <input type="file" id="import-input" class="hidden" accept=".csv, .xlsx, .xls" onchange="importarExcel(this)">
+            <div class="nav-grid">
+	            <a class="nav-item" id="nav-exportar" onclick="exportarCompleto(); toggleSidebarMobile();">
+	                <i class="fa-solid fa-file-csv"></i>
+	                <span>Exportar Excel</span>
+	            </a>
+	            <a class="nav-item" id="nav-importar" onclick="document.getElementById('import-input').click(); toggleSidebarMobile();">
+	                <i class="fa-solid fa-file-import"></i>
+	                <span>Importar Excel</span>
+	            </a>
+	            <input type="file" id="import-input" class="hidden" accept=".csv, .xlsx, .xls" onchange="importarExcel(this)">
+            </div>
         </div>
 
 		 <div class="nav-section">
             <div class="nav-section-title">Acciones</div>
-            <a class="nav-item" id="nav-tutorial" onclick="toggleHelpMenu(); toggleSidebarMobile();">
-                <i class="fa-solid fa-circle-question"></i>
-                <span>Ayuda / Tutorial</span>
-            </a>
-            <a class="nav-item danger" onclick="limpiarTodo(); toggleSidebarMobile();">
-                <i class="fa-solid fa-trash-can"></i>
-                <span>Limpiar Todo / Hoja en Blanco</span>
-            </a>
+            <div class="nav-grid">
+	            <a class="nav-item" id="nav-tutorial" onclick="toggleHelpMenu(); toggleSidebarMobile();">
+	                <i class="fa-solid fa-circle-question"></i>
+	                <span>Ayuda / Tutorial</span>
+	            </a>
+	            <a class="nav-item danger" onclick="limpiarTodo(); toggleSidebarMobile();">
+	                <i class="fa-solid fa-trash-can"></i>
+	                <span>Limpiar Todo</span>
+	            </a>
+            </div>
         </div>
 
         <div class="sidebar-footer">
@@ -4840,7 +5071,7 @@
 
                     providersHTML += `
                         <div class="provider-section" style="border-color: ${prov.color}30;">
-                            <div class="provider-header" style="background: linear-gradient(90deg, ${prov.color}20, ${prov.color}05); color: ${prov.color}; border-left: 3px solid ${prov.color};" 
+                            <div class="provider-header provider-box-header" style="color: ${prov.color}; border-left: 4px solid ${prov.color};" 
                                 onclick="toggleProvider('${s}-${prov.id}')">
                                 <span style="color: var(--data-theme, inherit); filter: var(--prov-text-filter, none);">${prov.nombre} <small style="opacity:0.7;">(${sigla})</small></span>
                                 <span class="provider-total" id="prov-total-${s}-${prov.id}">$0</span>
@@ -5224,8 +5455,8 @@
                 const porcProv = tPres > 0 ? ((totalProv / tPres) * 100).toFixed(1) : 0;
 
                 htmlProveedores += `
-                    <div class="resumen-proveedor" style="border-color: ${prov.color}30;">
-                        <div class="resumen-proveedor-header" style="background: linear-gradient(90deg, ${prov.color}20, ${prov.color}05); color: ${prov.color}; border-left: 3px solid ${prov.color};"
+                    <div class="resumen-proveedor" style="border-color: ${prov.color}60;">
+                        <div class="resumen-proveedor-header provider-box-header" style="color: ${prov.color}; border-left: 4px solid ${prov.color};"
                             onclick="toggleResumenProv('resumen-prov-${prov.id}')">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <i class="fa-solid fa-chevron-down collapse-icon" id="icon-resumen-${prov.id}"></i>
@@ -5526,7 +5757,7 @@
                 
                 html += `
                     <div class="validacion-proveedor" style="border-color: ${color}30;">
-                        <div class="validacion-proveedor-header" style="background: linear-gradient(90deg, ${color}20, ${color}05); color: ${color}; border-left: 3px solid ${color};"
+                        <div class="validacion-proveedor-header provider-box-header" style="color: ${color}; border-left: 4px solid ${color};"
                             onclick="toggleValidacionProv('validacion-prov-${provId}')">
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <i class="fa-solid fa-chevron-down collapse-icon" id="icon-validacion-${provId}"></i>
