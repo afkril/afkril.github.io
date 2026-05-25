@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista_Mercado |Minutas|ZAN v21</title>
+    <title>Lista_Mercado |Minutas|ZAN v3.0</title>
     <meta name="theme-color" content="#2563eb">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -2523,7 +2523,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
         <div class="mobile-title">
             <span id="headerIcon">🍽️</span>
-            <span id="headerTitle">Lista Mercadosv2.1</span>
+            <span id="headerTitle">Lista Mercados V 3.0</span>
             <span class="monthly-badge" id="monthlyBadge">MENSUAL</span>
             <span class="calendar-badge" id="calendarBadge">CALENDARIO</span>
             <span class="editor-badge" id="editorBadge">EDITOR</span>
@@ -2569,10 +2569,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <a href="https://afkril.github.io/MINUTA_PATRON.html" class="nav-item" target="_blank" rel="noopener noreferrer" onclick="toggleSidebar()" data-section="Minuta">
                <span>👁️</span> <span>Ver Minuta Patron</span>
             </a>
-			<button class="nav-item" onclick="showSection('saved')" data-section="calendar">
+			<!--<button class="nav-item" onclick="showSection('saved')" data-section="calendar">
                 <span>💾</span> <span>Guardadas</span>
                 <span id="savedCount"  style="margin-left: auto; background: var(--primary-neiva); color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.6875rem;">0</span>
-            </button>
+            </button>-->
 			<button class="nav-item" onclick="abrirAdmin()" data-section="admin" style="border-left-color: #ef4444;">
 				<span>🔐</span> <span>Admin</span>
 			</button>
@@ -2591,7 +2591,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			</div>
 		</div>
 		
-
         <div class="theme-section">
             <span class="theme-label">Modo Oscuro</span>
             <div class="theme-toggle" onclick="toggleTheme()"></div>
@@ -2932,9 +2931,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     <div class="form-group" style="min-width:160px;">
                         <label class="form-label">🥛 Leche</label>
                         <select class="form-select" id="leche-modo-semanal" style="width:160px;">
-                            <option value="ml">Mililitros (ml)</option>
                             <option value="litros">Litros (L)</option>
                             <option value="bolsas900">Bolsas 900 ml (und)</option>
+							<option value="ml">Mililitros (ml)</option>
                         </select>
                     </div>
 
@@ -2984,36 +2983,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             </div>
 
             <div class="table-container" id="resultContainer" style="display: none;">
-                <!-- BOTONES GENERAR ACTA + DIRECTORIO
-                <div class="no-print" style="padding:0.6rem 0.75rem 0; display:flex; justify-content:flex-end; gap:0.5rem;">
-                    <button onclick="abrirDirectorio()" style="
-                        display:flex; align-items:center; gap:0.4rem;
-                        padding:0.55rem 1rem; border:none; border-radius:0.5rem; cursor:pointer;
-                        background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.35);
-                        color:#818cf8; font-weight:700; font-size:0.82rem; font-family:inherit;
-                        transition:all 0.18s;"
-                        onmouseover="this.style.background='rgba(99,102,241,0.28)'"
-                        onmouseout="this.style.background='rgba(99,102,241,0.15)'">
-                        📂 Directorio UDS
-                    </button>
-                    <button onclick="abrirModalActa('semanal')" id="btnActaSemanal" style="
-                        display:flex; align-items:center; gap:0.5rem;
-                        padding:0.55rem 1.2rem; border:none; border-radius:0.5rem; cursor:pointer;
-                        background:linear-gradient(135deg,#059669,#10b981 60%,#34d399);
-                        color:#fff; font-weight:700; font-size:0.85rem; font-family:inherit;
-                        box-shadow:0 3px 14px rgba(5,150,105,0.45); transition:all 0.18s;"
-                        onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(5,150,105,0.6)'"
-                        onmouseout="this.style.transform='';this.style.boxShadow='0 3px 14px rgba(5,150,105,0.45)'">
-                        📋 Generar Acta Excel
-                    </button>
-                </div> -->
+                
                 <div class="table-header no-print">
                     <div class="table-title">Lista de Compras</div>
                     <div class="table-actions">
                         <button class="btn-icon" onclick="exportExcel()" title="Excel">📊</button>
-                        <!--<button class="btn-icon" onclick="exportPDF()" title="PDF">📄</button>-->
                         <button class="btn-icon" onclick="guardarLista()" title="Guardar">💾</button>
-                        <!--<button class="btn-icon" onclick="imprimir()" title="Imprimir">🖨️</button>-->
 						<button class="btn-icon" onclick="limpiarEntregasSemanal()" title="Limpiar Entregas">🧹</button>
                     </div>
                 </div>
@@ -3067,9 +3042,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     <div class="form-group" style="min-width:160px;">
                         <label class="form-label">🥛 Leche</label>
                         <select class="form-select" id="leche-modo-mensual" style="width:160px;">
-                            <option value="ml">Mililitros (ml)</option>
                             <option value="litros">Litros (L)</option>
                             <option value="bolsas900">Bolsas 900 ml (und)</option>
+							<option value="ml">Mililitros (ml)</option>
                         </select>
                     </div>
 
@@ -3210,36 +3185,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
             <!-- Tabla Mensual -->
             <div class="table-container" id="monthlyResultContainer" style="display: none;">
-                <!-- BOTONES GENERAR ACTA MENSUAL + DIRECTORIO 
-                <div class="no-print" style="padding:0.6rem 0.75rem 0; display:flex; justify-content:flex-end; gap:0.5rem;">
-                    <button onclick="abrirDirectorio()" style="
-                        display:flex; align-items:center; gap:0.4rem;
-                        padding:0.55rem 1rem; border:none; border-radius:0.5rem; cursor:pointer;
-                        background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.35);
-                        color:#818cf8; font-weight:700; font-size:0.82rem; font-family:inherit;
-                        transition:all 0.18s;"
-                        onmouseover="this.style.background='rgba(99,102,241,0.28)'"
-                        onmouseout="this.style.background='rgba(99,102,241,0.15)'">
-                        📂 Directorio UDS
-                    </button>
-                    <button onclick="abrirModalActa('mensual')" id="btnActaMensual" style="
-                        display:flex; align-items:center; gap:0.5rem;
-                        padding:0.55rem 1.2rem; border:none; border-radius:0.5rem; cursor:pointer;
-                        background:linear-gradient(135deg,#059669,#10b981 60%,#34d399);
-                        color:#fff; font-weight:700; font-size:0.85rem; font-family:inherit;
-                        box-shadow:0 3px 14px rgba(5,150,105,0.45); transition:all 0.18s;"
-                        onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(5,150,105,0.6)'"
-                        onmouseout="this.style.transform='';this.style.boxShadow='0 3px 14px rgba(5,150,105,0.45)'">
-                        📋 Generar Acta Excel
-                    </button>
-                </div>-->
+                
                 <div class="table-header no-print">
                     <div class="table-title">Consolidado Mensual</div>
                     <div class="table-actions">
                         <button class="btn-icon" onclick="exportMonthlyExcel()" title="Excel">📊</button>
-                       <!-- <button class="btn-icon" onclick="exportMonthlyPDF()" title="PDF">📄</button>-->
                         <button class="btn-icon" onclick="guardarListaMensual()" title="Guardar">💾</button>
-                        <!--<button class="btn-icon" onclick="imprimirMensual()" title="Imprimir">🖨️</button>-->
 						<button class="btn-icon" onclick="limpiarEntregasMensual()" title="Limpiar Entregas">🧹</button>
                     </div>
                 </div>
@@ -3551,50 +3502,69 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <div style="display:flex;align-items:center;gap:0.6rem;">
               <div style="width:38px;height:38px;border-radius:0.5rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📂</div>
               <div>
-                <div style="font-weight:700;font-size:1rem;">Directorio de UDS</div>
-                <div style="font-size:0.7rem;color:var(--text-secondary);">Gestión de unidades de servicio · Generación masiva de actas</div>
+                <div style="font-weight:700;font-size:1rem;">Directorios UDS| Generador de actas</div>
+                <div style="font-size:0.7rem;color:var(--text-secondary);">Generación masiva de Actas de Entrega</div>
               </div>
             </div>
+			<div class="status-indicator" id="statusIndicatorDirectorio" title="Regional y Modalidad activas">
+			  <span class="status-label">Config:</span>
+			  <span class="status-badge reg-neiva" id="statusRegionalDirectorio">🏢 NEIVA</span>
+			  <span class="status-divider"></span>
+			  <span class="status-badge mod-hcb" id="statusModalidadDirectorio">🏠 HCB</span>
+			</div>
             <!-- Save/Load buttons -->
-            <div style="display:flex;flex-direction:column;gap:0.375rem;">
-              <!-- Hidden select kept for compatibility -->
-              <select id="tab-dir-select" style="display:none;">
-                <option value="">— Seleccionar directorio —</option>
-              </select>
-              <!-- Row 1: Main actions -->
-              <div style="display:flex;gap:0.375rem;flex-wrap:wrap;align-items:center;">
-                <div id="tab-dir-loaded-label" style="display:none;font-size:0.75rem;color:#818cf8;padding:0.3rem 0.6rem;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:0.375rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;" onclick="tabAbrirPanelCarpetas()" title="Ver directorios guardados"></div>
-                <button class="dir-btn" onclick="tabAbrirPanelCarpetas()" title="Abrir directorio guardado"
-                  style="background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.3);color:#818cf8;">
-                  🗂️ Abrir
-                </button>
-                <button class="dir-btn" onclick="tabGuardarDirectorio(false)" title="Guardar directorio nuevo"
-                  style="background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#10b981;">
-                  💾 Guardar
-                </button>
-                <button class="dir-btn" id="tab-btn-save-modified" onclick="tabGuardarDirectorio(true)" title="Guardar cambios en el directorio cargado" style="display:none;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.3);color:#f59e0b;">
-                  ✏️ Modificado
-                </button>
-                <button class="dir-btn" onclick="tabEliminarDirectorioGuardadoActual()" title="Eliminar directorio cargado"
-                  style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#ef4444;">
-                  🗑️ Borrar
-                </button>
-              </div>
-              <!-- Row 2: Import/Export -->
-              <div style="display:flex;gap:0.375rem;flex-wrap:wrap;align-items:center;">
-                <span style="font-size:0.65rem;color:var(--text-secondary);font-weight:600;text-transform:uppercase;">Excel:</span>
-                <button class="dir-btn" onclick="tabExportarDirectoriosExcel()" title="Exportar directorios guardados a Excel"
-                  style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.25);color:#f59e0b;">
-                  📤 Exportar
-                </button>
-                <label class="dir-btn" title="Importar directorios desde Excel" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:#10b981;cursor:pointer;">
-                  📥 Importar<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="tabImportarDirectoriosExcel(this)">
-                </label>
-                <button class="dir-btn" onclick="saveUserDirectoriesToFirebase()" title="Sincronizar directorios con la nube (Firebase)" style="background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.2);color:#3b82f6;" id="tab-btn-sync-cloud">
-                  ☁️ Nube
-                </button>
-              </div>
-            </div>
+			<div style="display:flex;align-items:center;flex-wrap:wrap;gap:0;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.6rem;padding:0.35rem 0.5rem;gap:0.3rem;">
+			  <!-- Hidden select kept for compatibility -->
+			  <select id="tab-dir-select" style="display:none;">
+				<option value="">— Seleccionar directorio —</option>
+			  </select>
+
+			  <!-- Label directorio cargado -->
+			  <div id="tab-dir-loaded-label"
+				style="display:none;font-size:0.75rem;color:#818cf8;padding:0.3rem 0.6rem;
+				background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);
+				border-radius:0.375rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;
+				white-space:nowrap;cursor:pointer;"
+				onclick="tabAbrirPanelCarpetas()" title="Ver directorios guardados">
+			  </div>
+
+			  <!-- Separador visual entre grupos -->
+			  <span style="width:1px;height:20px;background:var(--border);margin:0 0.2rem;flex-shrink:0;"></span>
+
+			  <!-- Grupo 1: Acciones principales -->
+			  <button class="dir-btn" onclick="tabAbrirPanelCarpetas()" title="Abrir directorio guardado"
+				style="background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.3);color:#818cf8;">
+				🗂️ Abrir
+			  </button>
+			  <button class="dir-btn" onclick="tabGuardarDirectorio(false)" title="Guardar directorio nuevo"
+				style="background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#10b981;">
+				💾 Guardar
+			  </button>
+			  <button class="dir-btn" id="tab-btn-save-modified" onclick="tabGuardarDirectorio(true)"
+				title="Guardar cambios en el directorio cargado"
+				style="display:none;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.3);color:#f59e0b;">
+				✏️ Modificado
+			  </button>
+			  <button class="dir-btn" onclick="tabEliminarDirectorioGuardadoActual()" title="Eliminar directorio cargado"
+				style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#ef4444;">
+				🗑️ Borrar
+			  </button>
+
+			  <!-- Separador visual entre grupos -->
+			  <span style="width:1px;height:20px;background:var(--border);margin:0 0.2rem;flex-shrink:0;"></span>
+
+			  <!-- Grupo 2: Excel -->
+			  <span style="font-size:0.62rem;color:var(--text-secondary);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:0 0.1rem;">Excel:</span>
+			  <button class="dir-btn" onclick="tabExportarDirectoriosExcel()" title="Exportar directorios guardados a Excel"
+				style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.25);color:#f59e0b;">
+				📤 Exportar
+			  </button>
+			  <label class="dir-btn" title="Importar directorios desde Excel"
+				style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:#10b981;cursor:pointer;">
+				📥 Importar
+				<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="tabImportarDirectoriosExcel(this)">
+			  </label>
+			</div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
@@ -3624,9 +3594,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 <div style="margin-top:0.5rem;">
                   <label class="dir-label">Leche: mostrar como</label>
                   <select class="dir-input" id="tab-dir-leche-modo">
-                    <option value="ml">Mililitros (ml)</option>
                     <option value="litros">Litros (L)</option>
                     <option value="bolsas900">Bolsas 900 ml (unidades)</option>
+					 <option value="ml">Mililitros (ml)</option>
                   </select>
                   <span style="font-size:0.6rem;color:var(--text-secondary);">La columna "Cobertura" ajusta proteínas, lácteos y panadería por UDS</span>
                 </div>
@@ -3655,7 +3625,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 <div id="tab-dir-context-info" style="font-size:0.75rem;color:var(--text-secondary);">
                   Las actas se generarán con la semana y días actualmente marcados en la lista.
                   Al guardar el directorio, se registra qué semana y días estaban activos.
-				  Las bajas coberturas solo ajusta las cantidades de Proteina, Lacteos y Panaderia
+				  <span style="font-size:0.6rem;color:var(--text-secondary);">La columna "Cobertura" del Excel ajusta proteínas, lácteos y panadería por UDS</span>
                 </div>
               </div>
 
@@ -3675,6 +3645,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                   <button class="dir-btn" onclick="tabCargarDirectorioEjemplo()" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.25);color:#f59e0b;">✨ Ejemplo</button>
                   <button class="dir-btn" onclick="tabToggleEditorManual()" style="background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.25);color:#10b981;">✏️ Manual</button>
                   <button class="dir-btn" onclick="descargarPlantillaDirectorio()" style="background:rgba(6,182,212,0.08);border-color:rgba(6,182,212,0.2);color:#06b6d4;" title="Descargar plantilla Excel">📥 Plantilla</button>
+				  
                 </div>
                 <div style="font-size:0.65rem;color:var(--text-secondary);">Columnas: Responsable · Teléfono · Entidad · Unidad · Código · Cobertura · Documento Identidad</div>
 
@@ -4040,7 +4011,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 							{"n":"Sal","c":"granos","u":"gr","g":{"m1":3,"m2":3,"m3":3,"m4":3,"m5":3,"m6":3,"m7":3,"m8":3,"m9":3,"m11":3,"m12":3,"m13":3,"m14":3,"m15":3,"m16":3,"m17":3,"m18":3,"m19":3,"m20":3,"m21":3,"m22":3,"m23":3,"m24":6}},
 							{"n":"Huevo","c":"proteinas","u":"und","g":{"m1":1.00,"m2":1.19,"m3":1.11,"m4":1.00,"m5":1.00,"m6":1.00,"m7":1.00,"m8":1.11,"m9":1.00,"m10":1.02,"m11":1.00,"m12":1.02,"m13":1.00,"m14":1.00,"m15":1.00,"m16":1.00,"m17":1.00,"m18":1.00,"m19":1.00,"m20":1.09,"m21":1.09,"m22":1.00,"m23":1.09,"m24":2.00}},
 							{"n":"Pechuga","c":"proteinas","u":"GRS","g":{"m2":43.01,"m5":43.01,"m8":43.01,"m12":43.01,"m17":43.01,"m19":43.01,"m22":43.01}},
-							{"n":"Queso","c":"proteinas","u":"GRS","g":{"m2":10,"m4":10,"m5":10,"m6":10,"m10":10,"m12":10,"m15":20,"m17":10,"m18":10,"m19":10,"m20":20,"m23":30,"m24":30}},
+							{"n":"Queso","c":"lacteos","u":"GRS","g":{"m2":10,"m4":10,"m5":10,"m6":10,"m10":10,"m12":10,"m15":20,"m17":10,"m18":10,"m19":10,"m20":20,"m23":30,"m24":30}},
 							{"n":"Carne de cerdo","c":"proteinas","u":"GRS","g":{"m6":40,"m14":40,"m24":40}},
 							{"n":"Carne de res ","c":"proteinas","u":"GRS","g":{"m4":40,"m9":40,"m13":40,"m16":40,"m18":40,"m20":40,"m21":40,"m23":40}},
 							{"n":"Carne de res molida","c":"proteinas","u":"GRS","g":{"m1":40,"m7":40,"m15":40,"m24":40}},
@@ -4182,7 +4153,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 							{ "n": "Carne de Cerdo", "c": "proteinas", "u": "GRS", "g": { "m3": 40, "m8": 40, "m12":40, "m14":40, "m18":25} },
 							{ "n": "Carne de Res", "c": "proteinas", "u": "GRS", "g": { "m2": 40, "m4": 40, "m9": 40, "m15":25, "m18":40} },
 							{ "n": "Tilapia", "c": "proteinas", "u": "GRS", "g": { "m10": 48.39, "m20":64.5} },
-							{ "n": "Queso", "c": "proteinas", "u": "GRS", "g": { "m4": 10, "m9": 10, "m11":10, "m12":10, "m13":5, "m15":10, "m16":10, "m20": 10,} },
+							{ "n": "Queso", "c": "lacteos", "u": "GRS", "g": { "m4": 10, "m9": 10, "m11":10, "m12":10, "m13":5, "m15":10, "m16":10, "m20": 10,} },
 							{ "n": "kumis ", "c": "lacteos", "u": "und 150 cc", "g": { "m1": 1,"m5": 1,"m10": 1, "m13":1} },
 							{ "n": "yogurt", "c": "lacteos", "u": "und 150 cc", "g": { "m3": 1,"m6": 1,"m9": 1,"m11":1, "m18":1} },
 							{ "n": "Leche", "c": "lacteos", "u": "ml", "g": { "m1": 170,"m2": 300,"m3": 150,"m4": 300,"m5": 150,"m6": 150,"m7": 300,"m8": 300,"m9": 150,"m10": 150, "m11":150, "m12":300, "m13":150, "m14":300, "m15":300, "m16":300, "m17":310, "m18":150, "m19":300, "m20":300} },
@@ -4348,6 +4319,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				badgeRegionalMensual.textContent = reg.text;
 				badgeModalidadMensual.className = 'status-badge ' + mod.class;
 				badgeModalidadMensual.textContent = mod.text;
+			}
+			// Actualizar indicador Directorio
+			const indicatorDirectorio = document.getElementById('statusIndicatorDirectorio');
+			const badgeRegionalDirectorio = document.getElementById('statusRegionalDirectorio');
+			const badgeModalidadDirectorio = document.getElementById('statusModalidadDirectorio');
+
+			if (indicatorDirectorio && badgeRegionalDirectorio && badgeModalidadDirectorio) {
+				indicatorDirectorio.classList.add('updating');
+				setTimeout(() => indicatorDirectorio.classList.remove('updating'), 300);
+				badgeRegionalDirectorio.className = 'status-badge ' + reg.class;
+				badgeRegionalDirectorio.textContent = reg.text;
+				badgeModalidadDirectorio.className = 'status-badge ' + mod.class;
+				badgeModalidadDirectorio.textContent = mod.text;
 			}
 		}
 		
@@ -4791,7 +4775,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
         // ==================== NAVEGACIoN Y UI ====================
         function showSection(section) {
-            if (section === 'directorio') { tabRefreshSelect(); tabRenderizarDirectorio(); sincronizarDesdePanel(); }
+			if (section === 'directorio') { tabRefreshSelect(); tabRenderizarDirectorio(); sincronizarDesdePanel(); actualizarIndicadorEstado(); }
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(`section-${section}`).classList.add('active');
             
@@ -5482,14 +5466,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             showToast(`Excel exportado: ${data.length} productos`, 'success');
         }
 
-        function exportMonthlyPDF() {
-            if (!monthlyFilteredData || Object.keys(monthlyFilteredData).length === 0) {
-                showToast('No hay productos para exportar', 'error');
-                return;
-            }
-            window.print();
-        }
-
         function guardarListaMensual() {
             if (!monthlyData) { showToast('Genere un listado primero', 'error'); return; }
             const nombre = prompt('Nombre del listado mensual:');
@@ -5514,9 +5490,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             showToast('Listado mensual guardado', 'success');
         }
 
-        function imprimirMensual() {
-            window.print();
-        }
 
         // ==================== CALENDARIO FESTIVOS ====================
         function initCalendar() {
@@ -5899,7 +5872,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			showToast(`Excel exportado: ${data.length} productos`, 'success');
 		}
         
-		function exportPDF() { window.print(); }
         
 		// ==================== SISTEMA DE AUDITORÍA Y ADMIN ====================
 
@@ -7101,16 +7073,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             document.getElementById('acta-print-area').scrollIntoView({behavior:'smooth',block:'start'});
         }
 
-        function imprimirActa() {
-            if (document.getElementById('acta-print-area').style.display === 'none') {
-                generarVistaActa();
-                setTimeout(function(){ window.print(); }, 700);
-            } else {
-                window.print();
-            }
-        }
-
-        function exportarActaPDF() { imprimirActa(); }
 
         function exportarActaExcel() { generarActaExcelDirecto(); }
 
@@ -7393,156 +7355,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     </script>
 
-    <!-- ============================================================ -->
-    <!-- MODAL: GENERAR ACTA EXCEL (se abre desde la lista generada)  -->
-    <!-- ============================================================ -->
-    <div id="acta-modal-overlay" onclick="cerrarModalActa()" style="
-        display:none; position:fixed; inset:0; z-index:1200;
-        background:rgba(0,0,0,0.65); backdrop-filter:blur(4px);
-        animation:fadeIn 0.18s ease;"></div>
-
-    <div id="acta-modal-panel" style="
-        display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-        z-index:1201; width:min(96vw,680px); max-height:92vh; overflow-y:auto;
-        background:var(--bg-card); border:1px solid var(--border);
-        border-radius:0.875rem; box-shadow:0 30px 80px rgba(0,0,0,0.5);
-        padding:1.25rem; font-family:'Inter',sans-serif; animation:slideUp 0.22s ease;">
-
-        <!-- Header del modal -->
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
-            <div style="display:flex; align-items:center; gap:0.6rem;">
-                <div style="width:36px;height:36px;border-radius:0.5rem;background:linear-gradient(135deg,#059669,#34d399);
-                    display:flex;align-items:center;justify-content:center;font-size:1.1rem;">📋</div>
-                <div>
-                    <div style="font-weight:700; font-size:1rem; color:var(--text-primary);">Generar Acta Excel</div>
-                    <div style="font-size:0.7rem; color:var(--text-secondary);">Formato F3.MT1.PP — ICBF</div>
-                </div>
-            </div>
-            <button onclick="cerrarModalActa()" style="
-                background:rgba(255,255,255,0.06); border:1px solid var(--border);
-                color:var(--text-secondary); border-radius:0.375rem; padding:0.3rem 0.6rem;
-                cursor:pointer; font-size:1rem; line-height:1; font-family:inherit;">✕</button>
-        </div>
-
-        <!-- Badge fuente -->
-        <div style="margin-bottom:0.875rem;">
-            <span id="acta-modal-fuente-badge" style="
-                display:inline-flex; align-items:center; gap:0.35rem;
-                padding:0.3rem 0.75rem; border-radius:1rem; font-size:0.72rem; font-weight:600;
-                background:rgba(5,150,105,0.15); color:#10b981; border:1px solid rgba(5,150,105,0.3);">
-                📅 Lista Semanal
-            </span>
-            <input type="hidden" id="acta-modal-fuente-val" value="semanal">
-        </div>
-
-        <!-- Grid campos -->
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.625rem; margin-bottom:0.75rem;">
-
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Responsable UDS</label>
-                <input id="am-responsable" type="text" placeholder="Nombre completo..." style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Teléfono</label>
-                <input id="am-telefono" type="text" placeholder="Ej: 3001234567" style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Entidad Administradora / Prestador</label>
-                <input id="am-entidad" type="text" placeholder="Nombre de la entidad..." style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Unidad de Servicio</label>
-                <input id="am-unidad" type="text" placeholder="Nombre UDS..." style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Código Cuentame UDS</label>
-                <input id="am-codigo" type="text" placeholder="Ej: 280101..." style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Fecha de Solicitud</label>
-                <input id="am-fecha-solicitud" type="date" style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Municipio</label>
-                <input id="am-municipio" type="text" value="NEIVA" style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Centro Zonal</label>
-                <input id="am-centrozonal" type="text" value="NEIVA" style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Modalidad</label>
-                <input id="am-modalidad" type="text" value="HCB" style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Servicio</label>
-                <input id="am-servicio" type="text" value="COMUNITARIO" style="
-                    background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                    padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-        </div>
-
-        <!-- Observaciones full width -->
-        <div style="display:flex;flex-direction:column;gap:0.2rem;margin-bottom:1rem;">
-            <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Observaciones</label>
-            <textarea id="am-observaciones" rows="2" placeholder="Observaciones del acta..." style="
-                background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;
-                outline:none;resize:vertical;"></textarea>
-        </div>
-
-        <!-- BOTÓN GENERAR -->
-        <button onclick="generarActaDesdeModal()" style="
-            display:flex; align-items:center; justify-content:center; gap:0.6rem;
-            width:100%; padding:0.85rem 1.25rem; border:none; border-radius:0.625rem;
-            background:linear-gradient(135deg,#059669 0%,#10b981 60%,#34d399 100%);
-            color:#fff; font-weight:700; font-size:1rem; letter-spacing:0.02em;
-            cursor:pointer; box-shadow:0 4px 20px rgba(5,150,105,0.4);
-            transition:all 0.2s; font-family:inherit;"
-            onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 8px 28px rgba(5,150,105,0.55)'"
-            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(5,150,105,0.4)'">
-            🟢 Generar Acta Excel
-            <span style="font-size:0.78rem;font-weight:400;opacity:0.9;">(todos los productos · F3.MT1.PP)</span>
-        </button>
-    </div>
-
-    <style>
-        @keyframes slideUp {
-            from { opacity:0; transform:translate(-50%,-46%); }
-            to   { opacity:1; transform:translate(-50%,-50%); }
-        }
-        @keyframes fadeIn {
-            from { opacity:0; } to { opacity:1; }
-        }
-        #acta-modal-panel input:focus,
-        #acta-modal-panel textarea:focus {
-            border-color:#10b981 !important;
-            box-shadow:0 0 0 3px rgba(16,185,129,0.12) !important;
-        }
-        @media (max-width:600px) {
-            #acta-modal-panel { padding:1rem; }
-            #acta-modal-panel > div:nth-child(3) { grid-template-columns:1fr !important; }
-        }
-    </style>
-
 
     <!-- ================================================================ -->
     <!-- SISTEMA ACTAS: Template b64 + Generador XML + Directorio Import  -->
@@ -7739,11 +7551,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Leche: mostrar como</label>
                     <select id="dir-leche-modo" style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
                         border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
-                        <option value="ml">Mililitros (ml)</option>
                         <option value="litros">Litros (L)</option>
                         <option value="bolsas900">Bolsas 900 ml (unidades)</option>
+						<option value="ml">Mililitros (ml)</option>
                     </select>
-                    <span style="font-size:0.6rem;color:var(--text-secondary);">La columna "Cobertura" del Excel ajusta proteínas, lácteos y panadería por UDS</span>
+                    
                 </div>
             </div>
 
@@ -7840,162 +7652,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
 
     <!-- MODAL ACTA (para una sola UDS) -->
-    <div id="acta-modal-overlay" onclick="cerrarModalActa()" style="
-        display:none; position:fixed; inset:0; z-index:1200;
-        background:rgba(0,0,0,0.65); backdrop-filter:blur(4px);"></div>
-
-    <div id="acta-modal-panel" style="
-        display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-        z-index:1201; width:min(96vw,680px); max-height:92vh; overflow-y:auto;
-        background:var(--bg-card); border:1px solid var(--border);
-        border-radius:0.875rem; box-shadow:0 30px 80px rgba(0,0,0,0.5);
-        padding:1.25rem; font-family:'Inter',sans-serif;">
-
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
-            <div style="display:flex;align-items:center;gap:0.6rem;">
-                <div style="width:36px;height:36px;border-radius:0.5rem;
-                    background:linear-gradient(135deg,#059669,#34d399);
-                    display:flex;align-items:center;justify-content:center;font-size:1.1rem;">📋</div>
-                <div>
-                    <div style="font-weight:700;font-size:1rem;color:var(--text-primary);">Generar Acta Excel</div>
-                    <div style="font-size:0.7rem;color:var(--text-secondary);">Formato F3.MT1.PP — ICBF · <span id="acta-modal-fuente-badge">Lista Semanal</span></div>
-                </div>
-            </div>
-            <div style="display:flex;gap:0.375rem;align-items:center;">
-                <button onclick="abrirDirectorio()" style="padding:0.3rem 0.7rem;
-                    background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);
-                    color:#818cf8;border-radius:0.375rem;cursor:pointer;font-size:0.72rem;font-family:inherit;">
-                    📂 Directorio
-                </button>
-                <button onclick="cerrarModalActa()" style="background:rgba(255,255,255,0.06);
-                    border:1px solid var(--border);color:var(--text-secondary);border-radius:0.375rem;
-                    padding:0.3rem 0.6rem;cursor:pointer;font-size:1rem;font-family:inherit;">✕</button>
-            </div>
-        </div>
-        <input type="hidden" id="acta-modal-fuente-val" value="semanal">
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.625rem;margin-bottom:0.75rem;">
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Responsable UDS *</label>
-                <input id="am-responsable" type="text" placeholder="Nombre completo..."
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Teléfono</label>
-                <input id="am-telefono" type="text" placeholder="Ej: 3001234567"
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Entidad Administradora</label>
-                <input id="am-entidad" type="text" placeholder="Nombre de la entidad..."
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Unidad de Servicio</label>
-                <input id="am-unidad" type="text" placeholder="Nombre UDS..."
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Código Cuentame</label>
-                <input id="am-codigo" type="text" placeholder="Ej: 280101..."
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Fecha Solicitud</label>
-                <input id="am-fecha-solicitud" type="date"
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Municipio</label>
-                <input id="am-municipio" type="text" value="NEIVA"
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Centro Zonal</label>
-                <input id="am-centrozonal" type="text" value="NEIVA"
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Modalidad</label>
-                <input id="am-modalidad" type="text" value="HCB"
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Servicio</label>
-                <input id="am-servicio" type="text" value="COMUNITARIO"
-                    style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-            </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:0.2rem;margin-bottom:0.75rem;">
-            <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">Observaciones</label>
-            <textarea id="am-observaciones" rows="2" placeholder="Observaciones del acta..."
-                style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;
-                outline:none;resize:vertical;"></textarea>
-        </div>
-
-        <!-- Datos de firmas - Quien ENTREGA -->
-        <div style="background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.2);border-radius:0.5rem;padding:0.75rem;margin-bottom:0.75rem;">
-            <div style="font-size:0.7rem;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">✍️ Datos de quien entrega los alimentos</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
-                <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                    <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Nombre legible quien entrega</label>
-                    <input id="am-entrega-nombre" type="text" placeholder="Nombre completo..."
-                        style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-                </div>
-                <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                    <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Documento de identidad</label>
-                    <input id="am-entrega-doc" type="text" placeholder="Ej: CC 1234567890"
-                        style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-                </div>
-                <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                    <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Entidad Administradora o Prestadora</label>
-                    <input id="am-entrega-entidad" type="text" placeholder="Nombre de la entidad..."
-                        style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-                </div>
-                <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                    <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Número de NIT</label>
-                    <input id="am-entrega-nit" type="text" placeholder="Ej: 900.123.456-7"
-                        style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-                </div>
-            </div>
-        </div>
-
-        <!-- Cobertura personalizada -->
-        <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-radius:0.5rem;padding:0.75rem;margin-bottom:0.75rem;">
-            <div style="font-size:0.7rem;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">⚙️ Ajustes de cantidades</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
-                <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                    <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Cobertura (Nº niños)</label>
-                    <input id="am-cobertura" type="number" min="0" placeholder="Ej: 13 (opcional)"
-                        style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                        padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-                    <span style="font-size:0.6rem;color:var(--text-secondary);">Si se especifica, recalcula proteínas, lácteos y panadería</span>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:0.2rem;">
-                    <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Leche: mostrar como</label>
-                    <select id="am-leche-modo"
-                        style="background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;
-                        padding:0.4rem 0.625rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
-                        <option value="ml">Mililitros (ml)</option>
-                        <option value="litros">Litros (L)</option>
-                        <option value="bolsas900">Bolsas 900 ml (unidades)</option>
-                    </select>
-                    <span style="font-size:0.6rem;color:var(--text-secondary);">Solo aplica al producto "Leche"</span>
-                </div>
-            </div>
-        </div>
-
-        <button onclick="generarActaDesdeModal()" style="
-            display:flex;align-items:center;justify-content:center;gap:0.6rem;
-            width:100%;padding:0.85rem;border:none;border-radius:0.625rem;
-            background:linear-gradient(135deg,#059669,#10b981 60%,#34d399);
-            color:#fff;font-weight:700;font-size:1rem;cursor:pointer;
-            box-shadow:0 4px 20px rgba(5,150,105,0.4);font-family:inherit;">
-            🟢 Generar Acta Excel
-            <span style="font-size:0.78rem;font-weight:400;opacity:0.9;">(formato original F3.MT1.PP)</span>
-        </button>
-    </div>
+    
 
     <style>
         #acta-modal-panel input:focus, #acta-modal-panel textarea:focus,
@@ -8274,6 +7931,17 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                 var zip = await JSZip.loadAsync(bytes.buffer);
                 var sheetXml = await zip.file('xl/worksheets/sheet1.xml').async('string');
 
+                // ── Eliminar validaciones de datos del template (listas desplegables no deseadas) ──
+                // El template tiene una validacion extendida (x14:dataValidations) en la celda I12
+                // con lista de genero (Femenino/Masculino/Intersexual) que no es necesaria.
+                // Hay que eliminar tanto el bloque estandar como el extendido (x14:).
+                sheetXml = sheetXml.replace(/<dataValidations[\s\S]*?<\/dataValidations>/g, '');
+                // Eliminar bloque extendido x14:dataValidations dentro de extLst
+                sheetXml = sheetXml.replace(/<x14:dataValidations[\s\S]*?<\/x14:dataValidations>/g, '');
+                // Limpiar extLst si quedo vacio
+                sheetXml = sheetXml.replace(/<extLst>\s*<\/extLst>/g, '');
+                sheetXml = sheetXml.replace(/<ext[^>]*>\s*<\/ext>/g, '');
+
                 // ── XML escape helper ──────────────────────────────────────────
                 function escXml(s) {
                     return String(s)
@@ -8421,6 +8089,22 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                             return r >= 13 ? col + (r + nExtra) : match;
                         });
                         sheetXml = sheetXml.substring(0, mcStart) + mcBlock + sheetXml.substring(mcEnd);
+                    }
+
+                    // Update dataValidations: shift all sqRef row numbers >= 13
+                    var dvStart = sheetXml.indexOf('<dataValidations');
+                    var dvEnd   = sheetXml.indexOf('</dataValidations>');
+                    if (dvStart !== -1 && dvEnd !== -1) {
+                        dvEnd += 18; // length of '</dataValidations>'
+                        var dvBlock = sheetXml.substring(dvStart, dvEnd);
+                        dvBlock = dvBlock.replace(/([A-N])([0-9]+)/g, function(match, col, rowStr) {
+                            var r = parseInt(rowStr);
+                            return r >= 13 ? col + (r + nExtra) : match;
+                        });
+                        // Also update sqRef attribute that may have ranges like "I12:I12"
+                        // which are in the data rows (rows 7-12) — these should also shift
+                        // if their row is exactly 12 (the last data row before cloning)
+                        sheetXml = sheetXml.substring(0, dvStart) + dvBlock + sheetXml.substring(dvEnd);
                     }
                 }
 
@@ -8753,7 +8437,7 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                 var data = [
                     ['Responsable', 'Teléfono', 'Entidad', 'Unidad', 'Código', 'Cobertura', 'Documento Identidad'],
                     ['María García López', '3101234567', 'ICBF Regional Huila', 'HCB Girasoles',  '410001', 13, 'CC 51234567'],
-                    ['Ana Lucía Torres',   '3209876543', 'Asoc. Madres ICBF',   'HCB Las Palmas', '410003', 10, 'CC 41098765']
+                    ['Ana Lucía Torres',   '3209876543', 'Asoc. Madres ICBF',   'HCB Las Palmas', '410003', 11, 'CC 41098765']
                 ];
                 var ws = XLSX.utils.aoa_to_sheet(data);
                 ws['!cols'] = [{wch:30},{wch:15},{wch:30},{wch:25},{wch:12},{wch:12},{wch:20}];
@@ -8768,9 +8452,8 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
         function cargarDirectorioEjemplo() {
             directorioUDS = [
                 { responsable:'María García López',    telefono:'3101234567', entidad:'ICBF Regional Huila', unidad:'HCB Girasoles',    codigo:'410001', documentoId:'CC 51234567',  cobertura:13 },
-                { responsable:'Ana Lucía Torres',      telefono:'3209876543', entidad:'Asoc. Madres ICBF',   unidad:'HCB Las Palmas',   codigo:'410003', documentoId:'CC 41098765',  cobertura:10 },
-                
-            ];
+                { responsable:'Ana Lucía Torres',      telefono:'3209876543', entidad:'Asoc. Madres ICBF',   unidad:'HCB Las Palmas',   codigo:'410003', documentoId:'CC 41098765',  cobertura:11 }
+            ]
             renderizarDirectorio();
             showToast('5 UDS de ejemplo cargadas','success');
         }
@@ -9827,15 +9510,7 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
             } catch(e) { console.error('Error loading user dirs', e); }
         }
 
-        function saveUserDirectoriesToFirebase() {
-            if (!window.currentUser) return;
-            try {
-                const dirs = getDirectoriosGuardados();
-                const uid = window.currentUser.uid;
-                const dirRef = window.firebaseRef(window.firebaseDB, 'user_dirs/' + uid);
-                window.firebaseSet(dirRef, dirs || {});
-            } catch(e) { console.error('Error saving user dirs', e); }
-        }
+        
 
         // Hook into existing save functions to also save to Firebase
         const _origTabSave = typeof tabSaveDirectoriosGuardados === 'function' ? tabSaveDirectoriosGuardados : null;
@@ -9959,7 +9634,7 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                 text-align: center;
                 position: relative;
             ">                
-				<img src="LOGO.png" style="width:230px; height:200px; object-fit:contain;">
+				<img src="LOGO_MINUTA.png" style="width:230px; height:200px; object-fit:contain;">
                 <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 0.25rem;">Minutas · ZAN · v3</div>
             </div>
 
@@ -10023,7 +9698,5 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
             </div>
         </div>
     </div>
-
-
 </body>
 </html>
