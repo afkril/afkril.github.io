@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista_Mercado |Minutas v3.0</title>
+    <title>Lista Mercado|Minutas</title>
     <meta name="theme-color" content="#2563eb">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
@@ -519,6 +519,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         .nav-item[data-section="editor"] {
             background: linear-gradient(90deg, rgba(236, 72, 153, 0.1) 0%, transparent 100%);
             border-left: 3px solid #ec4899;
+            margin-left: -3px;
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+        .nav-item[data-section="proveedores"] {
+            background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, transparent 100%);
+            border-left: 3px solid #06b6d4;
             margin-left: -3px;
             border-radius: 0 0.375rem 0.375rem 0;
         }
@@ -2518,7 +2524,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
         <div class="mobile-title">
             <span id="headerIcon">🍽️</span>
-            <span id="headerTitle">Lista Mercados v3.01</span>
+            <span id="headerTitle">Lista Mercados |v3.01</span>
             <span class="monthly-badge" id="monthlyBadge">MENSUAL</span>
             <span class="calendar-badge" id="calendarBadge">CALENDARIO</span>
             <span class="editor-badge" id="editorBadge">EDITOR</span>
@@ -2544,20 +2550,22 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <button class="nav-item" onclick="showSection('monthly')" data-section="monthly">
                 <span>📅</span> <span>Listado Mensual</span>
             </button>
+			<button class="nav-item" onclick="showSection('directorio')" data-section="directorio">
+                <span>📂</span>
+                <span>Directorio UDS</span>
+            </button>
             
         </div>
 
         <div class="nav-section">
             <div class="nav-title">Herramientas</div>
-			
-            <button class="nav-item" onclick="showSection('directorio')" data-section="directorio">
-                <span>📂</span>
-                <span>Directorio UDS</span>
+            <button class="nav-item" onclick="showSection('proveedores')" data-section="proveedores">
+                <span>🏭</span>
+                <span>Proveedores</span>
             </button>
             <button class="nav-item" onclick="showSection('editor')" data-section="editor">
                 <span>⚖️</span> <span>Editor de Gramajes</span>
             </button>
-		
             <button class="nav-item" onclick="showSection('calendar')" data-section="calendar">
                 <span>📆</span> <span>Calendario Festivos</span>
             </button>
@@ -2930,6 +2938,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 
 					
 						<div style="display:flex;align-items:center;gap:0.35rem;padding:0.3rem 0.65rem;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.22);border-radius:0.5rem;">
+							<span class="status-label">Config:</span>
 							<span style="font-size:0.9rem;">🥛</span>
 							<label class="form-label" style="margin:0;white-space:nowrap;font-size:0.72rem;">Leche</label>
 							<select class="form-select" id="leche-modo-semanal" style="width:130px;padding:0.25rem 0.4rem;font-size:0.75rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);">
@@ -3045,7 +3054,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
                     
                     <div style="display:flex;align-items:center;gap:0.35rem;padding:0.3rem 0.65rem;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.22);border-radius:0.5rem;">
-                        <span style="font-size:0.9rem;">🥛</span>
+                        <span class="status-label">Config:</span>
+						<span style="font-size:0.9rem;">🥛</span>
                         <label class="form-label" style="margin:0;white-space:nowrap;font-size:0.72rem;">Leche</label>
                         <select class="form-select" id="leche-modo-mensual" style="width:130px;padding:0.25rem 0.4rem;font-size:0.75rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);">
                             <option value="litros">Litros (L)</option>
@@ -3520,12 +3530,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 <div style="font-size:0.7rem;color:var(--text-secondary);">Generación masiva de Actas de Entrega</div>
               </div>
             </div>
-			<div class="status-indicator" id="statusIndicatorDirectorio" title="Regional y Modalidad activas">
-			  <span class="status-label">Config:</span>
-			  <span class="status-badge reg-neiva" id="statusRegionalDirectorio">🏢 NEIVA</span>
-			  <span class="status-divider"></span>
-			  <span class="status-badge mod-hcb" id="statusModalidadDirectorio">🏠 HCB</span>
-			</div>
             <!-- Save/Load buttons -->
 			<div style="display:flex;align-items:center;flex-wrap:wrap;gap:0;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.6rem;padding:0.35rem 0.5rem;gap:0.3rem;">
 			  <!-- Hidden select kept for compatibility -->
@@ -3625,10 +3629,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 </div>
               </div>
 
-              <!-- Datos quien entrega (plegable) -->
-              <div class="dir-card" style="padding:0;">
-                <div class="dir-section-title" onclick="toggleDirPanel('panel-datos-entrega','chevron-entrega')" style="color:#818cf8;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;margin:0;border-radius:0.5rem;user-select:none;"><span>✍️ Datos de quien entrega los alimentos (aplica a todas)</span><span id="chevron-entrega" style="transition:transform 0.25s;font-size:0.7rem;">▼</span></div>
+              <!-- Datos quien entrega (plegable) -->             
+				<div class="dir-card" style="padding:0;">
+				<div class="dir-section-title" onclick="toggleDirPanel('panel-datos-entrega','chevron-entrega')" style="color:#818cf8;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;margin:0;border-radius:0.5rem;user-select:none;"><span>✍️ Datos de quien entrega los alimentos (aplica a todas)</span><span id="chevron-entrega" style="transition:transform 0.25s;font-size:0.7rem;">▼</span></div>
                 <div id="panel-datos-entrega" style="padding:0 0.75rem 0.75rem;">
+                <!-- Selector de proveedor registrado -->
+                <div style="margin-bottom:0.6rem;padding:0.5rem 0.6rem;background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:0.5rem;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem;gap:0.5rem;flex-wrap:wrap;">
+                    <label class="dir-label" style="margin:0;color:#06b6d4;">🏭 Seleccionar proveedor registrado</label>
+                    <button onclick="showSection('proveedores')" style="padding:0.2rem 0.55rem;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#06b6d4;border-radius:0.3rem;cursor:pointer;font-size:0.65rem;font-family:inherit;font-weight:600;">➕ Gestionar</button>
+                  </div>
+                  <select class="dir-input" id="tab-dir-proveedor-select" onchange="provSeleccionarEnDirectorio(this.value)" style="width:100%;">
+                    <option value="">— Seleccionar proveedor (opcional) —</option>
+                  </select>
+                </div>
                 <div class="dir-input-grid-2">
                   <div><label class="dir-label">Nombre legible quien entrega</label><input class="dir-input" id="tab-dir-entrega-nombre" type="text" placeholder="Nombre completo..."></div>
                   <div><label class="dir-label">Documento de identidad</label><input class="dir-input" id="tab-dir-entrega-doc" type="text" placeholder="Ej: CC 1234567890"></div>
@@ -3730,6 +3744,112 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           </div>
         </div>
         </div>
+        <!-- ============================================================ -->
+
+        <!-- ========== SECCIÓN PROVEEDORES ========== -->
+        <div id="section-proveedores" class="section">
+        <style>
+            #section-proveedores .prov-card {
+                background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.75rem;
+                padding: 1rem; margin-bottom: 0.75rem;
+            }
+            #section-proveedores .prov-title {
+                font-size: 0.7rem; font-weight: 700; color: #06b6d4; text-transform: uppercase;
+                letter-spacing: 0.08em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;
+            }
+            #section-proveedores .prov-label { font-size: 0.62rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 0.15rem; }
+            #section-proveedores .prov-input {
+                width: 100%; padding: 0.45rem 0.6rem; background: var(--bg-dark); border: 1px solid var(--border);
+                border-radius: 0.375rem; color: var(--text-primary); font-size: 0.8rem; font-family: inherit; outline: none;
+            }
+            #section-proveedores .prov-input:focus { border-color: #06b6d4; box-shadow: 0 0 0 3px rgba(6,182,212,0.15); }
+            #section-proveedores .prov-btn {
+                display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.8rem;
+                border-radius: 0.375rem; border: 1px solid var(--border); font-size: 0.75rem;
+                font-family: inherit; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            }
+            #section-proveedores .prov-btn-primary { background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border-color: transparent; }
+            #section-proveedores .prov-btn-danger  { background: rgba(239,68,68,0.08); color: #ef4444; border-color: rgba(239,68,68,0.25); }
+            #section-proveedores .prov-btn-edit    { background: rgba(245,158,11,0.08); color: #f59e0b; border-color: rgba(245,158,11,0.25); }
+            #section-proveedores table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+            #section-proveedores table td, #section-proveedores table th { padding: 0.4rem 0.5rem; }
+            #section-proveedores table thead tr { background: var(--bg-dark); }
+            #section-proveedores table th { color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+            #section-proveedores table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+            #section-proveedores table tbody tr:hover { background: var(--bg-hover); }
+            #section-proveedores .prov-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+            @media(max-width:600px) { #section-proveedores .prov-grid { grid-template-columns: 1fr; } }
+        </style>
+        <div style="max-width:900px;margin:0 auto;padding:0.75rem;">
+
+            <!-- Header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                <div>
+                    <h2 style="font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;">🏭 Gestión de Proveedores</h2>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:0.15rem;">Registra los datos de quien entrega los alimentos para usarlos en el Directorio</div>
+                </div>
+                <button class="prov-btn prov-btn-primary" onclick="showSection('directorio')" style="gap:0.4rem;">
+                    📂 Ir al Directorio
+                </button>
+            </div>
+
+            <!-- Formulario agregar/editar proveedor -->
+            <div class="prov-card" id="prov-form-card">
+                <div class="prov-title" id="prov-form-title">➕ Agregar Proveedor</div>
+                <input type="hidden" id="prov-edit-index" value="-1">
+                <div class="prov-grid" style="margin-bottom:0.5rem;">
+                    <div>
+                        <label class="prov-label">Nombre completo *</label>
+                        <input class="prov-input" id="prov-nombre" type="text" placeholder="Nombre de quien entrega...">
+                    </div>
+                    <div>
+                        <label class="prov-label">Documento de identidad *</label>
+                        <input class="prov-input" id="prov-documento" type="text" placeholder="Ej: CC 1234567890">
+                    </div>
+                    <div>
+                        <label class="prov-label">Entidad / Proveedor *</label>
+                        <input class="prov-input" id="prov-entidad" type="text" placeholder="Nombre de la entidad o empresa...">
+                    </div>
+                    <div>
+                        <label class="prov-label">NIT</label>
+                        <input class="prov-input" id="prov-nit" type="text" placeholder="Ej: 900.123.456-7">
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <button class="prov-btn prov-btn-primary" onclick="provGuardar()">💾 Guardar Proveedor</button>
+                    <button class="prov-btn" id="prov-btn-cancelar" onclick="provCancelarEdicion()" style="display:none;background:var(--bg-hover);color:var(--text-secondary);">✕ Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Lista de proveedores -->
+            <div class="prov-card">
+                <div class="prov-title">📋 Proveedores Registrados <span id="prov-count" style="background:rgba(6,182,212,0.15);color:#06b6d4;padding:0.1rem 0.5rem;border-radius:1rem;font-size:0.65rem;margin-left:0.3rem;">0</span></div>
+                <div id="prov-empty-state" style="text-align:center;padding:2rem 1rem;color:var(--text-secondary);font-size:0.82rem;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">🏭</div>
+                    <div>Aún no hay proveedores registrados.</div>
+                    <div style="font-size:0.72rem;margin-top:0.25rem;">Usa el formulario de arriba para agregar el primero.</div>
+                </div>
+                <div id="prov-table-wrap" style="display:none;overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Documento</th>
+                                <th>Entidad / Proveedor</th>
+                                <th>NIT</th>
+                                <th style="text-align:center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prov-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        </div>
+        <!-- ========== FIN SECCIÓN PROVEEDORES ========== -->
+
         <!-- ============================================================ -->
 
         <div id="section-actas" class="section">
@@ -3985,6 +4105,77 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </main>
 
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ==================== MODAL GUARDAR LISTA ==================== -->
+    <div id="saveListOverlay" onclick="cerrarModalGuardar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;backdrop-filter:blur(4px);"></div>
+    <div id="saveListModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9001;background:var(--bg-card);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;width:min(480px,95vw);box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+        <style>
+            #saveListModal .sm-label { font-size:0.62rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:0.2rem; }
+            #saveListModal .sm-input { width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.4rem;color:var(--text-primary);font-size:0.85rem;font-family:inherit;outline:none;box-sizing:border-box; }
+            #saveListModal .sm-input:focus { border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.15); }
+            #saveListModal .sm-grid { display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;margin-bottom:0.65rem; }
+            #saveListModal .sm-preview { background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.25);border-radius:0.5rem;padding:0.6rem 0.85rem;margin-bottom:0.9rem; }
+            #saveListModal .sm-btn { display:inline-flex;align-items:center;gap:0.3rem;padding:0.5rem 1.1rem;border-radius:0.5rem;border:1px solid var(--border);font-size:0.82rem;font-family:inherit;font-weight:600;cursor:pointer;transition:all .2s; }
+            #saveListModal .sm-btn-primary { background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-color:transparent; }
+            #saveListModal .sm-btn-cancel { background:var(--bg-hover);color:var(--text-secondary); }
+        </style>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;">
+            <div>
+                <h3 style="font-size:1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:0.4rem;">💾 Guardar Lista</h3>
+                <div id="sm-tipo-badge" style="font-size:0.65rem;margin-top:0.15rem;color:var(--text-secondary);"></div>
+            </div>
+            <button onclick="cerrarModalGuardar()" style="background:none;border:none;color:var(--text-secondary);font-size:1.1rem;cursor:pointer;padding:0.2rem;">✕</button>
+        </div>
+
+        <!-- Preview del nombre generado -->
+        <div class="sm-preview">
+            <div style="font-size:0.6rem;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.2rem;">Vista previa del nombre</div>
+            <div id="sm-nombre-preview" style="font-size:1.05rem;font-weight:800;color:var(--text-primary);letter-spacing:.03em;">—</div>
+        </div>
+
+        <!-- Campos -->
+        <div class="sm-grid">
+            <div>
+                <label class="sm-label">Semana</label>
+                <select class="sm-input" id="sm-semana" onchange="smActualizarPreview()">
+                    <option value="S1">S1 — Semana 1</option>
+                    <option value="S2">S2 — Semana 2</option>
+                    <option value="S3">S3 — Semana 3</option>
+                    <option value="S4">S4 — Semana 4</option>
+                    <option value="SM">SM — Mensual</option>
+                </select>
+            </div>
+            <div>
+                <label class="sm-label">Mes</label>
+                <select class="sm-input" id="sm-mes" onchange="smActualizarPreview()">
+                    <option value="ENERO">Enero</option><option value="FEBRERO">Febrero</option>
+                    <option value="MARZO">Marzo</option><option value="ABRIL">Abril</option>
+                    <option value="MAYO">Mayo</option><option value="JUNIO">Junio</option>
+                    <option value="JULIO">Julio</option><option value="AGOSTO">Agosto</option>
+                    <option value="SEPTIEMBRE">Septiembre</option><option value="OCTUBRE">Octubre</option>
+                    <option value="NOVIEMBRE">Noviembre</option><option value="DICIEMBRE">Diciembre</option>
+                </select>
+            </div>
+            <div>
+                <label class="sm-label">Regional</label>
+                <input class="sm-input" id="sm-regional-display" type="text" readonly style="opacity:.6;cursor:default;">
+            </div>
+            <div>
+                <label class="sm-label">N° Contrato</label>
+                <input class="sm-input" id="sm-contrato" type="text" placeholder="Ej: 665" oninput="smActualizarPreview()" maxlength="20">
+            </div>
+        </div>
+        <div style="margin-bottom:0.9rem;">
+            <label class="sm-label">Nota adicional (opcional)</label>
+            <input class="sm-input" id="sm-nota" type="text" placeholder="Observación breve..." maxlength="60" oninput="smActualizarPreview()">
+        </div>
+
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+            <button class="sm-btn sm-btn-cancel" onclick="cerrarModalGuardar()">Cancelar</button>
+            <button class="sm-btn sm-btn-primary" onclick="smConfirmarGuardar()">💾 Guardar</button>
+        </div>
+    </div>
+    <!-- ============================================================ -->
 
     <!-- ==================== PANEL VER DETALLES ==================== -->
     <div id="detailOverlay" onclick="cerrarDetalleProducto()"></div>
@@ -4245,7 +4436,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         let currentData = null;
         let filteredData = null;
         let activeFilters = new Set(['granos', 'proteinas', 'lacteos', 'verduras', 'frutas', 'panaderia']);
-        let savedLists = JSON.parse(localStorage.getItem('smartMenu_savedLists')) || [];
+        let savedLists = JSON.parse(localStorage.getItem('smartMenu_savedLists')) || []; // se recarga con clave de usuario al iniciar sesión
         let currentView = 'detallada';
         let searchTerm = '';
         let sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -4796,7 +4987,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
         // ==================== NAVEGACIoN Y UI ====================
         function showSection(section) {
-			if (section === 'directorio') { tabRefreshSelect(); tabRenderizarDirectorio(); sincronizarDesdePanel(); actualizarIndicadorEstado(); }
+			if (section === 'directorio') { tabRefreshSelect(); tabRenderizarDirectorio(); sincronizarDesdePanel(); actualizarIndicadorEstado(); provRefreshSelectDirectorio(); }
+			if (section === 'proveedores') { provRenderizar(); }
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(`section-${section}`).classList.add('active');
             
@@ -5061,7 +5253,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
             sorted.forEach(([name, item], index) => {
                 const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
-                const valorPrevio = localStorage.getItem(`entrega_${idRef}`) || "";
+                const valorPrevio = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idRef}`) || "";
                 const nameEscaped = name.replace(/'/g, "\\'");
                 
                 html += `<tr style="animation-delay: ${index * 50}ms">
@@ -5079,7 +5271,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
 
         function guardarEntrega(idRef, valor, input) {
-            localStorage.setItem(`entrega_${idRef}`, valor);
+            localStorage.setItem(`${ENTREGA_KEY_PREFIX}${idRef}`, valor);
             input.classList.toggle('saved', !!valor);
         }
 
@@ -5324,7 +5516,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     const weekData = item.weeks[week];
                     if (weekData) {
                         const sugerido = formatCompacto(weekData.qTotal, item.u, name);
-                        const valorEntrega = localStorage.getItem(`entrega_${idBase}_w${week}`) || '';
+                        const valorEntrega = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idBase}_w${week}`) || '';
                         
                         tbodyHtml += `<td class="suggested-cell" title="${weekData.qTotal.toFixed(2)} ${item.u}">${sugerido}</td>
 							<td class="entrega-cell"><input type="number" class="input-entrega-mes ${valorEntrega ? 'saved' : ''}" value="${valorEntrega}" step="0.01" oninput="guardarEntregaMensual('${idBase}_w${week}', this.value, this)" placeholder="0" data-week="${week}"></td>`;
@@ -5374,7 +5566,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
         function guardarEntregaMensual(idRef, valor, input) {
             // Guardar en localStorage
-			localStorage.setItem(`entrega_${idRef}`, valor);
+			localStorage.setItem(`${ENTREGA_KEY_PREFIX}${idRef}`, valor);
 			input.classList.toggle('saved', !!valor);
 			
 			// Actualizar el total visual de esa fila inmediatamente
@@ -5438,7 +5630,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				
 				// Sumar entregas
 				sortedWeeks.forEach(week => {
-					const storageKey = `entrega_${idBase}_w${week}`;
+					const storageKey = `${ENTREGA_KEY_PREFIX}${idBase}_w${week}`;
 					const valorStorage = localStorage.getItem(storageKey);
 					const input = document.querySelector(`input[data-week="${week}"]`);
 					let valorFinal = 0;
@@ -5497,7 +5689,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     if (weekData) {
                         row[`Sem${week}_Sugerido`] = formatCompacto(weekData.qTotal, item.u, name);
                         const idBase = `${currentRegional}_monthly_${name.replace(/\s/g, '')}`;
-                        row[`Sem${week}_Entrega`] = localStorage.getItem(`entrega_${idBase}_w${week}`) || '';
+                        row[`Sem${week}_Entrega`] = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idBase}_w${week}`) || '';
                     } else {
                         row[`Sem${week}_Sugerido`] = '-';
                         row[`Sem${week}_Entrega`] = '-';
@@ -5515,26 +5707,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
         function guardarListaMensual() {
             if (!monthlyData) { showToast('Genere un listado primero', 'error'); return; }
-            const nombre = prompt('Nombre del listado mensual:');
-            if (!nombre) return;
-
-            const lista = {
-                id: Date.now(),
-                tipo: 'mensual',
-                nombre,
-                regional: currentRegional,
-				modalidad: currentModalidad,
-                fecha: new Date().toISOString(),
-                semanas: Array.from(monthlyActiveWeeks.entries()).map(([week, days]) => ({week, days: Array.from(days)})),
-                personas: document.getElementById('monthly-num-p').value,
-                filters: Array.from(monthlyActiveFilters),
-                data: monthlyData
-            };
-
-            savedLists.unshift(lista);
-            localStorage.setItem('smartMenu_savedLists', JSON.stringify(savedLists));
-            updateSavedCount();
-            showToast('Listado mensual guardado', 'success');
+            abrirModalGuardar('mensual');
         }
 
 
@@ -5637,33 +5810,176 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             document.getElementById('savedCount').textContent = savedLists.length;
         }
 
+        // ==================== MODAL GUARDAR LISTA ====================
+        var _smTipo = 'semanal'; // tipo activo del modal
+
+        function abrirModalGuardar(tipo) {
+            _smTipo = tipo;
+            // Pre-set semana
+            var semVal = (tipo === 'semanal') ? (document.getElementById('sem') ? document.getElementById('sem').value : '1') : 'SM';
+            var smSemEl = document.getElementById('sm-semana');
+            if (smSemEl) {
+                smSemEl.value = (tipo === 'mensual') ? 'SM' : ('S' + semVal);
+                if (!smSemEl.value) smSemEl.value = 'S1';
+            }
+            // Pre-set mes actual
+            var meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+            document.getElementById('sm-mes').value = meses[new Date().getMonth()];
+            // Regional display
+            var regEl = document.getElementById('sm-regional-display');
+            if (regEl) regEl.value = (currentRegional === 'neiva' ? 'NEIVA' : 'GAITANA');
+            // Badge
+            document.getElementById('sm-tipo-badge').textContent = tipo === 'mensual' ? '📅 Listado Mensual' : '📋 Listado Semanal';
+            // Limpiar nota/contrato
+            document.getElementById('sm-nota').value = '';
+            smActualizarPreview();
+            document.getElementById('saveListOverlay').style.display = 'block';
+            document.getElementById('saveListModal').style.display = 'block';
+            setTimeout(() => document.getElementById('sm-contrato').focus(), 80);
+        }
+
+        function cerrarModalGuardar() {
+            document.getElementById('saveListOverlay').style.display = 'none';
+            document.getElementById('saveListModal').style.display = 'none';
+        }
+
+        function smActualizarPreview() {
+            var sem      = (document.getElementById('sm-semana') || {}).value || 'S1';
+            var mes      = (document.getElementById('sm-mes') || {}).value || '';
+            var contrato = ((document.getElementById('sm-contrato') || {}).value || '').trim();
+            var nota     = ((document.getElementById('sm-nota') || {}).value || '').trim();
+            var reg      = currentRegional === 'neiva' ? 'NV' : 'GA';
+            var parts    = [sem, mes, 'RG', reg];
+            if (contrato) parts.push(contrato);
+            if (nota) parts.push('·', nota);
+            document.getElementById('sm-nombre-preview').textContent = parts.join(' ');
+        }
+
+        function smConfirmarGuardar() {
+            var sem      = (document.getElementById('sm-semana') || {}).value || 'S1';
+            var mes      = (document.getElementById('sm-mes') || {}).value || '';
+            var contrato = ((document.getElementById('sm-contrato') || {}).value || '').trim();
+            var nota     = ((document.getElementById('sm-nota') || {}).value || '').trim();
+            var reg      = currentRegional === 'neiva' ? 'NV' : 'GA';
+            var parts    = [sem, mes, 'RG', reg];
+            if (contrato) parts.push(contrato);
+            if (nota) parts.push('·', nota);
+            var nombre = parts.join(' ');
+
+            cerrarModalGuardar();
+
+            if (_smTipo === 'semanal') {
+                _doGuardarSemanal(nombre, sem, mes, contrato, nota);
+            } else {
+                _doGuardarMensual(nombre, sem, mes, contrato, nota);
+            }
+        }
+
+        function _doGuardarSemanal(nombre, sm, mes, contrato, nota) {
+            var semNum = document.getElementById('sem').value;
+            var personas = document.getElementById('num-p').value;
+            var diasSeleccionados = Array.from(document.querySelectorAll('.d-ch:checked')).map(cb => parseInt(cb.value));
+            var entregas = {};
+            Object.keys(currentData).forEach(function(name) {
+                var idRef = currentRegional + '_' + name.replace(/\s/g, '');
+                var v = localStorage.getItem(ENTREGA_KEY_PREFIX + idRef);
+                if (v) entregas[name] = v;
+            });
+            var lista = {
+                id: Date.now(),
+                tipo: 'semanal',
+                nombre: nombre,
+                etiqueta: { semana: sm, mes: mes, contrato: contrato, nota: nota },
+                regional: currentRegional,
+                modalidad: currentModalidad,
+                fecha: new Date().toISOString(),
+                semana: semNum,
+                personas: personas,
+                dias: diasSeleccionados,
+                filters: Array.from(activeFilters),
+                lecheModo: (document.getElementById('leche-modo-semanal') || {}).value || 'ml',
+                yogurtModo: (document.getElementById('yogurt-modo-semanal') || {}).value || 'und150',
+                data: currentData,
+                entregas: entregas
+            };
+            savedLists.unshift(lista);
+            localStorage.setItem(SAVED_LISTS_STORAGE_KEY, JSON.stringify(savedLists));
+            syncSavedListsToFirebase();
+            updateSavedCount();
+            showToast('✅ Lista guardada: ' + nombre, 'success');
+        }
+
+        function _doGuardarMensual(nombre, sm, mes, contrato, nota) {
+            var lista = {
+                id: Date.now(),
+                tipo: 'mensual',
+                nombre: nombre,
+                etiqueta: { semana: sm, mes: mes, contrato: contrato, nota: nota },
+                regional: currentRegional,
+                modalidad: currentModalidad,
+                fecha: new Date().toISOString(),
+                semanas: Array.from(monthlyActiveWeeks.entries()).map(function([week, days]) { return { week: week, days: Array.from(days) }; }),
+                personas: document.getElementById('monthly-num-p').value,
+                filters: Array.from(monthlyActiveFilters),
+                lecheModo: (document.getElementById('leche-modo-mensual') || {}).value || 'ml',
+                yogurtModo: (document.getElementById('yogurt-modo-mensual') || {}).value || 'und150',
+                data: monthlyData
+            };
+            savedLists.unshift(lista);
+            localStorage.setItem(SAVED_LISTS_STORAGE_KEY, JSON.stringify(savedLists));
+            syncSavedListsToFirebase();
+            updateSavedCount();
+            showToast('✅ Lista guardada: ' + nombre, 'success');
+        }
+        // ==================== FIN MODAL GUARDAR ====================
+
+        // Sincroniza savedLists del usuario a Firebase Realtime DB
+        function syncSavedListsToFirebase() {
+            if (window.currentUser && window.firebaseDB) {
+                try {
+                    const uid = window.currentUser.uid;
+                    const ref = window.firebaseRef(window.firebaseDB, 'user_savedlists/' + uid);
+                    window.firebaseSet(ref, savedLists || []);
+                } catch(e) { /* silent */ }
+            }
+        }
+
         function showSavedLists() {
 			const container = document.getElementById('savedListsContainer');
 			if (savedLists.length === 0) {
 				container.innerHTML = '<div class="empty-state"><div class="empty-icon">💾</div><p>No hay listas guardadas</p></div>';
 				return;
 			}
-			
-			container.innerHTML = savedLists.map(l => `
-				<div class="snapshot-item" onclick="loadSavedList(${l.id})" style="cursor: pointer; padding: 1rem; border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 0.5rem; background: var(--bg-card);">
-					<div style="display: flex; justify-content: space-between; align-items: center;">
-						<div>
-							<h4 style="margin: 0; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-								${l.nombre} 
-								${l.tipo === 'mensual' 
-									? '<span style="background: #8b5cf6; color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.625rem;">MENSUAL</span>' 
-									: '<span style="background: #2563eb; color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.625rem;">SEMANAL</span>'
-								}
-							</h4>
-							<div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">
-								${regionales[l.regional].titulo} • ${new Date(l.fecha).toLocaleDateString()}
-								${l.tipo === 'semanal' ? `• Semana ${l.semana}` : ''}
+			const mesesCorto = {ENERO:'Ene',FEBRERO:'Feb',MARZO:'Mar',ABRIL:'Abr',MAYO:'May',JUNIO:'Jun',JULIO:'Jul',AGOSTO:'Ago',SEPTIEMBRE:'Sep',OCTUBRE:'Oct',NOVIEMBRE:'Nov',DICIEMBRE:'Dic'};
+			container.innerHTML = savedLists.map(l => {
+				const esMensual = l.tipo === 'mensual';
+				const badgeColor = esMensual ? '#8b5cf6' : '#2563eb';
+				const badgeTxt   = esMensual ? 'MENSUAL' : 'SEMANAL';
+				const etq = l.etiqueta || {};
+				// Chips de etiqueta
+				const chips = [
+					etq.semana  ? `<span style="background:rgba(99,102,241,0.15);color:#a78bfa;border:1px solid rgba(99,102,241,0.25);padding:.1rem .45rem;border-radius:1rem;font-size:.6rem;font-weight:700;">${etq.semana}</span>` : '',
+					etq.mes     ? `<span style="background:rgba(16,185,129,0.1);color:#34d399;border:1px solid rgba(16,185,129,0.2);padding:.1rem .45rem;border-radius:1rem;font-size:.6rem;font-weight:700;">${mesesCorto[etq.mes]||etq.mes}</span>` : '',
+					etq.contrato? `<span style="background:rgba(245,158,11,0.1);color:#fbbf24;border:1px solid rgba(245,158,11,0.2);padding:.1rem .45rem;border-radius:1rem;font-size:.6rem;font-weight:700;">Cto ${etq.contrato}</span>` : '',
+					l.lecheModo ? `<span style="background:rgba(6,182,212,0.08);color:#67e8f9;border:1px solid rgba(6,182,212,0.18);padding:.1rem .45rem;border-radius:1rem;font-size:.6rem;">🥛 ${l.lecheModo==='litros'?'L':'ml/und'}</span>` : '',
+				].filter(Boolean).join(' ');
+				const nota = etq.nota ? `<div style="font-size:.65rem;color:var(--text-secondary);margin-top:.15rem;font-style:italic;">📝 ${etq.nota}</div>` : '';
+				return `
+				<div style="padding:.85rem 1rem;border:1px solid var(--border);border-radius:.6rem;margin-bottom:.5rem;background:var(--bg-card);cursor:pointer;transition:border-color .15s;" onclick="loadSavedList(${l.id})" onmouseenter="this.style.borderColor='#6366f1'" onmouseleave="this.style.borderColor='var(--border)'">
+					<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;">
+						<div style="min-width:0;flex:1;">
+							<div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-bottom:.3rem;">
+								<span style="background:${badgeColor};color:#fff;padding:.1rem .45rem;border-radius:1rem;font-size:.58rem;font-weight:700;flex-shrink:0;">${badgeTxt}</span>
+								<span style="font-size:.88rem;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${l.nombre}</span>
 							</div>
+							<div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-bottom:.25rem;">${chips}</div>
+							<div style="font-size:.65rem;color:var(--text-secondary);">${regionales[l.regional]?.titulo||l.regional} • ${new Date(l.fecha).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'})}</div>
+							${nota}
 						</div>
-						<button class="btn-icon" onclick="event.stopPropagation(); deleteSavedList(${l.id})" style="color: var(--danger); width: 32px; height: 32px;">🗑️</button>
+						<button onclick="event.stopPropagation();deleteSavedList(${l.id})" title="Eliminar" style="flex-shrink:0;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171;width:30px;height:30px;border-radius:.4rem;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;">🗑️</button>
 					</div>
-				</div>
-			`).join('');
+				</div>`;
+			}).join('');
 		}
 
         function loadSavedList(id) {
@@ -5675,6 +5991,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			if (l.modalidad) {
 				cambiarModalidad(l.modalidad);
 			}
+
+			// Restaurar configuración leche/yogurt
+			if (l.lecheModo) {
+				['leche-modo-semanal','leche-modo-mensual'].forEach(sid => { var el = document.getElementById(sid); if(el) el.value = l.lecheModo; });
+				var elD = document.getElementById('tab-dir-leche-modo'); if(elD) elD.value = l.lecheModo;
+			}
+			if (l.yogurtModo) {
+				['yogurt-modo-semanal','yogurt-modo-mensual'].forEach(sid => { var el = document.getElementById(sid); if(el) el.value = l.yogurtModo; });
+				var elDY = document.getElementById('tab-dir-yogurt-modo'); if(elDY) elDY.value = l.yogurtModo;
+			}
+
 			if (l.tipo === 'mensual') {
 				showSection('monthly');
 				document.getElementById('monthly-num-p').value = l.personas;
@@ -5708,7 +6035,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 					Object.entries(l.entregas).forEach(([name, valor]) => {
 						const idBase = `${l.regional}_monthly_${name.replace(/\s/g, '')}`;
 						l.semanas.forEach(({week}) => {
-							localStorage.setItem(`entrega_${idBase}_w${week}`, valor);
+							localStorage.setItem(`${ENTREGA_KEY_PREFIX}${idBase}_w${week}`, valor);
 						});
 					});
 				}
@@ -5730,7 +6057,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				if (l.entregas) {
 					Object.entries(l.entregas).forEach(([name, valor]) => {
 						const idRef = `${l.regional}_${name.replace(/\s/g, '')}`;
-						localStorage.setItem(`entrega_${idRef}`, valor);
+						localStorage.setItem(`${ENTREGA_KEY_PREFIX}${idRef}`, valor);
 					});
 				}
 				
@@ -5762,7 +6089,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			// Limpiar localStorage para esta regional y productos actuales
 			Object.keys(currentData).forEach(name => {
 				const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
-				localStorage.removeItem(`entrega_${idRef}`);
+				localStorage.removeItem(`${ENTREGA_KEY_PREFIX}${idRef}`);
 			});
 			
 			// Limpiar inputs visibles
@@ -5791,7 +6118,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			Object.keys(monthlyData).forEach(name => {
 				const idBase = `${currentRegional}_monthly_${name.replace(/\s/g, '')}`;
 				sortedWeeks.forEach(week => {
-					localStorage.removeItem(`entrega_${idBase}_w${week}`);
+					localStorage.removeItem(`${ENTREGA_KEY_PREFIX}${idBase}_w${week}`);
 				});
 			});
 			
@@ -5811,7 +6138,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
         function deleteSavedList(id) {
             savedLists = savedLists.filter(x => x.id !== id);
-            localStorage.setItem('smartMenu_savedLists', JSON.stringify(savedLists));
+            localStorage.setItem(SAVED_LISTS_STORAGE_KEY, JSON.stringify(savedLists));
+            syncSavedListsToFirebase();
             updateSavedCount();
             showSavedLists();
             showToast('Lista eliminada', 'success');
@@ -5822,44 +6150,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				showToast('Genere una lista primero', 'error');
 				return;
 			}
-			
-			const nombre = prompt('Nombre del listado semanal:');
-			if (!nombre || nombre.trim() === '') return;
-
-			// Obtener configuracion actual
-			const sem = document.getElementById('sem').value;
-			const personas = document.getElementById('num-p').value;
-			const diasSeleccionados = Array.from(document.querySelectorAll('.d-ch:checked')).map(cb => parseInt(cb.value));
-
-			// Recopilar entregas guardadas en localStorage
-			const entregas = {};
-			Object.keys(currentData).forEach(name => {
-				const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
-				const valorEntrega = localStorage.getItem(`entrega_${idRef}`);
-				if (valorEntrega) {
-					entregas[name] = valorEntrega;
-				}
-			});
-
-			const lista = {
-				id: Date.now(),
-				tipo: 'semanal',
-				nombre: nombre.trim(),
-				regional: currentRegional,
-				modalidad: currentModalidad,
-				fecha: new Date().toISOString(),
-				semana: sem,
-				personas: personas,
-				dias: diasSeleccionados,
-				filters: Array.from(activeFilters),
-				data: currentData,
-				entregas: entregas
-			};
-
-			savedLists.unshift(lista);
-			localStorage.setItem('smartMenu_savedLists', JSON.stringify(savedLists));
-			updateSavedCount();
-			showToast('Listado semanal guardado correctamente', 'success');
+			abrirModalGuardar('semanal');
 		}
 
         // Placeholders para funciones no implementadas
@@ -5875,7 +6166,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 			// Preparar datos para Excel
 			const data = Object.entries(currentData).map(([name, item]) => {
 				const idRef = `${currentRegional}_${name.replace(/\s/g, '')}`;
-				const valorEntrega = localStorage.getItem(`entrega_${idRef}`) || '';
+				const valorEntrega = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idRef}`) || '';
 				
 				return {
 					'Producto': name,
@@ -7751,7 +8042,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     var esYogurt = name.toLowerCase().trim() === 'yogurt';
                     var cantSugerida = esLeche ? formatLecheConModo(qTotal, lecheModo) : (esYogurt ? formatYogurtConModo(qTotal, yogurtModo) : redondearComercial(qTotal, item.u, name));
                     var idRef = currentRegional + '_' + name.replace(/\s/g,'');
-                    var entregaRaw = localStorage.getItem('entrega_' + idRef);
+                    var entregaRaw = localStorage.getItem(ENTREGA_KEY_PREFIX + idRef);
                     var cantRecibida;
                     if (entregaRaw && entregaRaw.trim()) {
                         if (aplicarCobertura) {
@@ -7793,7 +8084,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     var totalEntrega = 0; var hasEntrega = false;
                     // Determinar cobertura original (número de niños de la lista base) para el recálculo proporcional
                     Object.keys(item.weeks||{}).forEach(function(wk) {
-                        var rawWk = localStorage.getItem('entrega_' + idBase + '_w' + wk) || '';
+                        var rawWk = localStorage.getItem(ENTREGA_KEY_PREFIX + idBase + '_w' + wk) || '';
                         if (rawWk) {
                             var v = parseFloat(rawWk);
                             if (!isNaN(v) && v > 0) { totalEntrega += v; hasEntrega = true; }
@@ -7921,15 +8212,15 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                 var zip = await JSZip.loadAsync(bytes.buffer);
                 var sheetXml = await zip.file('xl/worksheets/sheet1.xml').async('string');
 
-                // ── Patch styles.xml: fuente sz=12, color relleno C6E0B4, wrapText en header ──
+                // ── Patch styles.xml: fuente sz=12, color relleno e3f0d9, wrapText en header ──
                 try {
                     var stylesXml = await zip.file('xl/styles.xml').async('string');
                     // Cambiar tamaño de fuente a 12 para estilos de filas de datos (sz 8-11)
                     stylesXml = stylesXml.replace(/<sz val="([89]|10|11)"\s*\/>/g, '<sz val="12"/>');
-                    // Reemplazar colores de relleno verde claro de filas de ítems → C6E0B4
-                    stylesXml = stylesXml.replace(/E2EFDA/gi, 'C6E0B4');
-                    stylesXml = stylesXml.replace(/D9EAD3/gi, 'C6E0B4');
-                    stylesXml = stylesXml.replace(/EBF1DE/gi, 'C6E0B4');
+                    // Reemplazar colores de relleno verde claro de filas de ítems → e3f0d9
+                    stylesXml = stylesXml.replace(/E2EFDA/gi, 'e3f0d9');
+                    stylesXml = stylesXml.replace(/D9EAD3/gi, 'e3f0d9');
+                    stylesXml = stylesXml.replace(/EBF1DE/gi, 'e3f0d9');
                     // Habilitar wrapText en todos los xf existentes que tengan alineación
                     // Agregar wrapText="1" a alignment existentes o crear si no hay
                     stylesXml = stylesXml.replace(/<alignment([^/]*?)\/>/g, function(m, attrs) {
@@ -8161,7 +8452,7 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                         // I = CANTIDAD RECIBIDA: mismo valor que G
                         sheetXml = setCellInline(sheetXml, 'I' + rn, cantParaActa || '');
                         // J = Cumple → "x"
-                        sheetXml = setCellOrInsert(sheetXml, 'J' + rn, 'x');
+                        sheetXml = setCellOrInsert(sheetXml, 'J' + rn, 'X');
                     }
                 }
 
@@ -8201,7 +8492,7 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
 
                 // ── Page setup: A4 landscape, fit 1×1, márgenes 1" todos los lados, centrado ─────
                 // Márgenes en pulgadas: izquierda=1, derecha=1, arriba=1, abajo=1
-                var newMargins = '<pageMargins left="0.5" right="0.5" top="0.5" bottom="0.5" header="0.2" footer="0.2"/>';
+                var newMargins = '<pageMargins left="0.2" right="0.2" top="0.2" bottom="0.2" header="0.2" footer="0.2"/>';
                 sheetXml = sheetXml.replace(/<pageMargins[^\/]*\/>/, newMargins);
 
                 // printOptions: centrar horizontal y verticalmente en la página
@@ -8580,9 +8871,25 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
         }
 
         var TAB_DIR_STORAGE_KEY = 'directorios_guardados_v1'; // base key, se sobreescribe con UID al iniciar sesión
+        var PROVEEDORES_STORAGE_KEY = 'proveedores_lista_v1'; // base key, se sobreescribe con UID al iniciar sesión
+        var SAVED_LISTS_STORAGE_KEY = 'smartMenu_savedLists'; // base key, se sobreescribe con UID al iniciar sesión
+        var ENTREGA_KEY_PREFIX = 'entrega_'; // base prefix, se sobreescribe con UID al iniciar sesión
+        var _currentUserUID = null; // UID del usuario activo
 
         function setDirStorageKeyForUser(uid) {
+            _currentUserUID = uid;
             TAB_DIR_STORAGE_KEY = 'directorios_guardados_v1_' + uid;
+            PROVEEDORES_STORAGE_KEY = 'proveedores_lista_v1_' + uid;
+            SAVED_LISTS_STORAGE_KEY = 'smartMenu_savedLists_' + uid;
+            ENTREGA_KEY_PREFIX = 'entrega_' + uid + '_';
+        }
+
+        function resetStorageKeysToAnon() {
+            _currentUserUID = null;
+            TAB_DIR_STORAGE_KEY = 'directorios_guardados_v1';
+            PROVEEDORES_STORAGE_KEY = 'proveedores_lista_v1';
+            SAVED_LISTS_STORAGE_KEY = 'smartMenu_savedLists';
+            ENTREGA_KEY_PREFIX = 'entrega_';
         }
 
         function tabGetParamsFijos() {
@@ -8598,7 +8905,8 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                 entregaEntidad: document.getElementById('tab-dir-entrega-entidad').value || '',
                 entregaNit:     document.getElementById('tab-dir-entrega-nit').value     || '',
                 fuente:         document.getElementById('tab-dir-fuente').value          || 'semanal',
-                lecheModo:      document.getElementById('tab-dir-leche-modo').value      || 'ml'
+                lecheModo:      document.getElementById('tab-dir-leche-modo').value      || 'ml',
+                yogurtModo:     document.getElementById('tab-dir-yogurt-modo') ? document.getElementById('tab-dir-yogurt-modo').value : 'und150'
             };
         }
 
@@ -8942,6 +9250,15 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                 if (f.fuente)    { var el = document.getElementById('tab-dir-fuente');    if (el) el.value = f.fuente; }
                 if (f.lecheModo) { var el2 = document.getElementById('tab-dir-leche-modo'); if (el2) el2.value = f.lecheModo; }
                 if (f.yogurtModo) { var el3 = document.getElementById('tab-dir-yogurt-modo'); if (el3) el3.value = f.yogurtModo; }
+                // Sincronizar leche/yogurt también a los selectores de lista semanal y mensual
+                if (f.lecheModo) {
+                    var elS = document.getElementById('leche-modo-semanal'); if (elS) elS.value = f.lecheModo;
+                    var elM = document.getElementById('leche-modo-mensual'); if (elM) elM.value = f.lecheModo;
+                }
+                if (f.yogurtModo) {
+                    var elYS = document.getElementById('yogurt-modo-semanal'); if (elYS) elYS.value = f.yogurtModo;
+                    var elYM = document.getElementById('yogurt-modo-mensual'); if (elYM) elYM.value = f.yogurtModo;
+                }
             }
             // Show context
             if (d.contextoSemana) {
@@ -9058,6 +9375,143 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
             cargarDirectorioEjemplo(); // reuse existing function
             tabRenderizarDirectorio();
         }
+
+        // ==================== PROVEEDORES ====================
+        function provLoadAll() {
+            try { return JSON.parse(localStorage.getItem(PROVEEDORES_STORAGE_KEY) || '[]'); } catch(e) { return []; }
+        }
+        function provSaveAll(arr) {
+            localStorage.setItem(PROVEEDORES_STORAGE_KEY, JSON.stringify(arr));
+            // Auto-sync a Firebase si hay usuario activo
+            if (window.currentUser && window.firebaseDB) {
+                try {
+                    const uid = window.currentUser.uid;
+                    const ref = window.firebaseRef(window.firebaseDB, 'user_proveedores/' + uid);
+                    window.firebaseSet(ref, arr || []);
+                } catch(e) { /* silent */ }
+            }
+        }
+
+        function provGuardar() {
+            var nombre    = (document.getElementById('prov-nombre').value    || '').trim();
+            var documento = (document.getElementById('prov-documento').value || '').trim();
+            var entidad   = (document.getElementById('prov-entidad').value   || '').trim();
+            var nit       = (document.getElementById('prov-nit').value       || '').trim();
+            if (!nombre)    { showToast('El nombre del proveedor es requerido', 'warning'); return; }
+            if (!documento) { showToast('El documento es requerido', 'warning'); return; }
+            if (!entidad)   { showToast('La entidad es requerida', 'warning'); return; }
+            var lista = provLoadAll();
+            var idx = parseInt(document.getElementById('prov-edit-index').value);
+            var obj = { nombre: nombre, documento: documento, entidad: entidad, nit: nit };
+            if (idx >= 0 && idx < lista.length) {
+                lista[idx] = obj;
+                showToast('✅ Proveedor actualizado', 'success');
+            } else {
+                lista.push(obj);
+                showToast('✅ Proveedor agregado', 'success');
+            }
+            provSaveAll(lista);
+            provCancelarEdicion();
+            provRenderizar();
+            provRefreshSelectDirectorio();
+        }
+
+        function provCancelarEdicion() {
+            document.getElementById('prov-edit-index').value = '-1';
+            document.getElementById('prov-nombre').value = '';
+            document.getElementById('prov-documento').value = '';
+            document.getElementById('prov-entidad').value = '';
+            document.getElementById('prov-nit').value = '';
+            document.getElementById('prov-form-title').textContent = '➕ Agregar Proveedor';
+            document.getElementById('prov-btn-cancelar').style.display = 'none';
+        }
+
+        function provEditarFila(idx) {
+            var lista = provLoadAll();
+            if (!lista[idx]) return;
+            var p = lista[idx];
+            document.getElementById('prov-edit-index').value = idx;
+            document.getElementById('prov-nombre').value    = p.nombre    || '';
+            document.getElementById('prov-documento').value = p.documento || '';
+            document.getElementById('prov-entidad').value   = p.entidad   || '';
+            document.getElementById('prov-nit').value       = p.nit       || '';
+            document.getElementById('prov-form-title').textContent = '✏️ Editar Proveedor';
+            document.getElementById('prov-btn-cancelar').style.display = 'inline-flex';
+            document.getElementById('prov-nombre').focus();
+            document.getElementById('prov-form-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function provEliminar(idx) {
+            var lista = provLoadAll();
+            if (!lista[idx]) return;
+            if (!confirm('¿Eliminar al proveedor "' + lista[idx].nombre + '"?')) return;
+            lista.splice(idx, 1);
+            provSaveAll(lista);
+            provRenderizar();
+            provRefreshSelectDirectorio();
+            showToast('Proveedor eliminado', 'success');
+        }
+
+        function provRenderizar() {
+            var lista = provLoadAll();
+            var countEl = document.getElementById('prov-count');
+            if (countEl) countEl.textContent = lista.length;
+            var empty = document.getElementById('prov-empty-state');
+            var tableWrap = document.getElementById('prov-table-wrap');
+            if (!empty || !tableWrap) return;
+            if (lista.length === 0) {
+                empty.style.display = 'block';
+                tableWrap.style.display = 'none';
+                return;
+            }
+            empty.style.display = 'none';
+            tableWrap.style.display = 'block';
+            var tbody = document.getElementById('prov-table-body');
+            tbody.innerHTML = lista.map(function(p, i) {
+                return '<tr>' +
+                    '<td style="color:var(--text-secondary);">' + (i+1) + '</td>' +
+                    '<td style="font-weight:600;">' + escHtml(p.nombre || '') + '</td>' +
+                    '<td>' + escHtml(p.documento || '') + '</td>' +
+                    '<td>' + escHtml(p.entidad || '') + '</td>' +
+                    '<td style="color:var(--text-secondary);">' + escHtml(p.nit || '') + '</td>' +
+                    '<td style="text-align:center;white-space:nowrap;">' +
+                        '<button onclick="provEditarFila(' + i + ')" style="padding:0.15rem 0.45rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:#f59e0b;border-radius:0.25rem;cursor:pointer;font-size:0.65rem;margin-right:0.2rem;">✏️ Editar</button>' +
+                        '<button onclick="provEliminar(' + i + ')" style="padding:0.15rem 0.45rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:0.25rem;cursor:pointer;font-size:0.65rem;">✕</button>' +
+                    '</td></tr>';
+            }).join('');
+        }
+
+        // Actualiza el select de proveedores en el panel de directorio
+        function provRefreshSelectDirectorio() {
+            var sel = document.getElementById('tab-dir-proveedor-select');
+            if (!sel) return;
+            var lista = provLoadAll();
+            var current = sel.value;
+            sel.innerHTML = '<option value="">— Seleccionar proveedor (opcional) —</option>';
+            lista.forEach(function(p, i) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = p.nombre + (p.entidad ? '  ·  ' + p.entidad : '');
+                sel.appendChild(opt);
+            });
+            if (current !== '') sel.value = current;
+        }
+
+        // Autocompletado al seleccionar proveedor en directorio
+        function provSeleccionarEnDirectorio(val) {
+            if (val === '') return; // selección vacía: no limpiar los campos manualmente llenados
+            var lista = provLoadAll();
+            var idx = parseInt(val);
+            if (isNaN(idx) || !lista[idx]) return;
+            var p = lista[idx];
+            document.getElementById('tab-dir-entrega-nombre').value  = p.nombre    || '';
+            document.getElementById('tab-dir-entrega-doc').value     = p.documento || '';
+            document.getElementById('tab-dir-entrega-entidad').value = p.entidad   || '';
+            document.getElementById('tab-dir-entrega-nit').value     = p.nit       || '';
+        }
+        // ==================== FIN PROVEEDORES ====================
+
+
 
         function tabGetFuenteParams() {
             return {
@@ -9386,6 +9840,8 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
             // Load saved directories list
             tabRefreshSelect();
             tabRenderizarDirectorio();
+            // Load providers dropdown
+            provRefreshSelectDirectorio();
             // Initialize auth UI
             initAuthUI();
         });
@@ -9530,7 +9986,7 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
 
         function onUserLoggedIn(user) {
             hideLoginOverlay();
-            // Establecer key de almacenamiento exclusivo para este usuario
+            // Establecer keys de almacenamiento exclusivos para este usuario
             setDirStorageKeyForUser(user.uid);
             // Update user info display
             const displayName = user.displayName || user.email || 'Usuario';
@@ -9541,14 +9997,21 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
             logUserLogin(user.uid, user.displayName, user.email);
             // Load user's directories from Firebase
             loadUserDirectories(user.uid);
+            // Load user's proveedores from Firebase
+            loadUserProveedores(user.uid);
+            // Load user's savedLists from Firebase
+            loadUserSavedLists(user.uid);
         }
 
         function onUserLoggedOut() {
             showLoginOverlay();
             document.getElementById('user-info-bar').style.display = 'none';
-            // Limpiar directorios en memoria al cerrar sesión
+            // Limpiar todos los datos en memoria al cerrar sesión
             try { tabSaveDirectoriosGuardados({}); tabRefreshSelect(); } catch(e) {}
-            TAB_DIR_STORAGE_KEY = 'directorios_guardados_v1'; // reset key
+            try { savedLists = []; updateSavedCount(); showSavedLists(); } catch(e) {}
+            try { provSaveAllLocal([]); provRenderizar(); } catch(e) {}
+            // Reset todas las keys a anónimo
+            resetStorageKeysToAnon();
         }
 
         function loadUserDirectories(uid) {
@@ -9569,6 +10032,45 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                 }, { onlyOnce: true });
             } catch(e) { console.error('Error loading user dirs', e); }
         }
+
+        // Guarda proveedores solo en localStorage (sin disparar sync Firebase, para evitar loop)
+        function provSaveAllLocal(arr) {
+            localStorage.setItem(PROVEEDORES_STORAGE_KEY, JSON.stringify(arr));
+        }
+
+        function loadUserProveedores(uid) {
+            try {
+                const ref = window.firebaseRef(window.firebaseDB, 'user_proveedores/' + uid);
+                window.firebaseOnValue(ref, (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        const arr = Array.isArray(data) ? data : Object.values(data);
+                        provSaveAllLocal(arr);
+                    } else {
+                        provSaveAllLocal([]);
+                    }
+                    try { provRenderizar(); provRefreshSelectDirectorio(); } catch(e) {}
+                }, { onlyOnce: true });
+            } catch(e) { console.error('Error loading user proveedores', e); }
+        }
+
+        function loadUserSavedLists(uid) {
+            try {
+                const ref = window.firebaseRef(window.firebaseDB, 'user_savedlists/' + uid);
+                window.firebaseOnValue(ref, (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.val();
+                        savedLists = Array.isArray(data) ? data : Object.values(data);
+                    } else {
+                        savedLists = [];
+                    }
+                    // Sincronizar en localStorage del usuario
+                    localStorage.setItem(SAVED_LISTS_STORAGE_KEY, JSON.stringify(savedLists));
+                    try { updateSavedCount(); showSavedLists(); } catch(e) {}
+                }, { onlyOnce: true });
+            } catch(e) { console.error('Error loading user savedLists', e); }
+        }
+
 
         
 
