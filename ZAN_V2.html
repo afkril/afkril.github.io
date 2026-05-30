@@ -31,6 +31,179 @@
 			100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
 		}
 	
+        /* ===== SISTEMA DE TOAST Y MODAL DE CONFIRMACIÓN ===== */
+        #zan-toast-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            pointer-events: none;
+            width: min(420px, 92vw);
+        }
+
+        .zan-toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            background: var(--bg-card-solid);
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+            pointer-events: all;
+            animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .zan-toast.hiding {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.92); }
+            to   { opacity: 1; transform: translateY(0)   scale(1); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0) scale(1); max-height: 200px; margin-bottom: 0; }
+            to   { opacity: 0; transform: translateY(12px) scale(0.95); max-height: 0; margin-bottom: -10px; }
+        }
+
+        .zan-toast-bar {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 3px;
+            border-radius: 0 0 0 14px;
+            animation: toastBar linear forwards;
+        }
+
+        @keyframes toastBar {
+            from { width: 100%; }
+            to   { width: 0%; }
+        }
+
+        .zan-toast-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .zan-toast-body { flex: 1; min-width: 0; }
+        .zan-toast-title {
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 2px;
+        }
+        .zan-toast-msg {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .zan-toast-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-dim); font-size: 14px; padding: 0 0 0 6px;
+            flex-shrink: 0; transition: color 0.2s;
+        }
+        .zan-toast-close:hover { color: var(--text-main); }
+
+        /* Tipos de toast */
+        .zan-toast.success { border-color: rgba(0,255,136,0.25); }
+        .zan-toast.success .zan-toast-title { color: var(--success); }
+        .zan-toast.success .zan-toast-bar { background: var(--success); }
+        .zan-toast.error   { border-color: rgba(255,70,85,0.25); }
+        .zan-toast.error   .zan-toast-title { color: var(--danger); }
+        .zan-toast.error   .zan-toast-bar   { background: var(--danger); }
+        .zan-toast.warning { border-color: rgba(212,175,55,0.3); }
+        .zan-toast.warning .zan-toast-title { color: var(--primary-gold); }
+        .zan-toast.warning .zan-toast-bar   { background: var(--primary-gold); }
+        .zan-toast.info    { border-color: rgba(0,242,255,0.2); }
+        .zan-toast.info    .zan-toast-title { color: var(--accent-cyan); }
+        .zan-toast.info    .zan-toast-bar   { background: var(--accent-cyan); }
+
+        /* Modal de confirmación */
+        #zan-confirm-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            z-index: 99998;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #zan-confirm-overlay.active { display: flex; }
+
+        .zan-confirm-box {
+            background: var(--bg-card-solid);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px 28px 22px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+            animation: confirmIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes confirmIn {
+            from { opacity: 0; transform: scale(0.88) translateY(20px); }
+            to   { opacity: 1; transform: scale(1)    translateY(0); }
+        }
+
+        .zan-confirm-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .zan-confirm-icon.danger  { background: rgba(255,70,85,0.15);  color: var(--danger); }
+        .zan-confirm-icon.warning { background: rgba(212,175,55,0.15); color: var(--primary-gold); }
+        .zan-confirm-icon.info    { background: rgba(0,242,255,0.1);   color: var(--accent-cyan); }
+
+        .zan-confirm-title {
+            font-size: 15px; font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+        .zan-confirm-msg {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 22px;
+            white-space: pre-line;
+        }
+        .zan-confirm-btns {
+            display: flex; gap: 10px; justify-content: flex-end;
+        }
+        .zan-confirm-btn {
+            padding: 9px 22px;
+            border-radius: 10px;
+            border: none; cursor: pointer;
+            font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            transition: all 0.2s;
+        }
+        .zan-confirm-btn.cancel {
+            background: rgba(255,255,255,0.07);
+            color: var(--text-dim);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .zan-confirm-btn.cancel:hover { background: rgba(255,255,255,0.12); color: var(--text-main); }
+        .zan-confirm-btn.confirm-danger  { background: var(--danger);        color: #fff; }
+        .zan-confirm-btn.confirm-warning { background: var(--primary-gold);  color: #000; }
+        .zan-confirm-btn.confirm-info    { background: var(--accent-cyan);   color: #000; }
+        .zan-confirm-btn.confirm-danger:hover  { filter: brightness(1.12); transform: translateY(-1px); }
+        .zan-confirm-btn.confirm-warning:hover { filter: brightness(1.1);  transform: translateY(-1px); }
+        .zan-confirm-btn.confirm-info:hover    { filter: brightness(1.1);  transform: translateY(-1px); }
+
         /* ===== VARIABLES Y ESTILOS BASE ===== */
         :root {
             --bg-body: #0a0a0c;
@@ -2911,7 +3084,7 @@
         
 		<div class="sidebar-header">
             <img src="Logo/ZAN.png" alt="ZAN" style="width: 35px; height: auto; filter: drop-shadow(0 0 8px rgba(0, 242, 255, 0.4));">
-            <span class="sidebar-title">|Tabla Valores v3.3</span>
+            <span class="sidebar-title">|Tabla Valores v3.4</span>
         </div>
 		
         <div class="nav-section">
@@ -3298,6 +3471,20 @@
         </div>
     </div>
 
+    <!-- CONTENEDOR TOAST + OVERLAY CONFIRMACIÓN -->
+    <div id="zan-toast-container"></div>
+    <div id="zan-confirm-overlay">
+        <div class="zan-confirm-box">
+            <div class="zan-confirm-icon" id="zan-confirm-icon"><i id="zan-confirm-icon-i"></i></div>
+            <div class="zan-confirm-title" id="zan-confirm-title"></div>
+            <div class="zan-confirm-msg"   id="zan-confirm-msg"></div>
+            <div class="zan-confirm-btns">
+                <button class="zan-confirm-btn cancel"  id="zan-confirm-cancel">Cancelar</button>
+                <button class="zan-confirm-btn" id="zan-confirm-ok">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ===== CONFIGURACIÓN FIREBASE =====
         const firebaseConfig = {
@@ -3353,8 +3540,169 @@
         ];
 
         const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
-		
-		// ===== SISTEMA DE TUTORIAL - CONFIGURACIÓN =====
+
+        // ===== SISTEMA DE ESTADO CENTRALIZADO =====
+        const AppState = (() => {
+            const _data = {
+                currentUser:                "",
+                valorCupoBase:              8094,
+                chartInstance:              null,
+                sidebarOpen:                window.innerWidth > 768,
+                tutorialEnCurso:            false,
+                tutorialYaVisto:            false,
+                hayPendientesSinSincronizar:false,
+                sincronizacionEnProgreso:   false,
+                ultimoGuardadoLocal:        null,
+                ultimoGuardadoConfirmado:   null,
+                cambiosSinGuardar:          false,
+                cambiosSinGuardarLocal:     false,
+                proveedores:                [],
+                productosBase:              [],
+                currentFileId:              null,
+                carpetasCache:              {},
+                currentPath:                'root',
+                busquedaActual:             '',
+                ordenActual:                'fecha-desc',
+                vistaArchivosActual:        'list',
+                pasoActual:                 0,
+                tutorialActivo:             null,
+                pasoActualTema:             0,
+                tutorialTemaActivo:         null,
+            };
+            const _subs = {};
+            return {
+                get(key)       { return _data[key]; },
+                set(key, val)  {
+                    _data[key] = val;
+                    if (_subs[key]) _subs[key].forEach(fn => fn(val));
+                    // Keep legacy globals in sync so existing code still works
+                    if (key in window._zanLegacy) window._zanLegacy[key](val);
+                },
+                subscribe(key, fn) {
+                    if (!_subs[key]) _subs[key] = [];
+                    _subs[key].push(fn);
+                },
+                getAll() { return {..._data}; }
+            };
+        })();
+
+        // Legacy shim: write-back to keep named vars alive for functions not yet migrated
+        window._zanLegacy = {
+            currentUser:               v => { currentUser               = v; },
+            valorCupoBase:             v => { valorCupoBase             = v; },
+            chartInstance:             v => { chartInstance             = v; },
+            sidebarOpen:               v => { sidebarOpen               = v; },
+            tutorialEnCurso:           v => { tutorialEnCurso           = v; },
+            tutorialYaVisto:           v => { tutorialYaVisto           = v; },
+            hayPendientesSinSincronizar:v=>{ hayPendientesSinSincronizar= v; },
+            sincronizacionEnProgreso:  v => { sincronizacionEnProgreso  = v; },
+            ultimoGuardadoLocal:       v => { ultimoGuardadoLocal       = v; },
+            ultimoGuardadoConfirmado:  v => { ultimoGuardadoConfirmado  = v; },
+            cambiosSinGuardar:         v => { cambiosSinGuardar         = v; },
+            cambiosSinGuardarLocal:    v => { cambiosSinGuardarLocal    = v; },
+            proveedores:               v => { proveedores               = v; },
+            productosBase:             v => { productosBase             = v; },
+            currentFileId:             v => { currentFileId             = v; },
+        };
+
+        // ===== SISTEMA DE TOAST =====
+        const Toast = (() => {
+            const ICONS = {
+                success: 'fa-solid fa-circle-check',
+                error:   'fa-solid fa-circle-xmark',
+                warning: 'fa-solid fa-triangle-exclamation',
+                info:    'fa-solid fa-circle-info',
+            };
+            const TITLES = { success: 'Listo', error: 'Error', warning: 'Atención', info: 'Info' };
+            let _idSeq = 0;
+
+            function show(msg, tipo = 'info', opts = {}) {
+                const {
+                    title    = opts.title || TITLES[tipo] || 'Aviso',
+                    duration = opts.duration ?? 3800,
+                } = opts;
+
+                const container = document.getElementById('zan-toast-container');
+                const id = 'zt_' + (++_idSeq);
+
+                const el = document.createElement('div');
+                el.className = `zan-toast ${tipo}`;
+                el.id = id;
+                el.innerHTML = `
+                    <span class="zan-toast-icon"><i class="${ICONS[tipo] || ICONS.info}"></i></span>
+                    <div class="zan-toast-body">
+                        <div class="zan-toast-title">${title}</div>
+                        <div class="zan-toast-msg">${msg}</div>
+                    </div>
+                    <button class="zan-toast-close" onclick="Toast._remove('${id}')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <div class="zan-toast-bar" style="animation-duration:${duration}ms"></div>
+                `;
+                container.appendChild(el);
+
+                if (duration > 0) {
+                    setTimeout(() => Toast._remove(id), duration);
+                }
+                return id;
+            }
+
+            function _remove(id) {
+                const el = document.getElementById(id);
+                if (!el || el.classList.contains('hiding')) return;
+                el.classList.add('hiding');
+                setTimeout(() => el.remove(), 320);
+            }
+
+            return {
+                show,
+                _remove,
+                success: (msg, opts) => show(msg, 'success', opts),
+                error:   (msg, opts) => show(msg, 'error',   opts),
+                warning: (msg, opts) => show(msg, 'warning', opts),
+                info:    (msg, opts) => show(msg, 'info',    opts),
+            };
+        })();
+
+        // ===== MODAL DE CONFIRMACIÓN (reemplaza confirm()) =====
+        function zanConfirm(opts) {
+            return new Promise(resolve => {
+                const {
+                    title   = '¿Estás seguro?',
+                    msg     = '',
+                    tipo    = 'danger',
+                    okLabel = 'Confirmar',
+                    cancelLabel = 'Cancelar',
+                } = (typeof opts === 'string') ? { msg: opts } : opts;
+
+                const ICONS = { danger: 'fa-solid fa-trash', warning: 'fa-solid fa-triangle-exclamation', info: 'fa-solid fa-circle-question' };
+                const overlay = document.getElementById('zan-confirm-overlay');
+                document.getElementById('zan-confirm-icon').className    = `zan-confirm-icon ${tipo}`;
+                document.getElementById('zan-confirm-icon-i').className  = ICONS[tipo] || ICONS.danger;
+                document.getElementById('zan-confirm-title').textContent = title;
+                document.getElementById('zan-confirm-msg').textContent   = msg;
+                const okBtn = document.getElementById('zan-confirm-ok');
+                okBtn.textContent = okLabel;
+                okBtn.className   = `zan-confirm-btn confirm-${tipo}`;
+                document.getElementById('zan-confirm-cancel').textContent = cancelLabel;
+
+                overlay.classList.add('active');
+
+                const cleanup = (result) => {
+                    overlay.classList.remove('active');
+                    okBtn.replaceWith(okBtn.cloneNode(true));       // remove old listener
+                    document.getElementById('zan-confirm-cancel').replaceWith(
+                        document.getElementById('zan-confirm-cancel').cloneNode(true)
+                    );
+                    resolve(result);
+                };
+
+                // Re-query after clone
+                document.getElementById('zan-confirm-ok').addEventListener('click',     () => cleanup(true),  { once: true });
+                document.getElementById('zan-confirm-cancel').addEventListener('click', () => cleanup(false), { once: true });
+                overlay.addEventListener('click', e => { if (e.target === overlay) cleanup(false); }, { once: true });
+            });
+        }
         
         const TUTORIAL_STEPS = {
 			
@@ -3923,12 +4271,13 @@
         }
 
         function tutorialSkip() {
-            if (confirm('¿Saltar el tutorial? Puedes volver a verlo desde el botón de ayuda.')) {
-                tutorialEnCurso = false;
-				marcarTutorialVisto();
-                tutorialFinish();
-				
-            }
+            zanConfirm({ title: 'Saltar tutorial', msg: 'Puedes volver a verlo desde el botón ? en cualquier momento.', tipo: 'info', okLabel: 'Saltar' }).then(ok => {
+                if (ok) {
+                    tutorialEnCurso = false;
+                    marcarTutorialVisto();
+                    tutorialFinish();
+                }
+            });
         }
 
         function tutorialFinish() {
@@ -3992,9 +4341,7 @@
 				const contrato = ultimoGuardadoLocal.contrato || "Sin contrato";
 				const mes = ultimoGuardadoLocal.mes || "Sin mes";
 				
-				if (confirm(`🌐 ¡Conexión restablecida!\n\n¿Deseas sincronizar ahora el contrato?\n📄 ${contrato}\n📅 ${mes}\n\nSe subirán los datos guardados localmente.`)) {
-					sincronizarPendientes();
-				}
+				zanConfirm({ title: '🌐 Conexión restablecida', msg: `¿Sincronizar ahora el contrato?\n📄 ${contrato}  📅 ${mes}`, tipo: 'info', okLabel: 'Sincronizar' }).then(ok => { if (ok) sincronizarPendientes(); });
 			} else {
 				// Solo actualizar indicador visual
 				marcarSincronizado();
@@ -4608,17 +4955,17 @@
             const p = pInput.value;
 
             if (!u || !p) {
-                alert("Por favor ingrese usuario y contraseña");
+                Toast.warning("Por favor ingrese usuario y contraseña");
                 return;
             }
 
             if (type === 'register') {
                 db.ref('users/' + u).once('value', s => {
                     if (s.exists()) {
-                        alert("El usuario ya existe");
+                        Toast.warning("El usuario ya existe", { title: "Usuario duplicado" });
                     } else {
                         db.ref('users/' + u).set({ password: p });
-                        alert("Usuario registrado exitosamente");
+                        Toast.success("Usuario registrado exitosamente");
                         toggleAuth(false);
                     }
                 });
@@ -4628,7 +4975,7 @@
                         localStorage.setItem('elite_user', u);
                         iniciarApp(u);
                     } else {
-                        alert("Credenciales incorrectas");
+                        Toast.error("Usuario o contraseña incorrectos");
                     }
                 });
             }
@@ -4665,11 +5012,9 @@
 			const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
 			if (tutorialVisto !== 'true') {
 				setTimeout(() => {
-					if (confirm('¿Deseas ver el tutorial de bienvenida?\n\n(Puedes volver a verlo desde el botón ? en cualquier momento)')) {
-						startTutorial('completo');
-					} else {
-						marcarTutorialVisto();
-					}
+					zanConfirm({ title: 'Tutorial de bienvenida', msg: 'Puedes volver a verlo desde el botón ? en cualquier momento.', tipo: 'info', okLabel: 'Ver tutorial', cancelLabel: 'Ahora no' }).then(ok => {
+						if (ok) { startTutorial('completo'); } else { marcarTutorialVisto(); }
+					});
 				}, 1000);
 			}
 		}
@@ -4702,11 +5047,13 @@
 						mostrarEstadoGuardadoLocal(data.mes, data.contrato);
 					} else {
 						setTimeout(() => {
-							if (confirm(`📤 Datos pendientes de sincronización detectados:\n\n📄 Contrato: ${data.contrato}\n📅 Mes: ${data.mes}\n\n¿Deseas sincronizarlos ahora?`)) {
-								sincronizarPendientes();
-							} else {
-								mostrarEstadoGuardadoLocal(data.mes, data.contrato);
-							}
+							zanConfirm({ title: '📤 Datos pendientes', msg: `Contrato: ${data.contrato}\nMes: ${data.mes}\n\n¿Deseas sincronizarlos ahora?`, tipo: 'warning', okLabel: 'Sincronizar' }).then(ok => {
+								if (ok) {
+									sincronizarPendientes();
+								} else {
+									mostrarEstadoGuardadoLocal(data.mes, data.contrato);
+								}
+							});
 						}, 1500);
 					}
 				} catch (e) {
@@ -4767,11 +5114,13 @@
 
 		function resetTutorialVisto() {
 			if (!currentUser) return;
-			if (confirm('¿Estás seguro de que deseas ver el tutorial de nuevo?\n\nSe mostrará al siguiente inicio de sesión.')) {
-				localStorage.removeItem(`tutorial_visto_${currentUser}`);
-				tutorialYaVisto = false;
-				alert('Tutorial reseteado. Se mostrará en el próximo inicio de sesión.');
-			}
+			zanConfirm({ title: 'Resetear tutorial', msg: 'Se mostrará el tutorial la próxima vez que inicies sesión.', tipo: 'info', okLabel: 'Resetear' }).then(ok => {
+				if (ok) {
+					localStorage.removeItem(`tutorial_visto_${currentUser}`);
+					tutorialYaVisto = false;
+					Toast.info('El tutorial se mostrará en el próximo inicio de sesión.', { title: 'Tutorial reseteado' });
+				}
+			});
 		}
 
         function toggleSidebar() {
@@ -4905,7 +5254,7 @@
             renderizarProveedores();
         }
 
-        function eliminarProveedor(id) {
+        async function eliminarProveedor(id) {
             const prov = proveedores.find(p => p.id === id);
             if (!prov) return;
 
@@ -4915,7 +5264,8 @@
                 ? `¿Eliminar "${prov.nombre}"? Tiene ${productosAsignados} productos asignados que quedarán sin proveedor.`
                 : `¿Eliminar "${prov.nombre}"?`;
 
-            if (!confirm(mensaje)) return;
+            const _okElimProv = await zanConfirm({ title: 'Eliminar proveedor', msg: mensaje, tipo: 'danger', okLabel: 'Eliminar' });
+            if (!_okElimProv) return;
 
             const proveedoresRestantes = proveedores.filter(p => p.id !== id);
             const nuevoProveedorId = proveedoresRestantes.length > 0 ? proveedoresRestantes[0].id : null;
@@ -4938,7 +5288,7 @@
             toggleModal('modal-proveedores');
             initGrid(true);
             marcarCambio();
-            alert('Proveedores guardados correctamente');
+            Toast.success('Proveedores guardados correctamente');
         }
 
         // ===== PRODUCTOS =====
@@ -4990,8 +5340,8 @@
             renderizarProductos();
         }
 
-        function eliminarProducto(index) {
-            if (!confirm('¿Eliminar este producto?')) return;
+        async function eliminarProducto(index) {
+            if (!await zanConfirm({ title: 'Eliminar producto', msg: '¿Eliminar este producto del listado?', tipo: 'danger', okLabel: 'Eliminar' })) return;
             productosBase.splice(index, 1);
             renderizarProductos();
         }
@@ -5000,7 +5350,7 @@
             toggleModal('modal-productos');
             initGrid(true);
             marcarCambio();
-            alert('Productos guardados correctamente');
+            Toast.success('Productos guardados correctamente');
         }
 
         // ===== GRID PRINCIPAL =====
@@ -6792,25 +7142,25 @@
             
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
             
-            alert(`Importación completada exitosamente:\n• ${proveedores.length} proveedores\n• ${productosBase.length} productos\n• Datos de semanas cargados`);
+            Toast.success(`Importación completada: ${proveedores.length} proveedores, ${productosBase.length} productos`, { title: 'Importación exitosa' });
             
         } catch (err) {
             console.error("Error en importación:", err);
-            alert('Error al importar: ' + err.message);
+            Toast.error('Error al importar: ' + err.message);
         }
     };
     
     reader.onerror = function(err) {
         console.error("Error leyendo archivo:", err);
-        alert("Error al leer el archivo");
+        Toast.error("Error al leer el archivo");
     };
     
     reader.readAsBinaryString(input.files[0]);
 }
 
         // ===== LIMPIAR TODO MEJORADO =====
-        function limpiarSemana(s) {
-            if (!confirm(`¿Borrar datos de la SEMANA ${s}?`)) return;
+        async function limpiarSemana(s) {
+            if (!await zanConfirm({ title: `Limpiar Semana ${s}`, msg: 'Se borrarán todos los datos ingresados en esta semana.', tipo: 'danger', okLabel: 'Limpiar' })) return;
             
             productosBase.forEach((p, i) => {
                 const fac = document.getElementById(`fac-${s}-${i}`);
@@ -6828,8 +7178,8 @@
             marcarCambio();
         }
 
-        function limpiarTodo() {
-            if (!confirm('¿Borrar TODOS los datos y empezar de cero?\n\nSe eliminarán:\n• Todos los datos de semanas\n• Días y cupos\n• ID de contrato\n• Configuración actual')) return;
+        async function limpiarTodo() {
+            if (!await zanConfirm({ title: 'Limpiar todo', msg: 'Se eliminarán todos los datos de semanas, días, cupos, contrato y configuración. Esta acción no se puede deshacer.', tipo: 'danger', okLabel: 'Limpiar todo' })) return;
             
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
             
@@ -6868,7 +7218,7 @@
             marcarCambio();
             actualizarResumen();
             
-            alert('Espacio de trabajo limpiado completamente.\n\nPuedes empezar a ingresar nuevos datos.');
+            Toast.success('Espacio de trabajo limpiado. Puedes empezar de nuevo.', { title: 'Limpieza completa' });
         }
 
         // ===== LOCAL STORAGE =====
@@ -6990,7 +7340,7 @@
 			const contrato = document.getElementById('main-contrato').value;
 			
 			if (!contrato || contrato.trim() === "") {
-				alert("Por favor ingresa un ID de contrato antes de guardar");
+				Toast.warning("Ingresa un ID de contrato antes de guardar");
 				document.getElementById('main-contrato').focus();
 				return;
 			}
@@ -7069,7 +7419,7 @@
 				hayPendientesSinSincronizar = false;
 				
 				mostrarEstadoSincronizado();
-				alert(`✅ Guardado exitoso en la nube:\n${mes} - ${contrato}`);
+				Toast.success(`${mes} - ${contrato}`, { title: '✓ Guardado en la nube' });
 				
 				if (document.getElementById('drawer-archivo').classList.contains('open')) {
 					listarCloud();
@@ -7083,7 +7433,7 @@
 				hayPendientesSinSincronizar = true;
 				mostrarEstadoGuardadoLocal(mes, contrato);
 				
-				alert(`⚠️ No se pudo guardar en la nube.\n\nLos datos se han guardado localmente y se sincronizarán automáticamente cuando recuperes la conexión.`);
+				Toast.warning('Datos guardados localmente. Se sincronizarán al recuperar conexión.', { title: 'Sin conexión' });
 			}
 		}
 
@@ -7182,7 +7532,7 @@
 		async function sincronizarPendientes() {
 			if (sincronizacionEnProgreso) return;
 			if (!estaOnline()) {
-				alert("📴 Aún no hay conexión a Internet");
+				Toast.warning("Sin conexión a Internet. Intenta más tarde.");
 				return;
 			}
 			
@@ -7214,7 +7564,7 @@
 				
 				mostrarEstadoSincronizado();
 				
-				alert(`✅ Sincronización completada:\n${data.mes} - ${data.contrato}`);
+				Toast.success(`${data.mes} - ${data.contrato}`, { title: '✓ Sincronizado' });
 				
 				if (document.getElementById('drawer-archivo').classList.contains('open')) {
 					listarCloud();
@@ -7222,7 +7572,7 @@
 				
 			} catch (error) {
 				console.error("Error en sincronización:", error);
-				alert(`❌ Error al sincronizar:\n${error.message}`);
+				Toast.error('Error al sincronizar: ' + error.message);
 				
 				hayPendientesSinSincronizar = true;
 				mostrarEstadoGuardadoLocal(ultimoGuardadoConfirmado?.mes, ultimoGuardadoConfirmado?.contrato);
@@ -7245,7 +7595,7 @@
 			const data = snap.val();
 			
 			if (!data) {
-				alert("Error: No se encontraron datos");
+				Toast.error("No se encontraron datos para este archivo");
 				return;
 			}
 			
@@ -7305,11 +7655,11 @@
 			closeAllDrawers();
 			
 			const nombreArchivo = data.displayName || `${data.mes} - ${data.contrato}`;
-			alert(`Archivo cargado:\n${nombreArchivo}\n\nAhora los cambios se guardarán en este archivo.`);
+			Toast.info(`Ahora editando: ${nombreArchivo}`, { title: 'Archivo cargado' });
 		}
 
         async function borrarArchivo(key) {
-			if (!confirm("¿Eliminar este registro permanentemente?")) return;
+			if (!await zanConfirm({ title: "Eliminar registro", msg: "¿Eliminar este archivo permanentemente? No se puede recuperar.", tipo: "danger", okLabel: "Eliminar" })) return;
 			
 			await db.ref(`files/${currentUser}/${key}`).remove();
 			
