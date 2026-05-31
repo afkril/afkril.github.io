@@ -2524,7 +2524,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
         <div class="mobile-title">
             <span id="headerIcon">🍽️</span>
-            <span id="headerTitle">Lista Mercados |v3.01</span>
+            <span id="headerTitle">Lista Mercados |v3.02</span>
             <span class="monthly-badge" id="monthlyBadge">MENSUAL</span>
             <span class="calendar-badge" id="calendarBadge">CALENDARIO</span>
             <span class="editor-badge" id="editorBadge">EDITOR</span>
@@ -5296,20 +5296,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             // Unidades que no son gramos
             const uNorm = (unidad || '').toLowerCase();
             if (uNorm === 'und') return Math.ceil(gramos) + " ud";
-            // Aceite (ml): 0-700ml → 0.5 Lt | 701-1000ml → 1 Lt
+            // ml: total real en litros a multiples de 0.5
             if (uNorm === 'ml') {
-                if (gramos <= 700) return "0.5 Lt";
-                return "1 Lt";
+                var litros = gramos / 1000;
+                var mediosLt = Math.ceil(litros / 0.5);
+                return (mediosLt * 0.5) + ' Lt';
             }
 
-            // Ajo: si el total en gramos es menor a 250g → 1 Ud (semanal y mensual)
+            // Ajo: si el total en gramos es menor a 250g -> 1 Ud (semanal y mensual)
             const esAjo = nombreProducto && nombreProducto.toLowerCase().trim() === 'ajo';
             if (esAjo && (uNorm === 'gr' || uNorm === 'grs')) {
                 if (gramos < 250) return "1 Ud";
                 return Math.ceil(gramos / 250) + " Ud";
             }
 
-            // Proteínas especiales: mostrar siempre en gramos exactos
+            // Proteinas especiales: mostrar siempre en gramos exactos
             if ((uNorm === 'gr' || uNorm === 'grs') && esProteinaGramosExactos(nombreProducto)) {
                 return Math.round(gramos) + " gr";
             }
@@ -5317,24 +5318,22 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             // Unidades tipo "und 150 cc" etc.
             if (uNorm !== 'gr' && uNorm !== 'grs') return Math.ceil(gramos) + " " + unidad;
 
-            // QUESO: solo media libra (250g) o libra entera (500g)
+            // QUESO: ≤300g → ½ Lb | 301-600g → 1 Lb | >600g → calcular en libras
             const esQueso = nombreProducto && nombreProducto.toLowerCase().includes('queso');
             if (esQueso) {
-                if (gramos <= 250) return "½ Lb";
-                return Math.round(gramos / 500) >= 1 ? Math.round(gramos / 500) + " Lb" : "1 Lb";
+                if (gramos <= 300) return "\u00bd Lb";
+                if (gramos <= 600) return "1 Lb";
+                return Math.round(gramos / 500) + " Lb";
             }
 
-            // Reglas por rango de gramaje
-            if (gramos < 99) return "½ Lb";
-            if (gramos <= 350) return "½ Lb";
-            if (gramos <= 650) return "1 Lb";
-
-            // 651g en adelante: calcular en libras y medias libras
-            const medias = Math.round(gramos / 250); // cuántas mitades
+            // Granos y demas en gr/grs: calcular libras totales acumuladas
+            // Redondear al multiple de 250g (media libra) mas cercano hacia arriba
+            const medias = Math.round(gramos / 250);
+            if (medias <= 0) return "\u00bd Lb";
             const libras = medias / 2;
-            if (libras === 0.5) return "½ Lb";
+            if (libras <= 0.5) return "\u00bd Lb";
             if (libras % 1 === 0) return `${libras} Lb`;
-            return `${Math.floor(libras)} ½ Lb`;
+            return `${Math.floor(libras)} \u00bd Lb`;
         }
 
         function toggleCategory(card, cat) {
@@ -5509,26 +5508,31 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     <td title="${name}"><div class="product-name"><div class="category-badge badge-${item.c}"></div>${displayName}</div></td>
                     <td style="text-align: center;"><span class="amount-badge">${item.u}</span></td>`;
                 
-                let totalSugerido = 0;
+                // TotalSug = SUMA DIRECTA de los valores comerciales mostrados en cada semana
+                // Nunca se suman gramos crudos — se suman los strings ya formateados por semana.
+                let sugeridosSemana = [];
                 let totalEntrega = 0;
-                
+
                 sortedWeeks.forEach(week => {
                     const weekData = item.weeks[week];
                     if (weekData) {
                         const sugerido = formatCompacto(weekData.qTotal, item.u, name);
                         const valorEntrega = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idBase}_w${week}`) || '';
-                        
+
                         tbodyHtml += `<td class="suggested-cell" title="${weekData.qTotal.toFixed(2)} ${item.u}">${sugerido}</td>
 							<td class="entrega-cell"><input type="number" class="input-entrega-mes ${valorEntrega ? 'saved' : ''}" value="${valorEntrega}" step="0.01" oninput="guardarEntregaMensual('${idBase}_w${week}', this.value, this)" placeholder="0" data-week="${week}"></td>`;
-                        
-						totalSugerido += weekData.qTotal;
+
+                        sugeridosSemana.push(sugerido);
                         totalEntrega += parseFloat(valorEntrega) || 0;
                     } else {
                         tbodyHtml += `<td class="suggested-cell">-</td><td class="entrega-cell">-</td>`;
                     }
                 });
+
+                // Sumar los valores comerciales de cada semana
+                const totalSugDisplay = sumarYFormatearSugeridos(sugeridosSemana, item.u, name);
                 
-                tbodyHtml += `<td class="total-suggested">${formatCompacto(totalSugerido, item.u, name)}</td>
+                tbodyHtml += `<td class="total-suggested">${totalSugDisplay}</td>
                              <td class="total-entrega" id="total-entrega-${idBase}">${totalEntrega > 0 ? totalEntrega.toFixed(1) + ' ' + item.u : '-'}</td>
                              <td class="no-print" style="text-align:center;"><button class="detail-btn" onclick="abrirDetalleProducto('${nameEscaped}')">🔍</button></td></tr>`;
             });
@@ -5536,14 +5540,133 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             document.getElementById('monthlyTableBody').innerHTML = tbodyHtml;
         }
 
-        function formatCompacto(cantidad, unidad, nombreProducto) {
+        // sumarYFormatearSugeridos: suma los strings comerciales de cada semana activa
+        // y devuelve el total formateado en la misma unidad comercial.
+        // Soporta: "½ Lb", "1 Lb", "1 ½ Lb", "N Ud", "N ud", "N bolsa(s) 900ml",
+        //          "N und 150ml", "N Lt", "N ml", números sueltos.
+        function sumarYFormatearSugeridos(lista, unidad, nombreProducto) {
+            if (!lista || lista.length === 0) return '-';
+            var activos = lista.filter(function(s){ return s && s !== '-'; });
+            if (activos.length === 0) return '-';
+
+            var uNorm = (unidad || '').toLowerCase();
+
+            // --- Detectar tipo por el primer valor activo ---
+            var muestra = activos[0];
+
+            // BOLSAS de leche
+            if (/bolsa/i.test(muestra)) {
+                var total = activos.reduce(function(acc, s) {
+                    var m = s.match(/^(\d+(?:\.\d+)?)/);
+                    return acc + (m ? parseFloat(m[1]) : 0);
+                }, 0);
+                return Math.round(total) + ' bolsa(s) 900ml';
+            }
+
+            // LITROS (aceite, leche en litros)
+            if (/Lt$/i.test(muestra)) {
+                var total = activos.reduce(function(acc, s) {
+                    var m = s.match(/^(\d+(?:\.\d+)?)\s*Lt/i);
+                    return acc + (m ? parseFloat(m[1]) : 0);
+                }, 0);
+                return total + ' Lt';
+            }
+
+            // ML (leche en ml)
+            if (/ml$/i.test(muestra) && !/bolsa/i.test(muestra)) {
+                var total = activos.reduce(function(acc, s) {
+                    var m = s.match(/^(\d+(?:\.\d+)?)\s*ml/i);
+                    return acc + (m ? parseFloat(m[1]) : 0);
+                }, 0);
+                return Math.round(total) + ' ml';
+            }
+
+            // UNIDADES 150ml (yogurt, kumis)
+            if (/und\s*150/i.test(muestra)) {
+                var total = activos.reduce(function(acc, s) {
+                    var m = s.match(/^(\d+(?:\.\d+)?)/);
+                    return acc + (m ? parseFloat(m[1]) : 0);
+                }, 0);
+                return Math.ceil(total) + ' und 150ml';
+            }
+
+            // UNIDADES GENÉRICAS "N ud" (und simple)
+            if (/^\d+\s*ud$/i.test(muestra)) {
+                var total = activos.reduce(function(acc, s) {
+                    var m = s.match(/^(\d+)/);
+                    return acc + (m ? parseFloat(m[1]) : 0);
+                }, 0);
+                return Math.round(total) + ' ud';
+            }
+
+            // UNIDADES tipo "N Ud" (ajo, etc.)
+            if (/Ud$/i.test(muestra)) {
+                var total = activos.reduce(function(acc, s) {
+                    var m = s.match(/^(\d+(?:\.\d+)?)\s*Ud/i);
+                    return acc + (m ? parseFloat(m[1]) : 0);
+                }, 0);
+                return Math.round(total) + ' Ud';
+            }
+
+            // GRAMOS exactos (proteínas especiales)
+            if (/gr$/i.test(muestra)) {
+                var total = activos.reduce(function(acc, s) {
+                    var m = s.match(/^(\d+(?:\.\d+)?)\s*gr/i);
+                    return acc + (m ? parseFloat(m[1]) : 0);
+                }, 0);
+                return Math.round(total) + ' gr';
+            }
+
+            // LIBRAS: "½ Lb", "1 Lb", "1 ½ Lb", "2 Lb" …
+            if (/Lb/i.test(muestra)) {
+                var totalLb = activos.reduce(function(acc, s) {
+                    // "N ½ Lb"
+                    var mMixed = s.match(/^(\d+)\s*½\s*Lb/i);
+                    if (mMixed) return acc + parseFloat(mMixed[1]) + 0.5;
+                    // "½ Lb"
+                    if (/^½\s*Lb/i.test(s)) return acc + 0.5;
+                    // "N Lb"
+                    var mLb = s.match(/^(\d+(?:\.\d+)?)\s*Lb/i);
+                    if (mLb) return acc + parseFloat(mLb[1]);
+                    return acc;
+                }, 0);
+                if (totalLb <= 0) return '-';
+                // Formatear el total en libras/medias libras
+                if (totalLb % 1 === 0) return totalLb + ' Lb';
+                var ent = Math.floor(totalLb);
+                var dec = totalLb - ent;
+                if (Math.abs(dec - 0.5) < 0.001) {
+                    return (ent > 0 ? ent + ' ' : '') + '½ Lb';
+                }
+                // redondear al 0.5 más cercano
+                var r = Math.round(totalLb * 2) / 2;
+                if (r % 1 === 0) return r + ' Lb';
+                return Math.floor(r) + ' ½ Lb';
+            }
+
+            // Fallback: número suelto
+            var total = activos.reduce(function(acc, s) {
+                var m = s.match(/^(\d+(?:\.\d+)?)/);
+                return acc + (m ? parseFloat(m[1]) : 0);
+            }, 0);
+            return total > 0 ? (Math.round(total * 10) / 10) + ' ' + unidad : '-';
+        }
+
+                function formatCompacto(cantidad, unidad, nombreProducto) {
 			if (unidad === 'und') return Math.round(cantidad) + ' ud';
-			// Aceite (ml): 0-700ml → 0.5 Lt | 701-1000ml → 1 Lt
-			if (unidad === 'ml') {
-				if (cantidad <= 700) return "0.5 Lt";
-				return "1 Lt";
-			}
 			const uNorm = (unidad || '').toLowerCase();
+			// Leche: usar modo seleccionado (debe ir ANTES del bloque genérico ml)
+			if (nombreProducto && nombreProducto.toLowerCase().trim() === 'leche') {
+				var modo = (document.getElementById('leche-modo-mensual')||{}).value || 'ml';
+				return formatLecheConModo(cantidad, modo);
+			}
+			// Aceite u otros productos en ml: mostrar total real en litros
+			if (uNorm === 'ml') {
+				var litros = cantidad / 1000;
+				// Redondear a múltiplos de 0.5 L comerciales
+				var medios = Math.ceil(litros / 0.5);
+				return (medios * 0.5) + ' Lt';
+			}
 			// Ajo: si el total en gramos es menor a 250g → 1 Ud
 			const esAjo = nombreProducto && nombreProducto.toLowerCase().trim() === 'ajo';
 			if (esAjo && (uNorm === 'gr' || uNorm === 'grs')) {
@@ -5551,11 +5674,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 				return Math.ceil(cantidad / 250) + " Ud";
 			}
 			if (uNorm !== 'gr' && uNorm !== 'grs') return Math.round(cantidad) + ' ' + unidad;
-			// Leche: usar modo seleccionado
-			if (nombreProducto && nombreProducto.toLowerCase().trim() === 'leche') {
-				var modo = (document.getElementById('leche-modo-mensual')||{}).value || 'ml';
-				return formatLecheConModo(cantidad, modo);
-			}
 			// Yogurt: usar modo seleccionado
 			if (nombreProducto && nombreProducto.toLowerCase().trim() === 'yogurt') {
 				var modoY = (document.getElementById('yogurt-modo-mensual')||{}).value || 'und150';
