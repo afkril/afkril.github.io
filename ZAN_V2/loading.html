@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAN - Cargando</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0c 0%, #1a1a2e 50%, #0a0a0c 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #e2e8f0;
+        }
+
+        .loader-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid transparent;
+        }
+
+        .ring-1 {
+            width: 280px; height: 280px;
+            border-top-color: #d4af37;
+            border-right-color: #d4af37;
+            animation: spin 2s linear infinite;
+        }
+
+        .ring-2 {
+            width: 240px; height: 240px;
+            border-bottom-color: #00f2ff;
+            border-left-color: #00f2ff;
+            animation: spin-reverse 1.5s linear infinite;
+        }
+
+        .ring-3 {
+            width: 200px; height: 200px;
+            border-top-color: rgba(212,175,55,0.5);
+            animation: spin 3s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin-reverse { to { transform: rotate(-360deg); } }
+
+        .logo-wrapper {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(212,175,55,0.5));
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+
+        .loading-text {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: fade-text 1.5s ease-in-out infinite;
+        }
+
+        .loading-subtext {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        @keyframes fade-text {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        .progress-container {
+            width: 250px;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #d4af37, #00f2ff);
+            width: 0%;
+            transition: width 0.4s ease;
+            box-shadow: 0 0 10px rgba(212,175,55,0.5);
+        }
+
+        /* Partículas */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(212,175,55,0.5);
+            border-radius: 50%;
+            animation: float 10s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .version {
+            position: absolute;
+            bottom: 20px;
+            font-size: 10px;
+            color: #475569;
+        }
+
+        .connection-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4655;
+            animation: status-pulse 2s infinite;
+        }
+
+        .status-dot.online { background: #00ff88; }
+
+        @keyframes status-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Fade out al terminar */
+        body.fade-out {
+            animation: fadeOut 0.6s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="connection-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Verificando conexión...</span>
+    </div>
+
+    <div class="loader-container">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <div class="logo-wrapper">
+            <!-- Reemplaza con la ruta correcta de tu logo -->
+            <img src="Logo/ZAN--.png" alt="ZAN" class="logo"
+                 onerror="this.src='Logo/ZAN.png'; this.onerror=null;">
+        </div>
+    </div>
+
+    <div class="loading-text" id="loadingText">Inicializando sistema</div>
+    <div class="loading-subtext" id="loadingSubtext">Cargando módulos...</div>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="version">v3.3 | ZAN Tabla de Valores</div>
+
+    <script>
+        /* ── Partículas ── */
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = Math.random() * 10 + 's';
+            p.style.animationDuration = (10 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(p);
+        }
+
+        /* ── Estado de conexión ── */
+        const statusDot  = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+
+        function updateConnectionStatus(online) {
+            statusDot.classList.toggle('online', online);
+            statusText.textContent = online ? 'Conectado' : 'Modo offline';
+        }
+
+        updateConnectionStatus(navigator.onLine);
+        window.addEventListener('online',  () => updateConnectionStatus(true));
+        window.addEventListener('offline', () => updateConnectionStatus(false));
+
+        /* ── Secuencia de carga ── */
+        const loadingStates = [
+            { text: 'Inicializando sistema',      subtext: 'Cargando módulos locales...',  pct: 10,  delay: 0    },
+            { text: 'Verificando base de datos',  subtext: 'LocalStorage y caché...',       pct: 35,  delay: 500  },
+            { text: 'Conectando con Firebase',    subtext: 'Sincronización en la nube...',  pct: 60,  delay: 1100 },
+            { text: 'Cargando configuración',     subtext: 'Proveedores y productos...',    pct: 80,  delay: 1700 },
+            { text: 'Listo',                      subtext: 'Iniciando aplicación...',       pct: 100, delay: 2200 }
+        ];
+
+        const loadingText    = document.getElementById('loadingText');
+        const loadingSubtext = document.getElementById('loadingSubtext');
+        const progressBar    = document.getElementById('progressBar');
+
+        loadingStates.forEach(state => {
+            setTimeout(() => {
+                loadingText.textContent    = state.text;
+                loadingSubtext.textContent = state.subtext;
+                progressBar.style.width    = state.pct + '%';
+            }, state.delay);
+        });
+
+        /* ── Redirigir a index.html tras terminar la animación ── */
+        setTimeout(() => {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 650);
+        }, 2800);
+    </script>
+</body>
+</html>

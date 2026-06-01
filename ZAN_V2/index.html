@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZAN | Tabla de Valores</title>
+
+    <!-- ── Librerías externas ── -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ── Estilos propios ── -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- ===== SISTEMA DE TUTORIAL ===== -->
+    <div class="tutorial-overlay" id="tutorialOverlay"></div>
+    <div class="tutorial-spotlight" id="tutorialSpotlight"></div>
+
+    <div class="tutorial-tooltip" id="tutorialTooltip">
+        <div class="tutorial-header">
+            <div class="tutorial-icon" id="tutorialIcon">
+                <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div class="tutorial-title" id="tutorialTitle">Bienvenido</div>
+            </div>
+            <div class="tutorial-step" id="tutorialStep">1/10</div>
+        </div>
+        <div class="tutorial-content" id="tutorialContent">Contenido del tutorial...</div>
+        <div class="tutorial-tip" id="tutorialTip" style="display: none;">
+            <i class="fa-solid fa-star"></i>
+            <span id="tutorialTipText">Tip especial aquí</span>
+        </div>
+        <div class="tutorial-controls">
+            <button class="tutorial-btn tutorial-btn-secondary" onclick="tutorialPrev()" id="btnPrev">
+                <i class="fa-solid fa-chevron-left"></i> Ant
+            </button>
+            <button class="tutorial-btn tutorial-btn-skip" onclick="tutorialSkip()" id="btnSkip">Saltar</button>
+            <button class="tutorial-btn tutorial-btn-primary" onclick="tutorialNext()" id="btnNext">
+                Sig <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button class="tutorial-btn tutorial-btn-primary hidden" onclick="tutorialFinish()" id="btnFinish" style="background: var(--success);">
+                <i class="fa-solid fa-check"></i> Fin
+            </button>
+        </div>
+        <div class="tutorial-progress" id="tutorialProgress"></div>
+    </div>
+
+    <!-- Botón flotante de ayuda -->
+    <div class="help-button pulse" id="helpButton" onclick="toggleHelpMenu()">
+        <i class="fa-solid fa-question"></i>
+    </div>
+
+    <!-- Menú de ayuda contextual -->
+    <div class="help-menu" id="helpMenu">
+        <div class="help-menu-item" onclick="startTutorial('completo')">
+            <i class="fa-solid fa-play"></i><span>Tutorial completo</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('plegable')">
+            <i class="fa-solid fa-folder-tree"></i><span>Sistema Plegable</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('precios')">
+            <i class="fa-solid fa-tags"></i><span>Precios por Semana</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('proveedores')">
+            <i class="fa-solid fa-truck-field"></i><span>Proveedores</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('productos')">
+            <i class="fa-solid fa-list-check"></i><span>Productos</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('cl')">
+            <i class="fa-solid fa-leaf"></i><span>¿Qué es CL?</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('resumen')">
+            <i class="fa-solid fa-chart-pie"></i><span>Resumen y análisis</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('exportar')">
+            <i class="fa-solid fa-file-export"></i><span>Exportar datos</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('contabilidad')">
+            <i class="fa-solid fa-calculator"></i><span>Exportar contabilidad</span>
+        </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px;">
+            <div class="help-menu-item" onclick="resetTutorialVisto()" style="color: var(--text-dim); font-size: 10px;">
+                <i class="fa-solid fa-rotate-left"></i><span>Resetear tutorial</span>
+            </div>
+        </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
+            <div class="help-menu-item" onclick="toggleHelpMenu()" style="color: var(--text-dim);">
+                <i class="fa-solid fa-xmark"></i><span>Cerrar menú</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== AUTH SCREEN ===== -->
+    <div id="auth-screen">
+        <div class="auth-box" id="login-form">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="Logo/ZAN--.png" alt="ZAN Logo"
+                     style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(212,175,55,0.5));">
+            </div>
+            <h2 style="color:var(--primary-gold); margin-bottom:20px;">ZAN TABLA DE VALORES</h2>
+            <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">
+                <i class="fa-solid fa-moon" id="theme-icon"></i>
+                <span id="theme-label">Oscuro</span>
+            </button>
+            <input type="text"     id="user-login" placeholder="Usuario">
+            <input type="password" id="pass-login" placeholder="Contraseña">
+            <button class="btn btn-gold btn-block" style="margin-top:15px;" onclick="handleAuth('login')">
+                <i class="fa-solid fa-right-to-bracket"></i> INGRESAR
+            </button>
+            <p onclick="toggleAuth(true)" style="font-size:12px; margin-top:15px; cursor:pointer; color:var(--accent-cyan);">
+                ¿No tiene cuenta? Registrese aquí
+            </p>
+        </div>
+
+        <div class="auth-box hidden" id="reg-form">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="Logo/ZAN--.png" alt="ZAN Logo"
+                     style="width: 250px; height: auto; filter: drop-shadow(0 0 10px rgba(212,175,55,0.5));">
+            </div>
+            <h2 style="color:var(--primary-gold); margin-bottom:20px;">NUEVO REGISTRO</h2>
+            <input type="text"     id="user-reg" placeholder="Usuario">
+            <input type="password" id="pass-reg" placeholder="Contraseña">
+            <button class="btn btn-cyan btn-block" style="margin-top:15px;" onclick="handleAuth('register')">
+                <i class="fa-solid fa-user-plus"></i> CREAR CUENTA
+            </button>
+            <p onclick="toggleAuth(false)" style="font-size:12px; margin-top:15px; cursor:pointer; color:var(--primary-gold);">
+                Volver al login
+            </p>
+        </div>
+    </div>
+
+    <!-- ===== SIDEBAR ===== -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <img src="Logo/ZAN.png" alt="ZAN"
+                 style="width:35px; height:auto; filter:drop-shadow(0 0 8px rgba(0,242,255,0.4));">
+            <span class="sidebar-title">|Tabla Valores v3.3</span>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Guardar y Cargar</div>
+            <div class="nav-grid">
+                <a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
+                    <i class="fa-solid fa-cloud"></i><span>Guardar</span>
+                </a>
+                <a class="nav-item" id="nav-cargar" onclick="toggleDrawer('archivo'); toggleSidebarMobile();">
+                    <i class="fa-solid fa-folder-open"></i><span>Cargar</span>
+                </a>
+                <a class="nav-item full-width" id="nav-sincronizar"
+                   onclick="sincronizarPendientes(); toggleSidebarMobile();" style="display:none;">
+                    <i class="fa-solid fa-rotate" style="color:#d4af37;"></i>
+                    <span style="color:#d4af37;">Sincronizar pendientes</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Análisis</div>
+            <div class="nav-grid">
+                <a class="nav-item" id="nav-resumen" onclick="toggleDrawer('resumen'); toggleSidebarMobile();">
+                    <i class="fa-solid fa-chart-pie"></i><span>Resumen y Gráficos</span>
+                </a>
+                <a class="nav-item" id="nav-contabilidad" onclick="toggleDrawer('contabilidad'); toggleSidebarMobile();">
+                    <i class="fa-solid fa-calculator"></i><span>Exportar Contabilidad</span>
+                </a>
+                <a class="nav-item" id="nav-distribuidora" onclick="toggleDrawer('distribuidora'); toggleSidebarMobile();">
+                    <i class="fa-solid fa-sack-dollar"></i><span>Valores Distribuidora</span>
+                </a>
+                <a class="nav-item" id="nav-facturas" onclick="toggleDrawer('facturas'); toggleSidebarMobile();">
+                    <i class="fa-solid fa-file-invoice"></i><span>Validar Facturas</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Configuración</div>
+            <div class="nav-grid">
+                <a class="nav-item" id="nav-proveedores" onclick="toggleModal('modal-proveedores'); toggleSidebarMobile();">
+                    <i class="fa-solid fa-truck-field"></i><span>Gestionar Proveedores</span>
+                </a>
+                <a class="nav-item" id="nav-productos" onclick="toggleModal('modal-productos'); toggleSidebarMobile();">
+                    <i class="fa-solid fa-list-check"></i><span>Listado de Productos</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Gestión de Datos</div>
+            <div class="nav-grid">
+                <a class="nav-item" id="nav-exportar" onclick="exportarCompleto(); toggleSidebarMobile();">
+                    <i class="fa-solid fa-file-csv"></i><span>Exportar Excel</span>
+                </a>
+                <a class="nav-item" id="nav-importar"
+                   onclick="document.getElementById('import-input').click(); toggleSidebarMobile();">
+                    <i class="fa-solid fa-file-import"></i><span>Importar Excel</span>
+                </a>
+                <input type="file" id="import-input" class="hidden"
+                       accept=".csv,.xlsx,.xls" onchange="importarExcel(this)">
+            </div>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Acciones</div>
+            <div class="nav-grid">
+                <a class="nav-item" id="nav-tutorial" onclick="toggleHelpMenu(); toggleSidebarMobile();">
+                    <i class="fa-solid fa-circle-question"></i><span>Ayuda / Tutorial</span>
+                </a>
+                <a class="nav-item danger" onclick="limpiarTodo(); toggleSidebarMobile();">
+                    <i class="fa-solid fa-trash-can"></i><span>Limpiar Todo</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-mini-profile">
+                <div class="user-avatar" id="user-avatar">U</div>
+                <div>
+                    <div class="user-name" id="sidebar-username">Usuario</div>
+                    <div class="sync-status">
+                        <span class="sync-dot" id="sync-dot"></span>
+                        <span id="sync-text">Sincronizado</span>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-block" onclick="toggleTheme()"
+                style="margin-bottom:8px; background:var(--primary-gold-subtle); border:1px solid var(--border-color);
+                       color:var(--primary-gold); gap:8px; justify-content:center; padding:7px 12px;
+                       border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase;
+                       display:flex; align-items:center; cursor:pointer; transition:all 0.3s;">
+                <i id="theme-icon" class="fa-solid fa-moon"></i>
+                <span id="theme-label">Modo Oscuro</span>
+            </button>
+            <button class="btn btn-danger btn-block" onclick="cerrarSesion()">
+                <i class="fa-solid fa-right-from-bracket"></i> CERRAR SESIÓN
+            </button>
+        </div>
+    </nav>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-wrapper">
+        <div class="drawer-overlay" id="overlay" onclick="closeAllDrawers()"></div>
+
+        <!-- TOP BAR -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i><span>Menú</span>
+                </button>
+                <img src="Logo/ZAN.png" alt="ZAN Logo"
+                     style="height:30px; width:auto; filter:drop-shadow(0 0 5px var(--accent-cyan)); margin-right:10px;">
+                <div class="contract-info" id="contract-info">
+                    <select id="main-mes" onchange="marcarCambio()">
+                        <option>Enero</option><option>Febrero</option><option>Marzo</option>
+                        <option>Abril</option><option>Mayo</option><option>Junio</option>
+                        <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+                        <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+                    </select>
+                    <input type="text" id="main-contrato" placeholder="ID Contrato" oninput="marcarCambio()">
+                </div>
+            </div>
+
+            <div class="sync-indicator-top"
+                 style="display:flex; align-items:center; gap:8px; margin-right:15px; padding:5px 12px;
+                        background:rgba(0,0,0,0.3); border-radius:20px; border:1px solid var(--border-color);">
+                <span class="sync-dot" id="sync-dot-top"
+                      style="width:10px; height:10px; border-radius:50%; background:var(--success);
+                             box-shadow:0 0 8px var(--success); transition:all 0.3s;"></span>
+                <span id="sync-text-top" style="font-size:10px; color:var(--text-dim); font-weight:500;">Sincronizado</span>
+            </div>
+
+            <div class="week-selector" id="week-selector">
+                <a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
+                    <i class="fa-solid fa-cloud"></i><span>Guardar</span>
+                </a>
+                <small>Semanas:</small>
+                <select id="num-semanas" onchange="cambiarSemanas()">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+        </header>
+
+        <div id="app-content">
+            <div class="semanas-tabs-wrapper">
+                <div class="semanas-tabs-nav" id="semanas-tabs-nav"></div>
+                <div class="semanas-panel-container" id="main-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DRAWERS ===== -->
+
+    <!-- Archivos -->
+    <div class="drawer" id="drawer-archivo" style="border-left:2px solid var(--primary-gold);">
+        <div class="file-manager-header">
+            <h3 style="color:var(--primary-gold); margin:0; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-folder-open"></i>
+                <span id="file-manager-title">REGISTROS EN NUBE</span>
+            </h3>
+            <div class="file-manager-actions">
+                <button class="btn btn-sm" onclick="toggleVistaArchivos()" title="Cambiar vista">
+                    <i class="fa-solid fa-grid-2" id="btn-vista-icon"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+        <div class="breadcrumbs-container" id="breadcrumbs">
+            <span class="breadcrumb-item active" onclick="navegarA('root')">
+                <i class="fa-solid fa-house"></i> Inicio
+            </span>
+        </div>
+        <div class="file-manager-toolbar">
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="buscar-archivos" placeholder="Buscar archivos..."
+                       oninput="filtrarArchivos(this.value)">
+            </div>
+            <select id="filtro-orden" onchange="aplicarFiltroOrden()" class="select-filtro">
+                <option value="fecha-desc">Más recientes primero</option>
+                <option value="fecha-asc">Más antiguos primero</option>
+                <option value="nombre-asc">Nombre A-Z</option>
+                <option value="nombre-desc">Nombre Z-A</option>
+                <option value="monto-desc">Mayor monto</option>
+            </select>
+        </div>
+        <div id="vista-carpetas" class="folders-grid"></div>
+        <div id="vista-archivos" class="files-container" style="display:none;">
+            <div class="folder-info-header" id="folder-info"></div>
+            <div id="lista-archivos-detalle" class="files-list"></div>
+        </div>
+        <div id="empty-state" class="empty-state" style="display:none;">
+            <i class="fa-regular fa-folder-open" style="font-size:48px; color:var(--text-dim); opacity:0.5;"></i>
+            <p>No hay archivos guardados</p>
+            <button class="btn btn-gold btn-sm" onclick="closeAllDrawers()">
+                <i class="fa-solid fa-plus"></i> Crear nuevo archivo
+            </button>
+        </div>
+        <div id="loading-files" class="loading-state" style="display:none;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size:24px; color:var(--primary-gold);"></i>
+            <p>Cargando archivos...</p>
+        </div>
+    </div>
+
+    <!-- Resumen -->
+    <div class="drawer" id="drawer-resumen" style="border-left:2px solid var(--accent-cyan);">
+        <div class="file-manager-header" style="border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:15px;">
+            <h3 style="color:var(--accent-cyan); margin:0; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-chart-pie"></i> ANÁLISIS DETALLADO
+            </h3>
+            <button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="summary-content"></div>
+        <canvas id="chartGasto" style="margin-top:20px; max-height:200px;"></canvas>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:15px;">
+            <button class="btn btn-cyan" onclick="exportarCompleto()">
+                <i class="fa-solid fa-download"></i> EXCEL
+            </button>
+            <button class="btn btn-gold" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> IMPRIMIR
+            </button>
+        </div>
+    </div>
+
+    <!-- Contabilidad -->
+    <div class="drawer" id="drawer-contabilidad" style="border-left:2px solid var(--success);">
+        <div class="file-manager-header" style="border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:15px;">
+            <h3 style="color:var(--success); margin:0; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-calculator"></i> EXPORTACIÓN CONTABLE
+            </h3>
+            <button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="accounting-content"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:15px;">
+            <button class="btn btn-cyan" onclick="exportarContabilidadCSV()">
+                <i class="fa-solid fa-file-csv"></i> CSV
+            </button>
+            <button class="btn btn-gold" onclick="exportarContabilidadExcel()">
+                <i class="fa-solid fa-file-excel"></i> EXCEL
+            </button>
+        </div>
+    </div>
+
+    <!-- Distribuidora -->
+    <div class="drawer" id="drawer-distribuidora" style="border-left:2px solid var(--primary-gold);">
+        <div class="file-manager-header" style="border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:15px;">
+            <h3 style="color:var(--primary-gold); margin:0; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-sack-dollar"></i> VALORES DISTRIBUIDORA
+            </h3>
+            <button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <p style="color:var(--text-dim); font-size:11px; margin-bottom:15px;">
+            Selecciona las semanas para sumar sus valores de distribuidora:
+        </p>
+        <div id="distribuidora-semanas"></div>
+        <div class="total-distribuidora" id="total-distribuidora">$0</div>
+        <div style="margin-top:15px; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px;">
+            <small style="color:var(--text-dim);">
+                <i class="fa-solid fa-info-circle"></i>
+                La distribuidora es el valor restante del presupuesto después de compras
+            </small>
+        </div>
+    </div>
+
+    <!-- Facturas -->
+    <div class="drawer" id="drawer-facturas" style="border-left:2px solid var(--accent-cyan);">
+        <div class="file-manager-header" style="border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:15px;">
+            <h3 style="color:var(--accent-cyan); margin:0; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-file-invoice"></i> VALIDACIÓN DE FACTURAS
+            </h3>
+            <button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <p style="color:var(--text-dim); font-size:11px; margin-bottom:15px;">
+            Resumen agrupado por proveedor, factura y productos:
+        </p>
+        <div id="facturas-content"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:15px;">
+            <button class="btn btn-cyan" onclick="exportarFacturasCSV()">
+                <i class="fa-solid fa-file-csv"></i> CSV
+            </button>
+            <button class="btn btn-gold" onclick="exportarFacturasExcel()">
+                <i class="fa-solid fa-file-excel"></i> EXCEL
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== MODALES ===== -->
+
+    <!-- Proveedores -->
+    <div class="modal" id="modal-proveedores">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-truck-field"></i> GESTIÓN DE PROVEEDORES
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="toggleModal('modal-proveedores')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:15px;">
+                <label style="font-size:10px; color:var(--accent-cyan);">VALOR RACIÓN HCB ($):</label>
+                <input type="number" id="cfg-valor-cupo" value="8094" onchange="marcarCambio()"
+                    style="width:100%; background:rgba(0,0,0,0.3); border:1px solid #444; color:white;
+                           padding:8px; border-radius:4px; margin-top:5px;">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-size:11px; color:var(--text-dim);">Ordene los proveedores:</span>
+                <button class="btn btn-cyan btn-sm" onclick="agregarProveedor()">
+                    <i class="fa-solid fa-plus"></i> NUEVO PROVEEDOR
+                </button>
+            </div>
+            <div class="providers-list" id="lista-proveedores"></div>
+            <button class="btn btn-gold btn-block" onclick="guardarProveedores()">
+                <i class="fa-solid fa-check"></i> GUARDAR Y APLICAR CAMBIOS
+            </button>
+        </div>
+    </div>
+
+    <!-- Productos -->
+    <div class="modal" id="modal-productos">
+        <div class="modal-container" style="max-width:800px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-list-check"></i> LISTADO DE PRODUCTOS BASE
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="toggleModal('modal-productos')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-size:11px; color:var(--text-dim);">
+                    Total: <span id="total-productos" style="color:var(--accent-cyan); font-weight:bold;">0</span> productos
+                </span>
+                <button class="btn btn-cyan btn-sm" onclick="agregarProducto()">
+                    <i class="fa-solid fa-plus"></i> AGREGAR PRODUCTO
+                </button>
+            </div>
+            <div id="lista-productos-config" style="max-height:400px; overflow-y:auto;"></div>
+            <button class="btn btn-gold btn-block" style="margin-top:15px;" onclick="guardarProductos()">
+                <i class="fa-solid fa-check"></i> GUARDAR Y REGENERAR TABLAS
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== TOAST + CONFIRMACIÓN ===== -->
+    <div id="zan-toast-container"></div>
+    <div id="zan-confirm-overlay">
+        <div class="zan-confirm-box">
+            <div class="zan-confirm-icon" id="zan-confirm-icon">
+                <i id="zan-confirm-icon-i"></i>
+            </div>
+            <div class="zan-confirm-title" id="zan-confirm-title"></div>
+            <div class="zan-confirm-msg"   id="zan-confirm-msg"></div>
+            <div class="zan-confirm-btns">
+                <button class="zan-confirm-btn cancel" id="zan-confirm-cancel">Cancelar</button>
+                <button class="zan-confirm-btn"        id="zan-confirm-ok">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JAVASCRIPT PROPIO ===== -->
+    <script src="js/app.js"></script>
+
+</body>
+</html>
