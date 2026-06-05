@@ -2509,7 +2509,7 @@
         </div>
         <div class="mobile-title">
             <span id="headerIcon">🍽️</span>
-            <span id="headerTitle">Lista Mercados |v3.02</span>
+            <span id="headerTitle">Lista Mercados |V3.03</span>
             <span class="monthly-badge" id="monthlyBadge">MENSUAL</span>
             <span class="calendar-badge" id="calendarBadge">CALENDARIO</span>
             <span class="editor-badge" id="editorBadge">EDITOR</span>
@@ -2524,7 +2524,7 @@
         
         <div class="logo">
             <div class="logo-icon" id="logoIcon">🍽️</div>
-            <span>Lista Mercados |v3.02</span>
+            <span>Lista Mercados |V3.03</span>
         </div>
 
         <div class="nav-section">
@@ -6412,7 +6412,11 @@
 				tipo: tipo,
 				detalles: detalles,
 				url: window.location.href,
-				userAgent: navigator.userAgent
+				userAgent: navigator.userAgent,
+				// Vincular al usuario autenticado
+				uid: (window.currentUser && window.currentUser.uid) || null,
+				usuarioNombre: (window.currentUser && (window.currentUser.displayName || window.currentUser.email)) || 'Anónimo',
+				usuarioEmail: (window.currentUser && window.currentUser.email) || null
 			};
 
 			// GUARDAR PRIMERO EN FIREBASE (fuente principal)
@@ -6499,7 +6503,10 @@
 				const data = [];
 				if (snapshot.exists()) {
 					snapshot.forEach((childSnapshot) => {
-						data.push(childSnapshot.val());
+						// Guardar la key de Firebase para poder eliminar individualmente
+						const val = childSnapshot.val();
+						val._fbKey = childSnapshot.key;
+						data.push(val);
 					});
 				}
 				
@@ -6720,8 +6727,10 @@
 								<div style="font-size: 0.65rem; color: var(--text-secondary);">${soBrief}</div>
 							</td>
 							<td style="padding: 0.5rem 0.75rem; max-width: 140px;">
-								<div style="font-size: 0.7rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${reg.deviceId || ''}">${(reg.deviceId || 'N/A').substring(0, 18)}${(reg.deviceId || '').length > 18 ? '…' : ''}</div>
-								<div style="font-size: 0.65rem; color: var(--text-secondary);">${reg.deviceInfo?.pantalla || ''} ${reg.deviceInfo?.timezone ? '• ' + reg.deviceInfo.timezone.split('/').pop() : ''}</div>
+								<div style="font-size: 0.75rem; font-weight: 600; color: #a78bfa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${reg.usuarioNombre || reg.uid || ''}">
+									${reg.usuarioNombre ? '👤 ' + (reg.usuarioNombre.length > 16 ? reg.usuarioNombre.substring(0,16)+'…' : reg.usuarioNombre) : '<span style="color:var(--text-secondary);font-size:0.65rem;">Anónimo</span>'}
+								</div>
+								<div style="font-size: 0.65rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${reg.deviceId || ''}">${(reg.deviceId || 'N/A').substring(0, 14)}…</div>
 							</td>
 							<td style="padding: 0.5rem 0.75rem;">
 								<span style="background: rgba(99,102,241,0.12); color: #818cf8; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; white-space: nowrap;">
@@ -6746,11 +6755,17 @@
 							<td style="padding: 0.5rem 0.75rem; font-size: 0.7rem; color: var(--text-secondary); max-width: 130px;">
 								${detallesTexto || '—'}
 							</td>
-							<td style="padding: 0.5rem 0.75rem; text-align: center;">
-								<button onclick="verDetalleRegistro(${regIdx})" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; border-radius: 0.375rem; cursor: pointer; padding: 0.2rem 0.5rem; font-size: 0.7rem; transition: all 0.2s;" 
+							<td style="padding: 0.5rem 0.75rem; text-align: center; white-space: nowrap;">
+								<button onclick="verDetalleRegistro(${regIdx})" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; border-radius: 0.375rem; cursor: pointer; padding: 0.2rem 0.5rem; font-size: 0.7rem; transition: all 0.2s; margin-right: 0.2rem;" 
 									onmouseover="this.style.background='rgba(99,102,241,0.3)'" 
 									onmouseout="this.style.background='rgba(99,102,241,0.15)'">
 									🔍
+								</button>
+								<button onclick="eliminarRegistroIndividual('${reg._fbKey || reg.id}')" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #f87171; border-radius: 0.375rem; cursor: pointer; padding: 0.2rem 0.5rem; font-size: 0.7rem; transition: all 0.2s;"
+									onmouseover="this.style.background='rgba(239,68,68,0.25)'"
+									onmouseout="this.style.background='rgba(239,68,68,0.1)'"
+									title="Eliminar este registro">
+									🗑️
 								</button>
 							</td>
 						</tr>
@@ -7018,8 +7033,8 @@
 
 		async function limpiarRegistros() {
 			try {
-				await mostrarConfirm('Se eliminarán TODOS los registros de auditoría de Firebase. Esta acción es irreversible.', {
-					titulo: '⚠️ Eliminar registros de auditoría', icono: '🔥', btnOk: 'Sí, eliminar todo'
+				await mostrarConfirm('Se eliminarán TODOS los registros de auditoría y el historial de ingresos de Firebase. Esta acción es irreversible.', {
+					titulo: '⚠️ Eliminar todos los registros', icono: '🔥', btnOk: 'Sí, eliminar todo'
 				});
 			} catch { return; }
 			
@@ -7029,8 +7044,12 @@
 			}
 			
 			try {
-				// Eliminar todo el nodo de auditoría
+				// Eliminar auditoría
 				await window.firebaseSet(getAuditoriaRef(), null);
+				// Eliminar historial de ingresos
+				await window.firebaseSet(window.firebaseRef(window.firebaseDB, 'user_logins'), null);
+				// Eliminar historial de actas
+				await window.firebaseSet(window.firebaseRef(window.firebaseDB, 'actas_generadas'), null);
 				
 				// Limpiar variables locales
 				registrosAuditoria = [];
@@ -7038,11 +7057,50 @@
 				localStorage.removeItem('smartMenu_auditoria_pendientes');
 				
 				cargarRegistrosAdmin();
-				showToast('Registros eliminados de Firebase', 'success');
+				showToast('Registros, ingresos y actas eliminados de Firebase', 'success');
 			} catch (error) {
 				console.error('Error eliminando:', error);
 				showToast('Error al eliminar: ' + error.message, 'error');
 			}
+		}
+
+		// Eliminar un registro individual de auditoría
+		async function eliminarRegistroIndividual(firebaseKey) {
+			try {
+				await mostrarConfirm('Se eliminará este registro de auditoría de forma permanente.', {
+					titulo: '¿Eliminar registro?', icono: '🗑️', btnOk: 'Sí, eliminar'
+				});
+			} catch { return; }
+			if (!window.firebaseDB) { showToast('Firebase no disponible', 'error'); return; }
+			try {
+				await window.firebaseSet(window.firebaseRef(window.firebaseDB, 'auditoria/' + firebaseKey), null);
+				showToast('Registro eliminado', 'success');
+			} catch(e) {
+				showToast('Error al eliminar: ' + e.message, 'error');
+			}
+		}
+
+		// Registrar generación de acta en Firebase
+		async function registrarActa(datos) {
+			if (!window.firebaseDB) return;
+			try {
+				const key = Date.now() + '_' + Math.random().toString(36).substr(2,6);
+				const actaRef = window.firebaseRef(window.firebaseDB, 'actas_generadas/' + key);
+				await window.firebaseSet(actaRef, {
+					timestamp: Date.now(),
+					fecha: new Date().toISOString(),
+					fechaLocal: new Date().toLocaleString('es-CO'),
+					uid: (window.currentUser && window.currentUser.uid) || null,
+					usuarioNombre: (window.currentUser && (window.currentUser.displayName || window.currentUser.email)) || 'Anónimo',
+					tipo: datos.tipo || 'individual',
+					fuente: datos.fuente || 'semanal',
+					semana: datos.semana || '',
+					categoria: datos.categoria || '',
+					totalActas: datos.totalActas || 1,
+					udsNombre: datos.udsNombre || '',
+					regional: typeof currentRegional !== 'undefined' ? currentRegional : ''
+				});
+			} catch(e) { console.error('Error registrando acta:', e); }
 		}
 
 		// Cerrar modales con ESC (mejorado - cubre TODOS los modales)
@@ -9735,6 +9793,15 @@ document.addEventListener('keydown', function(e) {
             var fijos = tabGetParamsFijos();
             var params = Object.assign({}, fijos, uds, {observaciones:'', recibeNombre: uds.responsable||'', recibeDoc: uds.documentoId||''});
             await generarActaExcelXML(items, params, null);
+            // Registrar generación de acta individual
+            registrarActa({
+                tipo: 'individual',
+                fuente: fp.fuente,
+                semana: document.getElementById('sem') ? document.getElementById('sem').value : '',
+                categoria: fijos.modalidad || '',
+                totalActas: 1,
+                udsNombre: uds.nombre || uds.codigo || ''
+            });
         }
 
         async function tabGenerarTodasLasActas() {
@@ -9755,6 +9822,14 @@ document.addEventListener('keydown', function(e) {
                 } catch(e) { showToast('Error en UDS ' + (i+1) + ': ' + e.message, 'error'); }
             }
             showToast('✅ ' + directorioUDS.length + ' actas generadas exitosamente', 'success');
+            // Registrar generación masiva de actas
+            registrarActa({
+                tipo: 'masiva',
+                fuente: fp.fuente,
+                semana: document.getElementById('sem') ? document.getElementById('sem').value : '',
+                categoria: fijos.modalidad || '',
+                totalActas: directorioUDS.length
+            });
         }
 
         function sincronizarConPanelFlotante() {
