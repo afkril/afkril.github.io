@@ -1,0 +1,500 @@
+
+
+    <!-- ================================================================ -->
+    <!-- SISTEMA ACTAS: Template b64 + Generador XML + Directorio Import  -->
+    <!-- ================================================================ -->
+
+    <!-- MODAL DIRECTORIO: importar lista de UDS -->
+    <div id="directorio-overlay" onclick="cerrarDirectorio()" style="
+        display:none; position:fixed; inset:0; z-index:1300;
+        background:rgba(0,0,0,0.7); backdrop-filter:blur(5px);"></div>
+
+    <div id="directorio-panel" style="
+        display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+        z-index:1301; width:min(97vw,820px); max-height:90vh; overflow-y:auto;
+        background:var(--bg-card); border:1px solid var(--border); border-radius:1rem;
+        box-shadow:0 30px 80px rgba(0,0,0,0.6); font-family:'Inter',sans-serif;">
+
+        <!-- Header -->
+        <div style="position:sticky;top:0;z-index:2;background:var(--bg-card);
+            border-bottom:1px solid var(--border);padding:1rem 1.25rem;
+            display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+                <div style="width:36px;height:36px;border-radius:0.5rem;
+                    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+                    display:flex;align-items:center;justify-content:center;font-size:1.1rem;">📂</div>
+                <div>
+                    <div style="font-weight:700;font-size:1rem;color:var(--text-primary);">Directorio de UDS</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">Importar lista · Generar actas masivas</div>
+                </div>
+            </div>
+            <button onclick="cerrarDirectorio()" style="background:rgba(255,255,255,0.06);
+                border:1px solid var(--border);color:var(--text-secondary);border-radius:0.375rem;
+                padding:0.3rem 0.7rem;cursor:pointer;font-size:1rem;font-family:inherit;">✕</button>
+        </div>
+
+        <div style="padding:1.25rem;">
+
+            <!-- Import section -->
+            <div style="margin-bottom:1rem;padding:0.875rem;background:rgba(99,102,241,0.07);
+                border:1px solid rgba(99,102,241,0.2);border-radius:0.625rem;">
+                <div style="font-size:0.75rem;font-weight:600;color:#818cf8;margin-bottom:0.6rem;
+                    text-transform:uppercase;letter-spacing:0.05em;">📥 Importar Directorio</div>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+                    <label style="display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;
+                        background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);
+                        border-radius:0.375rem;cursor:pointer;font-size:0.8rem;color:#818cf8;font-weight:600;
+                        font-family:inherit;transition:all 0.2s;"
+                        onmouseover="this.style.background='rgba(99,102,241,0.25)'"
+                        onmouseout="this.style.background='rgba(99,102,241,0.15)'">
+                        📄 Subir CSV/Excel
+                        <input type="file" id="dir-file-input" accept=".csv,.xlsx,.xls" 
+                            style="display:none;" onchange="importarDirectorio(this)">
+                    </label>
+                    <button onclick="cargarDirectorioEjemplo()" style="padding:0.45rem 0.9rem;
+                        background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);
+                        color:#f59e0b;border-radius:0.375rem;cursor:pointer;font-size:0.8rem;
+                        font-weight:600;font-family:inherit;transition:all 0.2s;"
+                        onmouseover="this.style.background='rgba(245,158,11,0.22)'"
+                        onmouseout="this.style.background='rgba(245,158,11,0.12)'">
+                        ✨ Ejemplo
+                    </button>
+                    <button onclick="abrirEditorManual()" style="padding:0.45rem 0.9rem;
+                        background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);
+                        color:#10b981;border-radius:0.375rem;cursor:pointer;font-size:0.8rem;
+                        font-weight:600;font-family:inherit;transition:all 0.2s;"
+                        onmouseover="this.style.background='rgba(16,185,129,0.2)'"
+                        onmouseout="this.style.background='rgba(16,185,129,0.1)'">
+                        ✏️ Ingresar manualmente
+                    </button>
+                    <button onclick="descargarPlantillaDirectorio()" style="padding:0.45rem 0.9rem;
+                        background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.25);
+                        color:#06b6d4;border-radius:0.375rem;cursor:pointer;font-size:0.8rem;
+                        font-weight:600;font-family:inherit;transition:all 0.2s;"
+                        onmouseover="this.style.background='rgba(6,182,212,0.2)'"
+                        onmouseout="this.style.background='rgba(6,182,212,0.1)'"
+                        title="Descarga una plantilla Excel con las columnas requeridas">
+                        📥 Plantilla Excel
+                    </button>
+                    <span style="font-size:0.7rem;color:var(--text-secondary);">
+                        Columnas: Responsable, Teléfono, Entidad, Unidad, Código, Cobertura, Documento Identidad
+                    </span>
+                </div>
+            </div>
+
+            <!-- Editor manual (oculto por defecto) -->
+            <div id="dir-editor-manual" style="display:none;margin-bottom:1rem;padding:0.875rem;
+                background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:0.625rem;">
+                <div style="font-size:0.75rem;font-weight:600;color:#10b981;margin-bottom:0.75rem;
+                    text-transform:uppercase;letter-spacing:0.05em;">✏️ Agregar UDS manualmente</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.625rem;">
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Responsable UDS *</label>
+                        <input id="man-responsable" type="text" placeholder="Nombre completo..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Teléfono</label>
+                        <input id="man-telefono" type="text" placeholder="Ej: 3001234567"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Entidad Administradora</label>
+                        <input id="man-entidad" type="text" placeholder="Nombre entidad..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Unidad de Servicio</label>
+                        <input id="man-unidad" type="text" placeholder="Nombre UDS..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Código Cuentame</label>
+                        <input id="man-codigo" type="text" placeholder="Ej: 280101..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Documento de identidad</label>
+                        <input id="man-documentoId" type="text" placeholder="Ej: CC 1234567890"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Cobertura (Nº niños)</label>
+                        <input id="man-cobertura" type="number" min="0" placeholder="Ej: 13"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div style="display:flex;align-items:flex-end;">
+                        <button onclick="agregarUDSManual()" style="width:100%;padding:0.4rem 0.8rem;
+                            background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;
+                            border-radius:0.375rem;cursor:pointer;font-size:0.8rem;font-weight:700;font-family:inherit;">
+                            ➕ Agregar UDS
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos fijos del Acta -->
+            <div style="margin-bottom:1rem;padding:0.875rem;background:rgba(6,182,212,0.05);
+                border:1px solid rgba(6,182,212,0.2);border-radius:0.625rem;">
+                <div style="font-size:0.75rem;font-weight:600;color:#06b6d4;margin-bottom:0.6rem;
+                    text-transform:uppercase;letter-spacing:0.05em;">⚙️ Datos Fijos del Acta (aplican a todas)</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;">
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Regional</label>
+                        <input id="dir-regional" type="text" value="NEIVA"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Centro Zonal</label>
+                        <input id="dir-centrozonal" type="text" value="NEIVA"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Modalidad</label>
+                        <input id="dir-modalidad" type="text" value="HCB"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Servicio</label>
+                        <input id="dir-servicio" type="text" value="COMUNITARIO"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Municipio</label>
+                        <input id="dir-municipio" type="text" value="NEIVA"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Fecha Solicitud</label>
+                        <input id="dir-fecha" type="date"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                </div>
+                <div style="margin-top:0.5rem;">
+                    <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Fuente de productos</label>
+                    <select id="dir-fuente" style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                        <option value="semanal">Lista Semanal (generada)</option>
+                        <option value="mensual">Lista Mensual (generada)</option>
+                    </select>
+                </div>
+                <div style="margin-top:0.5rem;">
+                    <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Leche: mostrar como</label>
+                    <select id="dir-leche-modo" style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                        <option value="litros">Litros (L)</option>
+                        <option value="bolsas900">Bolsas 900 ml (unidades)</option>
+						<option value="ml">Mililitros (ml)</option>
+                    </select>
+                </div>
+                <div style="margin-top:0.5rem;">
+                    <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Yogurt: mostrar como</label>
+                    <select id="dir-yogurt-modo" style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                        <option value="und150">Unidades 150ml</option>
+                        <option value="litros">Litros (L)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Datos de quien entrega (aplica a todas las actas del directorio) -->
+            <div style="margin-bottom:1rem;padding:0.875rem;background:rgba(99,102,241,0.05);
+                border:1px solid rgba(99,102,241,0.2);border-radius:0.625rem;">
+                <div style="font-size:0.75rem;font-weight:600;color:#818cf8;margin-bottom:0.6rem;
+                    text-transform:uppercase;letter-spacing:0.05em;">✍️ Datos de quien entrega los alimentos (aplica a todas)</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Nombre legible quien entrega</label>
+                        <input id="dir-entrega-nombre" type="text" placeholder="Nombre completo..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Documento de identidad</label>
+                        <input id="dir-entrega-doc" type="text" placeholder="Ej: CC 1234567890"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Entidad Administradora o Prestadora</label>
+                        <input id="dir-entrega-entidad" type="text" placeholder="Nombre de la entidad..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Número de NIT</label>
+                        <input id="dir-entrega-nit" type="text" placeholder="Ej: 900.123.456-7"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                </div>
+                <div style="margin-top:0.4rem;font-size:0.62rem;color:var(--text-secondary);">
+                    Estos datos aparecerán en el apartado de firmas de cada acta generada desde el directorio
+                </div>
+            </div>
+
+            <!-- Vista previa del directorio -->
+            <div id="dir-preview-container" style="display:none;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+                    <div style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">
+                        📋 Vista Previa — <span id="dir-count">0</span> UDS
+                    </div>
+                    <div style="display:flex;gap:0.375rem;">
+                        <button onclick="limpiarDirectorio()" style="padding:0.3rem 0.7rem;
+                            background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);
+                            color:#ef4444;border-radius:0.375rem;cursor:pointer;font-size:0.72rem;font-family:inherit;">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+                <div style="border:1px solid var(--border);border-radius:0.5rem;overflow:hidden;margin-bottom:1rem;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.72rem;">
+                        <thead>
+                            <tr style="background:var(--bg-dark);">
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">#</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Responsable</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Teléfono</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Unidad Servicio</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Código</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Doc. Identidad</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:center;color:#10b981;font-weight:600;border-bottom:1px solid var(--border);">Cobertura</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:center;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dir-preview-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Botones de generación -->
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <button onclick="generarTodasLasActas()" style="
+                        flex:1;display:flex;align-items:center;justify-content:center;gap:0.5rem;
+                        padding:0.75rem 1rem;border:none;border-radius:0.625rem;cursor:pointer;
+                        background:linear-gradient(135deg,#059669,#10b981);color:#fff;
+                        font-weight:700;font-size:0.9rem;font-family:inherit;
+                        box-shadow:0 3px 14px rgba(5,150,105,0.4);">
+                        🟢 Generar TODAS las Actas (<span id="dir-count-btn">0</span> Excel)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estado vacío -->
+            <div id="dir-empty-state" style="text-align:center;padding:2rem;color:var(--text-secondary);">
+                <div style="font-size:2rem;margin-bottom:0.5rem;">📂</div>
+                <div style="font-size:0.875rem;">Importe un CSV o ingrese UDS manualmente</div>
+                <div style="font-size:0.75rem;margin-top:0.25rem;">
+                    El CSV debe tener columnas: Responsable, Teléfono, Entidad, Unidad, Código, Cobertura, Documento Identidad
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL ACTA INDIVIDUAL (am-* fields) -->
+    <div id="acta-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:9990;backdrop-filter:blur(4px);" onclick="cerrarModalActa()"></div>
+    <div id="acta-modal-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+        background:var(--bg-card);border:1px solid var(--border);border-radius:1rem;
+        width:min(680px,96vw);max-height:92vh;overflow-y:auto;z-index:9991;
+        box-shadow:0 25px 60px rgba(0,0,0,0.55);padding:1.5rem;">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+                <span style="font-size:1.3rem;">📋</span>
+                <div>
+                    <div style="font-weight:700;font-size:1rem;color:var(--text-primary);">Generar Acta Excel</div>
+                    <div style="font-size:0.65rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">
+                        Fuente: <span id="acta-modal-fuente-badge" style="color:#10b981;font-weight:700;">Lista Semanal</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="cerrarModalActa()" style="background:transparent;border:1px solid var(--border);
+                color:var(--text-secondary);border-radius:0.375rem;cursor:pointer;font-size:1rem;
+                padding:0.2rem 0.6rem;line-height:1.4;">✕</button>
+        </div>
+        <input type="hidden" id="acta-modal-fuente-val" value="semanal">
+
+        <!-- Grid de campos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">
+
+            <!-- Responsable -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Nombre Responsable UDS</label>
+                <input id="am-responsable" type="text" placeholder="Nombre completo..."
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Teléfono -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Teléfono</label>
+                <input id="am-telefono" type="text" placeholder="Ej: 3001234567"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Entidad Administradora (nombre, NO cédula) -->
+            <div style="grid-column:1/-1;">
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">
+                    Nombre Entidad Administradora / Prestador Directo del Servicio
+                    <span style="color:#10b981;font-size:0.6rem;"> (nombre completo, no cédula)</span>
+                </label>
+                <input id="am-entidad" type="text" placeholder="Nombre de la entidad administradora..."
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Unidad de Servicio -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Nombre Unidad de Servicio</label>
+                <input id="am-unidad" type="text" placeholder="Nombre UDS..."
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Código -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Código Cuentame UDS</label>
+                <input id="am-codigo" type="text" placeholder="Ej: 280101..."
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Municipio -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Municipio</label>
+                <input id="am-municipio" type="text" value="NEIVA"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Centro Zonal -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Centro Zonal</label>
+                <input id="am-centrozonal" type="text" value="NEIVA"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Modalidad -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Modalidad</label>
+                <input id="am-modalidad" type="text" value="HCB"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Servicio -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Tipo de Servicio</label>
+                <input id="am-servicio" type="text" value="COMUNITARIO"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Fecha Solicitud -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Fecha de Solicitud</label>
+                <input id="am-fecha-solicitud" type="date"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Cobertura -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Cobertura (niños) — 0 = usar la lista</label>
+                <input id="am-cobertura" type="number" min="0" value="0"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+        </div>
+
+        <!-- Fila Leche + Yogurt -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;
+            padding:0.75rem;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:0.5rem;">
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#10b981;text-transform:uppercase;display:block;margin-bottom:0.25rem;">🥛 Leche: mostrar como</label>
+                <select id="am-leche-modo"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;">
+                    <option value="litros">Litros (L)</option>
+                    <option value="bolsas900">Bolsas 900 ml (unidades)</option>
+                    <option value="ml">Mililitros (ml)</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#10b981;text-transform:uppercase;display:block;margin-bottom:0.25rem;">🍶 Yogurt: mostrar como</label>
+                <select id="am-yogurt-modo"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;">
+                    <option value="und150">Unidades 150 ml</option>
+                    <option value="litros">Litros (L)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div style="margin-bottom:0.75rem;">
+            <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Observaciones</label>
+            <textarea id="am-observaciones" rows="2" placeholder="Observaciones del acta..."
+                style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;
+                resize:vertical;box-sizing:border-box;"></textarea>
+        </div>
+
+        <!-- Datos de quien entrega -->
+        <div style="margin-bottom:1rem;padding:0.75rem;background:rgba(99,102,241,0.05);
+            border:1px solid rgba(99,102,241,0.2);border-radius:0.5rem;">
+            <div style="font-size:0.7rem;font-weight:700;color:#818cf8;margin-bottom:0.6rem;text-transform:uppercase;letter-spacing:0.05em;">
+                ✍️ Datos de quien entrega los alimentos
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                <div>
+                    <label style="font-size:0.6rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.2rem;">Nombre</label>
+                    <input id="am-entrega-nombre" type="text" placeholder="Nombre completo..."
+                        style="width:100%;padding:0.4rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:0.6rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.2rem;">Documento de Identidad</label>
+                    <input id="am-entrega-doc" type="text" placeholder="Ej: CC 1234567890"
+                        style="width:100%;padding:0.4rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:0.6rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.2rem;">Entidad Administradora (quien entrega)</label>
+                    <input id="am-entrega-entidad" type="text" placeholder="Nombre entidad..."
+                        style="width:100%;padding:0.4rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:0.6rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.2rem;">Número de NIT</label>
+                    <input id="am-entrega-nit" type="text" placeholder="Ej: 900.123.456-7"
+                        style="width:100%;padding:0.4rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;box-sizing:border-box;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones acción -->
+        <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
+            <button onclick="cerrarModalActa()"
+                style="padding:0.5rem 1.2rem;background:transparent;border:1px solid var(--border);
+                color:var(--text-secondary);border-radius:0.5rem;cursor:pointer;font-family:inherit;font-size:0.85rem;">
+                Cancelar
+            </button>
+            <button onclick="generarActaDesdeModal()"
+                style="padding:0.5rem 1.4rem;background:linear-gradient(135deg,#059669,#10b981);
+                color:#fff;border:none;border-radius:0.5rem;cursor:pointer;font-family:inherit;
+                font-size:0.85rem;font-weight:700;box-shadow:0 3px 12px rgba(5,150,105,0.4);">
+                📥 Generar Acta Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL ACTA (para una sola UDS) -->
+    
+
+    <style>

@@ -1,0 +1,62 @@
+    <!-- ==================== MODAL GUARDAR LISTA ==================== -->
+    <div id="saveListOverlay" onclick="cerrarModalGuardar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;backdrop-filter:blur(4px);"></div>
+    <div id="saveListModal" role="dialog" aria-modal="true" aria-labelledby="saveListModal-title" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9001;background:var(--bg-card);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;width:min(480px,95vw);box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+        
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;">
+            <div>
+                <h3 style="font-size:1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:0.4rem;">💾 Guardar Lista</h3>
+                <div id="sm-tipo-badge" style="font-size:0.65rem;margin-top:0.15rem;color:var(--text-secondary);"></div>
+            </div>
+            <button onclick="cerrarModalGuardar()" style="background:none;border:none;color:var(--text-secondary);font-size:1.1rem;cursor:pointer;padding:0.2rem;">✕</button>
+        </div>
+
+        <!-- Preview del nombre generado -->
+        <div class="sm-preview">
+            <div style="font-size:0.6rem;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.2rem;">Vista previa del nombre</div>
+            <div id="sm-nombre-preview" style="font-size:1.05rem;font-weight:800;color:var(--text-primary);letter-spacing:.03em;">—</div>
+        </div>
+
+        <!-- Campos -->
+        <div class="sm-grid">
+            <div>
+                <label class="sm-label">Semana</label>
+                <select class="sm-input" id="sm-semana" onchange="smActualizarPreview()">
+                    <option value="S1">S1 — Semana 1</option>
+                    <option value="S2">S2 — Semana 2</option>
+                    <option value="S3">S3 — Semana 3</option>
+                    <option value="S4">S4 — Semana 4</option>
+                    <option value="SM">SM — Mensual</option>
+                </select>
+            </div>
+            <div>
+                <label class="sm-label">Mes</label>
+                <select class="sm-input" id="sm-mes" onchange="smActualizarPreview()">
+                    <option value="ENERO">Enero</option><option value="FEBRERO">Febrero</option>
+                    <option value="MARZO">Marzo</option><option value="ABRIL">Abril</option>
+                    <option value="MAYO">Mayo</option><option value="JUNIO">Junio</option>
+                    <option value="JULIO">Julio</option><option value="AGOSTO">Agosto</option>
+                    <option value="SEPTIEMBRE">Septiembre</option><option value="OCTUBRE">Octubre</option>
+                    <option value="NOVIEMBRE">Noviembre</option><option value="DICIEMBRE">Diciembre</option>
+                </select>
+            </div>
+            <div>
+                <label class="sm-label">Regional</label>
+                <input class="sm-input" id="sm-regional-display" type="text" readonly style="opacity:.6;cursor:default;">
+            </div>
+            <div>
+                <label class="sm-label">N° Contrato</label>
+                <input class="sm-input" id="sm-contrato" type="text" placeholder="Ej: 665" oninput="smActualizarPreview()" maxlength="20">
+            </div>
+        </div>
+        <div style="margin-bottom:0.9rem;">
+            <label class="sm-label">Nota adicional (opcional)</label>
+            <input class="sm-input" id="sm-nota" type="text" placeholder="Observación breve..." maxlength="60" oninput="smActualizarPreview()">
+        </div>
+
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+            <button class="sm-btn sm-btn-cancel" onclick="cerrarModalGuardar()">Cancelar</button>
+            <button class="sm-btn sm-btn-primary" onclick="smConfirmarGuardar()">💾 Guardar</button>
+        </div>
+    </div>
+    <!-- ============================================================ -->
+

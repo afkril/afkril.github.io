@@ -1,0 +1,24 @@
+    @keyframes confirmFadeIn { from { opacity:0; transform:scale(.95) translateY(-8px); } to { opacity:1; transform:none; } }
+    #confirm-dialog-cancel:hover { background:var(--border); }
+    #confirm-dialog-ok:hover { opacity:.88; }
+    /* Tooltip visible cuando sidebar está colapsado */
+    .sidebar.collapsed .nav-item { position:relative; }
+    .sidebar.collapsed .nav-item:hover::after {
+        content: attr(title);
+        position: absolute;
+        left: calc(100% + 12px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 0.35rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+        z-index: 9999;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+        pointer-events: none;
+    }
+    </style>
