@@ -1,0 +1,396 @@
+    </style>
+</head>
+<body class="reg-neiva" data-theme="dark">
+    <div class="mobile-header">
+        <div class="hamburger" onclick="toggleSidebar()" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="mobile-title">
+            <span id="headerIcon">🍽️</span>
+            <span id="headerTitle">Lista Mercados |v3.04</span>
+            <span class="monthly-badge" id="monthlyBadge">MENSUAL</span>
+            <span class="calendar-badge" id="calendarBadge">CALENDARIO</span>
+            <span class="editor-badge" id="editorBadge">EDITOR</span>
+        </div>
+        <div style="width: 20px;"></div>
+    </div>
+
+    <div class="overlay" onclick="toggleSidebar()" id="overlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-toggle" onclick="toggleSidebarCollapse()" title="Colapsar/Expandir"></div>
+        
+        <div class="logo">
+            <div class="logo-icon" id="logoIcon">🍽️</div>
+            <span>Lista Mercados |v3.04</span>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Principal</div>
+            <button class="nav-item active" onclick="showSection('calculator')" title="Minutas Semanales" data-section="calculator">
+                <span>🍽️</span> <span>Minutas Semanales</span>
+            </button>
+            <button class="nav-item" onclick="showSection('monthly')" title="Listado Mensual" data-section="monthly">
+                <span>📅</span> <span>Listado Mensual</span>
+            </button>
+			<button class="nav-item" onclick="showSection('directorio')" title="Directorio UDS" data-section="directorio">
+                <span>📂</span>
+                <span>Directorio UDS</span>
+            </button>
+            
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Herramientas</div>
+            <button class="nav-item" onclick="showSection('proveedores')" title="Proveedores" data-section="proveedores">
+                <span>🏭</span>
+                <span>Proveedores</span>
+            </button>
+            <button class="nav-item" onclick="showSection('editor')" title="Editor de Gramajes" data-section="editor">
+                <span>⚖️</span> <span>Editor de Gramajes</span>
+            </button>
+            <button class="nav-item" onclick="showSection('calendar')" title="Calendario Festivos" data-section="calendar">
+                <span>📆</span> <span>Calendario Festivos</span>
+            </button>
+            <a href="https://afkril.github.io/MINUTA_PATRON.html" class="nav-item" target="_blank" rel="noopener noreferrer" onclick="toggleSidebar()" data-section="Minuta">
+               <span>👁️</span> <span>Ver Minuta Patron</span>
+            </a>
+			<button class="nav-item" onclick="showSection('saved')" title="Listas Guardadas" data-section="calendar">
+                <span>💾</span> <span>Guardadas</span>
+                <span id="savedCount"  style="margin-left: auto; background: var(--primary-neiva); color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.6875rem;">0</span>
+            </button>
+			<button class="nav-item" onclick="abrirAdmin()" title="Panel Administrador" data-section="admin" style="border-left-color: #ef4444;">
+				<span>🔐</span> <span>Admin</span>
+			</button>
+        </div>
+
+		<div class="regional-selector" style="flex-direction: column; gap: 0.5rem;">
+			<div style="display: flex; gap: 0.25rem;">
+				<button class="reg-btn active" onclick="cambiarRegional('neiva')" id="btnNeiva" style="flex: 1;">NEIVA</button>
+				<button class="reg-btn" onclick="cambiarRegional('gaitana')" id="btnGaitana" style="flex: 1;">GAITANA</button>
+			</div>
+			<div style="display: flex; gap: 0.25rem;">
+				<button class="reg-btn active" onclick="cambiarModalidad('hcb')" id="btnHCB" style="flex: 1; font-size: 0.7rem;">HCB</button>
+				<button class="reg-btn" onclick="cambiarModalidad('cdi')" id="btnCDI" style="flex: 1; font-size: 0.7rem;">CDI</button>
+				<button class="reg-btn" onclick="cambiarModalidad('hi')" id="btnHI" style="flex: 1; font-size: 0.7rem;">HI</button>
+				
+			</div>
+		</div>
+		
+        <div class="theme-section">
+            <span class="theme-label">Modo Oscuro</span>
+            <div class="theme-toggle" onclick="toggleTheme()"></div>
+        </div>
+
+        <!-- User info integrado en el sidebar -->
+        <div id="user-info-bar" style="
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1rem 0.75rem;
+            border-top: 1px solid var(--border);
+            gap: 0.5rem;
+        ">
+            <div style="display:flex;align-items:center;gap:0.5rem;min-width:0;">
+                <div id="user-avatar-letter" style="
+                    flex-shrink:0;
+                    width: 28px; height: 28px; border-radius: 50%;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 0.75rem; font-weight: 700;
+                ">U</div>
+                <span id="user-display-name" style="font-size:0.78rem;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+            </div>
+            <button onclick="doLogout()" style="
+                flex-shrink:0;
+                background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+                color: #ef4444; padding: 0.25rem 0.6rem; border-radius: 0.375rem;
+                cursor: pointer; font-size: 0.72rem; font-weight: 600; transition: all 0.2s;
+                white-space: nowrap;
+            " title="Cerrar sesión">↩ Salir</button>
+        </div>
+		
+		
+		<!-- PANEL ADMINISTRATIVO (Oculto por defecto) -->
+		<div id="admin-panel" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 1000; overflow-y: auto;">
+			<div style="max-width: 1400px; margin: 0 auto; padding: 1rem;">
+				<!-- Header Admin -->
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 2px solid rgba(99,102,241,0.3); background: linear-gradient(135deg, rgba(99,102,241,0.05), transparent); border-radius: 0.5rem; padding: 1rem;">
+					<div>
+						<h2 style="font-size: 1.4rem; margin: 0; display: flex; align-items: center; gap: 0.5rem; color: #818cf8;">
+							🛡️ Panel Administrativo <span style="font-size: 0.65rem; background: #6366f1; color: white; padding: 0.2rem 0.5rem; border-radius: 1rem; font-weight: 700; letter-spacing: 0.05em;">v2.0</span>
+						</h2>
+						<p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0.25rem 0 0 0;">
+							Auditoría de accesos • Generación de listas • Monitoreo en tiempo real
+						</p>
+					</div>
+					<div style="display: flex; gap: 0.5rem; align-items: center;">
+						<div id="admin-firebase-indicator" style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--text-secondary);">
+							<span id="admin-fb-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #6b7280; display: inline-block;"></span>
+							<span id="admin-fb-text">Conectando...</span>
+						</div>
+						<button class="btn btn-secondary" onclick="refrescarAdmin()" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">
+							🔄 Actualizar
+						</button>
+						<button class="btn btn-danger" onclick="cerrarAdmin()" style="font-size: 0.75rem;">
+							✕ Cerrar
+						</button>
+					</div>
+				</div>
+
+				<!-- Login Admin -->
+				<div id="admin-login" style="max-width: 400px; margin: 3rem auto; background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid rgba(99,102,241,0.3); box-shadow: 0 0 40px rgba(99,102,241,0.1);">
+					<div style="text-align: center; margin-bottom: 1.5rem;">
+						<div style="font-size: 3rem; margin-bottom: 0.5rem;">🛡️</div>
+						<h3 style="margin: 0; color: #818cf8;">Acceso Administrativo</h3>
+						<p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">Ingrese su clave para continuar</p>
+					</div>
+					<div class="form-group" style="margin-bottom: 1rem;">
+						<label class="form-label">Clave de acceso</label>
+						<input type="password" id="admin-clave" class="form-input" style="width: 100%;" placeholder="••••••" onkeypress="if(event.key==='Enter')validarAdmin()">
+					</div>
+					<button class="btn btn-primary btn-block" onclick="validarAdmin()" style="width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+						<span>🔓</span> Acceder al Panel
+					</button>
+					<div id="admin-error" style="color: var(--danger); text-align: center; margin-top: 1rem; display: none; background: rgba(239,68,68,0.1); padding: 0.5rem; border-radius: 0.375rem; font-size: 0.875rem;">
+						⚠️ Clave incorrecta. Intente nuevamente.
+					</div>
+				</div>
+
+				<!-- Dashboard Admin (Oculto inicialmente) -->
+				<div id="admin-dashboard" style="display: none;">
+
+					<!-- === FILA 1: STATS PRINCIPALES === -->
+					<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #6366f1; position: relative; overflow: hidden;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Total Histórico</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #818cf8;" id="stat-total-historico">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);">registros</div>
+							<div style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1.75rem; opacity: 0.15;">📊</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #f59e0b;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Accesos Hoy</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #fbbf24;" id="stat-total-hoy">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-hoy-fecha">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #2563eb;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Regional Neiva</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #60a5fa;" id="stat-neiva">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-neiva-pct">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #059669;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Regional Gaitana</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #34d399;" id="stat-gaitana">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-gaitana-pct">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #8b5cf6;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Listas Mensuales</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #a78bfa;" id="stat-mensual">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-mensual-pct">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #ec4899;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">IPs Únicas</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #f472b6;" id="stat-ips-unicas">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);">dispositivos</div>
+						</div>
+					</div>
+
+					<!-- === FILA 2: ESTADÍSTICAS SECUNDARIAS === -->
+					<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+						<!-- Top IPs -->
+						<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; border: 1px solid var(--border);">
+							<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem; display: flex; align-items: center; gap: 0.375rem;">
+								🌐 Top IPs más activas
+							</div>
+							<div id="admin-top-ips" style="font-size: 0.75rem;">
+								<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem;">Cargando...</div>
+							</div>
+						</div>
+						<!-- Por Modalidad -->
+						<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; border: 1px solid var(--border);">
+							<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem;">
+								📋 Por Modalidad
+							</div>
+							<div id="admin-por-modalidad" style="font-size: 0.75rem;">
+								<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem;">Cargando...</div>
+							</div>
+						</div>
+						<!-- Actividad reciente -->
+						<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; border: 1px solid var(--border);">
+							<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem;">
+								⚡ Actividad últimos 7 días
+							</div>
+							<div id="admin-actividad-reciente" style="font-size: 0.75rem;">
+								<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem;">Cargando...</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- === FILA 3: FILTROS === -->
+					<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; margin-bottom: 0.75rem; border: 1px solid var(--border);">
+						<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem; font-weight: 600;">🔍 Filtros de búsqueda</div>
+						<div style="display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: flex-end;">
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Regional</label>
+								<select class="form-select" id="admin-filter-regional" onchange="filtrarRegistros()" style="min-width: 110px;">
+									<option value="todos">Todas</option>
+									<option value="neiva">Neiva</option>
+									<option value="gaitana">Gaitana</option>
+								</select>
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Tipo</label>
+								<select class="form-select" id="admin-filter-tipo" onchange="filtrarRegistros()" style="min-width: 100px;">
+									<option value="todos">Todos</option>
+									<option value="semanal">Semanal</option>
+									<option value="mensual">Mensual</option>
+								</select>
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Modalidad</label>
+								<select class="form-select" id="admin-filter-modalidad" onchange="filtrarRegistros()" style="min-width: 100px;">
+									<option value="todos">Todas</option>
+									<option value="hcb">HCB</option>
+									<option value="cdi">CDI</option>
+									<option value="hi">HI</option>
+								</select>
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Fecha desde</label>
+								<input type="date" class="form-input" id="admin-filter-fecha-desde" oninput="filtrarRegistros()" style="min-width: 130px;">
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Fecha hasta</label>
+								<input type="date" class="form-input" id="admin-filter-fecha-hasta" oninput="filtrarRegistros()" style="min-width: 130px;">
+							</div>
+							<div class="form-group" style="margin: 0; flex: 1; min-width: 160px;">
+								<label class="form-label">Buscar IP / Device / Plataforma</label>
+								<input type="text" class="form-input" id="admin-filter-buscar" placeholder="Ej: 192.168, Android, DEV_..." oninput="filtrarRegistros()">
+							</div>
+							<button class="btn btn-secondary" onclick="limpiarFiltrosAdmin()" title="Limpiar todos los filtros" style="font-size: 0.75rem;">
+								🧹 Limpiar
+							</button>
+							<div style="display: flex; gap: 0.375rem; margin-left: auto;">
+								<button class="btn btn-secondary" onclick="exportarRegistros()" style="font-size: 0.75rem;">
+									📊 Excel
+								</button>
+								<button class="btn btn-danger" onclick="limpiarRegistros()" style="font-size: 0.75rem;">
+									🗑️ Borrar todo
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Contador de resultados filtrados -->
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); padding: 0 0.25rem;">
+						<span id="admin-count-label">Mostrando todos los registros</span>
+						<span id="admin-paginacion-info" style="font-size: 0.7rem;"></span>
+					</div>
+
+					<!-- Tabla de registros -->
+					<div class="table-container" style="max-height: 55vh; overflow-y: auto; border-radius: 0.75rem; border: 1px solid var(--border);">
+						<table style="width: 100%; font-size: 0.775rem; border-collapse: collapse;">
+							<thead style="position: sticky; top: 0; background: var(--bg-dark); z-index: 10;">
+								<tr style="border-bottom: 2px solid var(--border);">
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600; white-space: nowrap;">Fecha / Hora</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">IP</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Dispositivo</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Acción</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Regional</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Tipo</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Modalidad</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Detalles</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: center; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Info</th>
+								</tr>
+							</thead>
+							<tbody id="admin-registros-tbody">
+								<!-- Se llena dinámicamente -->
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Paginación -->
+					<div id="admin-paginacion" style="display: flex; justify-content: center; gap: 0.375rem; margin-top: 0.75rem; flex-wrap: wrap;"></div>
+				</div>
+
+					<div style="margin-top: 1.5rem; background: var(--bg-card); border-radius: 0.75rem; border: 1px solid rgba(99,102,241,0.2); overflow: hidden;">
+					<div style="padding: 0.875rem 1rem; background: rgba(99,102,241,0.08); border-bottom: 1px solid rgba(99,102,241,0.15); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+						<div style="display: flex; align-items: center; gap: 0.5rem;">
+							<span style="font-size: 1rem;">👥</span>
+							<span style="font-weight: 700; font-size: 0.9rem; color: #818cf8;">Usuarios Registrados</span>
+						</div>
+						<div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);">
+							<span id="admin-usuarios-count">— usuarios</span>
+							<span id="admin-logins-count">— ingresos</span>
+							<button onclick="cargarListaUsuariosAdmin()" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#818cf8;padding:0.15rem 0.5rem;border-radius:0.25rem;cursor:pointer;font-size:0.72rem;">↺ Actualizar</button>
+						</div>
+					</div>
+					<div style="overflow-x: auto;">
+						<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+							<thead>
+								<tr style="background:var(--bg-dark);">
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Avatar</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Nombre</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Usuario</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">🔑 Clave</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Último Ingreso</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Rol</th>
+								</tr>
+							</thead>
+							<tbody id="admin-usuarios-tbody">
+								<tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--text-secondary);">Cargando...</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<!-- SECCIÓN IPs CON APODO -->
+				<div style="margin-top: 1.25rem; background: var(--bg-card); border-radius: 0.75rem; border: 1px solid rgba(236,72,153,0.2); overflow: hidden;">
+					<div style="padding: 0.875rem 1rem; background: rgba(236,72,153,0.06); border-bottom: 1px solid rgba(236,72,153,0.15); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+						<div style="display: flex; align-items: center; gap: 0.5rem;">
+							<span style="font-size: 1rem;">🌐</span>
+							<span style="font-weight: 700; font-size: 0.9rem; color: #f472b6;">IPs Registradas con Apodo</span>
+						</div>
+						<div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);">
+							<span id="admin-ips-count">— IPs</span>
+							<button onclick="cargarTablaIPsAdmin()" style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.2);color:#f472b6;padding:0.15rem 0.5rem;border-radius:0.25rem;cursor:pointer;font-size:0.72rem;">↺ Actualizar</button>
+						</div>
+					</div>
+					<div style="overflow-x: auto;">
+						<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+							<thead>
+								<tr style="background:var(--bg-dark);">
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">#</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Dirección IP</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">👤 Apodo (Nombre)</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Accesos</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Último Evento</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Última Vez</th>
+								</tr>
+							</thead>
+							<tbody id="admin-ips-apodos-tbody">
+								<tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--text-secondary);">Cargando...</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+			</div>
+			</div>
+		</div>
+
+		<!-- Modal detalle de registro -->
+		<div id="admin-detail-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+			<div style="background: var(--bg-card); border-radius: 1rem; padding: 1.5rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(99,102,241,0.3); box-shadow: 0 0 60px rgba(99,102,241,0.2);">
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+					<h3 style="margin: 0; font-size: 1rem; color: #818cf8;">🔍 Detalle del Registro</h3>
+					<button onclick="cerrarDetalleRegistro()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.25rem; line-height: 1;">✕</button>
+				</div>
+				<div id="admin-detail-content" style="font-size: 0.8125rem;"></div>
+			</div>
+		</div>
+    </aside>
+
+    <main class="main-content" id="mainContent">

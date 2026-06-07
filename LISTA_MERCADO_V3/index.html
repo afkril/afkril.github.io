@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Mercado|Minutas</title>
+    <meta name="theme-color" content="#2563eb">
+
+    <!-- ==================== LIBRERÍAS EXTERNAS ==================== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- ==================== FIREBASE CONFIG ==================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrC5m1hm6uV2MngN7OVkVMC3987FcMTa8",
+            authDomain: "lista-mercado-61830.firebaseapp.com",
+            databaseURL: "https://lista-mercado-61830-default-rtdb.firebaseio.com",
+            projectId: "lista-mercado-61830",
+            storageBucket: "lista-mercado-61830.firebasestorage.app",
+            messagingSenderId: "1015835944569",
+            appId: "1:1015835944569:web:732e412c436499a11116a8",
+            measurementId: "G-L143WME3CG"
+        };
+        
+        window.firebaseApp = initializeApp(firebaseConfig);
+        window.firebaseDB = getDatabase(window.firebaseApp);
+        window.firebaseAuth = getAuth(window.firebaseApp);
+        window.firebaseRef = ref;
+        window.firebaseGet = get;
+        window.firebaseSet = set;
+        window.firebaseOnValue = onValue;
+        window.firebaseUpdate = update;
+        window.firebaseCreateUser = createUserWithEmailAndPassword;
+        window.firebaseSignIn = signInWithEmailAndPassword;
+        window.firebaseSignOut = signOut;
+        window.firebaseOnAuthStateChanged = onAuthStateChanged;
+        window.firebaseUpdateProfile = updateProfile;
+
+        onAuthStateChanged(window.firebaseAuth, (user) => {
+            if (user) {
+                window.currentUser = user;
+                if (typeof onUserLoggedIn === 'function') onUserLoggedIn(user);
+            } else {
+                window.currentUser = null;
+                if (typeof onUserLoggedOut === 'function') onUserLoggedOut();
+            }
+        });
+    </script>
+
+    <!-- ==================== GOOGLE FONTS ==================== -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ==================== ESTILOS ==================== -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/print-styles.css">
+    <link rel="stylesheet" href="css/confirm-dialog.css">
+    <link rel="stylesheet" href="css/actas-directorio.css">
+    <link rel="stylesheet" href="css/modal-guardar.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+
+<body class="reg-neiva" data-theme="dark">
+    <div class="mobile-header">
+        <div class="hamburger" onclick="toggleSidebar()" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="mobile-title">
+            <span id="headerIcon">🍽️</span>
+            <span id="headerTitle">Lista Mercados |v3.04</span>
+            <span class="monthly-badge" id="monthlyBadge">MENSUAL</span>
+            <span class="calendar-badge" id="calendarBadge">CALENDARIO</span>
+            <span class="editor-badge" id="editorBadge">EDITOR</span>
+        </div>
+        <div style="width: 20px;"></div>
+    </div>
+
+    <div class="overlay" onclick="toggleSidebar()" id="overlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-toggle" onclick="toggleSidebarCollapse()" title="Colapsar/Expandir"></div>
+        
+        <div class="logo">
+            <div class="logo-icon" id="logoIcon">🍽️</div>
+            <span>Lista Mercados |v3.04</span>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Principal</div>
+            <button class="nav-item active" onclick="showSection('calculator')" title="Minutas Semanales" data-section="calculator">
+                <span>🍽️</span> <span>Minutas Semanales</span>
+            </button>
+            <button class="nav-item" onclick="showSection('monthly')" title="Listado Mensual" data-section="monthly">
+                <span>📅</span> <span>Listado Mensual</span>
+            </button>
+			<button class="nav-item" onclick="showSection('directorio')" title="Directorio UDS" data-section="directorio">
+                <span>📂</span>
+                <span>Directorio UDS</span>
+            </button>
+            
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-title">Herramientas</div>
+            <button class="nav-item" onclick="showSection('proveedores')" title="Proveedores" data-section="proveedores">
+                <span>🏭</span>
+                <span>Proveedores</span>
+            </button>
+            <button class="nav-item" onclick="showSection('editor')" title="Editor de Gramajes" data-section="editor">
+                <span>⚖️</span> <span>Editor de Gramajes</span>
+            </button>
+            <button class="nav-item" onclick="showSection('calendar')" title="Calendario Festivos" data-section="calendar">
+                <span>📆</span> <span>Calendario Festivos</span>
+            </button>
+            <a href="https://afkril.github.io/MINUTA_PATRON.html" class="nav-item" target="_blank" rel="noopener noreferrer" onclick="toggleSidebar()" data-section="Minuta">
+               <span>👁️</span> <span>Ver Minuta Patron</span>
+            </a>
+			<button class="nav-item" onclick="showSection('saved')" title="Listas Guardadas" data-section="calendar">
+                <span>💾</span> <span>Guardadas</span>
+                <span id="savedCount"  style="margin-left: auto; background: var(--primary-neiva); color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.6875rem;">0</span>
+            </button>
+			<button class="nav-item" onclick="abrirAdmin()" title="Panel Administrador" data-section="admin" style="border-left-color: #ef4444;">
+				<span>🔐</span> <span>Admin</span>
+			</button>
+        </div>
+
+		<div class="regional-selector" style="flex-direction: column; gap: 0.5rem;">
+			<div style="display: flex; gap: 0.25rem;">
+				<button class="reg-btn active" onclick="cambiarRegional('neiva')" id="btnNeiva" style="flex: 1;">NEIVA</button>
+				<button class="reg-btn" onclick="cambiarRegional('gaitana')" id="btnGaitana" style="flex: 1;">GAITANA</button>
+			</div>
+			<div style="display: flex; gap: 0.25rem;">
+				<button class="reg-btn active" onclick="cambiarModalidad('hcb')" id="btnHCB" style="flex: 1; font-size: 0.7rem;">HCB</button>
+				<button class="reg-btn" onclick="cambiarModalidad('cdi')" id="btnCDI" style="flex: 1; font-size: 0.7rem;">CDI</button>
+				<button class="reg-btn" onclick="cambiarModalidad('hi')" id="btnHI" style="flex: 1; font-size: 0.7rem;">HI</button>
+				
+			</div>
+		</div>
+		
+        <div class="theme-section">
+            <span class="theme-label">Modo Oscuro</span>
+            <div class="theme-toggle" onclick="toggleTheme()"></div>
+        </div>
+
+        <!-- User info integrado en el sidebar -->
+        <div id="user-info-bar" style="
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1rem 0.75rem;
+            border-top: 1px solid var(--border);
+            gap: 0.5rem;
+        ">
+            <div style="display:flex;align-items:center;gap:0.5rem;min-width:0;">
+                <div id="user-avatar-letter" style="
+                    flex-shrink:0;
+                    width: 28px; height: 28px; border-radius: 50%;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    display: flex; align-items: center; justify-content: center;
+                    color: white; font-size: 0.75rem; font-weight: 700;
+                ">U</div>
+                <span id="user-display-name" style="font-size:0.78rem;font-weight:600;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+            </div>
+            <button onclick="doLogout()" style="
+                flex-shrink:0;
+                background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+                color: #ef4444; padding: 0.25rem 0.6rem; border-radius: 0.375rem;
+                cursor: pointer; font-size: 0.72rem; font-weight: 600; transition: all 0.2s;
+                white-space: nowrap;
+            " title="Cerrar sesión">↩ Salir</button>
+        </div>
+		
+		
+		<!-- PANEL ADMINISTRATIVO (Oculto por defecto) -->
+		<div id="admin-panel" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); z-index: 1000; overflow-y: auto;">
+			<div style="max-width: 1400px; margin: 0 auto; padding: 1rem;">
+				<!-- Header Admin -->
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 2px solid rgba(99,102,241,0.3); background: linear-gradient(135deg, rgba(99,102,241,0.05), transparent); border-radius: 0.5rem; padding: 1rem;">
+					<div>
+						<h2 style="font-size: 1.4rem; margin: 0; display: flex; align-items: center; gap: 0.5rem; color: #818cf8;">
+							🛡️ Panel Administrativo <span style="font-size: 0.65rem; background: #6366f1; color: white; padding: 0.2rem 0.5rem; border-radius: 1rem; font-weight: 700; letter-spacing: 0.05em;">v2.0</span>
+						</h2>
+						<p style="color: var(--text-secondary); font-size: 0.8rem; margin: 0.25rem 0 0 0;">
+							Auditoría de accesos • Generación de listas • Monitoreo en tiempo real
+						</p>
+					</div>
+					<div style="display: flex; gap: 0.5rem; align-items: center;">
+						<div id="admin-firebase-indicator" style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; color: var(--text-secondary);">
+							<span id="admin-fb-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #6b7280; display: inline-block;"></span>
+							<span id="admin-fb-text">Conectando...</span>
+						</div>
+						<button class="btn btn-secondary" onclick="refrescarAdmin()" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">
+							🔄 Actualizar
+						</button>
+						<button class="btn btn-danger" onclick="cerrarAdmin()" style="font-size: 0.75rem;">
+							✕ Cerrar
+						</button>
+					</div>
+				</div>
+
+				<!-- Login Admin -->
+				<div id="admin-login" style="max-width: 400px; margin: 3rem auto; background: var(--bg-card); padding: 2rem; border-radius: 1rem; border: 1px solid rgba(99,102,241,0.3); box-shadow: 0 0 40px rgba(99,102,241,0.1);">
+					<div style="text-align: center; margin-bottom: 1.5rem;">
+						<div style="font-size: 3rem; margin-bottom: 0.5rem;">🛡️</div>
+						<h3 style="margin: 0; color: #818cf8;">Acceso Administrativo</h3>
+						<p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">Ingrese su clave para continuar</p>
+					</div>
+					<div class="form-group" style="margin-bottom: 1rem;">
+						<label class="form-label">Clave de acceso</label>
+						<input type="password" id="admin-clave" class="form-input" style="width: 100%;" placeholder="••••••" onkeypress="if(event.key==='Enter')validarAdmin()">
+					</div>
+					<button class="btn btn-primary btn-block" onclick="validarAdmin()" style="width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+						<span>🔓</span> Acceder al Panel
+					</button>
+					<div id="admin-error" style="color: var(--danger); text-align: center; margin-top: 1rem; display: none; background: rgba(239,68,68,0.1); padding: 0.5rem; border-radius: 0.375rem; font-size: 0.875rem;">
+						⚠️ Clave incorrecta. Intente nuevamente.
+					</div>
+				</div>
+
+				<!-- Dashboard Admin (Oculto inicialmente) -->
+				<div id="admin-dashboard" style="display: none;">
+
+					<!-- === FILA 1: STATS PRINCIPALES === -->
+					<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #6366f1; position: relative; overflow: hidden;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Total Histórico</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #818cf8;" id="stat-total-historico">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);">registros</div>
+							<div style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1.75rem; opacity: 0.15;">📊</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #f59e0b;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Accesos Hoy</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #fbbf24;" id="stat-total-hoy">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-hoy-fecha">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #2563eb;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Regional Neiva</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #60a5fa;" id="stat-neiva">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-neiva-pct">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #059669;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Regional Gaitana</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #34d399;" id="stat-gaitana">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-gaitana-pct">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #8b5cf6;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Listas Mensuales</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #a78bfa;" id="stat-mensual">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-mensual-pct">—</div>
+						</div>
+						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #ec4899;">
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">IPs Únicas</div>
+							<div style="font-size: 1.75rem; font-weight: 800; color: #f472b6;" id="stat-ips-unicas">0</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary);">dispositivos</div>
+						</div>
+					</div>
+
+					<!-- === FILA 2: ESTADÍSTICAS SECUNDARIAS === -->
+					<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+						<!-- Top IPs -->
+						<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; border: 1px solid var(--border);">
+							<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem; display: flex; align-items: center; gap: 0.375rem;">
+								🌐 Top IPs más activas
+							</div>
+							<div id="admin-top-ips" style="font-size: 0.75rem;">
+								<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem;">Cargando...</div>
+							</div>
+						</div>
+						<!-- Por Modalidad -->
+						<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; border: 1px solid var(--border);">
+							<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem;">
+								📋 Por Modalidad
+							</div>
+							<div id="admin-por-modalidad" style="font-size: 0.75rem;">
+								<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem;">Cargando...</div>
+							</div>
+						</div>
+						<!-- Actividad reciente -->
+						<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; border: 1px solid var(--border);">
+							<div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem;">
+								⚡ Actividad últimos 7 días
+							</div>
+							<div id="admin-actividad-reciente" style="font-size: 0.75rem;">
+								<div style="color: var(--text-secondary); text-align: center; padding: 0.5rem;">Cargando...</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- === FILA 3: FILTROS === -->
+					<div style="background: var(--bg-card); padding: 0.875rem; border-radius: 0.75rem; margin-bottom: 0.75rem; border: 1px solid var(--border);">
+						<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem; font-weight: 600;">🔍 Filtros de búsqueda</div>
+						<div style="display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: flex-end;">
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Regional</label>
+								<select class="form-select" id="admin-filter-regional" onchange="filtrarRegistros()" style="min-width: 110px;">
+									<option value="todos">Todas</option>
+									<option value="neiva">Neiva</option>
+									<option value="gaitana">Gaitana</option>
+								</select>
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Tipo</label>
+								<select class="form-select" id="admin-filter-tipo" onchange="filtrarRegistros()" style="min-width: 100px;">
+									<option value="todos">Todos</option>
+									<option value="semanal">Semanal</option>
+									<option value="mensual">Mensual</option>
+								</select>
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Modalidad</label>
+								<select class="form-select" id="admin-filter-modalidad" onchange="filtrarRegistros()" style="min-width: 100px;">
+									<option value="todos">Todas</option>
+									<option value="hcb">HCB</option>
+									<option value="cdi">CDI</option>
+									<option value="hi">HI</option>
+								</select>
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Fecha desde</label>
+								<input type="date" class="form-input" id="admin-filter-fecha-desde" oninput="filtrarRegistros()" style="min-width: 130px;">
+							</div>
+							<div class="form-group" style="margin: 0;">
+								<label class="form-label">Fecha hasta</label>
+								<input type="date" class="form-input" id="admin-filter-fecha-hasta" oninput="filtrarRegistros()" style="min-width: 130px;">
+							</div>
+							<div class="form-group" style="margin: 0; flex: 1; min-width: 160px;">
+								<label class="form-label">Buscar IP / Device / Plataforma</label>
+								<input type="text" class="form-input" id="admin-filter-buscar" placeholder="Ej: 192.168, Android, DEV_..." oninput="filtrarRegistros()">
+							</div>
+							<button class="btn btn-secondary" onclick="limpiarFiltrosAdmin()" title="Limpiar todos los filtros" style="font-size: 0.75rem;">
+								🧹 Limpiar
+							</button>
+							<div style="display: flex; gap: 0.375rem; margin-left: auto;">
+								<button class="btn btn-secondary" onclick="exportarRegistros()" style="font-size: 0.75rem;">
+									📊 Excel
+								</button>
+								<button class="btn btn-danger" onclick="limpiarRegistros()" style="font-size: 0.75rem;">
+									🗑️ Borrar todo
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Contador de resultados filtrados -->
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); padding: 0 0.25rem;">
+						<span id="admin-count-label">Mostrando todos los registros</span>
+						<span id="admin-paginacion-info" style="font-size: 0.7rem;"></span>
+					</div>
+
+					<!-- Tabla de registros -->
+					<div class="table-container" style="max-height: 55vh; overflow-y: auto; border-radius: 0.75rem; border: 1px solid var(--border);">
+						<table style="width: 100%; font-size: 0.775rem; border-collapse: collapse;">
+							<thead style="position: sticky; top: 0; background: var(--bg-dark); z-index: 10;">
+								<tr style="border-bottom: 2px solid var(--border);">
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600; white-space: nowrap;">Fecha / Hora</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">IP</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Dispositivo</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Acción</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Regional</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Tipo</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Modalidad</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Detalles</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: center; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Info</th>
+								</tr>
+							</thead>
+							<tbody id="admin-registros-tbody">
+								<!-- Se llena dinámicamente -->
+							</tbody>
+						</table>
+					</div>
+
+					<!-- Paginación -->
+					<div id="admin-paginacion" style="display: flex; justify-content: center; gap: 0.375rem; margin-top: 0.75rem; flex-wrap: wrap;"></div>
+				</div>
+
+					<div style="margin-top: 1.5rem; background: var(--bg-card); border-radius: 0.75rem; border: 1px solid rgba(99,102,241,0.2); overflow: hidden;">
+					<div style="padding: 0.875rem 1rem; background: rgba(99,102,241,0.08); border-bottom: 1px solid rgba(99,102,241,0.15); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+						<div style="display: flex; align-items: center; gap: 0.5rem;">
+							<span style="font-size: 1rem;">👥</span>
+							<span style="font-weight: 700; font-size: 0.9rem; color: #818cf8;">Usuarios Registrados</span>
+						</div>
+						<div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);">
+							<span id="admin-usuarios-count">— usuarios</span>
+							<span id="admin-logins-count">— ingresos</span>
+							<button onclick="cargarListaUsuariosAdmin()" style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);color:#818cf8;padding:0.15rem 0.5rem;border-radius:0.25rem;cursor:pointer;font-size:0.72rem;">↺ Actualizar</button>
+						</div>
+					</div>
+					<div style="overflow-x: auto;">
+						<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+							<thead>
+								<tr style="background:var(--bg-dark);">
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Avatar</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Nombre</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Usuario</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">🔑 Clave</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Último Ingreso</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Rol</th>
+								</tr>
+							</thead>
+							<tbody id="admin-usuarios-tbody">
+								<tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--text-secondary);">Cargando...</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<!-- SECCIÓN IPs CON APODO -->
+				<div style="margin-top: 1.25rem; background: var(--bg-card); border-radius: 0.75rem; border: 1px solid rgba(236,72,153,0.2); overflow: hidden;">
+					<div style="padding: 0.875rem 1rem; background: rgba(236,72,153,0.06); border-bottom: 1px solid rgba(236,72,153,0.15); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+						<div style="display: flex; align-items: center; gap: 0.5rem;">
+							<span style="font-size: 1rem;">🌐</span>
+							<span style="font-weight: 700; font-size: 0.9rem; color: #f472b6;">IPs Registradas con Apodo</span>
+						</div>
+						<div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);">
+							<span id="admin-ips-count">— IPs</span>
+							<button onclick="cargarTablaIPsAdmin()" style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.2);color:#f472b6;padding:0.15rem 0.5rem;border-radius:0.25rem;cursor:pointer;font-size:0.72rem;">↺ Actualizar</button>
+						</div>
+					</div>
+					<div style="overflow-x: auto;">
+						<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+							<thead>
+								<tr style="background:var(--bg-dark);">
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">#</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Dirección IP</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">👤 Apodo (Nombre)</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Accesos</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Último Evento</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Última Vez</th>
+								</tr>
+							</thead>
+							<tbody id="admin-ips-apodos-tbody">
+								<tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--text-secondary);">Cargando...</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+			</div>
+			</div>
+		</div>
+
+		<!-- Modal detalle de registro -->
+		<div id="admin-detail-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+			<div style="background: var(--bg-card); border-radius: 1rem; padding: 1.5rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(99,102,241,0.3); box-shadow: 0 0 60px rgba(99,102,241,0.2);">
+				<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);">
+					<h3 style="margin: 0; font-size: 1rem; color: #818cf8;">🔍 Detalle del Registro</h3>
+					<button onclick="cerrarDetalleRegistro()" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.25rem; line-height: 1;">✕</button>
+				</div>
+				<div id="admin-detail-content" style="font-size: 0.8125rem;"></div>
+			</div>
+		</div>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+        <!-- SECCIoN CALCULADORA SEMANAL -->
+        <div id="section-calculator" class="section active">
+            <div class="config-panel no-print">
+                <div class="config-row">
+                    <div class="form-group">
+                        <label class="form-label">Niños</label>
+                        <input type="number" class="form-input" id="num-p" value="13" min="1" max="500" style="width: 60px;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Semana</label>
+                        <select class="form-select" id="sem" style="width: 130px;">
+                            <option value="1">Sem 1 (M1-5)</option>
+                            <option value="2">Sem 2 (M6-10)</option>
+                            <option value="3">Sem 3 (M11-15)</option>
+                            <option value="4">Sem 4 (M16-20)</option>
+                            <option value="5">Sem 5 (M21-25)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="flex: 1; min-width: 220px;">
+                        <label class="form-label">Dias</label>
+                        <div class="days-selector">
+                            <label class="day-chip">
+                                <input type="checkbox" class="d-ch" value="1" checked>
+                                <span class="day-label">Lun</span>
+                            </label>
+                            <label class="day-chip">
+                                <input type="checkbox" class="d-ch" value="2" checked>
+                                <span class="day-label">Mar</span>
+                            </label>
+                            <label class="day-chip">
+                                <input type="checkbox" class="d-ch" value="3" checked>
+                                <span class="day-label">Mié</span>
+                            </label>
+                            <label class="day-chip">
+                                <input type="checkbox" class="d-ch" value="4" checked>
+                                <span class="day-label">Jue</span>
+                            </label>
+                            <label class="day-chip">
+                                <input type="checkbox" class="d-ch" value="5" checked>
+                                <span class="day-label">Vie</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="status-indicator" id="statusIndicator" title="Regional y Modalidad activas">
+						<span class="status-label">Config:</span>
+						<span class="status-badge reg-neiva" id="statusRegional">🏢 NEIVA</span>
+						<span class="status-divider"></span>
+						<span class="status-badge mod-hcb" id="statusModalidad">🏠 HCB</span>
+					</div>
+
+					<button class="btn btn-primary" onclick="generar()" id="btnGenerar">
+						<span class="spinner"></span>
+						<span class="btn-text"><span>🚀</span> Generar</span>
+					</button>
+                
+					
+						<div style="display:flex;align-items:center;gap:0.35rem;padding:0.3rem 0.65rem;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.22);border-radius:0.5rem;">
+							<span class="status-label">Config:</span>
+							<span style="font-size:0.9rem;">🥛</span>
+							<label class="form-label" style="margin:0;white-space:nowrap;font-size:0.72rem;">Leche</label>
+							<select class="form-select" id="leche-modo-semanal" style="width:130px;padding:0.25rem 0.4rem;font-size:0.75rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);">
+								<option value="litros">Litros (L)</option>
+								<option value="bolsas900">Bolsas 900 ml</option>
+								<option value="ml">Mililitros (ml)</option>
+							</select>
+							<span style="font-size:0.9rem;">🍶</span>
+							<label class="form-label" style="margin:0;white-space:nowrap;font-size:0.72rem;">Yogurt</label>
+							<select class="form-select" id="yogurt-modo-semanal" style="width:130px;padding:0.25rem 0.4rem;font-size:0.75rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);">
+								<option value="und150">Unidades 150 ml</option>
+								<option value="litros">Litros (L)</option>
+							</select>
+							
+						</div>
+				</div>
+            </div>
+
+            <div class="search-container no-print" id="searchContainer" style="display: none;">
+                <span class="search-icon">🔍</span>
+                <input type="search" class="search-input" id="buscador" placeholder="Buscar producto..." oninput="filtrarBusquedaDebounced(this.value)">
+            </div>
+
+            <div class="category-filters no-print" id="catFilters" style="display: none;">
+                <div class="category-card cat-granos active" onclick="toggleCategory(this, 'granos')">
+                    <span class="category-icon">🌾</span>
+                    <span class="category-name">Granos</span>
+                    <span class="category-count" id="count-granos">0</span>
+                </div>
+                <div class="category-card cat-proteinas active" onclick="toggleCategory(this, 'proteinas')">
+                    <span class="category-icon">🥩</span>
+                    <span class="category-name">Proteinas</span>
+                    <span class="category-count" id="count-proteinas">0</span>
+                </div>
+                <div class="category-card cat-lacteos active" onclick="toggleCategory(this, 'lacteos')">
+                    <span class="category-icon">🥛</span>
+                    <span class="category-name">Lacteos</span>
+                    <span class="category-count" id="count-lacteos">0</span>
+                </div>
+                <div class="category-card cat-verduras active" onclick="toggleCategory(this, 'verduras')">
+                    <span class="category-icon">🥬</span>
+                    <span class="category-name">Verduras</span>
+                    <span class="category-count" id="count-verduras">0</span>
+                </div>
+                <div class="category-card cat-frutas active" onclick="toggleCategory(this, 'frutas')">
+                    <span class="category-icon">🍎</span>
+                    <span class="category-name">Frutas</span>
+                    <span class="category-count" id="count-frutas">0</span>
+                </div>
+                <div class="category-card cat-panaderia active" onclick="toggleCategory(this, 'panaderia')">
+                    <span class="category-icon">🥖</span>
+                    <span class="category-name">Panaderia</span>
+                    <span class="category-count" id="count-panaderia">0</span>
+                </div>
+            </div>
+
+            <div class="table-container" id="resultContainer" style="display: none;">
+                
+                <div class="table-header no-print">
+                    <div class="table-title">Lista de Compras</div>
+                    <div class="table-actions">
+                        <button class="btn-icon" onclick="exportExcel()" title="Excel">📊</button>
+                        <button class="btn-icon" onclick="guardarLista()" title="Guardar">💾</button>
+						<button class="btn-icon" onclick="limpiarEntregasSemanal()" title="Limpiar Entregas">🧹</button>
+                    </div>
+                </div>
+                
+                <div id="resultado">
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p>Genere la lista para ver resultados</p>
+                    </div>
+                </div>
+
+                <div class="table-header no-print" style="border-top: 1px solid var(--border); border-bottom: none; padding: 0.375rem 0.75rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                        <span id="totalItems">0</span> productos • <span id="lastUpdate">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIoN LISTADO MENSUAL -->
+        <div id="section-monthly" class="section">
+            <div class="monthly-header no-print">
+                <div class="monthly-title">
+                    <span>📅</span>
+                    <span>Listado Mensual de Mercado</span>
+                </div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                    Planificacion y consolidacion de compras por semanas
+                </div>
+				
+            </div>
+
+            <div class="config-panel no-print">
+                <div class="config-row">
+                    <div class="form-group">
+                        <label class="form-label">Niños</label>
+                        <input type="number" class="form-input" id="monthly-num-p" value="13" min="1" max="500" style="width: 80px;">
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">Selecciona las semanas y dias a incluir</label>
+                    </div>
+
+                    <div class="status-indicator" id="statusIndicatorMensual" title="Regional y Modalidad activas">
+						<span class="status-label">Config:</span>
+						<span class="status-badge reg-neiva" id="statusRegionalMensual">🏢 NEIVA</span>
+						<span class="status-divider"></span>
+						<span class="status-badge mod-hcb" id="statusModalidadMensual">🏠 HCB</span>
+					</div>
+
+                    
+                    <div style="display:flex;align-items:center;gap:0.35rem;padding:0.3rem 0.65rem;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.22);border-radius:0.5rem;">
+                        <span class="status-label">Config:</span>
+						<span style="font-size:0.9rem;">🥛</span>
+                        <label class="form-label" style="margin:0;white-space:nowrap;font-size:0.72rem;">Leche</label>
+                        <select class="form-select" id="leche-modo-mensual" style="width:130px;padding:0.25rem 0.4rem;font-size:0.75rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);">
+                            <option value="litros">Litros (L)</option>
+                            <option value="bolsas900">Bolsas 900 ml</option>
+                            <option value="ml">Mililitros (ml)</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:0.35rem;padding:0.3rem 0.65rem;background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.22);border-radius:0.5rem;">
+                        <span style="font-size:0.9rem;">🍶</span>
+                        <label class="form-label" style="margin:0;white-space:nowrap;font-size:0.72rem;">Yogurt</label>
+                        <select class="form-select" id="yogurt-modo-mensual" style="width:130px;padding:0.25rem 0.4rem;font-size:0.75rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);">
+                            <option value="und150">Unidades 150 ml</option>
+                            <option value="litros">Litros (L)</option>
+                        </select>
+                    </div>
+
+					<button class="btn btn-primary" onclick="generarMensual()" id="btnGenerarMensual">
+						<span class="spinner"></span>
+						<span class="btn-text"><span>📊</span> Generar Mensual</span>
+					</button>
+                </div>
+            </div>
+
+            <!-- Buscador para mensual -->
+            <div class="search-container no-print" id="monthlySearchContainer" style="display: none;">
+                <span class="search-icon">🔍</span>
+                <input type="search" class="search-input" id="buscadorMensual" placeholder="Buscar producto..." oninput="filtrarBusquedaMensualDebounced(this.value)">
+            </div>
+
+            <!-- Selector de Semanas -->
+            <div class="weeks-selector no-print" id="weeksSelector">
+                <div class="week-card" id="week-1" onclick="toggleWeek(1)">
+                    <div class="week-header">
+                        <div class="week-title">
+                            <input type="checkbox" class="week-checkbox" id="check-week-1" onchange="event.stopPropagation(); toggleWeek(1)">
+                            <span>Semana 1</span>
+                            <small style="color: var(--text-secondary); font-weight: 400;">(M1-5)</small>
+                        </div>
+                    </div>
+                    <div class="week-days" onclick="event.stopPropagation()">
+                        <span class="week-day-chip" data-day="1" onclick="toggleWeekDay(1, 1)">Lun</span>
+                        <span class="week-day-chip" data-day="2" onclick="toggleWeekDay(1, 2)">Mar</span>
+                        <span class="week-day-chip" data-day="3" onclick="toggleWeekDay(1, 3)">Mié</span>
+                        <span class="week-day-chip" data-day="4" onclick="toggleWeekDay(1, 4)">Jue</span>
+                        <span class="week-day-chip" data-day="5" onclick="toggleWeekDay(1, 5)">Vie</span>
+                    </div>
+                </div>
+
+                <div class="week-card" id="week-2" onclick="toggleWeek(2)">
+                    <div class="week-header">
+                        <div class="week-title">
+                            <input type="checkbox" class="week-checkbox" id="check-week-2" onchange="event.stopPropagation(); toggleWeek(2)">
+                            <span>Semana 2</span>
+                            <small style="color: var(--text-secondary); font-weight: 400;">(M6-10)</small>
+                        </div>
+                    </div>
+                    <div class="week-days" onclick="event.stopPropagation()">
+                        <span class="week-day-chip" data-day="1" onclick="toggleWeekDay(2, 1)">Lun</span>
+                        <span class="week-day-chip" data-day="2" onclick="toggleWeekDay(2, 2)">Mar</span>
+                        <span class="week-day-chip" data-day="3" onclick="toggleWeekDay(2, 3)">Mié</span>
+                        <span class="week-day-chip" data-day="4" onclick="toggleWeekDay(2, 4)">Jue</span>
+                        <span class="week-day-chip" data-day="5" onclick="toggleWeekDay(2, 5)">Vie</span>
+                    </div>
+                </div>
+
+                <div class="week-card" id="week-3" onclick="toggleWeek(3)">
+                    <div class="week-header">
+                        <div class="week-title">
+                            <input type="checkbox" class="week-checkbox" id="check-week-3" onchange="event.stopPropagation(); toggleWeek(3)">
+                            <span>Semana 3</span>
+                            <small style="color: var(--text-secondary); font-weight: 400;">(M11-15)</small>
+                        </div>
+                    </div>
+                    <div class="week-days" onclick="event.stopPropagation()">
+                        <span class="week-day-chip" data-day="1" onclick="toggleWeekDay(3, 1)">Lun</span>
+                        <span class="week-day-chip" data-day="2" onclick="toggleWeekDay(3, 2)">Mar</span>
+                        <span class="week-day-chip" data-day="3" onclick="toggleWeekDay(3, 3)">Mié</span>
+                        <span class="week-day-chip" data-day="4" onclick="toggleWeekDay(3, 4)">Jue</span>
+                        <span class="week-day-chip" data-day="5" onclick="toggleWeekDay(3, 5)">Vie</span>
+                    </div>
+                </div>
+
+                <div class="week-card" id="week-4" onclick="toggleWeek(4)">
+                    <div class="week-header">
+                        <div class="week-title">
+                            <input type="checkbox" class="week-checkbox" id="check-week-4" onchange="event.stopPropagation(); toggleWeek(4)">
+                            <span>Semana 4</span>
+                            <small style="color: var(--text-secondary); font-weight: 400;">(M16-20)</small>
+                        </div>
+                    </div>
+                    <div class="week-days" onclick="event.stopPropagation()">
+                        <span class="week-day-chip" data-day="1" onclick="toggleWeekDay(4, 1)">Lun</span>
+                        <span class="week-day-chip" data-day="2" onclick="toggleWeekDay(4, 2)">Mar</span>
+                        <span class="week-day-chip" data-day="3" onclick="toggleWeekDay(4, 3)">Mié</span>
+                        <span class="week-day-chip" data-day="4" onclick="toggleWeekDay(4, 4)">Jue</span>
+                        <span class="week-day-chip" data-day="5" onclick="toggleWeekDay(4, 5)">Vie</span>
+                    </div>
+                </div>
+
+                <div class="week-card" id="week-5" onclick="toggleWeek(5)">
+                    <div class="week-header">
+                        <div class="week-title">
+                            <input type="checkbox" class="week-checkbox" id="check-week-5" onchange="event.stopPropagation(); toggleWeek(5)">
+                            <span>Semana 5</span>
+                            <small style="color: var(--text-secondary); font-weight: 400;">(M21-25)</small>
+                        </div>
+                    </div>
+                    <div class="week-days" onclick="event.stopPropagation()">
+                        <span class="week-day-chip" data-day="1" onclick="toggleWeekDay(5, 1)">Lun</span>
+                        <span class="week-day-chip" data-day="2" onclick="toggleWeekDay(5, 2)">Mar</span>
+                        <span class="week-day-chip" data-day="3" onclick="toggleWeekDay(5, 3)">Mié</span>
+                        <span class="week-day-chip" data-day="4" onclick="toggleWeekDay(5, 4)">Jue</span>
+                        <span class="week-day-chip" data-day="5" onclick="toggleWeekDay(5, 5)">Vie</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros de Categoria para Mensual -->
+            <div class="category-filters no-print" id="monthlyCatFilters" style="display: none;">
+                <div class="category-card cat-granos active" onclick="toggleMonthlyCategory(this, 'granos')">
+                    <span class="category-icon">🌾</span>
+                    <span class="category-name">Granos</span>
+                    <span class="category-count" id="monthly-count-granos">0</span>
+                </div>
+                <div class="category-card cat-proteinas active" onclick="toggleMonthlyCategory(this, 'proteinas')">
+                    <span class="category-icon">🥩</span>
+                    <span class="category-name">Proteinas</span>
+                    <span class="category-count" id="monthly-count-proteinas">0</span>
+                </div>
+                <div class="category-card cat-lacteos active" onclick="toggleMonthlyCategory(this, 'lacteos')">
+                    <span class="category-icon">🥛</span>
+                    <span class="category-name">Lacteos</span>
+                    <span class="category-count" id="monthly-count-lacteos">0</span>
+                </div>
+                <div class="category-card cat-verduras active" onclick="toggleMonthlyCategory(this, 'verduras')">
+                    <span class="category-icon">🥬</span>
+                    <span class="category-name">Verduras</span>
+                    <span class="category-count" id="monthly-count-verduras">0</span>
+                </div>
+                <div class="category-card cat-frutas active" onclick="toggleMonthlyCategory(this, 'frutas')">
+                    <span class="category-icon">🍎</span>
+                    <span class="category-name">Frutas</span>
+                    <span class="category-count" id="monthly-count-frutas">0</span>
+                </div>
+                <div class="category-card cat-panaderia active" onclick="toggleMonthlyCategory(this, 'panaderia')">
+                    <span class="category-icon">🥖</span>
+                    <span class="category-name">Panaderia</span>
+                    <span class="category-count" id="monthly-count-panaderia">0</span>
+                </div>
+            </div>
+
+            <!-- Tabla Mensual -->
+            <div class="table-container" id="monthlyResultContainer" style="display: none;">
+                
+                <div class="table-header no-print">
+                    <div class="table-title">Consolidado Mensual</div>
+                    <div class="table-actions">
+                        <button class="btn-icon" onclick="exportMonthlyExcel()" title="Excel">📊</button>
+                        <button class="btn-icon" onclick="guardarListaMensual()" title="Guardar">💾</button>
+						<button class="btn-icon" onclick="limpiarEntregasMensual()" title="Limpiar Entregas">🧹</button>
+                    </div>
+                </div>
+
+                <div class="monthly-table-wrapper">
+                    <table class="monthly-table" id="monthlyTable">
+                        <thead id="monthlyTableHead"></thead>
+                        <tbody id="monthlyTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-header no-print" style="border-top: 1px solid var(--border); border-bottom: none; padding: 0.375rem 0.75rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                        <span id="monthlyTotalItems">0</span> productos • <span id="monthlyLastUpdate">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIoN CALENDARIO FESTIVOS -->
+        <div id="section-calendar" class="section">
+            <div class="calendar-header no-print">
+                <div class="calendar-title">
+                    <span>📆</span>
+                    <span>Calendario Festivos Colombia 2026</span>
+                </div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                    Dias festivos y habiles del año
+                </div>
+            </div>
+
+            <div class="calendar-nav no-print" id="calendarNav">
+                <!-- Se genera dinamicamente -->
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Se genera dinamicamente -->
+            </div>
+
+            <div class="calendar-legend no-print">
+                <div class="legend-item">
+                    <div class="legend-color weekend"></div>
+                    <span>Fines de semana</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color holiday"></div>
+                    <span>Dias festivos</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color today"></div>
+                    <span>Hoy</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIoN EDITOR DE GRAMAJES -->
+		<div id="section-editor" class="section">
+			<div class="editor-header no-print">
+				<div class="editor-title">
+					<span>⚖️</span>
+					<span>Editor de Gramajes</span>
+				</div>
+				<div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
+					Modifica los gramajes por menú, regional y modalidad. Los cambios se guardan en Firebase.
+				</div>
+			</div>
+
+			<div class="config-panel no-print">
+				<div class="config-row" style="justify-content: space-between; align-items: center;">
+					<div class="firebase-status" id="firebaseStatus">
+						<span class="status-dot"></span>
+						<span id="firebaseStatusText">Conectando...</span>
+					</div>
+					<div style="display: flex; gap: 0.5rem;">
+						<button class="btn btn-warning" onclick="restaurarValoresOriginales()">
+							<span>↩️</span> Restaurar Originales
+						</button>
+						<button class="btn btn-success" onclick="guardarCambiosFirebase()" id="btnGuardarFirebase">
+							<span class="spinner"></span>
+							<span class="btn-text"><span>💾</span> Guardar en Firebase</span>
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<!-- Info de Regional y Modalidad activa -->
+			<div class="editor-info no-print" id="editorInfo">
+				<div class="editor-info-item">
+					<span class="editor-info-label">🏢 Regional:</span>
+					<span class="editor-info-value" id="editorRegional">NEIVA</span>
+				</div>
+				<div class="editor-info-item">
+					<span class="editor-info-label">🏠 Modalidad:</span>
+					<span class="editor-info-value" id="editorModalidad">HCB</span>
+				</div>
+				<div class="editor-info-item">
+					<span class="editor-info-label">📦 Productos:</span>
+					<span class="editor-info-value" id="editorProductCount">0</span>
+				</div>
+			</div>
+
+			<div class="product-selector no-print">
+				<div class="form-group" style="flex: 1; min-width: 250px;">
+					<label class="form-label">Producto</label>
+					<select class="form-select" id="editorProductSelect" onchange="loadProductMatrix()">
+						<option value="">Seleccione un producto...</option>
+					</select>
+				</div>
+				<div class="form-group" style="width: 140px;">
+					<label class="form-label">Categoría</label>
+					<input type="text" class="form-input" id="editorProductCategory" readonly style="text-align: center; font-weight: 600;">
+				</div>
+				<div class="form-group" style="width: 100px;">
+					<label class="form-label">Unidad</label>
+					<input type="text" class="form-input" id="editorProductUnit" readonly style="text-align: center; font-weight: 600;">
+				</div>
+			</div>
+
+			<div class="matrix-container" id="matrixContainer" style="display: none;">
+				<!-- Encabezados de semanas -->
+				<div class="matrix-grid" id="matrixHeaders">
+					<div class="matrix-header">Semana 1</div>
+					<div class="matrix-header">Semana 2</div>
+					<div class="matrix-header">Semana 3</div>
+					<div class="matrix-header">Semana 4</div>
+					<div class="matrix-header">Semana 5</div>
+				</div>
+				
+				<!-- Grid de inputs -->
+				<div class="matrix-grid" id="matrixGrid">
+					<!-- Fila 1: M1, M6, M11, M16, M21 -->
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 1</div>
+						<input type="number" class="matrix-input" data-menu="m1" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 6</div>
+						<input type="number" class="matrix-input" data-menu="m6" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 11</div>
+						<input type="number" class="matrix-input" data-menu="m11" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 16</div>
+						<input type="number" class="matrix-input" data-menu="m16" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 21</div>
+						<input type="number" class="matrix-input" data-menu="m21" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+
+					<!-- Fila 2: M2, M7, M12, M17, M22 -->
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 2</div>
+						<input type="number" class="matrix-input" data-menu="m2" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 7</div>
+						<input type="number" class="matrix-input" data-menu="m7" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 12</div>
+						<input type="number" class="matrix-input" data-menu="m12" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 17</div>
+						<input type="number" class="matrix-input" data-menu="m17" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 22</div>
+						<input type="number" class="matrix-input" data-menu="m22" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+
+					<!-- Fila 3: M3, M8, M13, M18, M23 -->
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 3</div>
+						<input type="number" class="matrix-input" data-menu="m3" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 8</div>
+						<input type="number" class="matrix-input" data-menu="m8" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 13</div>
+						<input type="number" class="matrix-input" data-menu="m13" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 18</div>
+						<input type="number" class="matrix-input" data-menu="m18" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 23</div>
+						<input type="number" class="matrix-input" data-menu="m23" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+
+					<!-- Fila 4: M4, M9, M14, M19, M24 -->
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 4</div>
+						<input type="number" class="matrix-input" data-menu="m4" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 9</div>
+						<input type="number" class="matrix-input" data-menu="m9" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 14</div>
+						<input type="number" class="matrix-input" data-menu="m14" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 19</div>
+						<input type="number" class="matrix-input" data-menu="m19" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 24</div>
+						<input type="number" class="matrix-input" data-menu="m24" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+
+					<!-- Fila 5: M5, M10, M15, M20, M25 -->
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 5</div>
+						<input type="number" class="matrix-input" data-menu="m5" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 10</div>
+						<input type="number" class="matrix-input" data-menu="m10" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 15</div>
+						<input type="number" class="matrix-input" data-menu="m15" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 20</div>
+						<input type="number" class="matrix-input" data-menu="m20" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+					<div class="matrix-cell">
+						<div class="matrix-label">Menú 25</div>
+						<input type="number" class="matrix-input" data-menu="m25" step="0.01" placeholder="0" onchange="markChanged(this)">
+					</div>
+				</div>
+
+				<div class="editor-footer">
+					<div class="change-indicator" id="changeIndicator">✓ Sin cambios pendientes</div>
+					<div style="font-size: 0.75rem; color: var(--text-secondary);">
+						<span id="modifiedCount">0</span> campos modificados
+					</div>
+				</div>
+			</div>
+
+			<div class="empty-state" id="editorEmptyState">
+				<div class="empty-icon">⚖️</div>
+				<p>Seleccione un producto para editar sus gramajes</p>
+				<p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+					Los cambios se aplicarán a la modalidad y regional actual
+				</p>
+			</div>
+		</div>
+
+        <!-- SECCIoN ACTAS F3.MT1.PP -->
+        <!-- ============================================================ -->
+        <!-- SECTION DIRECTORIO UDS — Pestaña completa                   -->
+        <!-- ============================================================ -->
+        <div id="section-directorio" class="section">
+        
+
+        <div style="padding:1rem;">
+
+          <!-- ── HEADER ── -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div style="width:38px;height:38px;border-radius:0.5rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📂</div>
+              <div>
+                <div style="font-weight:700;font-size:1rem;">Directorios UDS| Generador de actas</div>
+                <div style="font-size:0.7rem;color:var(--text-secondary);">Generación masiva de Actas de Entrega</div>
+              </div>
+            </div>
+            <!-- Save/Load buttons -->
+			<div style="display:flex;align-items:center;flex-wrap:wrap;gap:0;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.6rem;padding:0.35rem 0.5rem;gap:0.3rem;">
+			  <!-- Hidden select kept for compatibility -->
+			  <select id="tab-dir-select" style="display:none;">
+				<option value="">— Seleccionar directorio —</option>
+			  </select>
+
+			  <!-- Label directorio cargado -->
+			  <div id="tab-dir-loaded-label"
+				style="display:none;font-size:0.75rem;color:#818cf8;padding:0.3rem 0.6rem;
+				background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);
+				border-radius:0.375rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;
+				white-space:nowrap;cursor:pointer;"
+				onclick="tabAbrirPanelCarpetas()" title="Ver directorios guardados">
+			  </div>
+
+			  <!-- Separador visual entre grupos -->
+			  <span style="width:1px;height:20px;background:var(--border);margin:0 0.2rem;flex-shrink:0;"></span>
+
+			  <!-- Grupo 1: Acciones principales -->
+			  <button class="dir-btn" onclick="tabAbrirPanelCarpetas()" title="Abrir directorio guardado"
+				style="background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.3);color:#818cf8;">
+				🗂️ Abrir
+			  </button>
+			  <button class="dir-btn" onclick="tabGuardarDirectorio(false)" title="Guardar directorio nuevo"
+				style="background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#10b981;">
+				💾 Guardar
+			  </button>
+			  <button class="dir-btn" id="tab-btn-save-modified" onclick="tabGuardarDirectorio(true)"
+				title="Guardar cambios en el directorio cargado"
+				style="display:none;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.3);color:#f59e0b;">
+				✏️ Modificado
+			  </button>
+			  <button class="dir-btn" onclick="tabEliminarDirectorioGuardadoActual()" title="Eliminar directorio cargado"
+				style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#ef4444;">
+				🗑️ Borrar
+			  </button>
+
+			  <!-- Separador visual entre grupos -->
+			  <span style="width:1px;height:20px;background:var(--border);margin:0 0.2rem;flex-shrink:0;"></span>
+
+			  <!-- Grupo 2: Excel -->
+			  <span style="font-size:0.62rem;color:var(--text-secondary);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:0 0.1rem;">Excel:</span>
+			  <button class="dir-btn" onclick="tabExportarDirectoriosExcel()" title="Exportar directorios guardados a Excel"
+				style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.25);color:#f59e0b;">
+				📤 Exportar
+			  </button>
+			  <label class="dir-btn" title="Importar directorios desde Excel"
+				style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:#10b981;cursor:pointer;">
+				📥 Importar
+				<input type="file" accept=".xlsx,.xls" style="display:none;" onchange="tabImportarDirectoriosExcel(this)">
+			  </label>
+			</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+
+            <!-- ── LEFT COLUMN ── -->
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+
+              <!-- Datos Fijos (plegable) -->
+              <div class="dir-card" style="padding:0;">
+                <div class="dir-section-title" onclick="toggleDirPanel('panel-datos-fijos','chevron-fijos')" style="color:#06b6d4;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;margin:0;border-radius:0.5rem;user-select:none;"><span>⚙️ Datos Fijos del Acta (aplican a todas)</span><span id="chevron-fijos" style="transition:transform 0.25s;font-size:0.7rem;">▼</span></div>
+                <div id="panel-datos-fijos" style="padding:0 0.75rem 0.75rem;">
+                <div class="dir-input-grid-3">
+                  <div><label class="dir-label">Regional</label><input class="dir-input" id="tab-dir-regional" type="text" value="NEIVA"></div>
+                  <div><label class="dir-label">Centro Zonal</label><input class="dir-input" id="tab-dir-centrozonal" type="text" value="NEIVA"></div>
+                  <div><label class="dir-label">Modalidad</label><input class="dir-input" id="tab-dir-modalidad" type="text" value="HCB"></div>
+                  <div><label class="dir-label">Servicio</label><input class="dir-input" id="tab-dir-servicio" type="text" value="COMUNITARIO"></div>
+                  <div><label class="dir-label">Municipio</label><input class="dir-input" id="tab-dir-municipio" type="text" value="NEIVA"></div>
+                  <div><label class="dir-label">Fecha Solicitud</label><input class="dir-input" id="tab-dir-fecha" type="date"></div>
+                </div>
+                <div style="margin-top:0.5rem;">
+                  <label class="dir-label">Fuente de productos</label>
+                  <select class="dir-input" id="tab-dir-fuente">
+                    <option value="semanal">Lista Semanal (generada)</option>
+                    <option value="mensual">Lista Mensual (generada)</option>
+                  </select>
+                </div>
+                <div style="margin-top:0.5rem;">
+                  <label class="dir-label">Leche: mostrar como</label>
+                  <select class="dir-input" id="tab-dir-leche-modo">
+                    <option value="litros">Litros (L)</option>
+                    <option value="bolsas900">Bolsas 900 ml (unidades)</option>
+					 <option value="ml">Mililitros (ml)</option>
+                  </select>
+                </div>
+                <div style="margin-top:0.5rem;">
+                  <label class="dir-label">Yogurt: mostrar como</label>
+                  <select class="dir-input" id="tab-dir-yogurt-modo">
+                    <option value="und150">Unidades 150ml</option>
+                    <option value="litros">Litros (L)</option>
+                  </select>
+                  <span style="font-size:0.6rem;color:var(--text-secondary);">La columna "Cobertura" ajusta proteínas, lácteos y panadería por UDS · Granos, frutas y verduras usan gramaje completo</span>
+                </div>
+              
+                </div>
+              </div>
+
+              <!-- Datos quien entrega (plegable) -->             
+				<div class="dir-card" style="padding:0;">
+				<div class="dir-section-title" onclick="toggleDirPanel('panel-datos-entrega','chevron-entrega')" style="color:#818cf8;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;margin:0;border-radius:0.5rem;user-select:none;"><span>✍️ Datos de quien entrega los alimentos (aplica a todas)</span><span id="chevron-entrega" style="transition:transform 0.25s;font-size:0.7rem;">▼</span></div>
+                <div id="panel-datos-entrega" style="padding:0 0.75rem 0.75rem;">
+                <!-- Selector de proveedor registrado -->
+                <div style="margin-bottom:0.6rem;padding:0.5rem 0.6rem;background:rgba(6,182,212,0.06);border:1px solid rgba(6,182,212,0.2);border-radius:0.5rem;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.3rem;gap:0.5rem;flex-wrap:wrap;">
+                    <label class="dir-label" style="margin:0;color:#06b6d4;">🏭 Seleccionar proveedor registrado</label>
+                    <button onclick="showSection('proveedores')" style="padding:0.2rem 0.55rem;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.3);color:#06b6d4;border-radius:0.3rem;cursor:pointer;font-size:0.65rem;font-family:inherit;font-weight:600;">➕ Gestionar</button>
+                  </div>
+                  <select class="dir-input" id="tab-dir-proveedor-select" onchange="provSeleccionarEnDirectorio(this.value)" style="width:100%;">
+                    <option value="">— Seleccionar proveedor (opcional) —</option>
+                  </select>
+                </div>
+                <div class="dir-input-grid-2">
+                  <div><label class="dir-label">Nombre legible quien entrega</label><input class="dir-input" id="tab-dir-entrega-nombre" type="text" placeholder="Nombre completo..."></div>
+                  <div><label class="dir-label">Documento de identidad</label><input class="dir-input" id="tab-dir-entrega-doc" type="text" placeholder="Ej: CC 1234567890"></div>
+                  <div><label class="dir-label">Entidad Administradora o Prestadora</label><input class="dir-input" id="tab-dir-entrega-entidad" type="text" placeholder="Nombre de la entidad..."></div>
+                  <div><label class="dir-label">Número de NIT</label><input class="dir-input" id="tab-dir-entrega-nit" type="text" placeholder="Ej: 900.123.456-7"></div>
+                </div>
+                <div style="margin-top:0.4rem;font-size:0.62rem;color:var(--text-secondary);">Estos datos aparecerán en el apartado de firmas de cada acta</div>
+              
+                </div>
+              </div>
+
+              <!-- Contexto de semana/días (informativo) -->
+              <div class="dir-card" id="tab-dir-context-card" style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.04);">
+                <div class="dir-section-title" style="color:#f59e0b;">📅 Contexto de semana/días al guardar</div>
+                <div id="tab-dir-context-info" style="font-size:0.75rem;color:var(--text-secondary);">
+                  Las actas se generarán con la semana y días actualmente marcados en la lista.
+                  Al guardar el directorio, se registra qué semana y días estaban activos.
+				  <span style="font-size:0.6rem;color:var(--text-secondary);">La columna "Cobertura" del Excel ajusta proteínas, lácteos y panadería por UDS · Granos, frutas y verduras usan gramaje completo</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ── RIGHT COLUMN ── -->
+            <div style="display:flex;flex-direction:column;gap:0.75rem;">
+
+              <!-- Import section -->
+              <div class="dir-card">
+                <div class="dir-section-title" style="color:#818cf8;">📥 Importar / Agregar UDS</div>
+                <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center;margin-bottom:0.5rem;">
+                  <label style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0.8rem;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);border-radius:0.375rem;cursor:pointer;font-size:0.78rem;color:#818cf8;font-weight:600;font-family:inherit;">
+                    📄 Subir CSV/Excel
+                    <input type="file" id="tab-dir-file-input" accept=".csv,.xlsx,.xls" style="display:none;" onchange="tabImportarDirectorio(this)">
+                  </label>
+                  <button class="dir-btn" onclick="tabCargarDirectorioEjemplo()" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.25);color:#f59e0b;">✨ Ejemplo</button>
+                  <button class="dir-btn" onclick="tabToggleEditorManual()" style="background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.25);color:#10b981;">✏️ Manual</button>
+                  <button class="dir-btn" onclick="descargarPlantillaDirectorio()" style="background:rgba(6,182,212,0.08);border-color:rgba(6,182,212,0.2);color:#06b6d4;" title="Descargar plantilla Excel">📥 Plantilla</button>
+				  
+                </div>
+                <div style="font-size:0.65rem;color:var(--text-secondary);">Columnas: Responsable · Teléfono · Entidad · Unidad · Código · Cobertura · Documento Identidad</div>
+
+                <!-- Editor manual inline -->
+                <div id="tab-dir-editor-manual" style="display:none;margin-top:0.75rem;padding:0.75rem;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.15);border-radius:0.5rem;">
+                  <div style="font-size:0.7rem;font-weight:700;color:#10b981;margin-bottom:0.5rem;">✏️ Agregar UDS manualmente</div>
+                  <div class="dir-input-grid-3" style="gap:0.4rem;margin-bottom:0.4rem;">
+                    <div><label class="dir-label">Responsable *</label><input class="dir-input" id="tab-man-responsable" type="text" placeholder="Nombre completo..."></div>
+                    <div><label class="dir-label">Teléfono</label><input class="dir-input" id="tab-man-telefono" type="text" placeholder="3001234567"></div>
+                    <div><label class="dir-label">Entidad</label><input class="dir-input" id="tab-man-entidad" type="text" placeholder="Nombre entidad..."></div>
+                    <div><label class="dir-label">Unidad de Servicio</label><input class="dir-input" id="tab-man-unidad" type="text" placeholder="Nombre UDS..."></div>
+                    <div><label class="dir-label">Código Cuéntame</label><input class="dir-input" id="tab-man-codigo" type="text" placeholder="Ej: 280101"></div>
+                    <div><label class="dir-label">Doc. Identidad</label><input class="dir-input" id="tab-man-documentoId" type="text" placeholder="CC 1234567890"></div>
+                    <div><label class="dir-label">Cobertura (niños)</label><input class="dir-input" id="tab-man-cobertura" type="number" min="0" placeholder="Ej: 13"></div>
+                    <div style="display:flex;align-items:flex-end;">
+                      <button onclick="tabAgregarUDSManual()" style="width:100%;padding:0.4rem;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:0.375rem;cursor:pointer;font-size:0.78rem;font-weight:700;font-family:inherit;">➕ Agregar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Vista previa -->
+              <div class="dir-card" id="tab-dir-preview-container" style="display:none;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;flex-wrap:wrap;gap:0.4rem;">
+                  <div style="font-size:0.72rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;">
+                    📋 Vista Previa — <span id="tab-dir-count">0</span> UDS
+                  </div>
+                  <button onclick="tabLimpiarDirectorio()" style="padding:0.25rem 0.6rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:0.3rem;cursor:pointer;font-size:0.7rem;font-family:inherit;">🗑️ Limpiar todo</button>
+                </div>
+                <div style="overflow-x:auto;border:1px solid var(--border);border-radius:0.5rem;margin-bottom:0.75rem;">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Responsable</th>
+                        <th>Teléfono</th>
+                        <th>Unidad Servicio</th>
+                        <th>Código</th>
+                        <th>Doc. Identidad</th>
+                        <th style="color:#10b981;">Cobertura</th>
+                        <th>Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tab-dir-preview-body"></tbody>
+                  </table>
+                </div>
+                <!-- Generar button -->
+                <button onclick="tabGenerarTodasLasActas()" style="width:100%;padding:0.75rem;border:none;border-radius:0.5rem;cursor:pointer;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-weight:700;font-size:0.9rem;font-family:inherit;box-shadow:0 3px 14px rgba(5,150,105,0.35);">
+                  🟢 Generar TODAS las Actas (<span id="tab-dir-count-btn">0</span> Excel)
+                </button>
+              </div>
+
+              <!-- Estado vacío -->
+              <div id="tab-dir-empty-state" style="text-align:center;padding:2.5rem;color:var(--text-secondary);">
+                <div style="font-size:2.5rem;margin-bottom:0.5rem;">📂</div>
+                <div style="font-size:0.875rem;">Importe un CSV/Excel o agregue UDS manualmente</div>
+                <div style="font-size:0.72rem;margin-top:0.25rem;">O cargue un directorio guardado desde el selector de arriba</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        </div>
+        <!-- ============================================================ -->
+
+        <!-- ========== SECCIÓN PROVEEDORES ========== -->
+        <div id="section-proveedores" class="section">
+        
+        <div style="max-width:900px;margin:0 auto;padding:0.75rem;">
+
+            <!-- Header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+                <div>
+                    <h2 style="font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;">🏭 Gestión de Proveedores</h2>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:0.15rem;">Registra los datos de quien entrega los alimentos para usarlos en el Directorio</div>
+                </div>
+                <button class="prov-btn prov-btn-primary" onclick="showSection('directorio')" style="gap:0.4rem;">
+                    📂 Ir al Directorio
+                </button>
+            </div>
+
+            <!-- Formulario agregar/editar proveedor -->
+            <div class="prov-card" id="prov-form-card">
+                <div class="prov-title" id="prov-form-title">➕ Agregar Proveedor</div>
+                <input type="hidden" id="prov-edit-index" value="-1">
+                <div class="prov-grid" style="margin-bottom:0.5rem;">
+                    <div>
+                        <label class="prov-label">Nombre completo *</label>
+                        <input class="prov-input" id="prov-nombre" type="text" placeholder="Nombre de quien entrega...">
+                    </div>
+                    <div>
+                        <label class="prov-label">Documento de identidad *</label>
+                        <input class="prov-input" id="prov-documento" type="text" placeholder="Ej: CC 1234567890">
+                    </div>
+                    <div>
+                        <label class="prov-label">Entidad / Proveedor *</label>
+                        <input class="prov-input" id="prov-entidad" type="text" placeholder="Nombre de la entidad o empresa...">
+                    </div>
+                    <div>
+                        <label class="prov-label">NIT</label>
+                        <input class="prov-input" id="prov-nit" type="text" placeholder="Ej: 900.123.456-7">
+                    </div>
+                </div>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <button class="prov-btn prov-btn-primary" onclick="provGuardar()">💾 Guardar Proveedor</button>
+                    <button class="prov-btn" id="prov-btn-cancelar" onclick="provCancelarEdicion()" style="display:none;background:var(--bg-hover);color:var(--text-secondary);">✕ Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Lista de proveedores -->
+            <div class="prov-card">
+                <div class="prov-title">📋 Proveedores Registrados <span id="prov-count" style="background:rgba(6,182,212,0.15);color:#06b6d4;padding:0.1rem 0.5rem;border-radius:1rem;font-size:0.65rem;margin-left:0.3rem;">0</span></div>
+                <div id="prov-empty-state" style="text-align:center;padding:2rem 1rem;color:var(--text-secondary);font-size:0.82rem;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">🏭</div>
+                    <div>Aún no hay proveedores registrados.</div>
+                    <div style="font-size:0.72rem;margin-top:0.25rem;">Usa el formulario de arriba para agregar el primero.</div>
+                </div>
+                <div id="prov-table-wrap" style="display:none;overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Documento</th>
+                                <th>Entidad / Proveedor</th>
+                                <th>NIT</th>
+                                <th style="text-align:center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prov-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        </div>
+        <!-- ========== FIN SECCIÓN PROVEEDORES ========== -->
+
+        <!-- ============================================================ -->
+
+        <div id="section-actas" class="section">
+            
+
+            <div class="actas-config-panel no-print">
+                <div class="actas-title">📋 Generar Acta — Formato F3.MT1.PP</div>
+                <div class="actas-grid">
+                    <!-- Col 1 -->
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div class="actas-form-group">
+                            <label>Nombre Responsable UDS</label>
+                            <input type="text" id="acta-responsable" placeholder="Nombre completo..." />
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Teléfono de Contacto</label>
+                            <input type="text" id="acta-telefono" placeholder="Ej: 3001234567" />
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Nombre Entidad Administradora / Prestador</label>
+                            <input type="text" id="acta-entidad" placeholder="Nombre de la entidad..." />
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Nombre Unidad de Servicio</label>
+                            <input type="text" id="acta-unidad" placeholder="Nombre UDS..." />
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Código Cuentame UDS</label>
+                            <input type="text" id="acta-codigo" placeholder="Ej: 280101..." />
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Fecha de Solicitud (primera fila)</label>
+                            <input type="date" id="acta-fecha-solicitud" />
+                        </div>
+                    </div>
+                    <!-- Col 2 -->
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div class="actas-form-group">
+                            <label>Municipio</label>
+                            <input type="text" id="acta-municipio" value="NEIVA" />
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Centro Zonal</label>
+                            <input type="text" id="acta-centrozonal" value="NEIVA" />
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Modalidad</label>
+                            <input type="text" id="acta-modalidad" value="HCB" />
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Servicio</label>
+                            <input type="text" id="acta-servicio" value="COMUNITARIO" />
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Observaciones</label>
+                            <textarea id="acta-observaciones" placeholder="Observaciones del acta..."></textarea>
+                        </div>
+                        <div class="actas-form-group">
+                            <label>Fuente de datos (para auto-completar alimentos)</label>
+                            <select id="acta-fuente">
+                                <option value="semanal">Lista Semanal (generada)</option>
+                                <option value="mensual">Lista Mensual (generada)</option>
+                                <option value="manual">Solo manual</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+
+            <!-- ACTA GENERADA (imprimible) -->
+            <div id="acta-print-area" class="acta-wrapper" style="display:none;">
+                <table class="acta-table" id="acta-main-table">
+                    <!-- FILA 1: Logo + Título + Código -->
+                    <tr>
+                        <td rowspan="3" colspan="2" class="acta-logo-cell" style="width:110px; background:#fff;">
+                            <div class="acta-logo-text">BIENESTAR<br>FAMILIAR</div>
+                        </td>
+                        <td colspan="9" rowspan="2" class="acta-main-title" style="background:#fff;">
+                            <div style="font-size:8pt;">PROCESO</div>
+                            <div style="font-size:8pt; font-weight:bold;">PROMOCIÓN Y PREVENCIÓN</div>
+                            <div style="font-size:9pt; font-weight:bold; margin-top:2px;">FORMATO PARA LA SOLICITUD Y ENTREGA DE ALIMENTOS</div>
+                        </td>
+                        <td colspan="2" class="acta-code-box acta-gray" style="width:100px;">F3.MT1.PP</td>
+                        <td class="acta-code-box acta-gray" style="width:80px;" id="acta-print-fecha-doc">27/04/2026</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="acta-code-box acta-gray">Versión 2</td>
+                        <td class="acta-code-box acta-gray">Página 2 de 2</td>
+                    </tr>
+                    <tr>
+                        <td colspan="9" class="acta-code-box acta-gray-light" style="font-size:8.5pt; text-align:right;">Clasificación de la información: Pública</td>
+                        <td colspan="3" class="acta-code-box acta-gray-light" style="font-size:8.5pt; text-align:center;"></td>
+                    </tr>
+
+                    <!-- FILA 4: Encabezado regional -->
+                    <tr class="acta-green">
+                        <td style="width:45px; font-weight:bold; font-size:7pt;">REGIONAL:</td>
+                        <td id="ap-regional" style="width:65px; font-weight:bold;"></td>
+                        <td colspan="2" style="font-weight:bold; font-size:7pt;">CENTRO ZONAL:</td>
+                        <td id="ap-centrozonal" colspan="2" style="font-weight:bold;"></td>
+                        <td style="font-weight:bold; font-size:7pt;">MODALIDAD:</td>
+                        <td id="ap-modalidad" style="font-weight:bold;"></td>
+                        <td style="font-weight:bold; font-size:7pt;">SERVICIO:</td>
+                        <td id="ap-servicio" style="font-weight:bold;"></td>
+                        <td style="font-weight:bold; font-size:7pt;">MUNICIPIO:</td>
+                        <td colspan="3" id="ap-municipio" style="font-weight:bold;"></td>
+                    </tr>
+
+                    <!-- FILA 5: Datos responsable -->
+                    <tr class="acta-gray-light">
+                        <td colspan="2" style="font-size:8.5pt; font-weight:bold; vertical-align:top; background:#d6dce4;">NOMBRE DE RESPONSABLE DE LA UDS:</td>
+                        <td colspan="2" id="ap-responsable" style="background:#fff;"></td>
+                        <td style="font-size:8.5pt; font-weight:bold; vertical-align:top; background:#d6dce4;">TELÉFONO DE CONTACTO:</td>
+                        <td id="ap-telefono" style="background:#fff;"></td>
+                        <td colspan="2" style="font-size:8.5pt; font-weight:bold; vertical-align:top; background:#d6dce4;">NOMBRE ENTIDAD ADMINISTRADORA O PRESTADOR DIRECTO DEL SERVICIO:</td>
+                        <td colspan="2" id="ap-entidad" style="background:#fff;"></td>
+                        <td style="font-size:8.5pt; font-weight:bold; vertical-align:top; background:#d6dce4;">NOMBRE UNIDAD DE SERVICIO:</td>
+                        <td id="ap-unidad" style="background:#fff;"></td>
+                        <td colspan="2" style="font-size:8.5pt; font-weight:bold; vertical-align:top; background:#d6dce4; text-align:center;">CÓDIGO CUENTAME DE LA UDS:</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="background:#d6dce4;"></td>
+                        <td colspan="2" style="background:#fff;"></td>
+                        <td style="background:#d6dce4;"></td>
+                        <td style="background:#fff;"></td>
+                        <td colspan="2" style="background:#d6dce4;"></td>
+                        <td colspan="2" style="background:#fff;"></td>
+                        <td style="background:#d6dce4;"></td>
+                        <td style="background:#fff;"></td>
+                        <td colspan="2" style="background:#fff;" id="ap-codigo"></td>
+                    </tr>
+
+                    <!-- ENCABEZADO COLUMNAS TABLA -->
+                    <tr class="acta-section-header">
+                        <th class="acta-col-num" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">No. DE ORDEN</th>
+                        <th class="acta-col-fecha" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">FECHA DE LA SOLICITUD</th>
+                        <th class="acta-col-comp" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">COMPONENTE<br><span style="font-weight:400; font-size:5.5pt;">(Cereal, tubérculo, raíz, plátano, amasijo, fruta, verdura, lácteos, proteína, huevo, leguminoza, grasa, azúcar, ingredientes culinarios naturales)</span></th>
+                        <th class="acta-col-alim" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">ALIMENTOS</th>
+                        <th class="acta-col-lote" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">LOTE</th>
+                        <th class="acta-col-venc" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">FECHA DE VENCIMIENTO</th>
+                        <th class="acta-col-cant" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">CANTIDAD SOLICITADA<br><span style="font-weight:400; font-size:5.5pt;">(KILOS, LIBRAS, MILILITROS, GRAMOS, UNIDADES)</span></th>
+                        <th class="acta-col-fecha2" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">FECHA DE RECEPCIÓN DE LOS ALIMENTOS</th>
+                        <th class="acta-col-recib" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">CANTIDAD RECIBIDA A SATISFACCIÓN<br><span style="font-weight:400; font-size:5.5pt;">(KILOS, LIBRAS, MILILITROS, GRAMOS, UNIDADES)</span></th>
+                        <th class="acta-col-cumple" rowspan="2" style="background:#bdd7ee; font-size:8.5pt;">CUMPLE</th>
+                        <th colspan="3" style="background:#bdd7ee; font-size:8.5pt;">NO CUMPLE</th>
+                    </tr>
+                    <tr class="acta-section-header">
+                        <th style="background:#bdd7ee; font-size:5.5pt;">CALIDAD</th>
+                        <th style="background:#bdd7ee; font-size:5.5pt;">CANTIDAD</th>
+                        <th style="background:#bdd7ee; font-size:5.5pt;">OTRO</th>
+                    </tr>
+
+                    <!-- CUERPO DE LA TABLA (se llena dinámicamente) -->
+                    <tbody id="acta-body-rows">
+                    </tbody>
+
+                    <!-- OBSERVACIONES -->
+                    <tr class="acta-obs-row">
+                        <td colspan="14" style="font-size:7pt; font-weight:bold; background:#d6dce4;">OBSERVACIONES:</td>
+                    </tr>
+                    <tr>
+                        <td colspan="14" style="height:30px; background:#fff;" id="acta-obs-print"></td>
+                    </tr>
+
+                    <!-- FIRMAS -->
+                    <tr class="acta-firma-row">
+                        <td colspan="7" style="border-bottom: none; font-size:8.5pt; padding-bottom:0;">Firma: ___________________________</td>
+                        <td colspan="7" style="border-bottom: none; font-size:8.5pt; padding-bottom:0;">Firma: ___________________________</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" style="font-size:6pt; border-top:none;" id="acta-print-entrega-nombre">Nombre de quien entrega:</td>
+                        <td colspan="7" style="font-size:6pt; border-top:none;" id="acta-print-recibe-nombre">Nombre de quien recibe</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" style="font-size:6pt;" id="acta-print-entrega-doc">Documento de identidad: _____________________</td>
+                        <td colspan="7" style="font-size:6pt;" id="acta-print-recibe-doc">Documento de identidad: _____________________</td>
+                    </tr>
+                    <tr>
+                        <td colspan="7" style="font-size:6pt;" id="acta-print-entrega-entidad">Nombre Entidad Administradora entrega los Alimentos:</td>
+                        <td colspan="7" style="font-size:6pt;" id="acta-print-entrega-nit">Número de NIT: ___________________</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECCIoN GUARDADAS -->
+        <div id="section-saved" class="section">
+            <div class="config-panel">
+                <h2 style="margin-bottom: 1rem; font-size: 1.25rem;">💾 Listas Guardadas</h2>
+                <div id="savedListsContainer">
+                    <div class="empty-state">
+                        <div class="empty-icon">💾</div>
+                        <p>No hay listas guardadas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ==================== MODAL GUARDAR LISTA ==================== -->
+    <div id="saveListOverlay" onclick="cerrarModalGuardar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9000;backdrop-filter:blur(4px);"></div>
+    <div id="saveListModal" role="dialog" aria-modal="true" aria-labelledby="saveListModal-title" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9001;background:var(--bg-card);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;width:min(480px,95vw);box-shadow:0 25px 60px rgba(0,0,0,0.5);">
+        
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;">
+            <div>
+                <h3 style="font-size:1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:0.4rem;">💾 Guardar Lista</h3>
+                <div id="sm-tipo-badge" style="font-size:0.65rem;margin-top:0.15rem;color:var(--text-secondary);"></div>
+            </div>
+            <button onclick="cerrarModalGuardar()" style="background:none;border:none;color:var(--text-secondary);font-size:1.1rem;cursor:pointer;padding:0.2rem;">✕</button>
+        </div>
+
+        <!-- Preview del nombre generado -->
+        <div class="sm-preview">
+            <div style="font-size:0.6rem;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:0.2rem;">Vista previa del nombre</div>
+            <div id="sm-nombre-preview" style="font-size:1.05rem;font-weight:800;color:var(--text-primary);letter-spacing:.03em;">—</div>
+        </div>
+
+        <!-- Campos -->
+        <div class="sm-grid">
+            <div>
+                <label class="sm-label">Semana</label>
+                <select class="sm-input" id="sm-semana" onchange="smActualizarPreview()">
+                    <option value="S1">S1 — Semana 1</option>
+                    <option value="S2">S2 — Semana 2</option>
+                    <option value="S3">S3 — Semana 3</option>
+                    <option value="S4">S4 — Semana 4</option>
+                    <option value="SM">SM — Mensual</option>
+                </select>
+            </div>
+            <div>
+                <label class="sm-label">Mes</label>
+                <select class="sm-input" id="sm-mes" onchange="smActualizarPreview()">
+                    <option value="ENERO">Enero</option><option value="FEBRERO">Febrero</option>
+                    <option value="MARZO">Marzo</option><option value="ABRIL">Abril</option>
+                    <option value="MAYO">Mayo</option><option value="JUNIO">Junio</option>
+                    <option value="JULIO">Julio</option><option value="AGOSTO">Agosto</option>
+                    <option value="SEPTIEMBRE">Septiembre</option><option value="OCTUBRE">Octubre</option>
+                    <option value="NOVIEMBRE">Noviembre</option><option value="DICIEMBRE">Diciembre</option>
+                </select>
+            </div>
+            <div>
+                <label class="sm-label">Regional</label>
+                <input class="sm-input" id="sm-regional-display" type="text" readonly style="opacity:.6;cursor:default;">
+            </div>
+            <div>
+                <label class="sm-label">N° Contrato</label>
+                <input class="sm-input" id="sm-contrato" type="text" placeholder="Ej: 665" oninput="smActualizarPreview()" maxlength="20">
+            </div>
+        </div>
+        <div style="margin-bottom:0.9rem;">
+            <label class="sm-label">Nota adicional (opcional)</label>
+            <input class="sm-input" id="sm-nota" type="text" placeholder="Observación breve..." maxlength="60" oninput="smActualizarPreview()">
+        </div>
+
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+            <button class="sm-btn sm-btn-cancel" onclick="cerrarModalGuardar()">Cancelar</button>
+            <button class="sm-btn sm-btn-primary" onclick="smConfirmarGuardar()">💾 Guardar</button>
+        </div>
+    </div>
+    <!-- ============================================================ -->
+
+    <!-- ==================== PANEL VER DETALLES ==================== -->
+    <div id="detailOverlay" onclick="cerrarDetalleProducto()"></div>
+    <div id="detailPanel">
+        <div class="dp-header">
+            <button class="dp-close" onclick="cerrarDetalleProducto()">✕</button>
+            <div class="dp-product-name" id="dp-product-name">—</div>
+            <div class="dp-meta">
+                <span class="dp-badge dp-badge-cat" id="dp-badge-cat"></span>
+                <span class="dp-badge" id="dp-badge-unit" style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.3);"></span>
+                <span class="dp-badge dp-badge-reg" id="dp-badge-reg"></span>
+            </div>
+        </div>
+        <div class="dp-body" id="dp-body">
+            <!-- contenido dinámico -->
+        </div>
+    </div>
+    <!-- ============================================================ -->
+
+
+
+
+    <!-- ================================================================ -->
+    <!-- SISTEMA ACTAS: Template b64 + Generador XML + Directorio Import  -->
+    <!-- ================================================================ -->
+
+    <!-- MODAL DIRECTORIO: importar lista de UDS -->
+    <div id="directorio-overlay" onclick="cerrarDirectorio()" style="
+        display:none; position:fixed; inset:0; z-index:1300;
+        background:rgba(0,0,0,0.7); backdrop-filter:blur(5px);"></div>
+
+    <div id="directorio-panel" style="
+        display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+        z-index:1301; width:min(97vw,820px); max-height:90vh; overflow-y:auto;
+        background:var(--bg-card); border:1px solid var(--border); border-radius:1rem;
+        box-shadow:0 30px 80px rgba(0,0,0,0.6); font-family:'Inter',sans-serif;">
+
+        <!-- Header -->
+        <div style="position:sticky;top:0;z-index:2;background:var(--bg-card);
+            border-bottom:1px solid var(--border);padding:1rem 1.25rem;
+            display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+                <div style="width:36px;height:36px;border-radius:0.5rem;
+                    background:linear-gradient(135deg,#6366f1,#8b5cf6);
+                    display:flex;align-items:center;justify-content:center;font-size:1.1rem;">📂</div>
+                <div>
+                    <div style="font-weight:700;font-size:1rem;color:var(--text-primary);">Directorio de UDS</div>
+                    <div style="font-size:0.7rem;color:var(--text-secondary);">Importar lista · Generar actas masivas</div>
+                </div>
+            </div>
+            <button onclick="cerrarDirectorio()" style="background:rgba(255,255,255,0.06);
+                border:1px solid var(--border);color:var(--text-secondary);border-radius:0.375rem;
+                padding:0.3rem 0.7rem;cursor:pointer;font-size:1rem;font-family:inherit;">✕</button>
+        </div>
+
+        <div style="padding:1.25rem;">
+
+            <!-- Import section -->
+            <div style="margin-bottom:1rem;padding:0.875rem;background:rgba(99,102,241,0.07);
+                border:1px solid rgba(99,102,241,0.2);border-radius:0.625rem;">
+                <div style="font-size:0.75rem;font-weight:600;color:#818cf8;margin-bottom:0.6rem;
+                    text-transform:uppercase;letter-spacing:0.05em;">📥 Importar Directorio</div>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+                    <label style="display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.9rem;
+                        background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);
+                        border-radius:0.375rem;cursor:pointer;font-size:0.8rem;color:#818cf8;font-weight:600;
+                        font-family:inherit;transition:all 0.2s;"
+                        onmouseover="this.style.background='rgba(99,102,241,0.25)'"
+                        onmouseout="this.style.background='rgba(99,102,241,0.15)'">
+                        📄 Subir CSV/Excel
+                        <input type="file" id="dir-file-input" accept=".csv,.xlsx,.xls" 
+                            style="display:none;" onchange="importarDirectorio(this)">
+                    </label>
+                    <button onclick="cargarDirectorioEjemplo()" style="padding:0.45rem 0.9rem;
+                        background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);
+                        color:#f59e0b;border-radius:0.375rem;cursor:pointer;font-size:0.8rem;
+                        font-weight:600;font-family:inherit;transition:all 0.2s;"
+                        onmouseover="this.style.background='rgba(245,158,11,0.22)'"
+                        onmouseout="this.style.background='rgba(245,158,11,0.12)'">
+                        ✨ Ejemplo
+                    </button>
+                    <button onclick="abrirEditorManual()" style="padding:0.45rem 0.9rem;
+                        background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);
+                        color:#10b981;border-radius:0.375rem;cursor:pointer;font-size:0.8rem;
+                        font-weight:600;font-family:inherit;transition:all 0.2s;"
+                        onmouseover="this.style.background='rgba(16,185,129,0.2)'"
+                        onmouseout="this.style.background='rgba(16,185,129,0.1)'">
+                        ✏️ Ingresar manualmente
+                    </button>
+                    <button onclick="descargarPlantillaDirectorio()" style="padding:0.45rem 0.9rem;
+                        background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.25);
+                        color:#06b6d4;border-radius:0.375rem;cursor:pointer;font-size:0.8rem;
+                        font-weight:600;font-family:inherit;transition:all 0.2s;"
+                        onmouseover="this.style.background='rgba(6,182,212,0.2)'"
+                        onmouseout="this.style.background='rgba(6,182,212,0.1)'"
+                        title="Descarga una plantilla Excel con las columnas requeridas">
+                        📥 Plantilla Excel
+                    </button>
+                    <span style="font-size:0.7rem;color:var(--text-secondary);">
+                        Columnas: Responsable, Teléfono, Entidad, Unidad, Código, Cobertura, Documento Identidad
+                    </span>
+                </div>
+            </div>
+
+            <!-- Editor manual (oculto por defecto) -->
+            <div id="dir-editor-manual" style="display:none;margin-bottom:1rem;padding:0.875rem;
+                background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:0.625rem;">
+                <div style="font-size:0.75rem;font-weight:600;color:#10b981;margin-bottom:0.75rem;
+                    text-transform:uppercase;letter-spacing:0.05em;">✏️ Agregar UDS manualmente</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.625rem;">
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Responsable UDS *</label>
+                        <input id="man-responsable" type="text" placeholder="Nombre completo..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Teléfono</label>
+                        <input id="man-telefono" type="text" placeholder="Ej: 3001234567"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Entidad Administradora</label>
+                        <input id="man-entidad" type="text" placeholder="Nombre entidad..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Unidad de Servicio</label>
+                        <input id="man-unidad" type="text" placeholder="Nombre UDS..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Código Cuentame</label>
+                        <input id="man-codigo" type="text" placeholder="Ej: 280101..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Documento de identidad</label>
+                        <input id="man-documentoId" type="text" placeholder="Ej: CC 1234567890"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Cobertura (Nº niños)</label>
+                        <input id="man-cobertura" type="number" min="0" placeholder="Ej: 13"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div style="display:flex;align-items:flex-end;">
+                        <button onclick="agregarUDSManual()" style="width:100%;padding:0.4rem 0.8rem;
+                            background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;
+                            border-radius:0.375rem;cursor:pointer;font-size:0.8rem;font-weight:700;font-family:inherit;">
+                            ➕ Agregar UDS
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datos fijos del Acta -->
+            <div style="margin-bottom:1rem;padding:0.875rem;background:rgba(6,182,212,0.05);
+                border:1px solid rgba(6,182,212,0.2);border-radius:0.625rem;">
+                <div style="font-size:0.75rem;font-weight:600;color:#06b6d4;margin-bottom:0.6rem;
+                    text-transform:uppercase;letter-spacing:0.05em;">⚙️ Datos Fijos del Acta (aplican a todas)</div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;">
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Regional</label>
+                        <input id="dir-regional" type="text" value="NEIVA"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Centro Zonal</label>
+                        <input id="dir-centrozonal" type="text" value="NEIVA"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Modalidad</label>
+                        <input id="dir-modalidad" type="text" value="HCB"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Servicio</label>
+                        <input id="dir-servicio" type="text" value="COMUNITARIO"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Municipio</label>
+                        <input id="dir-municipio" type="text" value="NEIVA"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Fecha Solicitud</label>
+                        <input id="dir-fecha" type="date"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                </div>
+                <div style="margin-top:0.5rem;">
+                    <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Fuente de productos</label>
+                    <select id="dir-fuente" style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                        <option value="semanal">Lista Semanal (generada)</option>
+                        <option value="mensual">Lista Mensual (generada)</option>
+                    </select>
+                </div>
+                <div style="margin-top:0.5rem;">
+                    <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Leche: mostrar como</label>
+                    <select id="dir-leche-modo" style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                        <option value="litros">Litros (L)</option>
+                        <option value="bolsas900">Bolsas 900 ml (unidades)</option>
+						<option value="ml">Mililitros (ml)</option>
+                    </select>
+                </div>
+                <div style="margin-top:0.5rem;">
+                    <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Yogurt: mostrar como</label>
+                    <select id="dir-yogurt-modo" style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                        <option value="und150">Unidades 150ml</option>
+                        <option value="litros">Litros (L)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Datos de quien entrega (aplica a todas las actas del directorio) -->
+            <div style="margin-bottom:1rem;padding:0.875rem;background:rgba(99,102,241,0.05);
+                border:1px solid rgba(99,102,241,0.2);border-radius:0.625rem;">
+                <div style="font-size:0.75rem;font-weight:600;color:#818cf8;margin-bottom:0.6rem;
+                    text-transform:uppercase;letter-spacing:0.05em;">✍️ Datos de quien entrega los alimentos (aplica a todas)</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Nombre legible quien entrega</label>
+                        <input id="dir-entrega-nombre" type="text" placeholder="Nombre completo..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Documento de identidad</label>
+                        <input id="dir-entrega-doc" type="text" placeholder="Ej: CC 1234567890"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Entidad Administradora o Prestadora</label>
+                        <input id="dir-entrega-entidad" type="text" placeholder="Nombre de la entidad..."
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;">Número de NIT</label>
+                        <input id="dir-entrega-nit" type="text" placeholder="Ej: 900.123.456-7"
+                            style="width:100%;margin-top:0.15rem;background:var(--bg-dark);border:1px solid var(--border);
+                            border-radius:0.375rem;padding:0.38rem 0.6rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">
+                    </div>
+                </div>
+                <div style="margin-top:0.4rem;font-size:0.62rem;color:var(--text-secondary);">
+                    Estos datos aparecerán en el apartado de firmas de cada acta generada desde el directorio
+                </div>
+            </div>
+
+            <!-- Vista previa del directorio -->
+            <div id="dir-preview-container" style="display:none;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+                    <div style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">
+                        📋 Vista Previa — <span id="dir-count">0</span> UDS
+                    </div>
+                    <div style="display:flex;gap:0.375rem;">
+                        <button onclick="limpiarDirectorio()" style="padding:0.3rem 0.7rem;
+                            background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);
+                            color:#ef4444;border-radius:0.375rem;cursor:pointer;font-size:0.72rem;font-family:inherit;">
+                            🗑️ Limpiar
+                        </button>
+                    </div>
+                </div>
+                <div style="border:1px solid var(--border);border-radius:0.5rem;overflow:hidden;margin-bottom:1rem;">
+                    <table style="width:100%;border-collapse:collapse;font-size:0.72rem;">
+                        <thead>
+                            <tr style="background:var(--bg-dark);">
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">#</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Responsable</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Teléfono</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Unidad Servicio</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Código</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Doc. Identidad</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:center;color:#10b981;font-weight:600;border-bottom:1px solid var(--border);">Cobertura</th>
+                                <th style="padding:0.4rem 0.6rem;text-align:center;color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border);">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dir-preview-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Botones de generación -->
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <button onclick="generarTodasLasActas()" style="
+                        flex:1;display:flex;align-items:center;justify-content:center;gap:0.5rem;
+                        padding:0.75rem 1rem;border:none;border-radius:0.625rem;cursor:pointer;
+                        background:linear-gradient(135deg,#059669,#10b981);color:#fff;
+                        font-weight:700;font-size:0.9rem;font-family:inherit;
+                        box-shadow:0 3px 14px rgba(5,150,105,0.4);">
+                        🟢 Generar TODAS las Actas (<span id="dir-count-btn">0</span> Excel)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estado vacío -->
+            <div id="dir-empty-state" style="text-align:center;padding:2rem;color:var(--text-secondary);">
+                <div style="font-size:2rem;margin-bottom:0.5rem;">📂</div>
+                <div style="font-size:0.875rem;">Importe un CSV o ingrese UDS manualmente</div>
+                <div style="font-size:0.75rem;margin-top:0.25rem;">
+                    El CSV debe tener columnas: Responsable, Teléfono, Entidad, Unidad, Código, Cobertura, Documento Identidad
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL ACTA INDIVIDUAL (am-* fields) -->
+    <div id="acta-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:9990;backdrop-filter:blur(4px);" onclick="cerrarModalActa()"></div>
+    <div id="acta-modal-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+        background:var(--bg-card);border:1px solid var(--border);border-radius:1rem;
+        width:min(680px,96vw);max-height:92vh;overflow-y:auto;z-index:9991;
+        box-shadow:0 25px 60px rgba(0,0,0,0.55);padding:1.5rem;">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+                <span style="font-size:1.3rem;">📋</span>
+                <div>
+                    <div style="font-weight:700;font-size:1rem;color:var(--text-primary);">Generar Acta Excel</div>
+                    <div style="font-size:0.65rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;">
+                        Fuente: <span id="acta-modal-fuente-badge" style="color:#10b981;font-weight:700;">Lista Semanal</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="cerrarModalActa()" style="background:transparent;border:1px solid var(--border);
+                color:var(--text-secondary);border-radius:0.375rem;cursor:pointer;font-size:1rem;
+                padding:0.2rem 0.6rem;line-height:1.4;">✕</button>
+        </div>
+        <input type="hidden" id="acta-modal-fuente-val" value="semanal">
+
+        <!-- Grid de campos -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">
+
+            <!-- Responsable -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Nombre Responsable UDS</label>
+                <input id="am-responsable" type="text" placeholder="Nombre completo..."
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Teléfono -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Teléfono</label>
+                <input id="am-telefono" type="text" placeholder="Ej: 3001234567"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Entidad Administradora (nombre, NO cédula) -->
+            <div style="grid-column:1/-1;">
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">
+                    Nombre Entidad Administradora / Prestador Directo del Servicio
+                    <span style="color:#10b981;font-size:0.6rem;"> (nombre completo, no cédula)</span>
+                </label>
+                <input id="am-entidad" type="text" placeholder="Nombre de la entidad administradora..."
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Unidad de Servicio -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Nombre Unidad de Servicio</label>
+                <input id="am-unidad" type="text" placeholder="Nombre UDS..."
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Código -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Código Cuentame UDS</label>
+                <input id="am-codigo" type="text" placeholder="Ej: 280101..."
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Municipio -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Municipio</label>
+                <input id="am-municipio" type="text" value="NEIVA"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Centro Zonal -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Centro Zonal</label>
+                <input id="am-centrozonal" type="text" value="NEIVA"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Modalidad -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Modalidad</label>
+                <input id="am-modalidad" type="text" value="HCB"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Servicio -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Tipo de Servicio</label>
+                <input id="am-servicio" type="text" value="COMUNITARIO"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Fecha Solicitud -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Fecha de Solicitud</label>
+                <input id="am-fecha-solicitud" type="date"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Cobertura -->
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Cobertura (niños) — 0 = usar la lista</label>
+                <input id="am-cobertura" type="number" min="0" value="0"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;box-sizing:border-box;">
+            </div>
+        </div>
+
+        <!-- Fila Leche + Yogurt -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;
+            padding:0.75rem;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:0.5rem;">
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#10b981;text-transform:uppercase;display:block;margin-bottom:0.25rem;">🥛 Leche: mostrar como</label>
+                <select id="am-leche-modo"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;">
+                    <option value="litros">Litros (L)</option>
+                    <option value="bolsas900">Bolsas 900 ml (unidades)</option>
+                    <option value="ml">Mililitros (ml)</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.62rem;font-weight:600;color:#10b981;text-transform:uppercase;display:block;margin-bottom:0.25rem;">🍶 Yogurt: mostrar como</label>
+                <select id="am-yogurt-modo"
+                    style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                    border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;">
+                    <option value="und150">Unidades 150 ml</option>
+                    <option value="litros">Litros (L)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div style="margin-bottom:0.75rem;">
+            <label style="font-size:0.62rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Observaciones</label>
+            <textarea id="am-observaciones" rows="2" placeholder="Observaciones del acta..."
+                style="width:100%;padding:0.45rem 0.65rem;background:var(--bg-dark);border:1px solid var(--border);
+                border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;
+                resize:vertical;box-sizing:border-box;"></textarea>
+        </div>
+
+        <!-- Datos de quien entrega -->
+        <div style="margin-bottom:1rem;padding:0.75rem;background:rgba(99,102,241,0.05);
+            border:1px solid rgba(99,102,241,0.2);border-radius:0.5rem;">
+            <div style="font-size:0.7rem;font-weight:700;color:#818cf8;margin-bottom:0.6rem;text-transform:uppercase;letter-spacing:0.05em;">
+                ✍️ Datos de quien entrega los alimentos
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+                <div>
+                    <label style="font-size:0.6rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.2rem;">Nombre</label>
+                    <input id="am-entrega-nombre" type="text" placeholder="Nombre completo..."
+                        style="width:100%;padding:0.4rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:0.6rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.2rem;">Documento de Identidad</label>
+                    <input id="am-entrega-doc" type="text" placeholder="Ej: CC 1234567890"
+                        style="width:100%;padding:0.4rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:0.6rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.2rem;">Entidad Administradora (quien entrega)</label>
+                    <input id="am-entrega-entidad" type="text" placeholder="Nombre entidad..."
+                        style="width:100%;padding:0.4rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:0.6rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.2rem;">Número de NIT</label>
+                    <input id="am-entrega-nit" type="text" placeholder="Ej: 900.123.456-7"
+                        style="width:100%;padding:0.4rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);
+                        border-radius:0.375rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;box-sizing:border-box;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones acción -->
+        <div style="display:flex;gap:0.6rem;justify-content:flex-end;">
+            <button onclick="cerrarModalActa()"
+                style="padding:0.5rem 1.2rem;background:transparent;border:1px solid var(--border);
+                color:var(--text-secondary);border-radius:0.5rem;cursor:pointer;font-family:inherit;font-size:0.85rem;">
+                Cancelar
+            </button>
+            <button onclick="generarActaDesdeModal()"
+                style="padding:0.5rem 1.4rem;background:linear-gradient(135deg,#059669,#10b981);
+                color:#fff;border:none;border-radius:0.5rem;cursor:pointer;font-family:inherit;
+                font-size:0.85rem;font-weight:700;box-shadow:0 3px 12px rgba(5,150,105,0.4);">
+                📥 Generar Acta Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL ACTA (para una sola UDS) -->
+    
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         AUTH OVERLAY - Login / Register Wall
+    ═══════════════════════════════════════════════════════════════ -->
+    <div id="auth-overlay" style="
+        display: flex;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: var(--bg-dark);
+        z-index: 9000;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    ">
+        <div style="
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-card);
+            border-radius: 1.25rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 60px rgba(99,102,241,0.15), 0 25px 50px rgba(0,0,0,0.4);
+            overflow: hidden;
+        ">
+            <!-- Header -->
+            <div style="
+                background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
+                padding: 0.5rem 0.5rem 0.5rem;
+                text-align: center;
+                position: relative;
+            ">                
+				<img src="LOGO_MINUTA.png" style="width:230px; height:200px; object-fit:contain;">
+                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 0.25rem;">Minutas · ZAN · v3</div>
+            </div>
+
+            <!-- Login Form (simplificado: solo usuario y clave) -->
+            <div id="auth-form-login" style="padding: 0.5rem 0.75rem 0.75rem;">
+                <div style="margin-bottom: 1.1rem;">
+                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Usuario</label>
+                    <input id="auth-email-login" type="text" placeholder="Tu usuario"
+                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.9rem;outline:none;transition:border 0.2s;box-sizing:border-box;"
+                        onkeypress="if(event.key==='Enter')doLogin()">
+                </div>
+                <div style="margin-bottom: 1.1rem;">
+                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Clave</label>
+                    <input id="auth-pass-login" type="password" placeholder="••••••••"
+                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.9rem;outline:none;transition:border 0.2s;box-sizing:border-box;"
+                        onkeypress="if(event.key==='Enter')doLogin()">
+                </div>
+                <div id="auth-error-login" style="color:#ef4444;font-size:0.8rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
+                <button id="auth-btn-login" onclick="doLogin()" style="
+                    width:100%;padding:0.8rem;background:linear-gradient(135deg,#2563eb,#7c3aed);
+                    border:none;border-radius:0.5rem;color:white;font-size:0.95rem;font-weight:700;
+                    cursor:pointer;transition:opacity 0.2s;letter-spacing:0.02em;
+                ">Ingresar</button>
+                <div style="text-align:center;margin-top:1rem;font-size:0.78rem;color:var(--text-secondary);">
+                    ¿No tienes cuenta? <span onclick="switchAuthTab('register')" style="color:#6366f1;cursor:pointer;font-weight:600;">Crear cuenta</span>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="auth-form-register" style="padding: 1.5rem 1.75rem 1.75rem; display: none;">
+                <div style="margin-bottom: 0.9rem;">
+                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Nombre</label>
+                    <input id="auth-nombre-register" type="text" placeholder="Tu nombre completo"
+                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom: 0.9rem;">
+                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Usuario</label>
+                    <input id="auth-email-register" type="text" placeholder="Ej: jperez o juan.perez"
+                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom: 0.9rem;">
+                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Clave</label>
+                    <input id="auth-pass-register" type="password" placeholder="Mínimo 6 caracteres"
+                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+                </div>
+                <div style="margin-bottom: 0.9rem;">
+                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Confirmar clave</label>
+                    <input id="auth-pass-register2" type="password" placeholder="Repite la clave"
+                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;"
+                        onkeypress="if(event.key==='Enter')doRegister()">
+                </div>
+                <div id="auth-error-register" style="color:#ef4444;font-size:0.8rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
+                <button id="auth-btn-register" onclick="doRegister()" style="
+                    width:100%;padding:0.8rem;background:linear-gradient(135deg,#059669,#10b981);
+                    border:none;border-radius:0.5rem;color:white;font-size:0.95rem;font-weight:700;
+                    cursor:pointer;transition:opacity 0.2s;letter-spacing:0.02em;
+                ">Crear cuenta</button>
+                <div style="text-align:center;margin-top:1rem;font-size:0.78rem;color:var(--text-secondary);">
+                    ¿Ya tienes cuenta? <span onclick="switchAuthTab('login')" style="color:#6366f1;cursor:pointer;font-weight:600;">Ingresar</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- CUSTOM CONFIRM DIALOG (reemplaza confirm() nativo) -->
+    <!-- ================================================== -->
+    <div id="confirm-dialog-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+        <div id="confirm-dialog-box" role="alertdialog" aria-modal="true" aria-labelledby="confirm-dialog-title" style="background:var(--bg-card);border:1px solid var(--border);border-radius:1rem;padding:1.75rem 2rem;width:min(420px,92vw);box-shadow:0 30px 60px rgba(0,0,0,0.5);animation:confirmFadeIn .18s ease;">
+            <div style="display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.25rem;">
+                <span id="confirm-dialog-icon" style="font-size:1.75rem;flex-shrink:0;line-height:1;">⚠️</span>
+                <div>
+                    <div id="confirm-dialog-title" style="font-size:1rem;font-weight:700;color:var(--text-primary);margin-bottom:0.35rem;">¿Confirmar acción?</div>
+                    <div id="confirm-dialog-message" style="font-size:0.875rem;color:var(--text-secondary);line-height:1.5;"></div>
+                </div>
+            </div>
+            <div style="display:flex;gap:0.625rem;justify-content:flex-end;">
+                <button id="confirm-dialog-cancel" onclick="_confirmDialogCancel()" style="padding:0.6rem 1.25rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;">Cancelar</button>
+                <button id="confirm-dialog-ok" onclick="_confirmDialogConfirm()" style="padding:0.6rem 1.25rem;background:linear-gradient(135deg,#dc2626,#ef4444);border:none;border-radius:0.5rem;color:white;font-size:0.875rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s;">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SCRIPTS PRINCIPALES ==================== -->
+    <!-- Orden de carga: datos → globales → firebase → funcionalidades → auth → UI → utils -->
+    <script src="js/database.js"></script>
+    <script src="js/festivos.js"></script>
+    <script src="js/globals.js"></script>
+    <script src="js/firebase-functions.js"></script>
+    <script src="js/editor-gramajes.js"></script>
+    <script src="js/navegacion.js"></script>
+    <script src="js/calculadora-semanal.js"></script>
+    <script src="js/listado-mensual.js"></script>
+    <script src="js/calendario.js"></script>
+    <script src="js/auxiliares.js"></script>
+    <script src="js/limpiar-entregas.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/panel-detalles.js"></script>
+    <script src="js/actas-init.js"></script>
+    <script src="js/actas.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/confirm-dialog.js"></script>
+
+</body>
+</html>
