@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -2509,7 +2510,7 @@
         </div>
         <div class="mobile-title">
             <span id="headerIcon">🍽️</span>
-            <span id="headerTitle">Lista Mercados |V3.03</span>
+            <span id="headerTitle">Lista Mercados |v3.04</span>
             <span class="monthly-badge" id="monthlyBadge">MENSUAL</span>
             <span class="calendar-badge" id="calendarBadge">CALENDARIO</span>
             <span class="editor-badge" id="editorBadge">EDITOR</span>
@@ -2524,7 +2525,7 @@
         
         <div class="logo">
             <div class="logo-icon" id="logoIcon">🍽️</div>
-            <span>Lista Mercados |V3.03</span>
+            <span>Lista Mercados |v3.04</span>
         </div>
 
         <div class="nav-section">
@@ -2815,8 +2816,7 @@
 					<div id="admin-paginacion" style="display: flex; justify-content: center; gap: 0.375rem; margin-top: 0.75rem; flex-wrap: wrap;"></div>
 				</div>
 
-				<!-- USUARIOS SECTION -->
-				<div style="margin-top: 1.5rem; background: var(--bg-card); border-radius: 0.75rem; border: 1px solid rgba(99,102,241,0.2); overflow: hidden;">
+					<div style="margin-top: 1.5rem; background: var(--bg-card); border-radius: 0.75rem; border: 1px solid rgba(99,102,241,0.2); overflow: hidden;">
 					<div style="padding: 0.875rem 1rem; background: rgba(99,102,241,0.08); border-bottom: 1px solid rgba(99,102,241,0.15); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
 						<div style="display: flex; align-items: center; gap: 0.5rem;">
 							<span style="font-size: 1rem;">👥</span>
@@ -2834,13 +2834,45 @@
 								<tr style="background:var(--bg-dark);">
 									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Avatar</th>
 									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Nombre</th>
-									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Correo</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Usuario</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">🔑 Clave</th>
 									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Último Ingreso</th>
 									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Rol</th>
 								</tr>
 							</thead>
 							<tbody id="admin-usuarios-tbody">
-								<tr><td colspan="5" style="padding:1.5rem;text-align:center;color:var(--text-secondary);">Cargando...</td></tr>
+								<tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--text-secondary);">Cargando...</td></tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<!-- SECCIÓN IPs CON APODO -->
+				<div style="margin-top: 1.25rem; background: var(--bg-card); border-radius: 0.75rem; border: 1px solid rgba(236,72,153,0.2); overflow: hidden;">
+					<div style="padding: 0.875rem 1rem; background: rgba(236,72,153,0.06); border-bottom: 1px solid rgba(236,72,153,0.15); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+						<div style="display: flex; align-items: center; gap: 0.5rem;">
+							<span style="font-size: 1rem;">🌐</span>
+							<span style="font-weight: 700; font-size: 0.9rem; color: #f472b6;">IPs Registradas con Apodo</span>
+						</div>
+						<div style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text-secondary);">
+							<span id="admin-ips-count">— IPs</span>
+							<button onclick="cargarTablaIPsAdmin()" style="background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.2);color:#f472b6;padding:0.15rem 0.5rem;border-radius:0.25rem;cursor:pointer;font-size:0.72rem;">↺ Actualizar</button>
+						</div>
+					</div>
+					<div style="overflow-x: auto;">
+						<table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
+							<thead>
+								<tr style="background:var(--bg-dark);">
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">#</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Dirección IP</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">👤 Apodo (Nombre)</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Accesos</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Último Evento</th>
+									<th style="padding:0.4rem 0.6rem;text-align:left;color:var(--text-secondary);font-size:0.7rem;font-weight:600;">Última Vez</th>
+								</tr>
+							</thead>
+							<tbody id="admin-ips-apodos-tbody">
+								<tr><td colspan="6" style="padding:1.5rem;text-align:center;color:var(--text-secondary);">Cargando...</td></tr>
 							</tbody>
 						</table>
 					</div>
@@ -2944,7 +2976,7 @@
 
             <div class="search-container no-print" id="searchContainer" style="display: none;">
                 <span class="search-icon">🔍</span>
-                <input type="search" class="search-input" id="buscador" placeholder="Buscar producto..." oninput="filtrarBusqueda(this.value)">
+                <input type="search" class="search-input" id="buscador" placeholder="Buscar producto..." oninput="filtrarBusquedaDebounced(this.value)">
             </div>
 
             <div class="category-filters no-print" id="catFilters" style="display: none;">
@@ -3067,7 +3099,7 @@
             <!-- Buscador para mensual -->
             <div class="search-container no-print" id="monthlySearchContainer" style="display: none;">
                 <span class="search-icon">🔍</span>
-                <input type="search" class="search-input" id="buscadorMensual" placeholder="Buscar producto..." oninput="filtrarBusquedaMensual(this.value)">
+                <input type="search" class="search-input" id="buscadorMensual" placeholder="Buscar producto..." oninput="filtrarBusquedaMensualDebounced(this.value)">
             </div>
 
             <!-- Selector de Semanas -->
@@ -4415,6 +4447,56 @@
         const nombresDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab'];
 
         // ==================== VARIABLES GLOBALES ====================
+        // ── AppState: Modelo centralizado de estado (patrón MVC) ──────
+        // Los globals existentes se mantienen por compatibilidad, pero
+        // AppState es la fuente autoritativa para los controladores.
+        const AppState = {
+            _listeners: {},
+
+            // Estado reactivo — leer siempre desde aquí en código nuevo
+            get regional()   { return currentRegional; },
+            get modalidad()  { return currentModalidad; },
+            get weeklyData() { return currentData; },
+            get monthlyData(){ return monthlyData; },
+            get firebaseConnected() { return firebaseConnected; },
+
+            // Suscripción a cambios: AppState.on('regional', fn)
+            on(event, fn) {
+                if (!this._listeners[event]) this._listeners[event] = [];
+                this._listeners[event].push(fn);
+                return () => { this._listeners[event] = this._listeners[event].filter(f => f !== fn); };
+            },
+
+            // Emitir evento: AppState.emit('weeklyData', data)
+            emit(event, payload) {
+                (this._listeners[event] || []).forEach(fn => {
+                    try { fn(payload); } catch(e) { console.warn('AppState listener error:', event, e); }
+                });
+            },
+
+            // Mutaciones tipadas — actualizar global Y notificar listeners
+            setRegional(val) {
+                currentRegional = val; window.__actaRegional = val;
+                this.emit('regional', val);
+            },
+            setModalidad(val) {
+                currentModalidad = val;
+                this.emit('modalidad', val);
+            },
+            setWeeklyData(val) {
+                currentData = val; window.__actaCurrentData = val;
+                this.emit('weeklyData', val);
+            },
+            setMonthlyData(val) {
+                monthlyData = val; window.__actaMonthlyData = val;
+                this.emit('monthlyData', val);
+            },
+            setFirebaseConnected(val) {
+                firebaseConnected = val;
+                this.emit('firebaseConnected', val);
+            }
+        };
+        // ─────────────────────────────────────────────────────────────
         let regionales = JSON.parse(JSON.stringify(baseDatabase));
         let currentRegional = 'neiva'; window.__actaRegional = 'neiva';
 		let currentModalidad = 'hcb';
@@ -4608,47 +4690,65 @@
 
         function setupFirebaseListeners() {
 			if (!window.firebaseDB) return;
-			
+
+			// ── Carga inicial con get() (una sola lectura, no listener continuo) ──
 			const dbRef = window.firebaseRef(window.firebaseDB, 'regionales');
-			
-			window.firebaseOnValue(dbRef, (snapshot) => {
+			window.firebaseGet(dbRef).then((snapshot) => {
 				if (snapshot.exists()) {
-					const data = snapshot.val();
-					
-					// Actualizar datos para cada regional y modalidad
-					if (data.neiva?.modalidades) {
-						Object.keys(data.neiva.modalidades).forEach(mod => {
-							if (data.neiva.modalidades[mod].db) {
-								regionales.neiva.modalidades[mod].db = data.neiva.modalidades[mod].db;
-							}
-						});
-					}
-					if (data.gaitana?.modalidades) {
-						Object.keys(data.gaitana.modalidades).forEach(mod => {
-							if (data.gaitana.modalidades[mod].db) {
-								regionales.gaitana.modalidades[mod].db = data.gaitana.modalidades[mod].db;
-							}
-						});
-					}
-					
+					_applyRegionalesSnapshot(snapshot.val());
 					updateFirebaseStatus(true);
-					
-					// Si el editor está abierto, recargar
-					const activeSection = document.querySelector('.section.active')?.id;
-					if (activeSection === 'section-editor' && currentEditingProduct !== null) {
-						loadProductMatrix();
-					}
 				} else {
 					guardarOriginalesFirebase();
 				}
-			}, (error) => {
-				console.error('Error Firebase:', error);
+			}).catch((error) => {
+				console.error('Error Firebase init:', error);
 				updateFirebaseStatus(false);
 			});
 		}
 
+		// Aplica datos de Firebase a la estructura local
+		function _applyRegionalesSnapshot(data) {
+			if (data.neiva?.modalidades) {
+				Object.keys(data.neiva.modalidades).forEach(mod => {
+					if (data.neiva.modalidades[mod].db) {
+						regionales.neiva.modalidades[mod].db = data.neiva.modalidades[mod].db;
+					}
+				});
+			}
+			if (data.gaitana?.modalidades) {
+				Object.keys(data.gaitana.modalidades).forEach(mod => {
+					if (data.gaitana.modalidades[mod].db) {
+						regionales.gaitana.modalidades[mod].db = data.gaitana.modalidades[mod].db;
+					}
+				});
+			}
+		}
+
+		// Listener en tiempo real – sólo se activa cuando el editor está abierto
+		let _editorOnValueUnsub = null;
+		function _attachEditorRealtime() {
+			if (_editorOnValueUnsub || !window.firebaseDB) return;
+			const dbRef = window.firebaseRef(window.firebaseDB, 'regionales');
+			_editorOnValueUnsub = window.firebaseOnValue(dbRef, (snapshot) => {
+				if (snapshot.exists()) {
+					_applyRegionalesSnapshot(snapshot.val());
+					updateFirebaseStatus(true);
+					if (currentEditingProduct !== null) loadProductMatrix();
+				}
+			}, (error) => {
+				console.error('Error Firebase realtime:', error);
+				updateFirebaseStatus(false);
+			});
+		}
+		function _detachEditorRealtime() {
+			if (_editorOnValueUnsub) {
+				_editorOnValueUnsub();   // onValue devuelve la función unsubscribe
+				_editorOnValueUnsub = null;
+			}
+		}
+
         function updateFirebaseStatus(connected) {
-            firebaseConnected = connected;
+            AppState.setFirebaseConnected(connected);
             const statusEl = document.getElementById('firebaseStatus');
             const statusText = document.getElementById('firebaseStatusText');
             
@@ -4975,6 +5075,11 @@
         const _sectionInitialized = {};
 
         function showSection(section) {
+            // Desconectar listener de editor si salimos de esa sección
+            const prevSection = document.querySelector('.section.active')?.id?.replace('section-', '');
+            if (prevSection === 'editor' && section !== 'editor') {
+                _detachEditorRealtime();
+            }
             // Inicialización lazy: cada sección se inicializa solo la primera vez
             if (!_sectionInitialized[section]) {
                 _sectionInitialized[section] = true;
@@ -5021,6 +5126,7 @@
                 document.getElementById('headerIcon').textContent = '⚖️';
                 document.getElementById('headerTitle').textContent = 'Editor';
                 document.getElementById('logoIcon').textContent = '⚖️';
+                _attachEditorRealtime(); // Activar listener en tiempo real solo para el editor
                 initEditor();
             } else if (section === 'saved') {
                 showSavedLists();
@@ -5207,7 +5313,7 @@
                     });
                 });
 
-                currentData = resumen; window.__actaCurrentData = resumen;
+                AppState.setWeeklyData(resumen); window.__actaCurrentData = resumen;
                 updateCategoryCounts(resumen);
                 applyFilters();
                 
@@ -5341,10 +5447,20 @@
             applyFilters();
         }
 
+        // ── Debounce utility ──────────────────────────────────────
+        function debounce(fn, delay) {
+            let timer;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+
         function filtrarBusqueda(term) {
             searchTerm = term.toLowerCase();
             if (currentData) applyFilters();
         }
+        const filtrarBusquedaDebounced = debounce(filtrarBusqueda, 300);
 
         // ==================== FUNCIONES LISTADO MENSUAL ====================
         function toggleWeek(weekNum) {
@@ -5424,7 +5540,7 @@
                     });
                 });
 
-                monthlyData = resumen; window.__actaMonthlyData = resumen;
+                AppState.setMonthlyData(resumen); window.__actaMonthlyData = resumen;
                 updateMonthlyCategoryCounts(resumen);
                 applyMonthlyFilters();
                 
@@ -5458,6 +5574,7 @@
             monthlySearchTerm = term.toLowerCase();
             if (monthlyData) applyMonthlyFilters();
         }
+        const filtrarBusquedaMensualDebounced = debounce(filtrarBusquedaMensual, 300);
 
         function applyMonthlyFilters() {
             if (!monthlyData) return;
@@ -5472,11 +5589,68 @@
             updateMonthlyTotals();
         }
 
+        // ── Virtual Scroll Engine for Monthly Table ──────────────
+        const VS_ROW_HEIGHT = 38; // px estimados por fila
+        const VS_BUFFER = 5;      // filas extra arriba/abajo del viewport
+        let _vsSortedRows = [];   // caché de filas ordenadas
+        let _vsScrollListener = null;
+
+        function _vsRowHtml(name, item, sortedWeeks) {
+            const idBase = `${currentRegional}_monthly_${name.replace(/\s/g, '')}`;
+            const displayName = name.length > 18 ? name.substring(0, 16) + '...' : name;
+            const nameEscaped = name.replace(/'/g, "\\'");
+            let cells = `<td title="${name}"><div class="product-name"><div class="category-badge badge-${item.c}"></div>${displayName}</div></td>
+                <td style="text-align:center;"><span class="amount-badge">${item.u}</span></td>`;
+            let sugeridosSemana = [];
+            let totalEntrega = 0;
+            sortedWeeks.forEach(week => {
+                const weekData = item.weeks[week];
+                if (weekData) {
+                    const sugerido = formatCompacto(weekData.qTotal, item.u, name);
+                    const valorEntrega = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idBase}_w${week}`) || '';
+                    cells += `<td class="suggested-cell" title="${weekData.qTotal.toFixed(2)} ${item.u}">${sugerido}</td>
+                        <td class="entrega-cell"><input type="number" class="input-entrega-mes ${valorEntrega ? 'saved' : ''}" value="${valorEntrega}" step="0.01" oninput="guardarEntregaMensual('${idBase}_w${week}', this.value, this)" placeholder="0" data-week="${week}"></td>`;
+                    sugeridosSemana.push(sugerido);
+                    totalEntrega += parseFloat(valorEntrega) || 0;
+                } else {
+                    cells += `<td class="suggested-cell">-</td><td class="entrega-cell">-</td>`;
+                }
+            });
+            const totalSugDisplay = sumarYFormatearSugeridos(sugeridosSemana, item.u, name);
+            cells += `<td class="total-suggested">${totalSugDisplay}</td>
+                <td class="total-entrega" id="total-entrega-${idBase}">${totalEntrega > 0 ? totalEntrega.toFixed(1) + ' ' + item.u : '-'}</td>
+                <td class="no-print" style="text-align:center;"><button class="detail-btn" onclick="abrirDetalleProducto('${nameEscaped}')">🔍</button></td>`;
+            return cells;
+        }
+
+        function _vsRender() {
+            const wrapper = document.querySelector('.monthly-table-wrapper');
+            const tbody = document.getElementById('monthlyTableBody');
+            if (!wrapper || !tbody || _vsSortedRows.length === 0) return;
+
+            const total = _vsSortedRows.length;
+            const wrapperH = wrapper.clientHeight || 400;
+            const scrollTop = wrapper.scrollTop;
+
+            const firstVisible = Math.max(0, Math.floor(scrollTop / VS_ROW_HEIGHT) - VS_BUFFER);
+            const lastVisible  = Math.min(total - 1, Math.ceil((scrollTop + wrapperH) / VS_ROW_HEIGHT) + VS_BUFFER);
+
+            const paddingTop    = firstVisible * VS_ROW_HEIGHT;
+            const paddingBottom = (total - 1 - lastVisible) * VS_ROW_HEIGHT;
+
+            let html = `<tr style="height:${paddingTop}px;pointer-events:none;"><td colspan="99"></td></tr>`;
+            for (let i = firstVisible; i <= lastVisible; i++) {
+                const [name, item] = _vsSortedRows[i];
+                html += `<tr>${_vsRowHtml(name, item, _vsSortedRows._sortedWeeks)}</tr>`;
+            }
+            html += `<tr style="height:${paddingBottom}px;pointer-events:none;"><td colspan="99"></td></tr>`;
+            tbody.innerHTML = html;
+        }
+
         function renderMonthlyTable(data) {
             const sortedWeeks = Array.from(monthlyActiveWeeks.keys()).sort((a, b) => a - b);
             const numWeeks = sortedWeeks.length;
             
-            // Aplicar clase segun numero de semanas para anchos responsivos
             const table = document.getElementById('monthlyTable');
             table.className = 'monthly-table';
             if (numWeeks <= 2) table.classList.add('weeks-1-2');
@@ -5491,51 +5665,24 @@
             theadHtml += `<th class="total-header">Total<br>Sug.</th><th class="total-header">Total<br>Ent.</th><th class="no-print" style="min-width:60px;">Det.</th></tr>`;
             document.getElementById('monthlyTableHead').innerHTML = theadHtml;
             
-            // Body
+            // Preparar cache de filas
             const sorted = Object.entries(data).sort((a, b) => 
                 (ORDER_CATEGORIES[a[1].c] || 99) - (ORDER_CATEGORIES[b[1].c] || 99)
             );
-            
-            let tbodyHtml = '';
-            sorted.forEach(([name, item], index) => {
-                const idBase = `${currentRegional}_monthly_${name.replace(/\s/g, '')}`;
-                const displayName = name.length > 18 ? name.substring(0, 16) + '...' : name;
-                const nameEscaped = name.replace(/'/g, "\\'");
-                
-                tbodyHtml += `<tr style="animation-delay: ${index * 30}ms">
-                    <td title="${name}"><div class="product-name"><div class="category-badge badge-${item.c}"></div>${displayName}</div></td>
-                    <td style="text-align: center;"><span class="amount-badge">${item.u}</span></td>`;
-                
-                // TotalSug = SUMA DIRECTA de los valores comerciales mostrados en cada semana
-                // Nunca se suman gramos crudos — se suman los strings ya formateados por semana.
-                let sugeridosSemana = [];
-                let totalEntrega = 0;
+            _vsSortedRows = sorted;
+            _vsSortedRows._sortedWeeks = sortedWeeks;
 
-                sortedWeeks.forEach(week => {
-                    const weekData = item.weeks[week];
-                    if (weekData) {
-                        const sugerido = formatCompacto(weekData.qTotal, item.u, name);
-                        const valorEntrega = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idBase}_w${week}`) || '';
-
-                        tbodyHtml += `<td class="suggested-cell" title="${weekData.qTotal.toFixed(2)} ${item.u}">${sugerido}</td>
-							<td class="entrega-cell"><input type="number" class="input-entrega-mes ${valorEntrega ? 'saved' : ''}" value="${valorEntrega}" step="0.01" oninput="guardarEntregaMensual('${idBase}_w${week}', this.value, this)" placeholder="0" data-week="${week}"></td>`;
-
-                        sugeridosSemana.push(sugerido);
-                        totalEntrega += parseFloat(valorEntrega) || 0;
-                    } else {
-                        tbodyHtml += `<td class="suggested-cell">-</td><td class="entrega-cell">-</td>`;
-                    }
-                });
-
-                // Sumar los valores comerciales de cada semana
-                const totalSugDisplay = sumarYFormatearSugeridos(sugeridosSemana, item.u, name);
-                
-                tbodyHtml += `<td class="total-suggested">${totalSugDisplay}</td>
-                             <td class="total-entrega" id="total-entrega-${idBase}">${totalEntrega > 0 ? totalEntrega.toFixed(1) + ' ' + item.u : '-'}</td>
-                             <td class="no-print" style="text-align:center;"><button class="detail-btn" onclick="abrirDetalleProducto('${nameEscaped}')">🔍</button></td></tr>`;
-            });
-            
-            document.getElementById('monthlyTableBody').innerHTML = tbodyHtml;
+            // Configurar virtual scroll listener
+            const wrapper = document.querySelector('.monthly-table-wrapper');
+            if (wrapper) {
+                if (_vsScrollListener) wrapper.removeEventListener('scroll', _vsScrollListener);
+                _vsScrollListener = debounce(_vsRender, 16);
+                wrapper.addEventListener('scroll', _vsScrollListener, { passive: true });
+                // Ajustar altura para activar scroll
+                wrapper.style.maxHeight = wrapper.style.maxHeight || '70vh';
+                wrapper.style.overflowY = 'auto';
+            }
+            _vsRender();
         }
 
         // sumarYFormatearSugeridos: suma los strings comerciales de cada semana activa
@@ -6412,11 +6559,7 @@
 				tipo: tipo,
 				detalles: detalles,
 				url: window.location.href,
-				userAgent: navigator.userAgent,
-				// Vincular al usuario autenticado
-				uid: (window.currentUser && window.currentUser.uid) || null,
-				usuarioNombre: (window.currentUser && (window.currentUser.displayName || window.currentUser.email)) || 'Anónimo',
-				usuarioEmail: (window.currentUser && window.currentUser.email) || null
+				userAgent: navigator.userAgent
 			};
 
 			// GUARDAR PRIMERO EN FIREBASE (fuente principal)
@@ -6503,10 +6646,7 @@
 				const data = [];
 				if (snapshot.exists()) {
 					snapshot.forEach((childSnapshot) => {
-						// Guardar la key de Firebase para poder eliminar individualmente
-						const val = childSnapshot.val();
-						val._fbKey = childSnapshot.key;
-						data.push(val);
+						data.push(childSnapshot.val());
 					});
 				}
 				
@@ -6727,10 +6867,8 @@
 								<div style="font-size: 0.65rem; color: var(--text-secondary);">${soBrief}</div>
 							</td>
 							<td style="padding: 0.5rem 0.75rem; max-width: 140px;">
-								<div style="font-size: 0.75rem; font-weight: 600; color: #a78bfa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${reg.usuarioNombre || reg.uid || ''}">
-									${reg.usuarioNombre ? '👤 ' + (reg.usuarioNombre.length > 16 ? reg.usuarioNombre.substring(0,16)+'…' : reg.usuarioNombre) : '<span style="color:var(--text-secondary);font-size:0.65rem;">Anónimo</span>'}
-								</div>
-								<div style="font-size: 0.65rem; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${reg.deviceId || ''}">${(reg.deviceId || 'N/A').substring(0, 14)}…</div>
+								<div style="font-size: 0.7rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${reg.deviceId || ''}">${(reg.deviceId || 'N/A').substring(0, 18)}${(reg.deviceId || '').length > 18 ? '…' : ''}</div>
+								<div style="font-size: 0.65rem; color: var(--text-secondary);">${reg.deviceInfo?.pantalla || ''} ${reg.deviceInfo?.timezone ? '• ' + reg.deviceInfo.timezone.split('/').pop() : ''}</div>
 							</td>
 							<td style="padding: 0.5rem 0.75rem;">
 								<span style="background: rgba(99,102,241,0.12); color: #818cf8; padding: 0.2rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; white-space: nowrap;">
@@ -6755,17 +6893,11 @@
 							<td style="padding: 0.5rem 0.75rem; font-size: 0.7rem; color: var(--text-secondary); max-width: 130px;">
 								${detallesTexto || '—'}
 							</td>
-							<td style="padding: 0.5rem 0.75rem; text-align: center; white-space: nowrap;">
-								<button onclick="verDetalleRegistro(${regIdx})" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; border-radius: 0.375rem; cursor: pointer; padding: 0.2rem 0.5rem; font-size: 0.7rem; transition: all 0.2s; margin-right: 0.2rem;" 
+							<td style="padding: 0.5rem 0.75rem; text-align: center;">
+								<button onclick="verDetalleRegistro(${regIdx})" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; border-radius: 0.375rem; cursor: pointer; padding: 0.2rem 0.5rem; font-size: 0.7rem; transition: all 0.2s;" 
 									onmouseover="this.style.background='rgba(99,102,241,0.3)'" 
 									onmouseout="this.style.background='rgba(99,102,241,0.15)'">
 									🔍
-								</button>
-								<button onclick="eliminarRegistroIndividual('${reg._fbKey || reg.id}')" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #f87171; border-radius: 0.375rem; cursor: pointer; padding: 0.2rem 0.5rem; font-size: 0.7rem; transition: all 0.2s;"
-									onmouseover="this.style.background='rgba(239,68,68,0.25)'"
-									onmouseout="this.style.background='rgba(239,68,68,0.1)'"
-									title="Eliminar este registro">
-									🗑️
 								</button>
 							</td>
 						</tr>
@@ -7033,8 +7165,8 @@
 
 		async function limpiarRegistros() {
 			try {
-				await mostrarConfirm('Se eliminarán TODOS los registros de auditoría y el historial de ingresos de Firebase. Esta acción es irreversible.', {
-					titulo: '⚠️ Eliminar todos los registros', icono: '🔥', btnOk: 'Sí, eliminar todo'
+				await mostrarConfirm('Se eliminarán TODOS los registros de auditoría de Firebase. Esta acción es irreversible.', {
+					titulo: '⚠️ Eliminar registros de auditoría', icono: '🔥', btnOk: 'Sí, eliminar todo'
 				});
 			} catch { return; }
 			
@@ -7044,12 +7176,8 @@
 			}
 			
 			try {
-				// Eliminar auditoría
+				// Eliminar todo el nodo de auditoría
 				await window.firebaseSet(getAuditoriaRef(), null);
-				// Eliminar historial de ingresos
-				await window.firebaseSet(window.firebaseRef(window.firebaseDB, 'user_logins'), null);
-				// Eliminar historial de actas
-				await window.firebaseSet(window.firebaseRef(window.firebaseDB, 'actas_generadas'), null);
 				
 				// Limpiar variables locales
 				registrosAuditoria = [];
@@ -7057,50 +7185,11 @@
 				localStorage.removeItem('smartMenu_auditoria_pendientes');
 				
 				cargarRegistrosAdmin();
-				showToast('Registros, ingresos y actas eliminados de Firebase', 'success');
+				showToast('Registros eliminados de Firebase', 'success');
 			} catch (error) {
 				console.error('Error eliminando:', error);
 				showToast('Error al eliminar: ' + error.message, 'error');
 			}
-		}
-
-		// Eliminar un registro individual de auditoría
-		async function eliminarRegistroIndividual(firebaseKey) {
-			try {
-				await mostrarConfirm('Se eliminará este registro de auditoría de forma permanente.', {
-					titulo: '¿Eliminar registro?', icono: '🗑️', btnOk: 'Sí, eliminar'
-				});
-			} catch { return; }
-			if (!window.firebaseDB) { showToast('Firebase no disponible', 'error'); return; }
-			try {
-				await window.firebaseSet(window.firebaseRef(window.firebaseDB, 'auditoria/' + firebaseKey), null);
-				showToast('Registro eliminado', 'success');
-			} catch(e) {
-				showToast('Error al eliminar: ' + e.message, 'error');
-			}
-		}
-
-		// Registrar generación de acta en Firebase
-		async function registrarActa(datos) {
-			if (!window.firebaseDB) return;
-			try {
-				const key = Date.now() + '_' + Math.random().toString(36).substr(2,6);
-				const actaRef = window.firebaseRef(window.firebaseDB, 'actas_generadas/' + key);
-				await window.firebaseSet(actaRef, {
-					timestamp: Date.now(),
-					fecha: new Date().toISOString(),
-					fechaLocal: new Date().toLocaleString('es-CO'),
-					uid: (window.currentUser && window.currentUser.uid) || null,
-					usuarioNombre: (window.currentUser && (window.currentUser.displayName || window.currentUser.email)) || 'Anónimo',
-					tipo: datos.tipo || 'individual',
-					fuente: datos.fuente || 'semanal',
-					semana: datos.semana || '',
-					categoria: datos.categoria || '',
-					totalActas: datos.totalActas || 1,
-					udsNombre: datos.udsNombre || '',
-					regional: typeof currentRegional !== 'undefined' ? currentRegional : ''
-				});
-			} catch(e) { console.error('Error registrando acta:', e); }
 		}
 
 		// Cerrar modales con ESC (mejorado - cubre TODOS los modales)
@@ -9793,15 +9882,6 @@ document.addEventListener('keydown', function(e) {
             var fijos = tabGetParamsFijos();
             var params = Object.assign({}, fijos, uds, {observaciones:'', recibeNombre: uds.responsable||'', recibeDoc: uds.documentoId||''});
             await generarActaExcelXML(items, params, null);
-            // Registrar generación de acta individual
-            registrarActa({
-                tipo: 'individual',
-                fuente: fp.fuente,
-                semana: document.getElementById('sem') ? document.getElementById('sem').value : '',
-                categoria: fijos.modalidad || '',
-                totalActas: 1,
-                udsNombre: uds.nombre || uds.codigo || ''
-            });
         }
 
         async function tabGenerarTodasLasActas() {
@@ -9822,14 +9902,6 @@ document.addEventListener('keydown', function(e) {
                 } catch(e) { showToast('Error en UDS ' + (i+1) + ': ' + e.message, 'error'); }
             }
             showToast('✅ ' + directorioUDS.length + ' actas generadas exitosamente', 'success');
-            // Registrar generación masiva de actas
-            registrarActa({
-                tipo: 'masiva',
-                fuente: fp.fuente,
-                semana: document.getElementById('sem') ? document.getElementById('sem').value : '',
-                categoria: fijos.modalidad || '',
-                totalActas: directorioUDS.length
-            });
         }
 
         function sincronizarConPanelFlotante() {
@@ -9882,63 +9954,228 @@ document.addEventListener('keydown', function(e) {
 
         // =============================================
         // EXPORTAR/IMPORTAR DIRECTORIOS COMO EXCEL
+        // v2 — incluye configuración completa de lista semanal/mensual:
+        //      regional, modalidad, semana, días, cupos, modo leche/yogurt,
+        //      productos con cantidad sugerida Y entrega digitada.
         // =============================================
+
+        // ── Helpers internos ──────────────────────────────────────────
+        function _expGetEntregasSemanal() {
+            // Recolectar todas las entregas de la lista semanal activa
+            var entregas = {};
+            if (!currentData) return entregas;
+            Object.keys(currentData).forEach(function(name) {
+                var idRef = currentRegional + '_' + name.replace(/\s/g, '');
+                var v = localStorage.getItem(ENTREGA_KEY_PREFIX + idRef);
+                if (v !== null && v !== '') entregas[name] = v;
+            });
+            return entregas;
+        }
+
+        function _expGetEntregasMensual() {
+            // Recolectar entregas de la lista mensual activa, por semana
+            var entregas = {}; // { nombreProducto: { w1: val, w2: val, ... } }
+            if (!monthlyData) return entregas;
+            var semanas = Array.from(monthlyActiveWeeks.keys());
+            Object.keys(monthlyData).forEach(function(name) {
+                var idBase = currentRegional + '_monthly_' + name.replace(/\s/g, '');
+                semanas.forEach(function(wk) {
+                    var v = localStorage.getItem(ENTREGA_KEY_PREFIX + idBase + '_w' + wk);
+                    if (v !== null && v !== '') {
+                        if (!entregas[name]) entregas[name] = {};
+                        entregas[name]['w' + wk] = v;
+                    }
+                });
+            });
+            return entregas;
+        }
+
+        function _expConfigSemanal() {
+            return {
+                tipoLista:  'semanal',
+                regional:   currentRegional,
+                modalidad:  currentModalidad,
+                semana:     (document.getElementById('sem') || {}).value || '1',
+                cupos:      (document.getElementById('num-p') || {}).value || '0',
+                dias:       Array.from(document.querySelectorAll('.d-ch:checked')).map(function(cb){ return parseInt(cb.value); }),
+                lecheModo:  (document.getElementById('leche-modo-semanal') || {}).value || 'ml',
+                yogurtModo: (document.getElementById('yogurt-modo-semanal') || {}).value || 'und150'
+            };
+        }
+
+        function _expConfigMensual() {
+            var semanas = [];
+            monthlyActiveWeeks.forEach(function(days, week) {
+                semanas.push({ semana: week, dias: Array.from(days) });
+            });
+            return {
+                tipoLista:  'mensual',
+                regional:   currentRegional,
+                modalidad:  currentModalidad,
+                cupos:      (document.getElementById('monthly-num-p') || {}).value || '0',
+                semanas:    semanas,
+                lecheModo:  (document.getElementById('leche-modo-mensual') || {}).value || 'ml',
+                yogurtModo: (document.getElementById('yogurt-modo-mensual') || {}).value || 'und150'
+            };
+        }
+
+        // ── EXPORTAR ─────────────────────────────────────────────────
         async function tabExportarDirectoriosExcel() {
             var dirs = tabLoadDirectoriosGuardados();
             var nombres = Object.keys(dirs);
             if (nombres.length === 0) { showToast('No hay directorios guardados para exportar', 'warning'); return; }
-
             if (typeof XLSX === 'undefined') { showToast('Librería XLSX no disponible', 'error'); return; }
 
             var wb = XLSX.utils.book_new();
 
-            // Hoja 1: Índice de directorios
+            // ── Hoja: Índice ──────────────────────────────────────────
             var idxRows = [['Nombre', 'Contrato', 'Semana', 'Mes', 'Fecha Guardado', 'Total UDS']];
             nombres.forEach(function(nom) {
                 var d = dirs[nom];
-                idxRows.push([
-                    nom,
-                    d.contrato || '',
-                    d.semana || '',
-                    d.mes || '',
-                    d.fecha ? new Date(d.fecha).toLocaleDateString('es-CO') : '',
-                    (d.uds || []).length
-                ]);
+                idxRows.push([nom, d.contrato||'', d.semana||'', d.mes||'',
+                    d.fecha ? new Date(d.fecha).toLocaleDateString('es-CO') : '', (d.uds||[]).length]);
             });
             var wsIdx = XLSX.utils.aoa_to_sheet(idxRows);
+            wsIdx['!cols'] = [{wch:36},{wch:16},{wch:12},{wch:14},{wch:18},{wch:10}];
             XLSX.utils.book_append_sheet(wb, wsIdx, 'Índice');
 
-            // Hoja 2: Datos Fijos (primera que tenga)
+            // ── Hoja: Configuración Lista (semanal o mensual activa) ──
+            var tieneListaSemanal  = !!currentData;
+            var tieneListaMensual  = !!monthlyData;
+            var configRows = [['⚙️ CONFIGURACIÓN DE LISTA — v2', '']];
+
+            if (tieneListaSemanal) {
+                var cfgS = _expConfigSemanal();
+                var entregasS = _expGetEntregasSemanal();
+                configRows.push(['', '']);
+                configRows.push(['▶ LISTA SEMANAL', '']);
+                configRows.push(['Tipo Lista', 'semanal']);
+                configRows.push(['Regional', cfgS.regional]);
+                configRows.push(['Modalidad', cfgS.modalidad]);
+                configRows.push(['Semana', cfgS.semana]);
+                configRows.push(['Cupos (personas)', cfgS.cupos]);
+                configRows.push(['Días seleccionados', cfgS.dias.join(',')]);
+                configRows.push(['Modo Leche', cfgS.lecheModo]);
+                configRows.push(['Modo Yogurt', cfgS.yogurtModo]);
+                configRows.push(['', '']);
+                configRows.push(['PRODUCTOS SEMANAL', '', '']);
+                configRows.push(['Producto', 'Unidad', 'Cant. Sugerida (texto)', 'Cant. Total (num)', 'Cant. Individual', 'Entrega Digitada', 'Categoría']);
+                var ORDER_CAT_EXP = { granos:1, lacteos:2, proteinas:3, verduras:4, frutas:5, panaderia:6 };
+                var sortedS = Object.entries(currentData).sort(function(a,b){
+                    return (ORDER_CAT_EXP[a[1].c]||99) - (ORDER_CAT_EXP[b[1].c]||99);
+                });
+                sortedS.forEach(function(pair) {
+                    var name = pair[0]; var item = pair[1];
+                    var sugerido = '';
+                    try {
+                        if (name.toLowerCase().trim() === 'leche') {
+                            sugerido = formatLecheConModo(item.qTotal, cfgS.lecheModo);
+                        } else if (name.toLowerCase().trim() === 'yogurt') {
+                            sugerido = formatYogurtConModo(item.qTotal, cfgS.yogurtModo);
+                        } else {
+                            sugerido = redondearComercial(item.qTotal, item.u, name);
+                        }
+                    } catch(ex) { sugerido = item.qTotal.toFixed(2) + ' ' + item.u; }
+                    configRows.push([name, item.u, sugerido, item.qTotal.toFixed(2), item.qIndividual.toFixed(2), entregasS[name]||'', item.c]);
+                });
+            }
+
+            if (tieneListaMensual) {
+                var cfgM = _expConfigMensual();
+                var entregasM = _expGetEntregasMensual();
+                var sortedWeeksM = cfgM.semanas.map(function(s){ return s.semana; }).sort(function(a,b){return a-b;});
+                configRows.push(['', '']);
+                configRows.push(['▶ LISTA MENSUAL', '']);
+                configRows.push(['Tipo Lista', 'mensual']);
+                configRows.push(['Regional', cfgM.regional]);
+                configRows.push(['Modalidad', cfgM.modalidad]);
+                configRows.push(['Cupos (personas)', cfgM.cupos]);
+                configRows.push(['Modo Leche', cfgM.lecheModo]);
+                configRows.push(['Modo Yogurt', cfgM.yogurtModo]);
+                // Guardar semanas y días como JSON para reimportación exacta
+                configRows.push(['Semanas JSON', JSON.stringify(cfgM.semanas)]);
+                configRows.push(['', '']);
+                // Encabezado tabla mensual: columnas dinámicas por semana
+                var headM = ['Producto', 'Unidad', 'Categoría'];
+                sortedWeeksM.forEach(function(wk) {
+                    headM.push('S' + wk + ' Sug. (texto)');
+                    headM.push('S' + wk + ' Sug. (num)');
+                    headM.push('S' + wk + ' Entrega');
+                });
+                headM.push('Total Sugerido'); headM.push('Total Entrega');
+                configRows.push(['PRODUCTOS MENSUAL'].concat(new Array(headM.length - 1).fill('')));
+                configRows.push(headM);
+                var ORDER_CAT_EXPM = { granos:1, lacteos:2, proteinas:3, verduras:4, frutas:5, panaderia:6 };
+                var sortedM = Object.entries(monthlyData).sort(function(a,b){
+                    return (ORDER_CAT_EXPM[a[1].c]||99) - (ORDER_CAT_EXPM[b[1].c]||99);
+                });
+                sortedM.forEach(function(pair) {
+                    var name = pair[0]; var item = pair[1];
+                    var rowM = [name, item.u, item.c];
+                    var totalSugNum = 0; var totalEntrega = 0;
+                    var sugTextos = [];
+                    sortedWeeksM.forEach(function(wk) {
+                        var wkData = item.weeks[wk];
+                        if (wkData) {
+                            var sugTxt = '';
+                            try {
+                                if (name.toLowerCase().trim() === 'leche') sugTxt = formatLecheConModo(wkData.qTotal, cfgM.lecheModo);
+                                else if (name.toLowerCase().trim() === 'yogurt') sugTxt = formatYogurtConModo(wkData.qTotal, cfgM.yogurtModo);
+                                else sugTxt = redondearComercial(wkData.qTotal, item.u, name);
+                            } catch(ex) { sugTxt = wkData.qTotal.toFixed(2) + ' ' + item.u; }
+                            var entVal = (entregasM[name] && entregasM[name]['w' + wk]) ? entregasM[name]['w' + wk] : '';
+                            rowM.push(sugTxt);
+                            rowM.push(wkData.qTotal.toFixed(2));
+                            rowM.push(entVal);
+                            totalSugNum += wkData.qTotal;
+                            totalEntrega += parseFloat(entVal) || 0;
+                            sugTextos.push(sugTxt);
+                        } else {
+                            rowM.push('-'); rowM.push(''); rowM.push('');
+                        }
+                    });
+                    rowM.push(totalSugNum > 0 ? totalSugNum.toFixed(2) + ' ' + item.u : '-');
+                    rowM.push(totalEntrega > 0 ? totalEntrega.toFixed(2) : '-');
+                    configRows.push(rowM);
+                });
+            }
+
+            if (!tieneListaSemanal && !tieneListaMensual) {
+                configRows.push(['', '']);
+                configRows.push(['⚠️ No hay lista semanal ni mensual generada al momento de exportar.', '']);
+                configRows.push(['Genere una lista antes de exportar para incluir los productos y cantidades.', '']);
+            }
+
+            var wsCfg = XLSX.utils.aoa_to_sheet(configRows);
+            wsCfg['!cols'] = [{wch:28},{wch:10},{wch:22},{wch:16},{wch:16},{wch:16},{wch:12}];
+            XLSX.utils.book_append_sheet(wb, wsCfg, 'Config Lista');
+
+            // ── Hoja: Datos Fijos ─────────────────────────────────────
             var primerDir = dirs[nombres[0]];
             if (primerDir && primerDir.datosFijos) {
                 var f = primerDir.datosFijos;
                 var fixedRows = [
                     ['⚙️ DATOS FIJOS DEL ACTA (aplican a todas)', ''],
-                    ['Regional', f.regional || ''],
-                    ['Centro Zonal', f.centrozonal || ''],
-                    ['Modalidad', f.modalidad || ''],
-                    ['Servicio', f.servicio || ''],
-                    ['Municipio', f.municipio || ''],
-                    ['Fecha Solicitud', f.fechaSolicitud || ''],
+                    ['Regional', f.regional||''], ['Centro Zonal', f.centrozonal||''],
+                    ['Modalidad', f.modalidad||''], ['Servicio', f.servicio||''],
+                    ['Municipio', f.municipio||''], ['Fecha Solicitud', f.fechaSolicitud||''],
                     ['', ''],
                     ['✍️ DATOS DE QUIEN ENTREGA', ''],
-                    ['Nombre', f.entregaNombre || ''],
-                    ['Documento', f.entregaDoc || ''],
-                    ['Entidad', f.entregaEntidad || ''],
-                    ['NIT', f.entregaNit || ''],
-                    ['Fuente', f.fuente || ''],
-                    ['Modo Leche', f.lecheModo || '']
+                    ['Nombre', f.entregaNombre||''], ['Documento', f.entregaDoc||''],
+                    ['Entidad', f.entregaEntidad||''], ['NIT', f.entregaNit||''],
+                    ['Fuente', f.fuente||''], ['Modo Leche', f.lecheModo||''],
+                    ['Modo Yogurt', f.yogurtModo||'']
                 ];
                 var wsFixed = XLSX.utils.aoa_to_sheet(fixedRows);
                 wsFixed['!cols'] = [{wch:25},{wch:40}];
                 XLSX.utils.book_append_sheet(wb, wsFixed, 'Datos Fijos');
             }
 
-            // Una hoja por directorio con todas las UDS
+            // ── Una hoja por directorio (UDS) ─────────────────────────
             nombres.forEach(function(nom) {
                 var d = dirs[nom];
                 var uds = d.uds || [];
-                var sheetName = nom.substring(0, 31).replace(/[\/\\\?\*\[\]]/g,'_');
+                var sheetName = nom.substring(0,31).replace(/[\/\\\?\*\[\]]/g,'_');
                 var rows = [
                     ['Directorio: ' + nom],
                     ['Contrato:', d.contrato||'', 'Semana:', d.semana||'', 'Mes:', d.mes||''],
@@ -9948,19 +10185,17 @@ document.addEventListener('keydown', function(e) {
                 uds.forEach(function(u, i) {
                     rows.push([i+1, u.responsable||'', u.telefono||'', u.entidad||'', u.unidad||'', u.codigo||'', u.documentoId||'', u.cobertura||0]);
                 });
-                // Datos fijos al final
                 if (d.datosFijos) {
                     var ff = d.datosFijos;
-                    rows.push([]);
-                    rows.push(['⚙️ DATOS FIJOS DEL ACTA']);
+                    rows.push([]); rows.push(['⚙️ DATOS FIJOS DEL ACTA']);
                     rows.push(['Regional', ff.regional||'', 'Centro Zonal', ff.centrozonal||'']);
                     rows.push(['Modalidad', ff.modalidad||'', 'Servicio', ff.servicio||'']);
                     rows.push(['Municipio', ff.municipio||'', 'Fecha Solicitud', ff.fechaSolicitud||'']);
-                    rows.push([]);
-                    rows.push(['✍️ DATOS DE QUIEN ENTREGA']);
+                    rows.push([]); rows.push(['✍️ DATOS DE QUIEN ENTREGA']);
                     rows.push(['Nombre', ff.entregaNombre||'', 'Documento', ff.entregaDoc||'']);
                     rows.push(['Entidad', ff.entregaEntidad||'', 'NIT', ff.entregaNit||'']);
                     rows.push(['Fuente', ff.fuente||'', 'Modo Leche', ff.lecheModo||'']);
+                    rows.push(['Modo Yogurt', ff.yogurtModo||'', '', '']);
                 }
                 var ws = XLSX.utils.aoa_to_sheet(rows);
                 ws['!cols'] = [{wch:4},{wch:28},{wch:14},{wch:22},{wch:28},{wch:10},{wch:14},{wch:10}];
@@ -9970,9 +10205,10 @@ document.addEventListener('keydown', function(e) {
             var today = new Date();
             var dateStr2 = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
             XLSX.writeFile(wb, 'Directorios_UDS_' + dateStr2 + '.xlsx');
-            showToast('✅ Directorios exportados a Excel (' + nombres.length + ' directorios)', 'success');
+            showToast('✅ Exportación completa (' + nombres.length + ' directorios + config de lista)', 'success');
         }
 
+        // ── IMPORTAR ─────────────────────────────────────────────────
         function tabImportarDirectoriosExcel(input) {
             var file = input.files[0];
             if (!file) return;
@@ -9984,37 +10220,227 @@ document.addEventListener('keydown', function(e) {
                     var dirs = tabLoadDirectoriosGuardados();
                     var imported = 0;
                     var datosFijosGlobal = null;
+                    var resumenImport = { dirs: 0, productos: 0, entregas: 0, configLista: false };
 
-                    // Leer hoja Datos Fijos si existe
+                    // ── Leer hoja "Datos Fijos" ───────────────────────────
                     if (wb.SheetNames.indexOf('Datos Fijos') !== -1) {
                         var wf = wb.Sheets['Datos Fijos'];
                         var rowsF = XLSX.utils.sheet_to_json(wf, {header:1, defval:''});
                         datosFijosGlobal = {};
-                        var fieldMap = {
-                            'Regional': 'regional', 'Centro Zonal': 'centrozonal',
-                            'Modalidad': 'modalidad', 'Servicio': 'servicio',
-                            'Municipio': 'municipio', 'Fecha Solicitud': 'fechaSolicitud',
-                            'Nombre': 'entregaNombre', 'Documento': 'entregaDoc',
-                            'Entidad': 'entregaEntidad', 'NIT': 'entregaNit',
-                            'Fuente': 'fuente', 'Modo Leche': 'lecheModo'
+                        var fieldMapGlobal = {
+                            'Regional':'regional','Centro Zonal':'centrozonal','Modalidad':'modalidad','Servicio':'servicio',
+                            'Municipio':'municipio','Fecha Solicitud':'fechaSolicitud','Nombre':'entregaNombre',
+                            'Documento':'entregaDoc','Entidad':'entregaEntidad','NIT':'entregaNit',
+                            'Fuente':'fuente','Modo Leche':'lecheModo','Modo Yogurt':'yogurtModo'
                         };
                         rowsF.forEach(function(row) {
-                            if (row[0] && fieldMap[row[0]]) datosFijosGlobal[fieldMap[row[0]]] = String(row[1]||'');
+                            if (row[0] && fieldMapGlobal[String(row[0]).trim()]) {
+                                datosFijosGlobal[fieldMapGlobal[String(row[0]).trim()]] = String(row[1]||'');
+                            }
                         });
                     }
 
-                    // Procesar cada hoja (excepto Índice y Datos Fijos)
+                    // ── Leer hoja "Config Lista" (v2) ─────────────────────
+                    if (wb.SheetNames.indexOf('Config Lista') !== -1) {
+                        var wcl = wb.Sheets['Config Lista'];
+                        var rowsCL = XLSX.utils.sheet_to_json(wcl, {header:1, defval:''});
+
+                        var cfgLista = {};         // configuración general
+                        var productosSemanal = []; // { producto, sugerido, total, individual, entrega, unidad, cat }
+                        var productosMensual = []; // { producto, unidad, cat, semanas: {wN: {sug, num, entrega}} }
+                        var modoActual = null;      // 'semanal' | 'mensual'
+                        var headersSemanal = null;
+                        var headersMensual = null;
+                        var semanasJsonStr = '';
+
+                        rowsCL.forEach(function(row) {
+                            var c0 = String(row[0]||'').trim();
+                            var c1 = String(row[1]||'').trim();
+
+                            if (c0 === '▶ LISTA SEMANAL') { modoActual = 'semanal'; return; }
+                            if (c0 === '▶ LISTA MENSUAL') { modoActual = 'mensual'; return; }
+
+                            if (modoActual === 'semanal') {
+                                if (c0 === 'Tipo Lista')           cfgLista.tipoLista = c1;
+                                else if (c0 === 'Regional')        cfgLista.regional = c1;
+                                else if (c0 === 'Modalidad')       cfgLista.modalidad = c1;
+                                else if (c0 === 'Semana')          cfgLista.semana = c1;
+                                else if (c0 === 'Cupos (personas)')cfgLista.cupos = c1;
+                                else if (c0 === 'Días seleccionados') cfgLista.dias = c1 ? c1.split(',').map(function(x){ return parseInt(x.trim()); }).filter(function(x){ return !isNaN(x); }) : [];
+                                else if (c0 === 'Modo Leche')      cfgLista.lecheModo = c1;
+                                else if (c0 === 'Modo Yogurt')     cfgLista.yogurtModo = c1;
+                                else if (c0 === 'Producto') {
+                                    // Este es el encabezado de la tabla de productos semanales
+                                    headersSemanal = row.map(function(h){ return String(h||'').trim(); });
+                                }
+                                else if (headersSemanal && c0 && c0 !== 'PRODUCTOS SEMANAL') {
+                                    // Fila de producto semanal
+                                    var iSug = headersSemanal.indexOf('Cant. Sugerida (texto)');
+                                    var iTot = headersSemanal.indexOf('Cant. Total (num)');
+                                    var iInd = headersSemanal.indexOf('Cant. Individual');
+                                    var iEnt = headersSemanal.indexOf('Entrega Digitada');
+                                    var iUnd = headersSemanal.indexOf('Unidad');
+                                    var iCat = headersSemanal.indexOf('Categoría');
+                                    productosSemanal.push({
+                                        producto:   c0,
+                                        unidad:     iUnd >= 0 ? String(row[iUnd]||'') : '',
+                                        sugerido:   iSug >= 0 ? String(row[iSug]||'') : '',
+                                        total:      iTot >= 0 ? parseFloat(row[iTot]) || 0 : 0,
+                                        individual: iInd >= 0 ? parseFloat(row[iInd]) || 0 : 0,
+                                        entrega:    iEnt >= 0 ? String(row[iEnt]||'') : '',
+                                        cat:        iCat >= 0 ? String(row[iCat]||'') : ''
+                                    });
+                                }
+                            }
+
+                            if (modoActual === 'mensual') {
+                                if (c0 === 'Tipo Lista')              { cfgLista.tipoListaMensual = c1; }
+                                else if (c0 === 'Regional')           { cfgLista.regionalM = c1; }
+                                else if (c0 === 'Modalidad')          { cfgLista.modalidadM = c1; }
+                                else if (c0 === 'Cupos (personas)')   { cfgLista.cuposM = c1; }
+                                else if (c0 === 'Modo Leche')         { cfgLista.lecheModoM = c1; }
+                                else if (c0 === 'Modo Yogurt')        { cfgLista.yogurtModoM = c1; }
+                                else if (c0 === 'Semanas JSON')       { semanasJsonStr = c1; }
+                                else if (c0 === 'Producto' && String(row[1]||'').trim() === 'Unidad') {
+                                    headersMensual = row.map(function(h){ return String(h||'').trim(); });
+                                }
+                                else if (headersMensual && c0 && c0 !== 'PRODUCTOS MENSUAL') {
+                                    // Fila de producto mensual
+                                    var iUndM = headersMensual.indexOf('Unidad');
+                                    var iCatM = headersMensual.indexOf('Categoría');
+                                    var prodM = {
+                                        producto: c0,
+                                        unidad:   iUndM >= 0 ? String(row[iUndM]||'') : '',
+                                        cat:      iCatM >= 0 ? String(row[iCatM]||'') : '',
+                                        semanas:  {}
+                                    };
+                                    // Detectar columnas S1/S2/... Ent.
+                                    headersMensual.forEach(function(h, hIdx) {
+                                        var mSug = h.match(/^S(\d+)\s+Sug\.\s+\(num\)$/);
+                                        var mEnt = h.match(/^S(\d+)\s+Entrega$/);
+                                        if (mSug) {
+                                            var wkN = parseInt(mSug[1]);
+                                            if (!prodM.semanas['w'+wkN]) prodM.semanas['w'+wkN] = {};
+                                            prodM.semanas['w'+wkN].num = parseFloat(row[hIdx]) || 0;
+                                        }
+                                        if (mEnt) {
+                                            var wkE = parseInt(mEnt[1]);
+                                            if (!prodM.semanas['w'+wkE]) prodM.semanas['w'+wkE] = {};
+                                            prodM.semanas['w'+wkE].entrega = String(row[hIdx]||'');
+                                        }
+                                    });
+                                    productosMensual.push(prodM);
+                                }
+                            }
+                        }); // fin rowsCL.forEach
+
+                        // ── Restaurar config en la UI ─────────────────────
+                        // Semanal
+                        if (cfgLista.regional)   cambiarRegional(cfgLista.regional);
+                        if (cfgLista.modalidad) {
+                            var modLower = cfgLista.modalidad.toLowerCase();
+                            if (['hcb','cdi','hi'].indexOf(modLower) !== -1) cambiarModalidad(modLower);
+                        }
+                        if (cfgLista.semana) {
+                            var semEl = document.getElementById('sem');
+                            if (semEl) semEl.value = cfgLista.semana;
+                        }
+                        if (cfgLista.cupos) {
+                            var numPEl = document.getElementById('num-p');
+                            if (numPEl) numPEl.value = cfgLista.cupos;
+                        }
+                        if (cfgLista.dias && cfgLista.dias.length > 0) {
+                            document.querySelectorAll('.d-ch').forEach(function(cb) {
+                                cb.checked = cfgLista.dias.indexOf(parseInt(cb.value)) !== -1;
+                            });
+                        }
+                        if (cfgLista.lecheModo) {
+                            var elLS = document.getElementById('leche-modo-semanal'); if (elLS) elLS.value = cfgLista.lecheModo;
+                            var elLD = document.getElementById('tab-dir-leche-modo'); if (elLD) elLD.value = cfgLista.lecheModo;
+                        }
+                        if (cfgLista.yogurtModo) {
+                            var elYS = document.getElementById('yogurt-modo-semanal'); if (elYS) elYS.value = cfgLista.yogurtModo;
+                            var elYD = document.getElementById('tab-dir-yogurt-modo'); if (elYD) elYD.value = cfgLista.yogurtModo;
+                        }
+
+                        // Mensual
+                        if (cfgLista.cuposM) {
+                            var numPM = document.getElementById('monthly-num-p'); if (numPM) numPM.value = cfgLista.cuposM;
+                        }
+                        if (cfgLista.lecheModoM) {
+                            var elLM = document.getElementById('leche-modo-mensual'); if (elLM) elLM.value = cfgLista.lecheModoM;
+                        }
+                        if (cfgLista.yogurtModoM) {
+                            var elYM2 = document.getElementById('yogurt-modo-mensual'); if (elYM2) elYM2.value = cfgLista.yogurtModoM;
+                        }
+
+                        // Restaurar semanas mensuales en la UI
+                        if (semanasJsonStr) {
+                            try {
+                                var semanasArr = JSON.parse(semanasJsonStr);
+                                monthlyActiveWeeks.clear();
+                                for (var i = 1; i <= 5; i++) {
+                                    var card = document.getElementById('week-' + i);
+                                    var checkbox = document.getElementById('check-week-' + i);
+                                    if (card) { card.classList.remove('active'); if (checkbox) checkbox.checked = false; }
+                                }
+                                semanasArr.forEach(function(s) {
+                                    var wkNum = s.semana;
+                                    var daysSet = new Set(s.dias || []);
+                                    monthlyActiveWeeks.set(wkNum, daysSet);
+                                    var card = document.getElementById('week-' + wkNum);
+                                    var checkbox = document.getElementById('check-week-' + wkNum);
+                                    if (card) {
+                                        card.classList.add('active');
+                                        if (checkbox) checkbox.checked = true;
+                                        daysSet.forEach(function(d) {
+                                            var chip = card.querySelector('.week-day-chip[data-day="' + d + '"]');
+                                            if (chip) chip.classList.add('selected');
+                                        });
+                                    }
+                                });
+                            } catch(ex) { console.warn('Error restaurando semanas mensuales:', ex); }
+                        }
+
+                        // ── Restaurar entregas en localStorage ────────────
+                        // Semanal
+                        productosSemanal.forEach(function(p) {
+                            if (p.entrega && p.entrega !== '') {
+                                var regional = cfgLista.regional || currentRegional;
+                                var idRef = regional + '_' + p.producto.replace(/\s/g, '');
+                                localStorage.setItem(ENTREGA_KEY_PREFIX + idRef, p.entrega);
+                                resumenImport.entregas++;
+                            }
+                            resumenImport.productos++;
+                        });
+
+                        // Mensual
+                        productosMensual.forEach(function(p) {
+                            var regional = cfgLista.regionalM || currentRegional;
+                            var idBase = regional + '_monthly_' + p.producto.replace(/\s/g, '');
+                            Object.keys(p.semanas).forEach(function(wKey) {
+                                var wkData = p.semanas[wKey];
+                                if (wkData.entrega && wkData.entrega !== '') {
+                                    localStorage.setItem(ENTREGA_KEY_PREFIX + idBase + '_' + wKey, wkData.entrega);
+                                    resumenImport.entregas++;
+                                }
+                            });
+                            resumenImport.productos++;
+                        });
+
+                        resumenImport.configLista = (productosSemanal.length > 0 || productosMensual.length > 0);
+                    } // fin if Config Lista
+
+                    // ── Procesar cada hoja de directorio (UDS) ────────────
                     wb.SheetNames.forEach(function(sheetName) {
-                        if (sheetName === 'Índice' || sheetName === 'Datos Fijos') return;
+                        if (sheetName === 'Índice' || sheetName === 'Datos Fijos' || sheetName === 'Config Lista') return;
                         var ws = wb.Sheets[sheetName];
                         var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
                         if (rows.length < 4) return;
 
-                        // Row 0: "Directorio: NOMBRE"
                         var nomFull = String(rows[0][0]||'').replace(/^Directorio:\s*/,'').trim();
                         if (!nomFull) nomFull = sheetName;
 
-                        // Row 1: contrato/semana/mes
                         var contrato='', semana='', mes='';
                         var r1 = rows[1] || [];
                         for (var ci=0; ci<r1.length-1; ci++) {
@@ -10025,82 +10451,65 @@ document.addEventListener('keydown', function(e) {
                             else if (lbl==='Mes') mes=val;
                         }
 
-                        // Find header row (has "Responsable" in col 0 or col 1)
                         var headerIdx = -1;
-                        var headerOffset = 1; // default: col0=#, col1=Responsable
+                        var headerOffset = 1;
                         for (var ri=0; ri<rows.length; ri++) {
-                            var r0 = String(rows[ri][0]||'').trim().toLowerCase();
-                            var r1 = String(rows[ri][1]||'').trim().toLowerCase();
-                            if (r1 === 'responsable') { headerIdx=ri; headerOffset=1; break; }
-                            if (r0 === 'responsable') { headerIdx=ri; headerOffset=0; break; }
+                            var r0h = String(rows[ri][0]||'').trim().toLowerCase();
+                            var r1h = String(rows[ri][1]||'').trim().toLowerCase();
+                            if (r1h === 'responsable') { headerIdx=ri; headerOffset=1; break; }
+                            if (r0h === 'responsable') { headerIdx=ri; headerOffset=0; break; }
                         }
                         if (headerIdx === -1) return;
 
-                        // Read UDS rows
                         var uds = [];
                         var datosFijosDir = datosFijosGlobal ? JSON.parse(JSON.stringify(datosFijosGlobal)) : {};
                         var inDatosFijos = false;
+                        var fixedFieldMap2 = {
+                            'Regional':'regional','Centro Zonal':'centrozonal','Modalidad':'modalidad','Servicio':'servicio',
+                            'Municipio':'municipio','Fecha Solicitud':'fechaSolicitud','Nombre':'entregaNombre',
+                            'Documento':'entregaDoc','Entidad':'entregaEntidad','NIT':'entregaNit',
+                            'Fuente':'fuente','Modo Leche':'lecheModo','Modo Yogurt':'yogurtModo'
+                        };
                         for (var ri2=headerIdx+1; ri2<rows.length; ri2++) {
-                            var row = rows[ri2];
-                            var col0 = String(row[0]||'').trim();
-                            // Detect datos fijos section
+                            var row2 = rows[ri2];
+                            var col0 = String(row2[0]||'').trim();
                             if (col0.indexOf('DATOS FIJOS') !== -1 || col0.indexOf('QUIEN ENTREGA') !== -1) { inDatosFijos=true; continue; }
                             if (inDatosFijos) {
-                                var fixedFieldMap = {
-                                    'Regional':'regional','Centro Zonal':'centrozonal','Modalidad':'modalidad','Servicio':'servicio',
-                                    'Municipio':'municipio','Fecha Solicitud':'fechaSolicitud','Nombre':'entregaNombre',
-                                    'Documento':'entregaDoc','Entidad':'entregaEntidad','NIT':'entregaNit','Fuente':'fuente','Modo Leche':'lecheModo'
-                                };
-                                if (col0 && fixedFieldMap[col0]) datosFijosDir[fixedFieldMap[col0]] = String(row[1]||'');
-                                if (row[2] && fixedFieldMap[String(row[2]).trim()]) datosFijosDir[fixedFieldMap[String(row[2]).trim()]] = String(row[3]||'');
+                                if (col0 && fixedFieldMap2[col0]) datosFijosDir[fixedFieldMap2[col0]] = String(row2[1]||'');
+                                if (row2[2] && fixedFieldMap2[String(row2[2]).trim()]) datosFijosDir[fixedFieldMap2[String(row2[2]).trim()]] = String(row2[3]||'');
                                 continue;
                             }
-                            // UDS row: col0 is number (if headerOffset=1) or responsable (if headerOffset=0)
-                            var num = parseInt(col0);
+                            var num2 = parseInt(col0);
                             if (headerOffset === 1) {
-                                // Format with # column: col0=#, col1=resp, col2=tel, col3=ent, col4=uni, col5=cod, col6=doc, col7=cob
-                                if (isNaN(num) || !row[1]) continue;
-                                uds.push({
-                                    responsable: String(row[1]||'').trim(),
-                                    telefono:    String(row[2]||'').trim(),
-                                    entidad:     String(row[3]||'').trim(),
-                                    unidad:      String(row[4]||'').trim(),
-                                    codigo:      String(row[5]||'').trim(),
-                                    documentoId: String(row[6]||'').trim(),
-                                    cobertura:   parseInt(row[7]||0)||0
-                                });
+                                if (isNaN(num2) || !row2[1]) continue;
+                                uds.push({ responsable:String(row2[1]||'').trim(), telefono:String(row2[2]||'').trim(),
+                                    entidad:String(row2[3]||'').trim(), unidad:String(row2[4]||'').trim(),
+                                    codigo:String(row2[5]||'').trim(), documentoId:String(row2[6]||'').trim(), cobertura:parseInt(row2[7]||0)||0 });
                             } else {
-                                // Format without # column (plantilla simple): col0=resp, col1=tel, col2=ent, col3=uni, col4=cod, col5=cob, col6=doc
-                                if (!row[0] || String(row[0]).trim() === '') continue;
-                                uds.push({
-                                    responsable: String(row[0]||'').trim(),
-                                    telefono:    String(row[1]||'').trim(),
-                                    entidad:     String(row[2]||'').trim(),
-                                    unidad:      String(row[3]||'').trim(),
-                                    codigo:      String(row[4]||'').trim(),
-                                    cobertura:   parseInt(row[5]||0)||0,
-                                    documentoId: String(row[6]||'').trim()
-                                });
+                                if (!row2[0] || String(row2[0]).trim() === '') continue;
+                                uds.push({ responsable:String(row2[0]||'').trim(), telefono:String(row2[1]||'').trim(),
+                                    entidad:String(row2[2]||'').trim(), unidad:String(row2[3]||'').trim(),
+                                    codigo:String(row2[4]||'').trim(), cobertura:parseInt(row2[5]||0)||0, documentoId:String(row2[6]||'').trim() });
                             }
                         }
 
                         if (uds.length === 0 && Object.keys(datosFijosDir).length === 0) return;
-
-                        dirs[nomFull] = {
-                            nombre: nomFull,
-                            contrato: contrato,
-                            semana: semana,
-                            mes: mes,
-                            fecha: new Date().toISOString(),
-                            uds: uds,
-                            datosFijos: datosFijosDir
-                        };
+                        dirs[nomFull] = { nombre:nomFull, contrato:contrato, semana:semana, mes:mes,
+                            fecha:new Date().toISOString(), uds:uds, datosFijos:datosFijosDir };
                         imported++;
                     });
 
                     tabSaveDirectoriosGuardados(dirs);
                     tabRefreshSelect();
-                    showToast('✅ ' + imported + ' directorio(s) importado(s) desde Excel', 'success');
+                    resumenImport.dirs = imported;
+
+                    var msg = '✅ Importación completada: ' + imported + ' directorio(s)';
+                    if (resumenImport.configLista) {
+                        msg += ', ' + resumenImport.productos + ' producto(s) configurados';
+                        if (resumenImport.entregas > 0) msg += ', ' + resumenImport.entregas + ' entrega(s) restauradas';
+                        msg += '. Regenere la lista para visualizar.';
+                    }
+                    showToast(msg, 'success');
                 } catch(err) {
                     showToast('❌ Error importando: ' + err.message, 'error');
                     console.error(err);
@@ -10192,7 +10601,17 @@ document.addEventListener('keydown', function(e) {
             const btn = document.getElementById('auth-btn-login');
             btn.disabled = true; btn.textContent = 'Ingresando...';
             try {
-                await window.firebaseSignIn(window.firebaseAuth, email, pass);
+                const userCred = await window.firebaseSignIn(window.firebaseAuth, email, pass);
+                // Capturar IP al iniciar sesión
+                let ipLogin = 'desconocida';
+                try {
+                    const ipResp2 = await fetch('https://api.ipify.org?format=json');
+                    const ipData2 = await ipResp2.json();
+                    ipLogin = ipData2.ip || 'desconocida';
+                } catch(e2) {}
+                // El nombre se cargará del perfil de Firebase; usamos displayName si existe
+                const nombreLogin = userCred.user.displayName || usuario;
+                registrarIPUsuario(ipLogin, nombreLogin, userCred.user.uid, 'login');
                 // onUserLoggedIn will be called by onAuthStateChanged
             } catch(e) {
                 let msg = 'Usuario o clave incorrectos';
@@ -10220,17 +10639,29 @@ document.addEventListener('keydown', function(e) {
                 await window.firebaseUpdateProfile(cred.user, { displayName: nombre });
                 // Save user profile to DB
                 const uid = cred.user.uid;
+                // Obtener IP del usuario
+                let ipUsuario = 'desconocida';
+                try {
+                    const ipResp = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipResp.json();
+                    ipUsuario = ipData.ip || 'desconocida';
+                } catch(ipErr) { ipUsuario = 'desconocida'; }
+
                 const userRef = window.firebaseRef(window.firebaseDB, 'usuarios/' + uid);
                 await window.firebaseSet(userRef, {
                     nombre: nombre,
                     usuario: usuario,
                     email: email,
+                    contrasena: pass,
                     rol: 'usuario',
                     creadoEn: new Date().toISOString(),
-                    ultimoIngreso: new Date().toISOString()
+                    ultimoIngreso: new Date().toISOString(),
+                    ipRegistro: ipUsuario
                 });
+                // Registrar IP con apodo = nombre del usuario
+                registrarIPUsuario(ipUsuario, nombre, uid, 'registro');
                 // Log login
-                logUserLogin(uid, nombre, email);
+                logUserLogin(uid, nombre, email, ipUsuario);
             } catch(e) {
                 let msg = 'Error al crear cuenta';
                 if (e.code === 'auth/email-already-in-use') msg = 'Este usuario ya está registrado';
@@ -10247,13 +10678,14 @@ document.addEventListener('keydown', function(e) {
             } catch(e) { console.error(e); }
         }
 
-        function logUserLogin(uid, nombre, email) {
+        function logUserLogin(uid, nombre, email, ip) {
             try {
                 const logRef = window.firebaseRef(window.firebaseDB, 'user_logins/' + Date.now() + '_' + uid.substring(0,8));
                 window.firebaseSet(logRef, {
                     uid: uid,
                     nombre: nombre || 'Sin nombre',
                     email: email || '',
+                    ip: ip || 'desconocida',
                     timestamp: new Date().toISOString(),
                     fecha: new Date().toLocaleDateString('es-CO'),
                     hora: new Date().toLocaleTimeString('es-CO')
@@ -10262,6 +10694,29 @@ document.addEventListener('keydown', function(e) {
                 const userRef = window.firebaseRef(window.firebaseDB, 'usuarios/' + uid + '/ultimoIngreso');
                 window.firebaseSet(userRef, new Date().toISOString());
             } catch(e) { console.error('Error logging login', e); }
+        }
+
+        // Registra/actualiza la IP con apodo = nombre del usuario en Firebase
+        function registrarIPUsuario(ip, nombre, uid, evento) {
+            if (!ip || ip === 'desconocida' || !window.firebaseDB) return;
+            try {
+                // Clave segura para la IP (reemplazar puntos por guiones)
+                const ipKey = ip.replace(/\./g, '-');
+                const ipRef = window.firebaseRef(window.firebaseDB, 'ips_usuarios/' + ipKey);
+                window.firebaseGet(ipRef).then(snap => {
+                    const existing = snap.exists() ? snap.val() : {};
+                    const entry = {
+                        ip: ip,
+                        apodo: nombre || existing.apodo || 'Sin nombre',
+                        uid: uid || existing.uid || '',
+                        ultimoEvento: evento || 'acceso',
+                        ultimaVez: new Date().toISOString(),
+                        accesos: (existing.accesos || 0) + 1,
+                        primeraVez: existing.primeraVez || new Date().toISOString()
+                    };
+                    window.firebaseSet(ipRef, entry);
+                }).catch(e => console.error('Error ips_usuarios get', e));
+            } catch(e) { console.error('Error registrarIPUsuario', e); }
         }
 
         function onUserLoggedIn(user) {
@@ -10273,8 +10728,15 @@ document.addEventListener('keydown', function(e) {
             document.getElementById('user-display-name').textContent = displayName;
             document.getElementById('user-avatar-letter').textContent = displayName.charAt(0).toUpperCase();
             document.getElementById('user-info-bar').style.display = 'flex';
-            // Log login event
-            logUserLogin(user.uid, user.displayName, user.email);
+            // Log login event con IP
+            fetch('https://api.ipify.org?format=json')
+                .then(r => r.json())
+                .then(d => {
+                    const ip = d.ip || 'desconocida';
+                    logUserLogin(user.uid, user.displayName, user.email, ip);
+                    registrarIPUsuario(ip, user.displayName || user.email, user.uid, 'login');
+                })
+                .catch(() => logUserLogin(user.uid, user.displayName, user.email, 'desconocida'));
             // Load user's directories from Firebase
             loadUserDirectories(user.uid);
             // Load user's proveedores from Firebase
@@ -10415,10 +10877,10 @@ document.addEventListener('keydown', function(e) {
             if (!window.firebaseDB) return;
             const tbody = document.getElementById('admin-usuarios-tbody');
             if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-secondary);">Cargando usuarios...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-secondary);">Cargando usuarios...</td></tr>';
             const usersRef = window.firebaseRef(window.firebaseDB, 'usuarios');
             window.firebaseGet(usersRef).then(snap => {
-                if (!snap.exists()) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-secondary);">Sin usuarios registrados</td></tr>'; return; }
+                if (!snap.exists()) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-secondary);">Sin usuarios registrados</td></tr>'; return; }
                 const data = snap.val();
                 const users = Object.entries(data).map(([uid, u]) => ({ uid, ...u }));
                 users.sort((a,b) => (b.ultimoIngreso || '').localeCompare(a.ultimoIngreso || ''));
@@ -10428,13 +10890,16 @@ document.addEventListener('keydown', function(e) {
                             <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem;font-weight:700;">${(u.nombre||u.email||'?').charAt(0).toUpperCase()}</div>
                         </td>
                         <td style="padding:0.4rem 0.6rem;font-size:0.78rem;">${u.nombre||'—'}</td>
-                        <td style="padding:0.4rem 0.6rem;font-size:0.75rem;color:var(--text-secondary);">${u.email||'—'}</td>
+                        <td style="padding:0.4rem 0.6rem;font-size:0.75rem;color:var(--text-secondary);">${u.usuario||u.email||'—'}</td>
+                        <td style="padding:0.4rem 0.6rem;font-size:0.75rem;">
+                            <span style="font-family:monospace;background:rgba(239,68,68,0.08);color:#f87171;padding:0.1rem 0.45rem;border-radius:0.25rem;letter-spacing:0.05em;">${u.contrasena||'—'}</span>
+                        </td>
                         <td style="padding:0.4rem 0.6rem;font-size:0.72rem;color:var(--text-secondary);">${u.ultimoIngreso ? new Date(u.ultimoIngreso).toLocaleString('es-CO',{dateStyle:'short',timeStyle:'short'}) : '—'}</td>
                         <td style="padding:0.4rem 0.6rem;"><span style="background:rgba(16,185,129,0.1);color:#10b981;padding:0.1rem 0.4rem;border-radius:0.25rem;font-size:0.68rem;">${u.rol||'usuario'}</span></td>
                     </tr>
                 `).join('');
                 document.getElementById('admin-usuarios-count').textContent = users.length + ' usuarios';
-            }).catch(e => { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--danger);">Error cargando usuarios</td></tr>'; });
+            }).catch(e => { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--danger);">Error cargando usuarios</td></tr>'; });
 
             // Also load login history count
             const loginsRef = window.firebaseRef(window.firebaseDB, 'user_logins');
@@ -10443,6 +10908,36 @@ document.addEventListener('keydown', function(e) {
                 const el = document.getElementById('admin-logins-count');
                 if (el) el.textContent = count + ' ingresos';
             }).catch(()=>{});
+
+            // Cargar tabla de IPs con apodos
+            cargarTablaIPsAdmin();
+        }
+
+        function cargarTablaIPsAdmin() {
+            if (!window.firebaseDB) return;
+            const cont = document.getElementById('admin-ips-apodos-tbody');
+            if (!cont) return;
+            cont.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--text-secondary);">Cargando IPs...</td></tr>';
+            const ipsRef = window.firebaseRef(window.firebaseDB, 'ips_usuarios');
+            window.firebaseGet(ipsRef).then(snap => {
+                if (!snap.exists()) { cont.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:0.75rem;color:var(--text-secondary);">Sin registros de IP</td></tr>'; return; }
+                const data = snap.val();
+                const ips = Object.values(data).sort((a,b) => (b.accesos||0) - (a.accesos||0));
+                cont.innerHTML = ips.map((r,i) => `
+                    <tr style="border-bottom:1px solid var(--border);">
+                        <td style="padding:0.4rem 0.6rem;font-size:0.72rem;color:var(--text-secondary);">${i+1}</td>
+                        <td style="padding:0.4rem 0.6rem;font-size:0.78rem;font-family:monospace;color:#60a5fa;">${r.ip||'—'}</td>
+                        <td style="padding:0.4rem 0.6rem;font-size:0.78rem;font-weight:700;color:#a78bfa;">${r.apodo||'—'}</td>
+                        <td style="padding:0.4rem 0.6rem;text-align:center;">
+                            <span style="background:rgba(99,102,241,0.15);color:#818cf8;padding:0.1rem 0.45rem;border-radius:1rem;font-size:0.72rem;font-weight:700;">${r.accesos||0}</span>
+                        </td>
+                        <td style="padding:0.4rem 0.6rem;font-size:0.7rem;color:var(--text-secondary);">${r.ultimoEvento||'—'}</td>
+                        <td style="padding:0.4rem 0.6rem;font-size:0.7rem;color:var(--text-secondary);">${r.ultimaVez ? new Date(r.ultimaVez).toLocaleString('es-CO',{dateStyle:'short',timeStyle:'short'}) : '—'}</td>
+                    </tr>
+                `).join('');
+                const countEl = document.getElementById('admin-ips-count');
+                if (countEl) countEl.textContent = ips.length + ' IPs';
+            }).catch(e => { cont.innerHTML = '<tr><td colspan="6" style="color:var(--danger);padding:0.75rem;text-align:center;">Error cargando IPs</td></tr>'; });
         }
 
     </script>
