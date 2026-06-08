@@ -2149,95 +2149,267 @@
          AUTH OVERLAY - Login / Register Wall
     ═══════════════════════════════════════════════════════════════ -->
     <div id="auth-overlay" style="
-        display: flex;
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: var(--bg-dark);
-        z-index: 9000;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
+    display: flex;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg-dark);
+    z-index: 9000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+">
+    <div style="
+        width: 100%;
+        max-width: 420px;
+        background: var(--bg-card);
+        border-radius: 1.25rem;
+        border: 1px solid var(--border);
+        box-shadow: 0 0 60px rgba(99,102,241,0.15), 0 25px 50px rgba(0,0,0,0.4);
+        overflow: hidden;
     ">
+        <!-- Header -->
         <div style="
-            width: 100%;
-            max-width: 420px;
-            background: var(--bg-card);
-            border-radius: 1.25rem;
-            border: 1px solid var(--border);
-            box-shadow: 0 0 60px rgba(99,102,241,0.15), 0 25px 50px rgba(0,0,0,0.4);
-            overflow: hidden;
+            background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
+            padding: 0.5rem 0.5rem 0.5rem;
+            text-align: center;
+            position: relative;
         ">
-            <!-- Header -->
-            <div style="
-                background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%);
-                padding: 0.5rem 0.5rem 0.5rem;
-                text-align: center;
-                position: relative;
-            ">                
-				<img src="LOGO_MINUTA.png" style="width:230px; height:200px; object-fit:contain;">
-                <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 0.25rem;">Minutas · ZAN · v3</div>
-            </div>
+            <img src="LOGO_MINUTA.png" style="width:230px; height:200px; object-fit:contain;">
+            <div style="font-size: 0.75rem; color: rgba(255,255,255,0.7); margin-top: 0.25rem;">Minutas · ZAN · v3</div>
+        </div>
 
-            <!-- Login Form (simplificado: solo usuario y clave) -->
-            <div id="auth-form-login" style="padding: 0.5rem 0.75rem 0.75rem;">
-                <div style="margin-bottom: 1.1rem;">
-                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Usuario</label>
-                    <input id="auth-email-login" type="text" placeholder="Tu usuario"
-                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.9rem;outline:none;transition:border 0.2s;box-sizing:border-box;"
-                        onkeypress="if(event.key==='Enter')doLogin()">
-                </div>
-                <div style="margin-bottom: 1.1rem;">
-                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Clave</label>
+        <!-- ══ FORM: LOGIN ══ -->
+        <div id="auth-form-login" style="padding: 0.5rem 0.75rem 0.75rem;">
+            <div style="margin-bottom: 1.1rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Usuario o Correo</label>
+                <input id="auth-email-login" type="text" placeholder="Tu usuario o correo"
+                    style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.9rem;outline:none;transition:border 0.2s;box-sizing:border-box;"
+                    onkeypress="if(event.key==='Enter')doLogin()">
+            </div>
+            <div style="margin-bottom: 1.1rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Clave</label>
+                <div style="position:relative;display:flex;align-items:center;">
                     <input id="auth-pass-login" type="password" placeholder="••••••••"
-                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.9rem;outline:none;transition:border 0.2s;box-sizing:border-box;"
+                        style="width:100%;padding:0.7rem 2.5rem 0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.9rem;outline:none;transition:border 0.2s;box-sizing:border-box;"
                         onkeypress="if(event.key==='Enter')doLogin()">
-                </div>
-                <div id="auth-error-login" style="color:#ef4444;font-size:0.8rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
-                <button id="auth-btn-login" onclick="doLogin()" style="
-                    width:100%;padding:0.8rem;background:linear-gradient(135deg,#2563eb,#7c3aed);
-                    border:none;border-radius:0.5rem;color:white;font-size:0.95rem;font-weight:700;
-                    cursor:pointer;transition:opacity 0.2s;letter-spacing:0.02em;
-                ">Ingresar</button>
-                <div style="text-align:center;margin-top:1rem;font-size:0.78rem;color:var(--text-secondary);">
-                    ¿No tienes cuenta? <span onclick="switchAuthTab('register')" style="color:#6366f1;cursor:pointer;font-weight:600;">Crear cuenta</span>
+                    <button id="toggle-login-pass" type="button" onclick="togglePasswordVisibility('auth-pass-login','toggle-login-pass')" title="Ver contraseña"
+                        style="position:absolute;right:0.6rem;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-secondary);padding:0;line-height:1;">👁</button>
                 </div>
             </div>
+            <div id="auth-error-login" style="color:#ef4444;font-size:0.8rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
+            <button id="auth-btn-login" onclick="doLogin()" style="
+                width:100%;padding:0.8rem;background:linear-gradient(135deg,#2563eb,#7c3aed);
+                border:none;border-radius:0.5rem;color:white;font-size:0.95rem;font-weight:700;
+                cursor:pointer;transition:opacity 0.2s;letter-spacing:0.02em;
+            ">Ingresar</button>
 
-            <!-- Register Form -->
-            <div id="auth-form-register" style="padding: 1.5rem 1.75rem 1.75rem; display: none;">
-                <div style="margin-bottom: 0.9rem;">
-                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Nombre</label>
-                    <input id="auth-nombre-register" type="text" placeholder="Tu nombre completo"
-                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
-                </div>
-                <div style="margin-bottom: 0.9rem;">
-                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Usuario</label>
-                    <input id="auth-email-register" type="text" placeholder="Ej: jperez o juan.perez"
-                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
-                </div>
-                <div style="margin-bottom: 0.9rem;">
-                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Clave</label>
-                    <input id="auth-pass-register" type="password" placeholder="Mínimo 6 caracteres"
-                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
-                </div>
-                <div style="margin-bottom: 0.9rem;">
-                    <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Confirmar clave</label>
-                    <input id="auth-pass-register2" type="password" placeholder="Repite la clave"
-                        style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;"
-                        onkeypress="if(event.key==='Enter')doRegister()">
-                </div>
-                <div id="auth-error-register" style="color:#ef4444;font-size:0.8rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
-                <button id="auth-btn-register" onclick="doRegister()" style="
-                    width:100%;padding:0.8rem;background:linear-gradient(135deg,#059669,#10b981);
-                    border:none;border-radius:0.5rem;color:white;font-size:0.95rem;font-weight:700;
-                    cursor:pointer;transition:opacity 0.2s;letter-spacing:0.02em;
-                ">Crear cuenta</button>
-                <div style="text-align:center;margin-top:1rem;font-size:0.78rem;color:var(--text-secondary);">
-                    ¿Ya tienes cuenta? <span onclick="switchAuthTab('login')" style="color:#6366f1;cursor:pointer;font-weight:600;">Ingresar</span>
-                </div>
+            <!-- Links: Registrar | Recuperar | Cambiar -->
+            <div style="display:flex;justify-content:center;gap:1.2rem;margin-top:1rem;flex-wrap:wrap;">
+                <span onclick="switchAuthTab('register')"
+                    style="font-size:0.78rem;color:#6366f1;cursor:pointer;font-weight:600;text-decoration:underline;text-underline-offset:2px;">
+                    Crear cuenta
+                </span>
+                <span style="font-size:0.78rem;color:var(--border);">|</span>
+                <span onclick="switchAuthTab('recover')"
+                    style="font-size:0.78rem;color:#f59e0b;cursor:pointer;font-weight:600;text-decoration:underline;text-underline-offset:2px;">
+                    🔑 Recuperar contraseña
+                </span>
+                <span style="font-size:0.78rem;color:var(--border);">|</span>
+                <span onclick="switchAuthTab('change')"
+                    style="font-size:0.78rem;color:#10b981;cursor:pointer;font-weight:600;text-decoration:underline;text-underline-offset:2px;">
+                    🔒 Cambiar contraseña
+                </span>
             </div>
         </div>
+
+        <!-- ══ FORM: REGISTER ══ -->
+        <div id="auth-form-register" style="padding: 1.25rem 1.5rem 1.5rem; display: none;">
+            <!-- Nombre -->
+            <div style="margin-bottom: 0.85rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem;">Nombre completo <span style="color:#ef4444;">*</span></label>
+                <input id="auth-nombre-register" type="text" placeholder="Tu nombre completo"
+                    style="width:100%;padding:0.65rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Correo real (OBLIGATORIO para recuperar contraseña) -->
+            <div style="margin-bottom: 0.85rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem;">
+                    Correo electrónico <span style="color:#ef4444;">*</span>
+                    <span style="font-size:0.65rem;color:#f59e0b;font-weight:600;text-transform:none;margin-left:0.4rem;">— necesario para recuperar contraseña</span>
+                </label>
+                <input id="auth-email-register" type="email" placeholder="tu@correo.com"
+                    style="width:100%;padding:0.65rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Alias / usuario (opcional) -->
+            <div style="margin-bottom: 0.85rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem;">
+                    Nombre de usuario
+                    <span style="font-size:0.65rem;color:var(--text-secondary);font-weight:400;text-transform:none;margin-left:0.4rem;">— opcional (alias visible)</span>
+                </label>
+                <input id="auth-usuario-register" type="text" placeholder="Ej: jperez (opcional)"
+                    style="width:100%;padding:0.65rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Clave -->
+            <div style="margin-bottom: 0.85rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem;">Clave <span style="color:#ef4444;">*</span></label>
+                <div style="position:relative;display:flex;align-items:center;">
+                    <input id="auth-pass-register" type="password" placeholder="Mínimo 6 caracteres"
+                        style="width:100%;padding:0.65rem 2.5rem 0.65rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+                    <button id="toggle-reg-pass" type="button" onclick="togglePasswordVisibility('auth-pass-register','toggle-reg-pass')" title="Ver contraseña"
+                        style="position:absolute;right:0.6rem;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-secondary);padding:0;line-height:1;">👁</button>
+                </div>
+            </div>
+            <!-- Confirmar clave -->
+            <div style="margin-bottom: 0.85rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem;">Confirmar clave <span style="color:#ef4444;">*</span></label>
+                <div style="position:relative;display:flex;align-items:center;">
+                    <input id="auth-pass-register2" type="password" placeholder="Repite la clave"
+                        style="width:100%;padding:0.65rem 2.5rem 0.65rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;"
+                        onkeypress="if(event.key==='Enter')doRegister()">
+                    <button id="toggle-reg-pass2" type="button" onclick="togglePasswordVisibility('auth-pass-register2','toggle-reg-pass2')" title="Ver contraseña"
+                        style="position:absolute;right:0.6rem;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-secondary);padding:0;line-height:1;">👁</button>
+                </div>
+            </div>
+            <div id="auth-error-register" style="color:#ef4444;font-size:0.8rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
+            <button id="auth-btn-register" onclick="doRegister()" style="
+                width:100%;padding:0.8rem;background:linear-gradient(135deg,#059669,#10b981);
+                border:none;border-radius:0.5rem;color:white;font-size:0.95rem;font-weight:700;
+                cursor:pointer;transition:opacity 0.2s;letter-spacing:0.02em;
+            ">Crear cuenta</button>
+
+            <!-- Links inferiores -->
+            <div style="display:flex;justify-content:center;gap:1.2rem;margin-top:1rem;flex-wrap:wrap;">
+                <span onclick="switchAuthTab('login')"
+                    style="font-size:0.78rem;color:#6366f1;cursor:pointer;font-weight:600;">
+                    ← Ingresar
+                </span>
+                <span style="font-size:0.78rem;color:var(--border);">|</span>
+                <span onclick="switchAuthTab('recover')"
+                    style="font-size:0.78rem;color:#f59e0b;cursor:pointer;font-weight:600;">
+                    🔑 Recuperar contraseña
+                </span>
+                <span style="font-size:0.78rem;color:var(--border);">|</span>
+                <span onclick="switchAuthTab('change')"
+                    style="font-size:0.78rem;color:#10b981;cursor:pointer;font-weight:600;">
+                    🔒 Cambiar contraseña
+                </span>
+            </div>
+        </div>
+
+        <!-- ══ FORM: RECUPERAR CONTRASEÑA ══ -->
+        <div id="auth-form-recover" style="padding: 1.5rem 1.75rem 1.75rem; display: none;">
+            <div style="text-align:center;margin-bottom:1.2rem;">
+                <div style="font-size:2rem;margin-bottom:0.4rem;">🔑</div>
+                <div style="font-size:1rem;font-weight:700;color:var(--text-primary);">Recuperar contraseña</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:0.3rem;line-height:1.45;">
+                    Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
+                </div>
+            </div>
+            <div style="margin-bottom:1.1rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.4rem;">Correo electrónico</label>
+                <input id="auth-recover-usuario" type="email" placeholder="tu@correo.com"
+                    style="width:100%;padding:0.7rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.9rem;outline:none;transition:border 0.2s;box-sizing:border-box;"
+                    onkeypress="if(event.key==='Enter')doRecoverPassword()">
+            </div>
+            <div id="auth-error-recover" style="font-size:0.8rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
+            <button id="auth-btn-recover" onclick="doRecoverPassword()" style="
+                width:100%;padding:0.8rem;background:linear-gradient(135deg,#d97706,#f59e0b);
+                border:none;border-radius:0.5rem;color:white;font-size:0.95rem;font-weight:700;
+                cursor:pointer;transition:opacity 0.2s;letter-spacing:0.02em;
+            ">Enviar correo de recuperación</button>
+
+            <!-- Links inferiores -->
+            <div style="display:flex;justify-content:center;gap:1.2rem;margin-top:1rem;flex-wrap:wrap;">
+                <span onclick="switchAuthTab('login')"
+                    style="font-size:0.78rem;color:#6366f1;cursor:pointer;font-weight:600;">
+                    ← Ingresar
+                </span>
+                <span style="font-size:0.78rem;color:var(--border);">|</span>
+                <span onclick="switchAuthTab('register')"
+                    style="font-size:0.78rem;color:var(--text-secondary);cursor:pointer;font-weight:600;">
+                    Crear cuenta
+                </span>
+                <span style="font-size:0.78rem;color:var(--border);">|</span>
+                <span onclick="switchAuthTab('change')"
+                    style="font-size:0.78rem;color:#10b981;cursor:pointer;font-weight:600;">
+                    🔒 Cambiar contraseña
+                </span>
+            </div>
+        </div>
+
+        <!-- ══ FORM: CAMBIAR CONTRASEÑA ══ -->
+        <div id="auth-form-change" style="padding: 1.25rem 1.5rem 1.5rem; display: none;">
+            <div style="text-align:center;margin-bottom:1.1rem;">
+                <div style="font-size:2rem;margin-bottom:0.4rem;">🔒</div>
+                <div style="font-size:1rem;font-weight:700;color:var(--text-primary);">Cambiar contraseña</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:0.3rem;line-height:1.45;">
+                    Ingresa tu correo, la clave actual y tu nueva contraseña.
+                </div>
+            </div>
+            <!-- Correo -->
+            <div style="margin-bottom:0.85rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem;">Correo electrónico</label>
+                <input id="auth-change-usuario" type="email" placeholder="tu@correo.com"
+                    style="width:100%;padding:0.65rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+            </div>
+            <!-- Clave actual -->
+            <div style="margin-bottom:0.85rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem;">Clave actual</label>
+                <div style="position:relative;display:flex;align-items:center;">
+                    <input id="auth-change-pass-actual" type="password" placeholder="Tu contraseña actual"
+                        style="width:100%;padding:0.65rem 2.5rem 0.65rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+                    <button id="toggle-chg-actual" type="button" onclick="togglePasswordVisibility('auth-change-pass-actual','toggle-chg-actual')" title="Ver contraseña"
+                        style="position:absolute;right:0.6rem;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-secondary);padding:0;line-height:1;">👁</button>
+                </div>
+            </div>
+            <!-- Nueva clave -->
+            <div style="margin-bottom:0.85rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem;">Nueva clave</label>
+                <div style="position:relative;display:flex;align-items:center;">
+                    <input id="auth-change-pass-nueva" type="password" placeholder="Mínimo 6 caracteres"
+                        style="width:100%;padding:0.65rem 2.5rem 0.65rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;">
+                    <button id="toggle-chg-nueva" type="button" onclick="togglePasswordVisibility('auth-change-pass-nueva','toggle-chg-nueva')" title="Ver contraseña"
+                        style="position:absolute;right:0.6rem;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-secondary);padding:0;line-height:1;">👁</button>
+                </div>
+            </div>
+            <!-- Confirmar nueva clave -->
+            <div style="margin-bottom:0.85rem;">
+                <label style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.35rem;">Confirmar nueva clave</label>
+                <div style="position:relative;display:flex;align-items:center;">
+                    <input id="auth-change-pass-nueva2" type="password" placeholder="Repite la nueva clave"
+                        style="width:100%;padding:0.65rem 2.5rem 0.65rem 0.85rem;background:var(--bg-hover);border:1px solid var(--border);border-radius:0.5rem;color:var(--text-primary);font-size:0.875rem;outline:none;box-sizing:border-box;"
+                        onkeypress="if(event.key==='Enter')doChangePassword()">
+                    <button id="toggle-chg-nueva2" type="button" onclick="togglePasswordVisibility('auth-change-pass-nueva2','toggle-chg-nueva2')" title="Ver contraseña"
+                        style="position:absolute;right:0.6rem;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--text-secondary);padding:0;line-height:1;">👁</button>
+                </div>
+            </div>
+            <div id="auth-error-change" style="font-size:0.8rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
+            <button id="auth-btn-change" onclick="doChangePassword()" style="
+                width:100%;padding:0.8rem;background:linear-gradient(135deg,#047857,#10b981);
+                border:none;border-radius:0.5rem;color:white;font-size:0.95rem;font-weight:700;
+                cursor:pointer;transition:opacity 0.2s;letter-spacing:0.02em;
+            ">Actualizar contraseña</button>
+
+            <!-- Links inferiores -->
+            <div style="display:flex;justify-content:center;gap:1.2rem;margin-top:1rem;flex-wrap:wrap;">
+                <span onclick="switchAuthTab('login')"
+                    style="font-size:0.78rem;color:#6366f1;cursor:pointer;font-weight:600;">
+                    ← Ingresar
+                </span>
+                <span style="font-size:0.78rem;color:var(--border);">|</span>
+                <span onclick="switchAuthTab('register')"
+                    style="font-size:0.78rem;color:var(--text-secondary);cursor:pointer;font-weight:600;">
+                    Crear cuenta
+                </span>
+                <span style="font-size:0.78rem;color:var(--border);">|</span>
+                <span onclick="switchAuthTab('recover')"
+                    style="font-size:0.78rem;color:#f59e0b;cursor:pointer;font-weight:600;">
+                    🔑 Recuperar contraseña
+                </span>
+            </div>
+        </div>
+
     </div>
+</div>
 
     <!-- ================================================== -->
     <!-- CUSTOM CONFIRM DIALOG (reemplaza confirm() nativo) -->
@@ -2276,6 +2448,7 @@
     <script src="js/actas-init.js"></script>
     <script src="js/actas.js"></script>
     <script src="js/auth.js"></script>
+	<script src="js/auth_password_functions.js"></script>
     <script src="js/confirm-dialog.js"></script>
 
 </body>
