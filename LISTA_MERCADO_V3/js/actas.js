@@ -392,10 +392,10 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                 var fechaFmt = '';
                 if (fs) { var fp = fs.split('-'); if (fp.length === 3) fechaFmt = fp[2]+'/'+fp[1]+'/'+fp[0]; }
                 var hoy = new Date();
-                var todayFmt = String(hoy.getDate()).padStart(2,'0')+'/'+String(hoy.getMonth()+1).padStart(2,'0')+'/'+hoy.getFullYear();
+                //var todayFmt = String(hoy.getDate()).padStart(2,'0')+'/'+String(hoy.getMonth()+1).padStart(2,'0')+'/'+hoy.getFullYear();
 
                 // ── Fill header ────────────────────────────────────────────────
-                sheetXml = setCellDate(sheetXml, 'N1', "27/04/2026");
+                sheetXml = setCellDate(sheetXml, 'N1', '27/04/2026');
                 sheetXml = setCellInline(sheetXml, 'B4', params.regional    || 'NEIVA');
                 sheetXml = setCellInline(sheetXml, 'D4', params.centrozonal || 'NEIVA');
                 sheetXml = setCellInline(sheetXml, 'H4', params.modalidad   || 'HCB');
