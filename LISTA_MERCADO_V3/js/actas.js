@@ -392,10 +392,10 @@ async function generarActaExcelXML(items, params, nombreArchivo) {
                 var fechaFmt = '';
                 if (fs) { var fp = fs.split('-'); if (fp.length === 3) fechaFmt = fp[2]+'/'+fp[1]+'/'+fp[0]; }
                 var hoy = new Date();
-                //var todayFmt = String(hoy.getDate()).padStart(2,'0')+'/'+String(hoy.getMonth()+1).padStart(2,'0')+'/'+hoy.getFullYear();
+                var todayFmt = String(hoy.getDate()).padStart(2,'0')+'/'+String(hoy.getMonth()+1).padStart(2,'0')+'/'+hoy.getFullYear();
 
                 // ── Fill header ────────────────────────────────────────────────
-                sheetXml = setCellDate(sheetXml, 'N1', '27/04/2026');
+                sheetXml = setCellDate(sheetXml, 'N1', "27/04/2026");
                 sheetXml = setCellInline(sheetXml, 'B4', params.regional    || 'NEIVA');
                 sheetXml = setCellInline(sheetXml, 'D4', params.centrozonal || 'NEIVA');
                 sheetXml = setCellInline(sheetXml, 'H4', params.modalidad   || 'HCB');
@@ -1226,6 +1226,121 @@ document.addEventListener('keydown', function(e) {
 
         var MESES_NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+        // ── Captura snapshot de config+entregas de la lista activa ──
+        // ── Elimina TODAS las claves de entrega del prefijo activo ──
+        function _limpiarEntregasLocalStorage() {
+            var keysToDelete = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf(ENTREGA_KEY_PREFIX) === 0) {
+                    keysToDelete.push(k);
+                }
+            }
+            keysToDelete.forEach(function(k) { localStorage.removeItem(k); });
+        }
+
+        function _capturarConfigYEntregas() {
+            var snapshot = {};
+            if (currentData) {
+                snapshot.configSemanal = _expConfigSemanal();
+                snapshot.entregasSemanal = _expGetEntregasSemanal();
+            }
+            if (monthlyData) {
+                snapshot.configMensual = _expConfigMensual();
+                snapshot.entregasMensual = _expGetEntregasMensual();
+            }
+            return snapshot;
+        }
+
+        // ── Restaura config+entregas de un snapshot guardado ─────────
+        function _restaurarConfigYEntregas(snapshot) {
+            if (!snapshot) return;
+
+            if (snapshot.configSemanal) {
+                var cs = snapshot.configSemanal;
+                if (cs.regional)   cambiarRegional(cs.regional);
+                if (cs.modalidad) {
+                    var ml = cs.modalidad.toLowerCase();
+                    if (['hcb','cdi','hi'].indexOf(ml) !== -1) cambiarModalidad(ml);
+                }
+                var semEl = document.getElementById('sem');
+                if (semEl && cs.semana) semEl.value = cs.semana;
+                var numPEl = document.getElementById('num-p');
+                if (numPEl && cs.cupos) numPEl.value = cs.cupos;
+                if (cs.dias && cs.dias.length > 0) {
+                    document.querySelectorAll('.d-ch').forEach(function(cb) {
+                        cb.checked = cs.dias.indexOf(parseInt(cb.value)) !== -1;
+                    });
+                }
+                if (cs.lecheModo) {
+                    var elLS = document.getElementById('leche-modo-semanal'); if (elLS) elLS.value = cs.lecheModo;
+                    var elLD = document.getElementById('tab-dir-leche-modo'); if (elLD) elLD.value = cs.lecheModo;
+                    var elLM = document.getElementById('leche-modo-mensual'); if (elLM) elLM.value = cs.lecheModo;
+                }
+                if (cs.yogurtModo) {
+                    var elYS = document.getElementById('yogurt-modo-semanal'); if (elYS) elYS.value = cs.yogurtModo;
+                    var elYD = document.getElementById('tab-dir-yogurt-modo'); if (elYD) elYD.value = cs.yogurtModo;
+                    var elYM2 = document.getElementById('yogurt-modo-mensual'); if (elYM2) elYM2.value = cs.yogurtModo;
+                }
+            }
+
+            if (snapshot.entregasSemanal) {
+                var regional = (snapshot.configSemanal && snapshot.configSemanal.regional) || currentRegional;
+                Object.keys(snapshot.entregasSemanal).forEach(function(name) {
+                    var val = snapshot.entregasSemanal[name];
+                    if (val && val !== '') {
+                        var idRef = regional + '_' + name.replace(/\s/g, '');
+                        localStorage.setItem(ENTREGA_KEY_PREFIX + idRef, val);
+                    }
+                });
+            }
+
+            if (snapshot.configMensual) {
+                var cm = snapshot.configMensual;
+                var numPM = document.getElementById('monthly-num-p'); if (numPM && cm.cupos) numPM.value = cm.cupos;
+                var elLMm = document.getElementById('leche-modo-mensual'); if (elLMm && cm.lecheModo) elLMm.value = cm.lecheModo;
+                var elYMm = document.getElementById('yogurt-modo-mensual'); if (elYMm && cm.yogurtModo) elYMm.value = cm.yogurtModo;
+                if (cm.semanas) {
+                    try {
+                        monthlyActiveWeeks.clear();
+                        for (var i = 1; i <= 5; i++) {
+                            var card = document.getElementById('week-' + i);
+                            var checkbox = document.getElementById('check-week-' + i);
+                            if (card) { card.classList.remove('active'); if (checkbox) checkbox.checked = false; }
+                        }
+                        cm.semanas.forEach(function(s) {
+                            var wkNum = s.semana;
+                            var daysSet = new Set(s.dias || []);
+                            monthlyActiveWeeks.set(wkNum, daysSet);
+                            var card2 = document.getElementById('week-' + wkNum);
+                            var checkbox2 = document.getElementById('check-week-' + wkNum);
+                            if (card2) {
+                                card2.classList.add('active');
+                                if (checkbox2) checkbox2.checked = true;
+                                daysSet.forEach(function(d) {
+                                    var chip = card2.querySelector('.week-day-chip[data-day="' + d + '"]');
+                                    if (chip) chip.classList.add('selected');
+                                });
+                            }
+                        });
+                    } catch(ex) { console.warn('Error restaurando semanas mensuales:', ex); }
+                }
+            }
+
+            if (snapshot.entregasMensual) {
+                var regionalM = (snapshot.configMensual && snapshot.configMensual.regional) || currentRegional;
+                Object.keys(snapshot.entregasMensual).forEach(function(name) {
+                    var idBase = regionalM + '_monthly_' + name.replace(/\s/g, '');
+                    Object.keys(snapshot.entregasMensual[name]).forEach(function(wKey) {
+                        var val2 = snapshot.entregasMensual[name][wKey];
+                        if (val2 && val2 !== '') {
+                            localStorage.setItem(ENTREGA_KEY_PREFIX + idBase + '_' + wKey, val2);
+                        }
+                    });
+                });
+            }
+        }
+
         function tabGuardarDirectorio(overwrite) {
             if (directorioUDS.length === 0) { showToast('El directorio está vacío','warning'); return; }
             if (overwrite) {
@@ -1238,6 +1353,7 @@ document.addEventListener('keydown', function(e) {
                     uds: JSON.parse(JSON.stringify(directorioUDS)),
                     datosFijos: tabGetParamsFijos(),
                     contextoSemana: tabGetContextoSemana(),
+                    configSnapshot: _capturarConfigYEntregas(),
                     mes: dirs[nombre] ? dirs[nombre].mes : '',
                     semana: dirs[nombre] ? dirs[nombre].semana : '',
                     contrato: dirs[nombre] ? dirs[nombre].contrato : ''
@@ -1323,7 +1439,8 @@ document.addEventListener('keydown', function(e) {
                 fecha: new Date().toISOString(),
                 uds: JSON.parse(JSON.stringify(directorioUDS)),
                 datosFijos: tabGetParamsFijos(),
-                contextoSemana: tabGetContextoSemana()
+                contextoSemana: tabGetContextoSemana(),
+                configSnapshot: _capturarConfigYEntregas()
             };
             tabSaveDirectoriosGuardados(dirs);
             tabRefreshSelect();
@@ -1379,10 +1496,18 @@ document.addEventListener('keydown', function(e) {
             }
             tabRenderizarDirectorio();
             document.getElementById('tab-btn-save-modified').style.display = 'inline-block';
+            // Limpiar TODAS las entregas del localStorage antes de cargar las del nuevo directorio
+            _limpiarEntregasLocalStorage();
+            // Restaurar configuración de lista y valores de entrega guardados con este directorio
+            if (d.configSnapshot) {
+                _restaurarConfigYEntregas(d.configSnapshot);
+                showToast('✅ Directorio "' + nombre + '" cargado (' + directorioUDS.length + ' UDS) — config y entregas restauradas', 'success');
+            } else {
+                showToast('✅ Directorio "' + nombre + '" cargado (' + directorioUDS.length + ' UDS)', 'success');
+            }
             // Update loaded label
             var lbl = document.getElementById('tab-dir-loaded-label');
             if (lbl) { lbl.textContent = '📂 ' + nombre; lbl.style.display = 'block'; lbl.title = nombre; }
-            showToast('✅ Directorio "' + nombre + '" cargado (' + directorioUDS.length + ' UDS)', 'success');
             // Also sync to the floating panel
             sincronizarConPanelFlotante();
         }
@@ -1966,6 +2091,10 @@ document.addEventListener('keydown', function(e) {
                     rows.push(['Fuente', ff.fuente||'', 'Modo Leche', ff.lecheModo||'']);
                     rows.push(['Modo Yogurt', ff.yogurtModo||'', '', '']);
                 }
+                // ── Guardar configSnapshot (config+entregas) del directorio ──
+                if (d.configSnapshot) {
+                    rows.push([]); rows.push(['📦 CONFIG_SNAPSHOT_JSON', JSON.stringify(d.configSnapshot)]);
+                }
                 var ws = XLSX.utils.aoa_to_sheet(rows);
                 ws['!cols'] = [{wch:4},{wch:28},{wch:14},{wch:22},{wch:28},{wch:10},{wch:14},{wch:10}];
                 XLSX.utils.book_append_sheet(wb, ws, sheetName);
@@ -2210,7 +2339,7 @@ document.addEventListener('keydown', function(e) {
                         var nomFull = String(rows[0][0]||'').replace(/^Directorio:\s*/,'').trim();
                         if (!nomFull) nomFull = sheetName;
 
-                        var contrato='', semana='', mes='';
+                        var contrato='', semana='', mes='', configSnapshotImport=null;
                         var r1 = rows[1] || [];
                         for (var ci=0; ci<r1.length-1; ci++) {
                             var lbl = String(r1[ci]||'').trim().replace(':','');
@@ -2219,6 +2348,12 @@ document.addEventListener('keydown', function(e) {
                             else if (lbl==='Semana') semana=val;
                             else if (lbl==='Mes') mes=val;
                         }
+                        // Buscar configSnapshot guardado en la hoja
+                        rows.forEach(function(row) {
+                            if (String(row[0]||'').trim() === '📦 CONFIG_SNAPSHOT_JSON' && row[1]) {
+                                try { configSnapshotImport = JSON.parse(String(row[1])); } catch(ex) {}
+                            }
+                        });
 
                         var headerIdx = -1;
                         var headerOffset = 1;
@@ -2264,7 +2399,8 @@ document.addEventListener('keydown', function(e) {
 
                         if (uds.length === 0 && Object.keys(datosFijosDir).length === 0) return;
                         dirs[nomFull] = { nombre:nomFull, contrato:contrato, semana:semana, mes:mes,
-                            fecha:new Date().toISOString(), uds:uds, datosFijos:datosFijosDir };
+                            fecha:new Date().toISOString(), uds:uds, datosFijos:datosFijosDir,
+                            configSnapshot: configSnapshotImport || null };
                         imported++;
                     });
 
