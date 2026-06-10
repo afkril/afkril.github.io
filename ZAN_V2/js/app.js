@@ -4299,3 +4299,181 @@
             return '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
         }
 
+
+        // ================================================================
+        //  SISTEMA DE AJUSTES: MODOS DE VISTA Y TEMAS DE COLOR
+        // ================================================================
+
+        // ===== MODO DE VISTA =====
+        let vistaActual = localStorage.getItem('zan_vista') || 'tabs';
+
+        function setVistaMode(modo) {
+            vistaActual = modo;
+            localStorage.setItem('zan_vista', modo);
+            applyVistaMode(modo);
+            // Actualizar UI del modal
+            ['tabs','cards','list','accordion'].forEach(m => {
+                const card = document.getElementById(`vista-card-${m}`);
+                if (card) card.classList.toggle('activo', m === modo);
+            });
+        }
+
+        function applyVistaMode(modo) {
+            const body = document.body;
+            // Quitar todos los modos
+            body.removeAttribute('data-view');
+            if (modo !== 'tabs') {
+                body.setAttribute('data-view', modo);
+            }
+
+            // Para acordeón: configurar headers como toggles
+            if (modo === 'accordion') {
+                setupAccordionMode();
+            } else {
+                cleanupAccordionMode();
+            }
+        }
+
+        function setupAccordionMode() {
+            const semanas = parseInt(document.getElementById('num-semanas')?.value) || 4;
+            for (let s = 1; s <= semanas; s++) {
+                const panel = document.getElementById(`panel-${s}`);
+                if (!panel) continue;
+                const header = panel.querySelector('.panel-header');
+                if (!header) continue;
+
+                // Solo configurar una vez
+                if (header.dataset.accSetup) continue;
+                header.dataset.accSetup = '1';
+
+                // Envolver el contenido del panel (excepto header) en accordion body
+                if (!panel.querySelector('.panel-accordion-body')) {
+                    const body = document.createElement('div');
+                    body.className = 'panel-accordion-body';
+                    const inner = document.createElement('div');
+                    inner.className = 'accordion-body-inner';
+
+                    // Mover todos los hijos excepto el header al inner
+                    const children = Array.from(panel.children).filter(c => !c.classList.contains('panel-header'));
+                    children.forEach(c => inner.appendChild(c));
+                    body.appendChild(inner);
+                    panel.appendChild(body);
+                }
+
+                // Agregar chevron al header si no existe
+                if (!header.querySelector('.panel-accordion-chevron')) {
+                    const chevron = document.createElement('i');
+                    chevron.className = 'fa-solid fa-chevron-down panel-accordion-chevron';
+                    header.appendChild(chevron);
+                }
+
+                // Abrir el primero por defecto
+                if (s === 1) panel.classList.add('acc-open');
+
+                header.addEventListener('click', onAccordionHeaderClick);
+            }
+        }
+
+        function onAccordionHeaderClick(e) {
+            // Evitar que clicks en inputs/buttons del header cierren el acordeón
+            if (e.target.closest('input, button, select')) return;
+            const panel = this.closest('.semana-panel');
+            if (!panel) return;
+            panel.classList.toggle('acc-open');
+        }
+
+        function cleanupAccordionMode() {
+            document.querySelectorAll('.panel-header[data-acc-setup]').forEach(h => {
+                h.removeEventListener('click', onAccordionHeaderClick);
+                delete h.dataset.accSetup;
+            });
+        }
+
+        // Inicializar vista al cargar
+        (function initVista() {
+            const saved = localStorage.getItem('zan_vista') || 'tabs';
+            // Aplicar después de que el DOM esté listo
+            window.addEventListener('DOMContentLoaded', () => {
+                applyVistaMode(saved);
+                const card = document.getElementById(`vista-card-${saved}`);
+                if (card) {
+                    document.querySelectorAll('.vista-modo-card').forEach(c => c.classList.remove('activo'));
+                    card.classList.add('activo');
+                }
+            });
+        })();
+
+        // Re-aplicar vista cuando se regeneran semanas
+        const _origCambiarSemanas = typeof cambiarSemanas === 'function' ? cambiarSemanas : null;
+
+        // Hook into renderSemanas to re-apply view mode
+        function reapplyVistaAfterRender() {
+            setTimeout(() => {
+                applyVistaMode(vistaActual);
+            }, 50);
+        }
+
+        // ===== TEMA DE COLOR =====
+        let colorTemaActual = localStorage.getItem('zan_color_tema') || 'default';
+
+        function setColorTema(tema) {
+            colorTemaActual = tema;
+            localStorage.setItem('zan_color_tema', tema);
+            applyColorTema(tema);
+            // Actualizar UI del modal
+            ['default','ocean','emerald','twilight','volcano','neon','arctic','toxic','amber'].forEach(t => {
+                const card = document.getElementById(`tema-card-${t}`);
+                if (card) card.classList.toggle('activo', t === tema);
+            });
+        }
+
+        function applyColorTema(tema) {
+            const html = document.documentElement;
+            // Solo aplicar en modo oscuro
+            const isLight = html.getAttribute('data-theme') === 'light';
+            if (isLight) {
+                html.removeAttribute('data-color-theme');
+                return;
+            }
+            if (tema === 'default') {
+                html.removeAttribute('data-color-theme');
+            } else {
+                html.setAttribute('data-color-theme', tema);
+            }
+        }
+
+        // Al cambiar tema claro/oscuro, re-aplicar color tema
+        const _origToggleTheme = typeof toggleTheme === 'function' ? toggleTheme : null;
+        const _origApplyTheme = typeof applyTheme === 'function' ? applyTheme : null;
+
+        // Override applyTheme to also manage color themes
+        window.addEventListener('DOMContentLoaded', () => {
+            // Restaurar color tema guardado
+            const savedTema = localStorage.getItem('zan_color_tema') || 'default';
+            applyColorTema(savedTema);
+
+            // Marcar card activo en modal
+            const card = document.getElementById(`tema-card-${savedTema}`);
+            if (card) {
+                document.querySelectorAll('.color-tema-card').forEach(c => c.classList.remove('activo'));
+                card.classList.add('activo');
+            }
+
+            // Restaurar vista
+            const savedVista = localStorage.getItem('zan_vista') || 'tabs';
+            applyVistaMode(savedVista);
+            const vistaCard = document.getElementById(`vista-card-${savedVista}`);
+            if (vistaCard) {
+                document.querySelectorAll('.vista-modo-card').forEach(c => c.classList.remove('activo'));
+                vistaCard.classList.add('activo');
+            }
+        });
+
+        // Patch toggleTheme to handle color themes
+        const _patchedToggleTheme = window.toggleTheme;
+        window.toggleTheme = function() {
+            if (_patchedToggleTheme) _patchedToggleTheme();
+            // Re-apply color theme after mode change
+            setTimeout(() => applyColorTema(colorTemaActual), 50);
+        };
+
