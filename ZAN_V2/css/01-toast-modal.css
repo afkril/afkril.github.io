@@ -1,0 +1,193 @@
+		#auth-screen::before {
+			content: '';
+			position: absolute;
+			top: -50%;
+			left: -50%;
+			width: 200%;
+			height: 200%;
+			background-image: 
+				linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+				linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+			background-size: 50px 50px;
+			transform: perspective(500px) rotateX(60deg);
+			animation: gridMove 20s linear infinite;
+			pointer-events: none;
+		}
+
+		@keyframes gridMove {
+			0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+			100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+		}
+	
+        /* ===== SISTEMA DE TOAST Y MODAL DE CONFIRMACIÓN ===== */
+        #zan-toast-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            pointer-events: none;
+            width: min(420px, 92vw);
+        }
+
+        .zan-toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            background: var(--bg-card-solid);
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+            pointer-events: all;
+            animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .zan-toast.hiding {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.92); }
+            to   { opacity: 1; transform: translateY(0)   scale(1); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0) scale(1); max-height: 200px; margin-bottom: 0; }
+            to   { opacity: 0; transform: translateY(12px) scale(0.95); max-height: 0; margin-bottom: -10px; }
+        }
+
+        .zan-toast-bar {
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 3px;
+            border-radius: 0 0 0 14px;
+            animation: toastBar linear forwards;
+        }
+
+        @keyframes toastBar {
+            from { width: 100%; }
+            to   { width: 0%; }
+        }
+
+        .zan-toast-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .zan-toast-body { flex: 1; min-width: 0; }
+        .zan-toast-title {
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 2px;
+        }
+        .zan-toast-msg {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .zan-toast-close {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-dim); font-size: 14px; padding: 0 0 0 6px;
+            flex-shrink: 0; transition: color 0.2s;
+        }
+        .zan-toast-close:hover { color: var(--text-main); }
+
+        /* Tipos de toast */
+        .zan-toast.success { border-color: rgba(0,255,136,0.25); }
+        .zan-toast.success .zan-toast-title { color: var(--success); }
+        .zan-toast.success .zan-toast-bar { background: var(--success); }
+        .zan-toast.error   { border-color: rgba(255,70,85,0.25); }
+        .zan-toast.error   .zan-toast-title { color: var(--danger); }
+        .zan-toast.error   .zan-toast-bar   { background: var(--danger); }
+        .zan-toast.warning { border-color: rgba(212,175,55,0.3); }
+        .zan-toast.warning .zan-toast-title { color: var(--primary-gold); }
+        .zan-toast.warning .zan-toast-bar   { background: var(--primary-gold); }
+        .zan-toast.info    { border-color: rgba(0,242,255,0.2); }
+        .zan-toast.info    .zan-toast-title { color: var(--accent-cyan); }
+        .zan-toast.info    .zan-toast-bar   { background: var(--accent-cyan); }
+
+        /* Modal de confirmación */
+        #zan-confirm-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            z-index: 99998;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        #zan-confirm-overlay.active { display: flex; }
+
+        .zan-confirm-box {
+            background: var(--bg-card-solid);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px 28px 22px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+            animation: confirmIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes confirmIn {
+            from { opacity: 0; transform: scale(0.88) translateY(20px); }
+            to   { opacity: 1; transform: scale(1)    translateY(0); }
+        }
+
+        .zan-confirm-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .zan-confirm-icon.danger  { background: rgba(255,70,85,0.15);  color: var(--danger); }
+        .zan-confirm-icon.warning { background: rgba(212,175,55,0.15); color: var(--primary-gold); }
+        .zan-confirm-icon.info    { background: rgba(0,242,255,0.1);   color: var(--accent-cyan); }
+
+        .zan-confirm-title {
+            font-size: 15px; font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+        .zan-confirm-msg {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 22px;
+            white-space: pre-line;
+        }
+        .zan-confirm-btns {
+            display: flex; gap: 10px; justify-content: flex-end;
+        }
+        .zan-confirm-btn {
+            padding: 9px 22px;
+            border-radius: 10px;
+            border: none; cursor: pointer;
+            font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            transition: all 0.2s;
+        }
+        .zan-confirm-btn.cancel {
+            background: rgba(255,255,255,0.07);
+            color: var(--text-dim);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .zan-confirm-btn.cancel:hover { background: rgba(255,255,255,0.12); color: var(--text-main); }
+        .zan-confirm-btn.confirm-danger  { background: var(--danger);        color: #fff; }
+        .zan-confirm-btn.confirm-warning { background: var(--primary-gold);  color: #000; }
+        .zan-confirm-btn.confirm-info    { background: var(--accent-cyan);   color: #000; }
+        .zan-confirm-btn.confirm-danger:hover  { filter: brightness(1.12); transform: translateY(-1px); }
+        .zan-confirm-btn.confirm-warning:hover { filter: brightness(1.1);  transform: translateY(-1px); }
+        .zan-confirm-btn.confirm-info:hover    { filter: brightness(1.1);  transform: translateY(-1px); }

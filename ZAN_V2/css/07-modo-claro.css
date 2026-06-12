@@ -1,0 +1,347 @@
+        /* ===== MODO CLARO: OVERRIDES COMPLETOS ===== */
+
+        /* Sidebar base siempre usa su variable de fondo */
+        .sidebar {
+            background: var(--sidebar-bg) !important;
+        }
+
+        /* En modo oscuro: textos claros (por defecto ya funcionan) */
+        /* En modo CLARO: sidebar también claro */
+        [data-theme="light"] .sidebar {
+            background: linear-gradient(180deg, #ffffff 0%, #f4f4f8 100%) !important;
+            border-right: 1px solid rgba(154,120,0,0.2) !important;
+        }
+        [data-theme="light"] .sidebar-header {
+            border-bottom-color: rgba(154,120,0,0.18);
+            background: rgba(255,255,255,0.9);
+        }
+        [data-theme="light"] .nav-section-title { color: #999; }
+        [data-theme="light"] .nav-item { color: #333; }
+        [data-theme="light"] .nav-item:hover {
+            background: rgba(154,120,0,0.09);
+            border-left-color: var(--primary-gold);
+            color: #111;
+        }
+        [data-theme="light"] .nav-item i { color: var(--primary-gold); }
+        [data-theme="light"] .nav-item.danger { color: var(--danger); }
+        [data-theme="light"] .nav-item.danger i { color: var(--danger); }
+        [data-theme="light"] .nav-section { border-bottom-color: rgba(0,0,0,0.06); }
+        [data-theme="light"] .sidebar-footer {
+            background: rgba(0,0,0,0.03);
+            border-top-color: rgba(0,0,0,0.08);
+        }
+        [data-theme="light"] .user-name { color: #222; }
+        [data-theme="light"] .sync-status { color: #777; }
+        [data-theme="light"] .sidebar-title { color: var(--primary-gold); }
+
+        /* Top bar */
+        [data-theme="light"] .top-bar {
+            background: rgba(255,255,255,0.97);
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        [data-theme="light"] .menu-toggle { color: var(--text-main); }
+        /* Dark mode explicit for contract-info */
+        :root .contract-info {
+            background: #1a1a2e;
+        }
+        [data-theme="light"] .contract-info {
+            background: #f0f0f8 !important;
+            border-color: var(--border-input) !important;
+        }
+        [data-theme="light"] .contract-info select,
+        [data-theme="light"] .contract-info input {
+            background: transparent !important;
+            color: var(--text-main) !important;
+        }
+        [data-theme="light"] .contract-info input {
+            border-left-color: rgba(0,0,0,0.1);
+        }
+        [data-theme="light"] .week-selector { background: rgba(0,0,0,0.04); }
+        [data-theme="light"] .week-selector small { color: var(--text-dim); }
+        [data-theme="light"] .week-selector select {
+            background: #f0f0f8 !important;
+            color: var(--accent-cyan) !important;
+            border-color: var(--accent-cyan) !important;
+        }
+        [data-theme="light"] .sync-indicator-top {
+            background: rgba(0,0,0,0.04) !important;
+            border-color: var(--border-subtle) !important;
+        }
+
+        /* Semana card / panel */
+        [data-theme="light"] .semana-card {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+        [data-theme="light"] .semana-card.excedido {
+            border-color: var(--danger);
+            box-shadow: 0 0 15px rgba(204,26,46,0.18);
+        }
+        [data-theme="light"] .presupuesto-display {
+            background: rgba(0,122,64,0.08);
+            color: var(--success);
+        }
+        [data-theme="light"] .semana-info input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .btn-collapse {
+            background: var(--accent-cyan-light);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        /* ============================================================
+           CABECERA DE PROVEEDOR: fondo gris oscuro neutro para que
+           cualquier color personalizado de etiqueta sea legible.
+           El color del texto viene inline del JS (color del proveedor),
+           y contrasta bien sobre el gris oscuro.
+        ============================================================ */
+        [data-theme="light"] .provider-section {
+            border-color: rgba(0,0,0,0.08) !important;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        [data-theme="light"] .provider-header {
+            background: #d0d0dc !important;
+            filter: none !important;
+        }
+        [data-theme="light"] .provider-header * {
+            text-shadow: none;
+        }
+        [data-theme="light"] .provider-total {
+            background: rgba(0,0,0,0.12) !important;
+            color: #222 !important;
+            text-shadow: none;
+        }
+        [data-theme="light"] .provider-content {
+            background: rgba(0,0,0,0.02);
+        }
+
+        /* Tabla de productos */
+        [data-theme="light"] .product-table th {
+            background: rgba(0,0,0,0.04);
+            color: var(--text-dim);
+        }
+        [data-theme="light"] .product-table td {
+            background: transparent;
+        }
+        [data-theme="light"] .product-table tr:hover td {
+            background: rgba(154,120,0,0.05);
+        }
+        [data-theme="light"] .product-table input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .product-table input:focus {
+            border-color: var(--primary-gold);
+            box-shadow: 0 0 0 2px var(--primary-gold-subtle);
+        }
+        [data-theme="light"] .total-input {
+            color: var(--accent-cyan) !important;
+            background: var(--accent-cyan-light) !important;
+            border-color: rgba(0,110,158,0.25) !important;
+        }
+        [data-theme="light"] .product-name { color: var(--text-main); }
+
+        /* Badges — sobre fondo gris oscuro del header quedan bien en su color original */
+        [data-theme="light"] .badge-sigla {
+            filter: none;
+        }
+        [data-theme="light"] .badge-cl {
+            background: rgba(0,110,158,0.15);
+            color: var(--accent-cyan);
+        }
+
+        /* Distribuidora */
+        [data-theme="light"] .distribuidora-row {
+            background: var(--primary-gold-light);
+            border-color: var(--primary-gold);
+        }
+        [data-theme="light"] .distribuidora-value {
+            color: var(--primary-gold) !important;
+        }
+
+        /* Tabs de semana */
+        [data-theme="light"] .semana-tab-btn {
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.1);
+            color: var(--text-dim);
+        }
+        [data-theme="light"] .semana-tab-btn:hover {
+            background: rgba(0,0,0,0.09);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .semana-tab-btn.active {
+            background: var(--primary-gold);
+            color: #000;
+            border-color: var(--primary-gold);
+            border-bottom-color: var(--primary-gold);
+            box-shadow: 0 -6px 20px rgba(154,120,0,0.4), 0 4px 0 var(--primary-gold);
+        }
+        [data-theme="light"] .semana-tab-btn.active .tab-label,
+        [data-theme="light"] .semana-tab-btn.active .tab-meta,
+        [data-theme="light"] .semana-tab-btn.active .tab-total {
+            color: #ffffff;
+        }
+        [data-theme="light"] .semanas-panel-container {
+            background: var(--bg-card);
+            border-color: var(--primary-gold);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        [data-theme="light"] .panel-info-chip {
+            background: rgba(0,0,0,0.04);
+            border-color: rgba(0,0,0,0.1);
+        }
+        [data-theme="light"] .panel-info-chip label { color: var(--text-dim); }
+        [data-theme="light"] .panel-info-chip input { color: var(--text-main); }
+        [data-theme="light"] .panel-semana-title { color: var(--primary-gold); }
+
+        /* Modales */
+        [data-theme="light"] .modal-container {
+            background: #ffffff;
+            border-color: var(--primary-gold);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        [data-theme="light"] .modal-header { border-bottom-color: var(--border-subtle); }
+        [data-theme="light"] .provider-config-item { background: var(--bg-subtle); }
+        [data-theme="light"] .provider-name-input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .sigla-preview { background: rgba(0,0,0,0.06); }
+        [data-theme="light"] .order-btn {
+            background: rgba(0,0,0,0.06);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .order-btn:hover { background: rgba(0,0,0,0.11); }
+        [data-theme="light"] .product-config-item { background: var(--bg-subtle); }
+        [data-theme="light"] .product-config-item input,
+        [data-theme="light"] .product-config-item select {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .cl-checkbox { color: var(--text-dim); }
+
+        /* Drawers */
+        [data-theme="light"] .drawer {
+            background: #ffffff;
+            border-left-color: var(--primary-gold);
+        }
+        [data-theme="light"] .search-box input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .select-filtro {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .breadcrumbs-container { background: rgba(0,0,0,0.04); }
+        [data-theme="light"] .breadcrumb-item {
+            background: var(--primary-gold-light);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .breadcrumb-item:hover { background: rgba(154,120,0,0.2); }
+        [data-theme="light"] .folder-card {
+            background: linear-gradient(135deg, #ffffff, #f8f8fc);
+            border-color: rgba(0,0,0,0.1);
+        }
+        [data-theme="light"] .folder-card:hover {
+            border-color: var(--primary-gold);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        [data-theme="light"] .folder-name { color: var(--text-main); }
+        [data-theme="light"] .file-item {
+            background: var(--bg-subtle);
+            border-color: var(--border-subtle);
+        }
+        [data-theme="light"] .file-item:hover {
+            background: var(--bg-subtle-hover);
+            border-color: var(--border-color);
+        }
+        [data-theme="light"] .file-name { color: var(--text-main); }
+        [data-theme="light"] .file-btn {
+            background: rgba(0,0,0,0.06);
+            color: var(--text-main);
+        }
+
+        /* Resumen / drawers internos */
+        [data-theme="light"] .resumen-proveedor { border-color: var(--border-subtle); }
+        [data-theme="light"] .resumen-proveedor-content { background: rgba(0,0,0,0.03); }
+        [data-theme="light"] .producto-resumen { border-bottom-color: var(--border-subtle); }
+        [data-theme="light"] .raciones-semana { border-bottom-color: var(--border-subtle); }
+        [data-theme="light"] .raciones-resumen { border-color: var(--accent-cyan); }
+        [data-theme="light"] .cl-yes { background: rgba(0,122,64,0.1); color: var(--success); }
+        [data-theme="light"] .cl-no { background: rgba(204,26,46,0.1); color: var(--danger); }
+        [data-theme="light"] .porcentaje-cl { background: rgba(0,122,64,0.08); color: var(--success); }
+        [data-theme="light"] .porcentaje-cl.bajo { background: rgba(204,26,46,0.08); color: var(--danger); }
+
+        /* Facturas */
+        [data-theme="light"] .factura-group { border-color: var(--border-subtle); }
+        [data-theme="light"] .factura-header {
+            background: var(--bg-subtle);
+            color: var(--text-main);
+        }
+        [data-theme="light"] .factura-header:hover { background: var(--bg-subtle-hover); }
+        [data-theme="light"] .factura-content { background: rgba(0,0,0,0.02); }
+        [data-theme="light"] .factura-item { border-bottom-color: var(--border-subtle); }
+        [data-theme="light"] .producto-nombre { color: var(--text-main); }
+
+        /* Misc */
+        [data-theme="light"] .semana-checkbox { background: var(--bg-subtle); }
+        [data-theme="light"] .semana-checkbox:hover { background: var(--bg-subtle-hover); }
+
+        /* Help menu */
+        [data-theme="light"] .help-menu {
+            background: #ffffff;
+            border-color: var(--border-color);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+        }
+        [data-theme="light"] .help-menu-item span { color: var(--text-main); }
+        [data-theme="light"] .help-menu-item:hover { background: var(--primary-gold-light); }
+
+        /* Tutorial */
+        [data-theme="light"] .tutorial-tooltip {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f8fc 100%);
+        }
+        [data-theme="light"] .tutorial-content { color: var(--text-main); }
+        [data-theme="light"] .tutorial-content li { color: var(--text-dim); }
+        [data-theme="light"] .tutorial-btn-secondary {
+            background: rgba(0,0,0,0.07);
+            color: var(--text-main);
+            border-color: rgba(0,0,0,0.15);
+        }
+
+        /* Auth */
+        [data-theme="light"] .auth-box {
+            background: #ffffff;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        [data-theme="light"] .auth-box input {
+            background: var(--bg-input);
+            border-color: var(--border-input);
+            color: var(--text-main);
+        }
+
+        /* Sync top */
+        [data-theme="light"] .sync-indicator-top {
+            background: rgba(0,0,0,0.04) !important;
+            border-color: rgba(0,0,0,0.1) !important;
+        }
+
+        /* TARJETA SEMANA: patrón de fondo en ambos modos */
+        .semana-card {
+            background-image: var(--card-pattern);
+        }
+		
+		[data-theme="light"] .btn-ajustes-topbar {
+			display: none !important;
+		}
+

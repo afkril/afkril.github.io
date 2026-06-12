@@ -1,0 +1,225 @@
+        /* ===== SISTEMA DE TABS POR SEMANA ===== */
+        .semanas-tabs-wrapper {
+            padding: 16px 16px 0 16px;
+        }
+
+        .semanas-tabs-nav {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 0;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            position: relative;
+        }
+
+        .semanas-tabs-nav::-webkit-scrollbar { display: none; }
+
+        .semana-tab-btn {
+            flex-shrink: 0;
+            padding: 10px 18px;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            background: var(--bg-subtle);
+            color: var(--text-dim);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.25s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            min-width: 90px;
+            position: relative;
+        }
+
+        .semana-tab-btn:hover {
+            background: var(--bg-subtle-hover);
+            color: var(--text-main);
+        }
+
+        .semana-tab-btn.active {
+            background: var(--primary-gold);
+            color: #000;
+            border-color: var(--primary-gold);
+            border-bottom: 3px solid var(--primary-gold);
+            box-shadow: 0 -6px 20px rgba(212,175,55,0.45), 0 4px 0 var(--primary-gold);
+            z-index: 2;
+            margin-bottom: -1px;
+            transform: translateY(-4px);
+            font-size: 12px;
+        }
+
+        .semana-tab-btn.active .tab-label {
+            color: #000;
+            font-size: 13px;
+        }
+
+        
+
+        .semana-tab-btn.active .tab-total {
+            color: #000;
+            font-weight: 900;
+        }
+
+        .semana-tab-btn.excedido-tab {
+            border-color: var(--danger) !important;
+            color: var(--danger) !important;
+        }
+
+        .semana-tab-btn .tab-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .semana-tab-btn .tab-meta {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-weight: 400;
+        }
+
+        .semana-tab-btn .tab-total {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            font-family: monospace;
+        }
+
+        /* Panel del tab activo */
+        .semanas-panel-container {
+            background: var(--bg-card);
+            border: 1px solid var(--primary-gold);
+            border-radius: 0 12px 12px 12px;
+            padding: 16px;
+            min-height: 200px;
+            position: relative;
+            background-image: var(--card-pattern);
+        }
+
+        .semana-panel {
+            display: none;
+        }
+
+        .semana-panel.active {
+            display: block;
+            animation: panelFadeIn 0.25s ease;
+        }
+
+        @keyframes panelFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cabecera del panel */
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .panel-semana-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-info-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .panel-info-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 10px;
+        }
+
+        .panel-info-chip label {
+            color: var(--text-dim);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-info-chip input {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 11px;
+            font-weight: 600;
+            width: 50px;
+            outline: none;
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+        .panel-info-chip input::-webkit-outer-spin-button,
+        .panel-info-chip input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .presupuesto-chip {
+            background: linear-gradient(90deg, rgba(0,255,136,0.1), rgba(0,255,136,0.05));
+            border-color: rgba(0,255,136,0.3);
+            padding: 6px 14px;
+        }
+
+        .presupuesto-chip .pres-valor {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .semana-panel.excedido .presupuesto-chip {
+            background: linear-gradient(90deg, rgba(255,70,85,0.15), rgba(255,70,85,0.05));
+            border-color: rgba(255,70,85,0.4);
+        }
+
+        .semana-panel.excedido .presupuesto-chip .pres-valor {
+            color: var(--danger);
+        }
+
+        /* Light mode tab overrides ya incluidos arriba en el bloque de overrides */
+
+        /* ===== BOTÓN MODO CLARO/OSCURO ===== */
+        .theme-toggle-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: var(--primary-gold-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--primary-gold);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .theme-toggle-btn:hover {
+            background: var(--primary-gold-light);
+            border-color: var(--primary-gold);
+        }
+        .theme-toggle-btn i { font-size: 13px; }
+
+        /* validacion proveedor */
+        [data-theme="light"] .validacion-proveedor-content {
+            background: rgba(0,0,0,0.03);
+        }
+

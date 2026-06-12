@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZAN - Cargando</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(ellipse at 35% 45%, #12052a 0%, #080e28 35%, #030612 70%, #000 100%);
+            height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            overflow: hidden; position: relative; color: #e2e8f0;
+        }
+        #bg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+        #hex-canvas { position: relative; z-index: 5; }
+        .bottom-ui { position: relative; z-index: 10; text-align: center; margin-top: 16px; }
+        .loading-text {
+            font-size: 12px; color: #94a3b8; text-transform: uppercase;
+            letter-spacing: 4px; animation: ft 1.5s ease-in-out infinite;
+        }
+        .loading-subtext { font-size: 10px; color: #475569; margin-top: 5px; }
+        @keyframes ft { 0%,100%{opacity:.4} 50%{opacity:1} }
+        .progress-container {
+            width: 220px; height: 2px; background: rgba(255,255,255,.07);
+            border-radius: 2px; margin: 12px auto 0; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #d4af37, #00f2ff);
+            transition: width .5s ease;
+            box-shadow: 0 0 8px rgba(0,242,255,.6);
+        }
+        .connection-status {
+            position: absolute; top: 14px; right: 16px;
+            display: flex; align-items: center; gap: 6px;
+            font-size: 10px; color: #64748b; z-index: 20;
+        }
+        .status-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #ff4655; animation: sp 2s infinite;
+        }
+        .status-dot.online { background: #22c55e; }
+        @keyframes sp { 0%,100%{opacity:1} 50%{opacity:.4} }
+        .version { position: absolute; bottom: 12px; font-size: 10px; color: #2d3a4a; z-index: 20; }
+        body.fade-out { animation: fadeOut .6s ease forwards; }
+        @keyframes fadeOut { to { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="connection-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Verificando conexión...</span>
+    </div>
+    <canvas id="hex-canvas" width="420" height="420"></canvas>
+    <div class="bottom-ui">
+        <div class="loading-text" id="loadingText">Inicializando sistema</div>
+        <div class="loading-subtext" id="loadingSubtext">Cargando módulos locales...</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+    </div>
+    <div class="version">v3.3 | ZAN Tabla de Valores</div>
+
+<script>
+(function(){
+    const body = document.body;
+    const bc = document.getElementById('bg-canvas'), bx = bc.getContext('2d');
+    const hc = document.getElementById('hex-canvas'), hx = hc.getContext('2d');
+    let W, H, stars = [], cnodes = [], floatNums = [];
+
+    function resize(){
+        W = window.innerWidth; H = window.innerHeight;
+        bc.width = W; bc.height = H;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    /* ── Stars ── */
+    for(let i=0;i<200;i++) stars.push({
+        x:Math.random()*W, y:Math.random()*H,
+        r:Math.random()*1.3+.1, a:Math.random(), s:Math.random()*.004+.001
+    });
+
+    /* ── Background constellation nodes ── */
+    for(let i=0;i<35;i++) cnodes.push({
+        x:Math.random()*W, y:Math.random()*H,
+        vx:(Math.random()-.5)*.25, vy:(Math.random()-.5)*.25,
+        r:Math.random()*1.8+.8, pulse:Math.random()*Math.PI*2
+    });
+
+    /* ── Floating hex/data chars ── */
+    const dataChars = '0123456789ABCDEF01'.split('');
+    for(let i=0;i<45;i++) floatNums.push({
+        x:Math.random()*W, y:Math.random()*H,
+        vy:-(Math.random()*.4+.1),
+        char:dataChars[Math.floor(Math.random()*dataChars.length)],
+        a:Math.random()*.35+.05, size:Math.random()*4+8,
+        timer:Math.random()*200
+    });
+
+    let t = 0;
+
+    function drawBg(){
+        bx.fillStyle = 'rgba(3,6,18,.15)';
+        bx.fillRect(0,0,W,H);
+
+        stars.forEach(s=>{
+            s.a+=s.s; if(s.a>1||s.a<0) s.s*=-1;
+            bx.beginPath(); bx.arc(s.x,s.y,s.r,0,Math.PI*2);
+            bx.fillStyle=`rgba(200,220,255,${s.a*.6})`; bx.fill();
+        });
+
+        cnodes.forEach(n=>{ n.x+=n.vx; n.y+=n.vy; n.pulse+=.02; if(n.x<0||n.x>W)n.vx*=-1; if(n.y<0||n.y>H)n.vy*=-1; });
+        cnodes.forEach((a,i)=>{
+            cnodes.forEach((b,j)=>{
+                if(j<=i) return;
+                const dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
+                if(d<140){
+                    bx.beginPath(); bx.moveTo(a.x,a.y); bx.lineTo(b.x,b.y);
+                    bx.strokeStyle=`rgba(80,160,255,${.15*(1-d/140)})`; bx.lineWidth=.5; bx.stroke();
+                }
+            });
+        });
+        cnodes.forEach(n=>{
+            const pa=Math.abs(Math.sin(n.pulse));
+            bx.beginPath(); bx.arc(n.x,n.y,n.r*(1+pa*.3),0,Math.PI*2);
+            bx.fillStyle=`rgba(100,200,255,${.4+pa*.4})`; bx.fill();
+        });
+
+        floatNums.forEach(f=>{
+            f.timer--; f.y+=f.vy;
+            if(f.y<-20||f.timer<0){
+                f.y=H+10; f.x=Math.random()*W; f.timer=150+Math.random()*200;
+                f.char=dataChars[Math.floor(Math.random()*dataChars.length)];
+            }
+            bx.font=`${f.size}px monospace`;
+            bx.fillStyle=`rgba(0,200,100,${f.a})`;
+            bx.fillText(f.char,f.x,f.y);
+        });
+    }
+
+    /* ── Hex geometry (scaled for 420px canvas) ── */
+    const cx=210, cy=210, R=118;
+    const h6=Array.from({length:6},(_,i)=>{const a=Math.PI/6+i*Math.PI/3;return[cx+R*Math.cos(a),cy+R*Math.sin(a)];});
+    const h5=Array.from({length:6},(_,i)=>{const a=Math.PI/6+i*Math.PI/3;return[cx+R*.72*Math.cos(a),cy+R*.72*Math.sin(a)];});
+    const h3=Array.from({length:6},(_,i)=>{const a=Math.PI/6+i*Math.PI/3;return[cx+R*.42*Math.cos(a),cy+R*.42*Math.sin(a)];});
+    const facets=[[0,1,2],[0,2,3],[0,3,5],[3,4,5],[0,1,5],[1,2,4],[2,3,4]];
+
+    /* ── Crystal shards ── */
+    const shards=[];
+    for(let i=0;i<20;i++){
+        const a=Math.random()*Math.PI*2, d=R*.55+Math.random()*R*.65;
+        shards.push({
+            x:cx+d*Math.cos(a), y:cy+d*Math.sin(a),
+            s:4+Math.random()*10, rot:Math.random()*Math.PI*2,
+            rotV:(Math.random()-.5)*.03, a:.4+Math.random()*.5,
+            float:Math.random()*Math.PI*2, floatR:.8+Math.random()*2.5, floatS:.008+Math.random()*.012
+        });
+    }
+
+    /* ── Exterior constellation ── */
+    const extNodes=[];
+    for(let i=0;i<22;i++){
+        const a=Math.random()*Math.PI*2, d=R*1.08+Math.random()*R*.75;
+        extNodes.push({
+            x:cx+d*Math.cos(a), y:cy+d*Math.sin(a),
+            vx:(Math.random()-.5)*.15, vy:(Math.random()-.5)*.15,
+            r:Math.random()*2+1, pulse:Math.random()*Math.PI*2, gold:Math.random()>.6
+        });
+    }
+
+    /* ── Data text sidebar ── */
+    const tLines=['PRECIO: $520','PROVEEDOR_01','COBERTURA: 123','SYNC: OK','REF: #ZAN-1992',
+                  'COMPRA LOCAL','FIREBASE: ON','VERSION: v3.4','CACHE: LIMPIO','ASOCIACION'];
+    const hexTexts=tLines.map((text,i)=>({
+        text, side:i%2===0?-1:1,
+        y:cy-100+i*24,
+        a:0, targetA:.35+Math.random()*.25,
+        x:i%2===0?cx-R*0.85:cx+R*1.1
+    }));
+
+    function drawHex(){
+        hx.clearRect(0,0,420,420);
+        const pulse=Math.sin(t*.025)*.05+.95;
+        const glow=Math.abs(Math.sin(t*.018));
+
+        /* Exterior constellation */
+        extNodes.forEach(n=>{
+            n.x+=n.vx; n.y+=n.vy; n.pulse+=.025;
+            if(n.x<cx-R*2.4||n.x>cx+R*2.4) n.vx*=-1;
+            if(n.y<cy-R*2.4||n.y>cy+R*2.4) n.vy*=-1;
+        });
+        extNodes.forEach((a,i)=>{
+            extNodes.forEach((b,j)=>{
+                if(j<=i) return;
+                const dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
+                if(d<90){
+                    hx.beginPath(); hx.moveTo(a.x,a.y); hx.lineTo(b.x,b.y);
+                    hx.strokeStyle=`rgba(100,180,255,${.25*(1-d/90)})`; hx.lineWidth=.6; hx.stroke();
+                }
+            });
+            h6.forEach(([vx2,vy2])=>{
+                const dx=a.x-vx2,dy=a.y-vy2,d=Math.sqrt(dx*dx+dy*dy);
+                if(d<80){
+                    hx.beginPath(); hx.moveTo(a.x,a.y); hx.lineTo(vx2,vy2);
+                    hx.strokeStyle=`rgba(0,180,255,${.2*(1-d/80)})`; hx.lineWidth=.5; hx.stroke();
+                }
+            });
+        });
+        extNodes.forEach(n=>{
+            const pa=Math.abs(Math.sin(n.pulse));
+            hx.beginPath(); hx.arc(n.x,n.y,n.r*(1+pa*.4),0,Math.PI*2);
+            hx.fillStyle=n.gold?`rgba(212,175,55,${.5+pa*.4})`:`rgba(80,200,255,${.5+pa*.4})`; hx.fill();
+        });
+
+        /* Crystal shards */
+        shards.forEach(s=>{
+            s.float+=s.floatS; s.rot+=s.rotV;
+            const fx=s.x+Math.cos(s.float)*s.floatR, fy=s.y+Math.sin(s.float)*s.floatR;
+            hx.save(); hx.translate(fx,fy); hx.rotate(s.rot);
+            hx.beginPath();
+            hx.moveTo(0,-s.s); hx.lineTo(s.s*.7,s.s*.4); hx.lineTo(s.s*.1,s.s*.8);
+            hx.lineTo(-s.s*.5,s.s*.6); hx.lineTo(-s.s*.7,s.s*.2); hx.closePath();
+            const sg=hx.createLinearGradient(-s.s,-s.s,s.s,s.s);
+            sg.addColorStop(0,`rgba(220,240,255,${s.a*.9})`);
+            sg.addColorStop(.4,`rgba(160,210,255,${s.a*.7})`);
+            sg.addColorStop(1,`rgba(212,175,55,${s.a*.5})`);
+            hx.fillStyle=sg; hx.fill();
+            hx.strokeStyle=`rgba(150,230,255,${s.a*.6})`; hx.lineWidth=.4; hx.stroke();
+            hx.restore();
+        });
+
+        /* Crystal interior facets */
+        const faceColors=[[0,80,160,.18],[0,60,140,.14],[0,100,180,.22],[0,70,150,.16],[10,40,120,.12],[0,90,170,.2],[0,50,130,.15]];
+        facets.forEach((f,fi)=>{
+            const [r,g,b,a]=faceColors[fi%faceColors.length];
+            hx.beginPath();
+            hx.moveTo(h6[f[0]][0],h6[f[0]][1]); hx.lineTo(h6[f[1]][0],h6[f[1]][1]); hx.lineTo(h6[f[2]][0],h6[f[2]][1]);
+            hx.closePath();
+            const fc=hx.createLinearGradient(h6[f[0]][0],h6[f[0]][1],h6[f[2]][0],h6[f[2]][1]);
+            fc.addColorStop(0,`rgba(${r+40},${g+60},${b+40},${a+.08})`);
+            fc.addColorStop(.5,`rgba(200,230,255,${a*.6})`);
+            fc.addColorStop(1,`rgba(${r},${g},${b},${a})`);
+            hx.fillStyle=fc; hx.fill();
+            hx.strokeStyle=`rgba(120,210,255,${.2+glow*.15})`; hx.lineWidth=.5; hx.stroke();
+        });
+
+        /* Inner facets */
+        [[0,1,2],[0,2,3],[0,3,5],[3,4,5]].forEach(f=>{
+            hx.beginPath();
+            hx.moveTo(h5[f[0]][0],h5[f[0]][1]); hx.lineTo(h5[f[1]][0],h5[f[1]][1]); hx.lineTo(h5[f[2]][0],h5[f[2]][1]);
+            hx.closePath();
+            hx.fillStyle=`rgba(150,220,255,${.06+glow*.04})`; hx.fill();
+            hx.strokeStyle=`rgba(0,200,255,${.18+glow*.1})`; hx.lineWidth=.4; hx.stroke();
+        });
+
+        /* Spokes */
+        for(let i=0;i<6;i++){
+            hx.beginPath(); hx.moveTo(h5[i][0],h5[i][1]); hx.lineTo(h3[i][0],h3[i][1]);
+            hx.strokeStyle=`rgba(212,175,55,${.2+glow*.12})`; hx.lineWidth=.5; hx.stroke();
+            hx.beginPath(); hx.moveTo(h6[i][0],h6[i][1]); hx.lineTo(cx,cy);
+            hx.strokeStyle=`rgba(0,180,255,${.08+glow*.05})`; hx.lineWidth=.4; hx.stroke();
+        }
+
+        /* Ring hexagons */
+        [h5,h3].forEach((ring,ri)=>{
+            hx.beginPath(); ring.forEach(([x,y],i)=>i===0?hx.moveTo(x,y):hx.lineTo(x,y)); hx.closePath();
+            hx.strokeStyle=ri===0?`rgba(0,200,255,${.25+glow*.15})`:`rgba(212,175,55,${.3+glow*.2})`;
+            hx.lineWidth=ri===0?.8:.7; hx.stroke();
+        });
+
+        /* Core glow */
+        const cg=hx.createRadialGradient(cx,cy,0,cx,cy,R*.5);
+        cg.addColorStop(0,'rgba(0,140,220,.22)'); cg.addColorStop(.6,'rgba(0,80,160,.08)'); cg.addColorStop(1,'rgba(0,0,0,0)');
+        hx.beginPath(); hx.arc(cx,cy,R*.5,0,Math.PI*2); hx.fillStyle=cg; hx.fill();
+
+        /* Outer hex */
+        hx.beginPath(); h6.forEach(([x,y],i)=>i===0?hx.moveTo(x,y):hx.lineTo(x,y)); hx.closePath();
+        hx.strokeStyle=`rgba(0,230,255,${.6+glow*.3})`; hx.lineWidth=1.8; hx.stroke();
+        hx.shadowBlur=14; hx.shadowColor='rgba(0,220,255,.5)'; hx.stroke(); hx.shadowBlur=0;
+
+        /* Vertex nodes */
+        h6.forEach(([x,y],i)=>{
+            const gold=i%2===0;
+            hx.shadowBlur=12; hx.shadowColor=gold?'rgba(212,175,55,.9)':'rgba(0,220,255,.9)';
+            hx.beginPath(); hx.arc(x,y,gold?5.5:4,0,Math.PI*2);
+            hx.fillStyle=gold?`rgba(212,175,55,${.8+glow*.2})`:`rgba(0,230,255,${.8+glow*.2})`;
+            hx.fill(); hx.shadowBlur=0;
+        });
+
+        /* Data text */
+        hexTexts.forEach((ht,i)=>{
+            ht.a+=(ht.targetA-ht.a)*.03;
+            const flash=Math.sin(t*.06+i*.7)>.7?1:.6;
+            hx.font='9px monospace'; hx.fillStyle=`rgba(0,200,120,${ht.a*flash})`;
+            hx.textAlign=ht.side<0?'right':'left';
+            hx.fillText(ht.text,ht.x,ht.y);
+            hx.beginPath(); hx.arc(ht.x+(ht.side<0?6:-6),ht.y-3,1.5,0,Math.PI*2);
+            hx.fillStyle=`rgba(0,230,120,${ht.a*.8})`; hx.fill();
+        });
+
+        /* ZAN text */
+        hx.save();
+        hx.shadowBlur=26; hx.shadowColor='rgba(0,220,255,.9)';
+        hx.font=`bold ${Math.round(44*pulse)}px 'Inter',sans-serif`;
+        hx.textAlign='center'; hx.textBaseline='middle';
+        const tg=hx.createLinearGradient(cx-55,cy,cx+55,cy);
+        tg.addColorStop(0,'#40e8ff'); tg.addColorStop(.45,'#c0f4ff'); tg.addColorStop(1,'#00c8e8');
+        hx.fillStyle=tg; hx.fillText('ZAN',cx,cy-10); hx.shadowBlur=0;
+        hx.font="11px 'Inter',sans-serif";
+        hx.fillStyle=`rgba(140,210,230,${.55+glow*.3})`;
+        hx.fillText('Tabla de Valores',cx,cy+22);
+        hx.restore();
+
+        /* Mini bar chart */
+        const bH=15,bY=cy+56,bW=62;
+        for(let i=0;i<7;i++){
+            const bx2=cx-bW/2+i*(bW/7)+1, bh=Math.abs(Math.sin(t*.045+i*.9))*bH;
+            hx.fillStyle=`rgba(0,200,255,${.3+i*.05})`;
+            hx.fillRect(bx2,bY-bh,(bW/7)-1.5,bh);
+        }
+    }
+
+    function loop(){ t++; drawBg(); drawHex(); requestAnimationFrame(loop); }
+    loop();
+
+    /* ── Connection status ── */
+    const dot=document.getElementById('statusDot'), stxt=document.getElementById('statusText');
+    function updateStatus(online){ dot.classList.toggle('online',online); stxt.textContent=online?'Conectado':'Modo offline'; }
+    updateStatus(navigator.onLine);
+    window.addEventListener('online',()=>updateStatus(true));
+    window.addEventListener('offline',()=>updateStatus(false));
+
+    /* ── Loading sequence ── */
+    const states=[
+        {text:'Inicializando sistema',    sub:'Cargando módulos locales...',  pct:10, d:0},
+        {text:'Verificando base de datos',sub:'LocalStorage y caché...',      pct:35, d:600},
+        {text:'Conectando con Firebase',  sub:'Sincronización en la nube...', pct:60, d:1300},
+        {text:'Cargando configuración',   sub:'Proveedores y productos...',   pct:80, d:2000},
+        {text:'Listo',                    sub:'Iniciando aplicación...',      pct:100,d:2600}
+    ];
+    const lt=document.getElementById('loadingText'), ls=document.getElementById('loadingSubtext'), pb=document.getElementById('progressBar');
+	states.forEach(s=>setTimeout(()=>{ lt.textContent=s.text; ls.textContent=s.sub; pb.style.width=s.pct+'%'; },s.d));
+
+    /* ── Redirect ── */
+    setTimeout(()=>{ body.classList.add('fade-out'); setTimeout(()=>{ window.location.href='index.html'; },650); },4200);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1134 @@
+        /* ===== CAJA DE PROVEEDOR: fondo gris neutro siempre ===== */
+        /* Modo oscuro: gris oscuro */
+        .provider-box-header {
+            background: #2a2a32 !important;
+        }
+        /* Modo claro: gris medio */
+        [data-theme="light"] .provider-box-header {
+            background: #d0d0dc !important;
+        }
+        /* El texto (color del proveedor) y border-left (inline) se mantienen */
+
+        /* ===== MODO CLARO: FONDOS GRISES EN PANELES DE DRAWERS ===== */
+        /* Fondo gris para los drawers en modo claro */
+        [data-theme="light"] .drawer {
+            background: #f0f0f5;
+        }
+
+        /* Fondo gris para contenido de proveedores en resumen/análisis */
+        [data-theme="light"] .resumen-proveedor {
+            background: #e8e8ef;
+            border-color: rgba(0,0,0,0.08);
+        }
+        [data-theme="light"] .resumen-proveedor-content {
+            background: #e2e2ea;
+        }
+        [data-theme="light"] .resumen-proveedor-header {
+            /* El color viene inline del JS, se mantiene */
+        }
+
+        /* Fondo gris para contabilidad */
+        [data-theme="light"] #accounting-content > div[style*="rgba(255,255,255,0.03)"],
+        [data-theme="light"] #accounting-content > div {
+            background: #e2e2ea !important;
+        }
+
+        /* Fondo gris para validación de facturas */
+        [data-theme="light"] .validacion-proveedor {
+            background: #e8e8ef;
+            border-color: rgba(0,0,0,0.08);
+        }
+        [data-theme="light"] .validacion-proveedor-content {
+            background: #e2e2ea !important;
+        }
+        [data-theme="light"] .factura-group {
+            background: #d8d8e2;
+            border-color: rgba(0,0,0,0.06);
+        }
+        [data-theme="light"] .factura-header {
+            background: rgba(0,0,0,0.05);
+        }
+        [data-theme="light"] .factura-header:hover {
+            background: rgba(0,0,0,0.09);
+        }
+        [data-theme="light"] .factura-content {
+            background: rgba(0,0,0,0.03);
+        }
+        [data-theme="light"] .factura-item {
+            border-bottom-color: rgba(0,0,0,0.07);
+        }
+
+        /* Fondo gris para distribuidora drawer */
+        [data-theme="light"] .semana-checkbox {
+            background: rgba(0,0,0,0.05);
+            border-color: transparent;
+        }
+        [data-theme="light"] .semana-checkbox:hover {
+            background: rgba(0,0,0,0.08);
+            border-color: var(--primary-gold);
+        }
+        [data-theme="light"] .semana-checkbox.selected {
+            background: rgba(154,120,0,0.1);
+            border-color: var(--primary-gold);
+        }
+
+        /* File manager en modo claro */
+        [data-theme="light"] .folder-card {
+            background: linear-gradient(135deg, #ffffff, #f0f0f8);
+            border-color: rgba(154,120,0,0.2);
+        }
+        [data-theme="light"] .file-item {
+            background: rgba(0,0,0,0.03);
+            border-color: rgba(0,0,0,0.06);
+        }
+        [data-theme="light"] .file-item:hover {
+            background: rgba(0,0,0,0.06);
+            border-color: rgba(154,120,0,0.3);
+        }
+        [data-theme="light"] .file-item.active-file {
+            background: rgba(0,110,158,0.06);
+        }
+        [data-theme="light"] .file-btn {
+            background: rgba(0,0,0,0.07);
+            color: var(--text-main);
+        }
+
+        /* Raciones resumen */
+        [data-theme="light"] .raciones-resumen {
+            background: rgba(0,110,158,0.05);
+        }
+        [data-theme="light"] .raciones-semana {
+            border-bottom-color: rgba(0,0,0,0.06);
+        }
+
+        /* ================================================================
+           SISTEMA DE AJUSTES: MODOS DE VISUALIZACIÓN Y TEMAS DE COLOR
+           ================================================================ */
+
+        /* ===== MODAL DE AJUSTES ===== */
+        #modal-ajustes {
+            z-index: 10001;
+        }
+
+        #modal-ajustes .modal-container {
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .ajustes-section {
+            margin-bottom: 28px;
+        }
+
+        .ajustes-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ajustes-section-title i {
+            color: var(--primary-gold);
+            font-size: 12px;
+        }
+
+        /* ===== GRID DE MODOS DE VISTA ===== */
+        .vista-modos-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .vista-modos-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .vista-modo-card {
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.25s;
+            background: var(--bg-subtle);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vista-modo-card:hover {
+            border-color: var(--border-color);
+            background: var(--bg-subtle-hover);
+            transform: translateY(-2px);
+        }
+
+        .vista-modo-card.activo {
+            border-color: var(--primary-gold);
+            background: var(--primary-gold-subtle);
+            box-shadow: 0 4px 20px rgba(212,175,55,0.2);
+        }
+
+        .vista-modo-card.activo::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 9px;
+            color: var(--primary-gold);
+        }
+
+        .vista-modo-preview {
+            width: 100%;
+            height: 60px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            overflow: hidden;
+            background: var(--bg-card-solid);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 5px;
+        }
+
+        /* Preview: Pestañas */
+        .preview-tabs .preview-tabs-nav {
+            display: flex;
+            gap: 2px;
+            height: 14px;
+        }
+        .preview-tabs .preview-tab {
+            height: 14px;
+            border-radius: 3px 3px 0 0;
+            background: rgba(255,255,255,0.06);
+            flex: 1;
+            border: 1px solid rgba(212,175,55,0.2);
+            border-bottom: none;
+        }
+        .preview-tabs .preview-tab.act {
+            background: var(--primary-gold);
+        }
+        .preview-tabs .preview-tab-content {
+            flex: 1;
+            background: rgba(255,255,255,0.04);
+            border-radius: 0 4px 4px 4px;
+            border: 1px solid rgba(212,175,55,0.25);
+        }
+
+        /* Preview: Tarjetas */
+        .preview-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3px;
+            padding: 4px;
+        }
+        .preview-card-item {
+            background: rgba(255,255,255,0.06);
+            border-radius: 4px;
+            border: 1px solid rgba(212,175,55,0.2);
+            height: 22px;
+        }
+        .preview-card-item.act {
+            border-color: var(--primary-gold);
+            background: rgba(212,175,55,0.1);
+        }
+
+        /* Preview: Lista */
+        .preview-list {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 4px;
+        }
+        .preview-list-item {
+            height: 10px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.06);
+            border-left: 2px solid rgba(212,175,55,0.3);
+        }
+        .preview-list-item.act {
+            border-left-color: var(--primary-gold);
+            background: rgba(212,175,55,0.1);
+        }
+
+        /* Preview: Acordeón */
+        .preview-accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 4px;
+        }
+        .preview-acc-item {
+            height: 12px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(212,175,55,0.2);
+        }
+        .preview-acc-item.open {
+            border-color: var(--primary-gold);
+            background: rgba(212,175,55,0.08);
+            height: 20px;
+        }
+
+        .vista-modo-nombre {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .vista-modo-desc {
+            font-size: 9px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        /* ===== GRID DE TEMAS DE COLOR ===== */
+        .color-temas-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .color-temas-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        .color-tema-card {
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.25s;
+            position: relative;
+        }
+
+        .color-tema-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .color-tema-card.activo {
+            border-width: 2px;
+        }
+
+        .color-tema-card.activo::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            font-size: 10px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 18px;
+            text-align: center;
+        }
+
+        .color-tema-preview {
+            height: 55px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .color-tema-preview-bg {
+            position: absolute;
+            inset: 0;
+        }
+
+        .color-tema-preview-top-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 12px;
+            opacity: 0.9;
+        }
+
+        .color-tema-preview-accent {
+            position: absolute;
+            bottom: 6px;
+            left: 8px;
+            width: 50%;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .color-tema-preview-dot {
+            position: absolute;
+            bottom: 6px;
+            right: 8px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .color-tema-info {
+            padding: 8px 8px 6px;
+            background: var(--bg-card-solid);
+        }
+
+        .color-tema-nombre {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .color-tema-desc {
+            font-size: 8px;
+            opacity: 0.65;
+            margin-top: 1px;
+        }
+
+        /* ===== BOTÓN DE AJUSTES EN TOP-BAR ===== */
+        .btn-ajustes-topbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--primary-gold);
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.25s;
+            white-space: nowrap;
+        }
+
+        .btn-ajustes-topbar:hover {
+            background: var(--primary-gold-subtle);
+            border-color: var(--primary-gold);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(212,175,55,0.2);
+        }
+
+        .btn-ajustes-topbar i { font-size: 12px; }
+
+        /* ===== MODOS DE VISUALIZACIÓN: VISTA TARJETAS ===== */
+        body[data-view="cards"] .semanas-tabs-wrapper {
+            padding: 16px;
+        }
+
+        body[data-view="cards"] .semanas-tabs-nav {
+            display: none;
+        }
+
+        body[data-view="cards"] .semanas-panel-container {
+            background: transparent;
+            border: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        /* 5 semanas → 2 columnas x 3 filas */
+        body[data-view="cards"] .semanas-panel-container.semanas-5 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        /* El 5to panel ocupa la columna 1 de la 3ra fila */
+        body[data-view="cards"] .semanas-panel-container.semanas-5 .semana-panel:nth-child(5) {
+            grid-column: 1 / 2;
+        }
+
+        body[data-view="cards"] .semana-panel {
+            display: block !important;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 14px;
+            background-image: var(--card-pattern);
+            transition: box-shadow 0.25s, transform 0.25s;
+            animation: none !important;
+        }
+
+        body[data-view="cards"] .semana-panel:hover {
+            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+            transform: translateY(-2px);
+        }
+
+        body[data-view="cards"] .semana-panel .panel-semana-title {
+            font-size: 13px;
+        }
+
+        /* ===== MODO LISTA ===== */
+        body[data-view="list"] .semanas-tabs-wrapper {
+            padding: 16px;
+        }
+
+        body[data-view="list"] .semanas-tabs-nav {
+            display: none;
+        }
+
+        body[data-view="list"] .semanas-panel-container {
+            background: transparent;
+            border: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        /* 5 semanas → 2 columnas x 3 filas */
+        body[data-view="list"] .semanas-panel-container.semanas-5 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        body[data-view="list"] .semanas-panel-container.semanas-5 .semana-panel:nth-child(5) {
+            grid-column: 1 / 2;
+        }
+
+        body[data-view="list"] .semana-panel {
+            display: block !important;
+            animation: none !important;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--primary-gold);
+            border-radius: 10px;
+            padding: 12px 16px;
+        }
+
+        body[data-view="list"] .semana-panel .panel-header {
+            margin-bottom: 10px;
+        }
+
+        body[data-view="list"] .semana-panel .provider-box {
+            margin-bottom: 6px;
+        }
+
+        /* ===== MODO ACORDEÓN ===== */
+        body[data-view="accordion"] .semanas-tabs-wrapper {
+            padding: 16px;
+        }
+
+        body[data-view="accordion"] .semanas-tabs-nav {
+            display: none;
+        }
+
+        body[data-view="accordion"] .semanas-panel-container {
+            background: transparent;
+            border: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        /* 5 semanas → 2 columnas x 3 filas */
+        body[data-view="accordion"] .semanas-panel-container.semanas-5 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        body[data-view="accordion"] .semanas-panel-container.semanas-5 .semana-panel:nth-child(5) {
+            grid-column: 1 / 2;
+        }
+
+        body[data-view="accordion"] .semana-panel {
+            display: block !important;
+            animation: none !important;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        body[data-view="accordion"] .semana-panel .panel-header {
+            cursor: pointer;
+            padding: 12px 16px;
+            margin-bottom: 0;
+            background: var(--bg-subtle);
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        body[data-view="accordion"] .semana-panel .panel-header:hover {
+            background: var(--bg-subtle-hover);
+        }
+
+        body[data-view="accordion"] .semana-panel .panel-accordion-body {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body[data-view="accordion"] .semana-panel.acc-open .panel-accordion-body {
+            max-height: 2000px;
+        }
+
+        body[data-view="accordion"] .semana-panel.acc-open .panel-header {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        body[data-view="accordion"] .semana-panel .accordion-body-inner {
+            padding: 14px 16px;
+        }
+
+        body[data-view="accordion"] .panel-accordion-chevron {
+            margin-left: auto;
+            transition: transform 0.3s;
+            color: var(--text-dim);
+            font-size: 11px;
+        }
+
+        body[data-view="accordion"] .semana-panel.acc-open .panel-accordion-chevron {
+            transform: rotate(180deg);
+            color: var(--primary-gold);
+        }
+
+        /* ===== TEMAS DE COLOR PARA MODO OSCURO ===== */
+
+        /* ── Tema 1: DORADO (por defecto) ── mejorado con fondo más profundo y cálido */
+        /* El :root ya define las variables base; aquí mejoramos el fondo body */
+        body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #231b00 0%, #050401 55%, #000000 100%);
+        }
+
+        #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(212,175,55,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212,175,55,0.04) 1px, transparent 1px);
+        }
+
+        /* Sombra dorada sutil en las tarjetas del tema por defecto */
+        .semanas-panel-container {
+            box-shadow: 0 0 60px rgba(212,175,55,0.04) inset;
+        }
+
+        /* ── Tema 2: OCÉANO PROFUNDO ── Azul marino & Cian */
+        [data-color-theme="ocean"] {
+            --bg-body: #050d1a;
+            --bg-card: rgba(8, 25, 50, 0.95);
+            --bg-card-solid: #081932;
+            --bg-input: rgba(0,8,20,0.5);
+            --bg-input-solid: #050e1f;
+            --bg-subtle: rgba(0,150,255,0.05);
+            --bg-subtle-hover: rgba(0,150,255,0.09);
+            --bg-overlay: rgba(0,0,0,0.3);
+            --primary-gold: #00c8ff;
+            --primary-gold-light: rgba(0,200,255,0.15);
+            --primary-gold-subtle: rgba(0,200,255,0.08);
+            --accent-cyan: #7b5ea7;
+            --accent-cyan-light: rgba(123,94,167,0.12);
+            --text-main: #d0eeff;
+            --text-dim: #6a9ab0;
+            --danger: #ff4655;
+            --success: #00ffb3;
+            --border-color: rgba(0,200,255,0.3);
+            --border-subtle: rgba(0,150,255,0.07);
+            --border-input: #1a3a5c;
+            --sidebar-bg: linear-gradient(180deg, rgba(5,15,35,0.98) 0%, rgba(3,10,25,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300c8ff' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="ocean"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #0d2d5a 0%, #020710 55%, #000000 100%);
+        }
+
+        [data-color-theme="ocean"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(0,200,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,200,255,0.04) 1px, transparent 1px);
+        }
+
+        /* Tema 3: Bosque Esmeralda - Verde oscuro y menta */
+        [data-color-theme="emerald"] {
+            --bg-body: #050f09;
+            --bg-card: rgba(8, 28, 16, 0.95);
+            --bg-card-solid: #081c10;
+            --bg-input: rgba(0,10,5,0.5);
+            --bg-input-solid: #050e08;
+            --bg-subtle: rgba(0,200,80,0.05);
+            --bg-subtle-hover: rgba(0,200,80,0.09);
+            --bg-overlay: rgba(0,0,0,0.3);
+            --primary-gold: #00e676;
+            --primary-gold-light: rgba(0,230,118,0.15);
+            --primary-gold-subtle: rgba(0,230,118,0.08);
+            --accent-cyan: #69f0ae;
+            --accent-cyan-light: rgba(105,240,174,0.1);
+            --text-main: #d0ffe0;
+            --text-dim: #5a9060;
+            --danger: #ff5252;
+            --success: #64ffda;
+            --border-color: rgba(0,230,118,0.3);
+            --border-subtle: rgba(0,200,80,0.07);
+            --border-input: #1a3c22;
+            --sidebar-bg: linear-gradient(180deg, rgba(5,18,10,0.98) 0%, rgba(3,12,7,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300e676' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="emerald"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #083320 0%, #020d05 55%, #000000 100%);
+        }
+
+        [data-color-theme="emerald"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(0,230,118,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,230,118,0.04) 1px, transparent 1px);
+        }
+
+        /* Tema 4: Crepúsculo - Púrpura y rosa */
+        [data-color-theme="twilight"] {
+            --bg-body: #0d0515;
+            --bg-card: rgba(22, 8, 38, 0.95);
+            --bg-card-solid: #160826;
+            --bg-input: rgba(8,0,18,0.5);
+            --bg-input-solid: #0a0518;
+            --bg-subtle: rgba(160,80,255,0.06);
+            --bg-subtle-hover: rgba(160,80,255,0.1);
+            --bg-overlay: rgba(0,0,0,0.3);
+            --primary-gold: #c87bff;
+            --primary-gold-light: rgba(200,123,255,0.15);
+            --primary-gold-subtle: rgba(200,123,255,0.08);
+            --accent-cyan: #ff6eb4;
+            --accent-cyan-light: rgba(255,110,180,0.1);
+            --text-main: #eed6ff;
+            --text-dim: #8a6aaa;
+            --danger: #ff4466;
+            --success: #b9f6ca;
+            --border-color: rgba(200,123,255,0.3);
+            --border-subtle: rgba(160,80,255,0.07);
+            --border-input: #3a1a5c;
+            --sidebar-bg: linear-gradient(180deg, rgba(15,6,28,0.98) 0%, rgba(10,4,20,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c87bff' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="twilight"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #30085a 0%, #06010f 55%, #000000 100%);
+        }
+
+        [data-color-theme="twilight"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(200,123,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(200,123,255,0.04) 1px, transparent 1px);
+        }
+
+        /* Tema 5: Volcán - Negro carbón y rojo carmesí */
+        [data-color-theme="volcano"] {
+            --bg-body: #0f0500;
+            --bg-card: rgba(28, 10, 2, 0.95);
+            --bg-card-solid: #1c0a02;
+            --bg-input: rgba(15,3,0,0.5);
+            --bg-input-solid: #100500;
+            --bg-subtle: rgba(255,80,20,0.05);
+            --bg-subtle-hover: rgba(255,80,20,0.09);
+            --bg-overlay: rgba(0,0,0,0.3);
+            --primary-gold: #ff6b35;
+            --primary-gold-light: rgba(255,107,53,0.15);
+            --primary-gold-subtle: rgba(255,107,53,0.08);
+            --accent-cyan: #ffd166;
+            --accent-cyan-light: rgba(255,209,102,0.1);
+            --text-main: #ffe8d6;
+            --text-dim: #9a6040;
+            --danger: #ff1744;
+            --success: #ff9f43;
+            --border-color: rgba(255,107,53,0.3);
+            --border-subtle: rgba(255,80,20,0.07);
+            --border-input: #4a1a08;
+            --sidebar-bg: linear-gradient(180deg, rgba(20,6,0,0.98) 0%, rgba(12,4,0,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ff6b35' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="volcano"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #3d1200 0%, #090200 55%, #000000 100%);
+        }
+
+        [data-color-theme="volcano"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(255,107,53,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,107,53,0.04) 1px, transparent 1px);
+        }
+
+        /* ── Tema 6: NEÓN CYBERPUNK ── Negro carbón & Magenta eléctrico */
+        [data-color-theme="neon"] {
+            --bg-body: #08000f;
+            --bg-card: rgba(18, 2, 28, 0.96);
+            --bg-card-solid: #12021c;
+            --bg-input: rgba(8,0,15,0.55);
+            --bg-input-solid: #0a0014;
+            --bg-subtle: rgba(255,0,127,0.05);
+            --bg-subtle-hover: rgba(255,0,127,0.09);
+            --bg-overlay: rgba(0,0,0,0.35);
+            --primary-gold: #ff007f;
+            --primary-gold-light: rgba(255,0,127,0.18);
+            --primary-gold-subtle: rgba(255,0,127,0.08);
+            --accent-cyan: #bf00ff;
+            --accent-cyan-light: rgba(191,0,255,0.12);
+            --text-main: #ffe0f5;
+            --text-dim: #9a4070;
+            --danger: #ff3355;
+            --success: #00ffcc;
+            --border-color: rgba(255,0,127,0.35);
+            --border-subtle: rgba(255,0,127,0.07);
+            --border-input: #4a0030;
+            --sidebar-bg: linear-gradient(180deg, rgba(12,0,22,0.98) 0%, rgba(6,0,14,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ff007f' fill-opacity='0.05'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="neon"] body {
+            background-image:
+                radial-gradient(ellipse 120% 60% at 50% -10%, #3a004e 0%, #050008 55%, #000000 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,0,127,0.012) 2px, rgba(255,0,127,0.012) 4px);
+        }
+
+        [data-color-theme="neon"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(255,0,127,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(191,0,255,0.04) 1px, transparent 1px);
+        }
+
+        /* ── Tema 7: ÁRTICO GLACIAR ── Gris azulado & Azul hielo */
+        [data-color-theme="arctic"] {
+            --bg-body: #0d1117;
+            --bg-card: rgba(16, 22, 34, 0.96);
+            --bg-card-solid: #101622;
+            --bg-input: rgba(8,12,20,0.55);
+            --bg-input-solid: #0c1018;
+            --bg-subtle: rgba(165,243,252,0.04);
+            --bg-subtle-hover: rgba(165,243,252,0.08);
+            --bg-overlay: rgba(0,0,0,0.35);
+            --primary-gold: #a5f3fc;
+            --primary-gold-light: rgba(165,243,252,0.15);
+            --primary-gold-subtle: rgba(165,243,252,0.07);
+            --accent-cyan: #e2f0ff;
+            --accent-cyan-light: rgba(226,240,255,0.1);
+            --text-main: #e8f4ff;
+            --text-dim: #5a7a9a;
+            --danger: #ff4d6d;
+            --success: #5eead4;
+            --border-color: rgba(165,243,252,0.25);
+            --border-subtle: rgba(165,243,252,0.06);
+            --border-input: #1e2e42;
+            --sidebar-bg: linear-gradient(180deg, rgba(10,15,26,0.98) 0%, rgba(6,10,18,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23a5f3fc' fill-opacity='0.035'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="arctic"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #122d4a 0%, #050810 55%, #000000 100%);
+        }
+
+        [data-color-theme="arctic"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(165,243,252,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(165,243,252,0.04) 1px, transparent 1px);
+        }
+
+        /* ── Tema 8: RADIACTIVO TÓXICO ── Negro puro & Verde lima ácido */
+        [data-color-theme="toxic"] {
+            --bg-body: #000000;
+            --bg-card: rgba(4, 14, 4, 0.97);
+            --bg-card-solid: #040e04;
+            --bg-input: rgba(0,6,0,0.6);
+            --bg-input-solid: #020802;
+            --bg-subtle: rgba(204,255,0,0.05);
+            --bg-subtle-hover: rgba(204,255,0,0.09);
+            --bg-overlay: rgba(0,0,0,0.4);
+            --primary-gold: #ccff00;
+            --primary-gold-light: rgba(204,255,0,0.16);
+            --primary-gold-subtle: rgba(204,255,0,0.07);
+            --accent-cyan: #39ff14;
+            --accent-cyan-light: rgba(57,255,20,0.1);
+            --text-main: #e8ffcc;
+            --text-dim: #4a7a20;
+            --danger: #ff1a1a;
+            --success: #ccff00;
+            --border-color: rgba(204,255,0,0.3);
+            --border-subtle: rgba(204,255,0,0.06);
+            --border-input: #1a3a00;
+            --sidebar-bg: linear-gradient(180deg, rgba(2,8,2,0.99) 0%, rgba(0,4,0,1) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ccff00' fill-opacity='0.05'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="toxic"] body {
+            background-image:
+                radial-gradient(ellipse 100% 50% at 50% -5%, #122800 0%, #030500 60%, #000000 100%),
+                repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(204,255,0,0.015) 39px, rgba(204,255,0,0.015) 40px);
+        }
+
+        [data-color-theme="toxic"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(204,255,0,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(204,255,0,0.05) 1px, transparent 1px);
+        }
+
+        /* ── Tema 9: ÁMBAR COBRE ── Negro cálido & Cobre brillante */
+        [data-color-theme="amber"] {
+            --bg-body: #0c0800;
+            --bg-card: rgba(24, 16, 2, 0.96);
+            --bg-card-solid: #181002;
+            --bg-input: rgba(12,7,0,0.55);
+            --bg-input-solid: #0e0900;
+            --bg-subtle: rgba(255,191,0,0.05);
+            --bg-subtle-hover: rgba(255,191,0,0.09);
+            --bg-overlay: rgba(0,0,0,0.3);
+            --primary-gold: #ffbf00;
+            --primary-gold-light: rgba(255,191,0,0.18);
+            --primary-gold-subtle: rgba(255,191,0,0.08);
+            --accent-cyan: #e07b39;
+            --accent-cyan-light: rgba(224,123,57,0.12);
+            --text-main: #fff3d6;
+            --text-dim: #9a7030;
+            --danger: #ff4444;
+            --success: #a8e063;
+            --border-color: rgba(255,191,0,0.32);
+            --border-subtle: rgba(255,191,0,0.07);
+            --border-input: #4a2e00;
+            --sidebar-bg: linear-gradient(180deg, rgba(18,12,0,0.98) 0%, rgba(10,7,0,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffbf00' fill-opacity='0.045'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="amber"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #2c1900 0%, #060300 55%, #000000 100%);
+        }
+
+        [data-color-theme="amber"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(255,191,0,0.045) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(224,123,57,0.035) 1px, transparent 1px);
+        }
+
+        /* Los temas de color no aplican en modo claro */
+        [data-theme="light"] {
+            --bg-body: #f4f4f6;
+            --bg-card: rgba(255, 255, 255, 0.98);
+            --bg-card-solid: #ffffff;
+            --primary-gold: #9a7800;
+            --accent-cyan: #006e9e;
+        }
+
+
+        /* ── Tema 10: AMATISTA ── Violeta profundo & Cristal */
+        [data-color-theme="amethyst"] {
+            --bg-body: #0a0514;
+            --bg-card: rgba(18, 6, 32, 0.96);
+            --bg-card-solid: #120620;
+            --bg-input: rgba(8,2,16,0.55);
+            --bg-input-solid: #0c0418;
+            --bg-subtle: rgba(157,78,221,0.06);
+            --bg-subtle-hover: rgba(157,78,221,0.10);
+            --bg-overlay: rgba(0,0,0,0.35);
+            --primary-gold: #9D4EDD;
+            --primary-gold-light: rgba(157,78,221,0.18);
+            --primary-gold-subtle: rgba(157,78,221,0.08);
+            --accent-cyan: #E0AAFF;
+            --accent-cyan-light: rgba(224,170,255,0.12);
+            --text-main: #f0e0ff;
+            --text-dim: #7a4a9a;
+            --danger: #ff4466;
+            --success: #b9f6ca;
+            --border-color: rgba(157,78,221,0.35);
+            --border-subtle: rgba(157,78,221,0.07);
+            --border-input: #3a1060;
+            --sidebar-bg: linear-gradient(180deg, rgba(12,4,24,0.98) 0%, rgba(6,2,14,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239D4EDD' fill-opacity='0.05'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="amethyst"] body {
+            background-image:
+                radial-gradient(ellipse 120% 60% at 50% -10%, #2e0860 0%, #070010 55%, #000000 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(157,78,221,0.012) 2px, rgba(157,78,221,0.012) 4px);
+        }
+
+        [data-color-theme="amethyst"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(157,78,221,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(224,170,255,0.04) 1px, transparent 1px);
+        }
+
+        /* ── Tema 11: QUANTUM ── Azul cobalto & Fulgor cian */
+        [data-color-theme="quantum"] {
+            --bg-body: #000818;
+            --bg-card: rgba(0, 10, 30, 0.97);
+            --bg-card-solid: #000a1e;
+            --bg-input: rgba(0,5,16,0.6);
+            --bg-input-solid: #00060f;
+            --bg-subtle: rgba(0,82,204,0.07);
+            --bg-subtle-hover: rgba(0,82,204,0.12);
+            --bg-overlay: rgba(0,0,0,0.4);
+            --primary-gold: #0052CC;
+            --primary-gold-light: rgba(0,82,204,0.2);
+            --primary-gold-subtle: rgba(0,82,204,0.09);
+            --accent-cyan: #00F5D4;
+            --accent-cyan-light: rgba(0,245,212,0.12);
+            --text-main: #d0f0ff;
+            --text-dim: #3a6080;
+            --danger: #ff3355;
+            --success: #00F5D4;
+            --border-color: rgba(0,245,212,0.3);
+            --border-subtle: rgba(0,82,204,0.08);
+            --border-input: #001a4a;
+            --sidebar-bg: linear-gradient(180deg, rgba(0,6,20,0.99) 0%, rgba(0,3,12,1) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2300F5D4' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="quantum"] body {
+            background-image:
+                radial-gradient(ellipse 120% 60% at 50% -10%, #001840 0%, #000408 60%, #000000 100%),
+                repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(0,245,212,0.015) 39px, rgba(0,245,212,0.015) 40px);
+        }
+
+        [data-color-theme="quantum"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(0,245,212,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,82,204,0.04) 1px, transparent 1px);
+        }
+
+        /* ── Tema 12: SAKURA ── Rosa cerezo & Ceniza */
+        [data-color-theme="sakura"] {
+            --bg-body: #110810;
+            --bg-card: rgba(24, 10, 20, 0.96);
+            --bg-card-solid: #180a14;
+            --bg-input: rgba(12,4,10,0.55);
+            --bg-input-solid: #0e0610;
+            --bg-subtle: rgba(255,117,143,0.05);
+            --bg-subtle-hover: rgba(255,117,143,0.09);
+            --bg-overlay: rgba(0,0,0,0.35);
+            --primary-gold: #FF758F;
+            --primary-gold-light: rgba(255,117,143,0.18);
+            --primary-gold-subtle: rgba(255,117,143,0.08);
+            --accent-cyan: #E2ECE9;
+            --accent-cyan-light: rgba(226,236,233,0.1);
+            --text-main: #ffe8f0;
+            --text-dim: #8a5060;
+            --danger: #ff4466;
+            --success: #a8e6cf;
+            --border-color: rgba(255,117,143,0.32);
+            --border-subtle: rgba(255,117,143,0.06);
+            --border-input: #4a1830;
+            --sidebar-bg: linear-gradient(180deg, rgba(16,6,14,0.98) 0%, rgba(10,4,8,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23FF758F' fill-opacity='0.045'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="sakura"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #3a0820 0%, #080206 55%, #000000 100%);
+        }
+
+        [data-color-theme="sakura"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(255,117,143,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(226,236,233,0.03) 1px, transparent 1px);
+        }
+
+        /* ================================================================
+           FONDOS FIJOS DE PANELES: MANTENER COLORES ORIGINALES
+           Sin importar el tema de color activo, los fondos de las cajas
+           de gestión y paneles mantienen los colores del tema por defecto.
+           ================================================================ */
+
+        /*
+         * Colores originales protegidos:
+         *   --bg-card-solid: #1e1e23  (fondo sólido de paneles/tarjetas)
+         *   --bg-card:       rgba(0,0,0,0.95)  (fondo semi-transparente)
+         *
+         * Se aplica a todos los temas de color alternativos.
+         * El selector [data-color-theme] cubre ocean, emerald, twilight,
+         * volcano, neon, arctic, toxic, amber, amethyst, quantum, sakura.
+         */
+
+        /* Resetear las variables de fondo de tarjeta para todos los temas */
+        [data-color-theme] {
+            --bg-card: rgba(0, 0, 0, 0.95) !important;
+            --bg-card-solid: #1e1e23 !important;
+            --bg-input-solid: #0d0d10 !important;
+        }
+
+        /* Drawer principal: fondo fijo */
+        [data-color-theme] .drawer {
+            background: #1e1e23 !important;
+        }
+
+        /* Paneles de resumen (proveedor) */
+        [data-color-theme] .resumen-proveedor {
+            background: rgba(0, 0, 0, 0.95) !important;
+        }
+        [data-color-theme] .resumen-proveedor-content {
+            background: #1e1e23 !important;
+        }
+
+        /* Contabilidad */
+        [data-color-theme] #accounting-content > div {
+            background: #1e1e23 !important;
+        }
+
+        /* Validación de facturas */
+        [data-color-theme] .validacion-proveedor {
+            background: rgba(0, 0, 0, 0.95) !important;
+        }
+        [data-color-theme] .validacion-proveedor-content {
+            background: #1e1e23 !important;
+        }
+        [data-color-theme] .factura-group {
+            background: #2a2a30 !important;
+        }
+        [data-color-theme] .factura-header {
+            background: rgba(255,255,255,0.04) !important;
+        }
+        [data-color-theme] .factura-header:hover {
+            background: rgba(255,255,255,0.07) !important;
+        }
+        [data-color-theme] .factura-content {
+            background: rgba(255,255,255,0.02) !important;
+        }
+
+        /* Paneles de semanas (todas las vistas) */
+        [data-color-theme] body[data-view="cards"] .semana-panel,
+        [data-color-theme] body[data-view="list"] .semana-panel,
+        [data-color-theme] body[data-view="accordion"] .semana-panel {
+            background: rgba(0, 0, 0, 0.95) !important;
+        }
+
+        /* Acordeón: header del panel */
+        [data-color-theme] body[data-view="accordion"] .semana-panel .panel-header {
+            background: #2a2a30 !important;
+        }
+        [data-color-theme] body[data-view="accordion"] .semana-panel .panel-header:hover {
+            background: rgba(42,42,48,0.85) !important;
+        }
+
+        /* Provider box header: mantener fondo gris neutro original */
+        [data-color-theme] .provider-box-header {
+            background: #2a2a32 !important;
+        }
+
+        /* Semana checkbox (distribuidora) */
+        [data-color-theme] .semana-checkbox {
+            background: rgba(255,255,255,0.03) !important;
+        }
+
+        /* File manager items */
+        [data-color-theme] .file-item {
+            background: rgba(255,255,255,0.03) !important;
+        }
+        [data-color-theme] .file-item:hover {
+            background: rgba(255,255,255,0.06) !important;
+        }
+        [data-color-theme] .file-btn {
+            background: rgba(255,255,255,0.06) !important;
+        }
+
+        /* Asegurar que las cajas de fondo en JS generadas también se respeten */
+        [data-color-theme] #accounting-content > div[style*="rgba(255,255,255,0.05)"],
+        [data-color-theme] #accounting-content > div[style*="rgba(255,255,255,0.03)"] {
+            background: #1e1e23 !important;
+        }
