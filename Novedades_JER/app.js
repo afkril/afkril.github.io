@@ -1,4 +1,33 @@
 
+
+        // ============================================================
+        // TOGGLE: Dato Pendiente en Nutrición
+        // ============================================================
+        function toggleNutricionPendiente() {
+            const checkbox = document.getElementById('nutricionPendiente');
+            const wrapper = document.getElementById('nutricionFieldsWrapper');
+            const indicator = document.getElementById('nutricionIndicator');
+            if (!checkbox || !wrapper) return;
+            const isPendiente = checkbox.checked;
+            wrapper.style.display = isPendiente ? 'none' : '';
+            if (indicator) indicator.style.display = isPendiente ? 'none' : '';
+        }
+
+        // ============================================================
+        // HELPER: Convierte fecha YYYY-MM-DD a DD/MM/YYYY
+        // ============================================================
+        function formatDateDMY(dateStr) {
+            if (!dateStr || dateStr === '-') return dateStr || '-';
+            // Si ya tiene formato DD/MM/YYYY, devolver tal cual
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) return dateStr;
+            // Si tiene formato YYYY-MM-DD, convertir
+            const parts = dateStr.split('-');
+            if (parts.length === 3 && parts[0].length === 4) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
 		const UDS_DATA = {
 		    '665': [
 		        ['ALEGRIA DE VIVIR.', '4100100115777'],
@@ -1835,6 +1864,10 @@
                 } else {
                     tipoBadge = '<span class="badge">' + (n.type || 'N/A').toUpperCase() + '</span>';
                 }
+                // Badge nutrición pendiente
+                if ((n.type === 'ingreso' || n.type === 'ambos' || n.hasIngreso) && n.nutricion?.pendiente) {
+                    tipoBadge += ' <span style="background:#f59e0b;color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;" title="Datos nutricionales pendientes">🍎⏳</span>';
+                }
                 
                 let docDisplay = n.document || '-';
                 let nameDisplay = n.name || '-';
@@ -1896,6 +1929,7 @@
                     <td>${nameDisplay}</td>
                     <td>
                         <button onclick="viewNovelty('${n.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 bg-blue-50 px-2 py-1 rounded">Ver</button>
+                        ${(n.type === 'ingreso' || n.type === 'ambos' || n.hasIngreso) && n.nutricion?.pendiente ? `<button onclick="abrirEditNutricion('${n.id}')" class="text-xs font-semibold mr-2 px-2 py-1 rounded" style="background:#fef3c7;color:#92400e;" title="Completar datos nutricionales pendientes">🍎 Nutrición</button>` : ''}
                         ${isCargado ? `<button onclick="archivarNovelty('${n.id}')" class="btn-archivar" title="Archivar">🗃️</button>` : ''}
                         <button onclick="deleteNovelty('${n.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold bg-red-50 px-2 py-1 rounded">Eliminar</button>
                     </td>
@@ -2143,7 +2177,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                     </div>
                     <div class="data-item-c">
                         <span class="data-label-c">📅 Fecha Retiro</span>
-                        <span class="data-value-c">${r.retiroDate || novelty.retiroDate || '-'}</span>
+                        <span class="data-value-c">${formatDateDMY(r.retiroDate || novelty.retiroDate || '-')}</span>
                     </div>
                     <div class="data-item-c">
                         <span class="data-label-c">⚧ Género</span>
@@ -2192,11 +2226,11 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                     </div>
                     <div class="data-item-c">
                         <span class="data-label-c">🎂 F. Nacimiento</span>
-                        <span class="data-value-c">${i.dob || i.ingresoDOB || novelty.ingresoDOB || '-'}</span>
+                        <span class="data-value-c">${formatDateDMY(i.dob || i.ingresoDOB || novelty.ingresoDOB || '-')}</span>
                     </div>
                     <div class="data-item-c">
                         <span class="data-label-c">📅 F. Ingreso</span>
-                        <span class="data-value-c">${i.ingresoDate || novelty.ingresoDate || '-'}</span>
+                        <span class="data-value-c">${formatDateDMY(i.ingresoDate || novelty.ingresoDate || '-')}</span>
                     </div>
                     <div class="data-item-c">
                         <span class="data-label-c">⚧ Género</span>
@@ -2249,7 +2283,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                     </div>
                     <div class="data-item-c">
                         <span class="data-label-c">🎂 F. Nacimiento</span>
-                        <span class="data-value-c">${i.acudienteDOB || novelty.acudienteDOB || '-'}</span>
+                        <span class="data-value-c">${formatDateDMY(i.acudienteDOB || novelty.acudienteDOB || '-')}</span>
                     </div>
                     <div class="data-item-c full-width-c">
                         <span class="data-label-c">📍 Ubicación</span>
@@ -2284,48 +2318,72 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
     
     // TARJETA 5: SEGUIMIENTO NUTRICIONAL (si hay datos de ingreso)
     const nutricion = novelty.nutricion || (novelty.ingreso && novelty.ingreso.nutricion);
-    if ((novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) && 
-        nutricion && (nutricion.fecha || nutricion.peso)) {
+    const isNutrPendiente = nutricion && nutricion.pendiente === true;
+    if ((novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) && nutricion) {
         
         const estadoColor = getNutricionColor(nutricion.estadoNutricional);
-        html += `
-            <div class="detail-card-compact card-nutricional-c">
-                <div class="card-header-c">
-                    <div class="card-icon-c">🍎</div>
-                    <h4 class="card-title-c">Seguimiento Nutricional</h4>
-                </div>
-                <div class="data-grid-c">
-                    <div class="data-item-c">
-                        <span class="data-label-c">📅 F. Valoración</span>
-                        <span class="data-value-c">${nutricion.fecha || '-'}</span>
+        const editBtn = novelty.id && !isArchived
+            ? `<button onclick="abrirEditNutricion('${novelty.id}')" style="margin-left:auto;background:#f59e0b;color:white;border:none;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">✏️ Editar</button>`
+            : '';
+        
+        if (isNutrPendiente) {
+            html += `
+                <div class="detail-card-compact card-nutricional-c" style="border-top-color:#f59e0b;">
+                    <div class="card-header-c">
+                        <div class="card-icon-c">🍎</div>
+                        <h4 class="card-title-c">Seguimiento Nutricional</h4>
+                        ${editBtn}
                     </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">📊 Estado</span>
-                        <span class="data-value-c" style="color: ${estadoColor}; font-weight: 700;">${nutricion.estadoNutricional || 'No calculado'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">⚖️ Peso</span>
-                        <span class="data-value-c" style="color: #fbbf24; font-weight: 700;">${nutricion.peso ? nutricion.peso + ' kg' : '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">📏 Talla</span>
-                        <span class="data-value-c" style="color: #fbbf24; font-weight: 700;">${nutricion.talla ? nutricion.talla + ' cm' : '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">💪 Perímetro Braquial</span>
-                        <span class="data-value-c">${nutricion.perimetroBraquial ? nutricion.perimetroBraquial + ' cm' : '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">🏥 Régimen</span>
-                        <span class="data-value-c">${nutricion.regimen || '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">🏥 EPS</span>
-                        <span class="data-value-c">${nutricion.eps || '-'}</span>
+                    <div class="data-grid-c single-col">
+                        <div class="data-item-c full-width-c" style="background:#fef3c7;border-radius:10px;padding:12px;text-align:center;">
+                            <span style="font-size:22px;">⏳</span>
+                            <p style="font-weight:700;color:#b45309;margin-top:4px;">DATO PENDIENTE</p>
+                            <p style="font-size:11px;color:#92400e;">Los datos nutricionales serán completados desde el panel de administración</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else if (nutricion.fecha || nutricion.peso) {
+            html += `
+                <div class="detail-card-compact card-nutricional-c">
+                    <div class="card-header-c">
+                        <div class="card-icon-c">🍎</div>
+                        <h4 class="card-title-c">Seguimiento Nutricional</h4>
+                        ${editBtn}
+                    </div>
+                    <div class="data-grid-c">
+                        <div class="data-item-c">
+                            <span class="data-label-c">📅 F. Valoración</span>
+                            <span class="data-value-c">${formatDateDMY(nutricion.fecha || '-')}</span>
+                        </div>
+                        <div class="data-item-c">
+                            <span class="data-label-c">📊 Estado</span>
+                            <span class="data-value-c" style="color: ${estadoColor}; font-weight: 700;">${nutricion.estadoNutricional || 'No calculado'}</span>
+                        </div>
+                        <div class="data-item-c">
+                            <span class="data-label-c">⚖️ Peso</span>
+                            <span class="data-value-c" style="color: #fbbf24; font-weight: 700;">${nutricion.peso ? nutricion.peso + ' kg' : '-'}</span>
+                        </div>
+                        <div class="data-item-c">
+                            <span class="data-label-c">📏 Talla</span>
+                            <span class="data-value-c" style="color: #fbbf24; font-weight: 700;">${nutricion.talla ? nutricion.talla + ' cm' : '-'}</span>
+                        </div>
+                        <div class="data-item-c">
+                            <span class="data-label-c">💪 Perímetro Braquial</span>
+                            <span class="data-value-c">${nutricion.perimetroBraquial ? nutricion.perimetroBraquial + ' cm' : '-'}</span>
+                        </div>
+                        <div class="data-item-c">
+                            <span class="data-label-c">🏥 Régimen</span>
+                            <span class="data-value-c">${nutricion.regimen || '-'}</span>
+                        </div>
+                        <div class="data-item-c">
+                            <span class="data-label-c">🏥 EPS</span>
+                            <span class="data-value-c">${nutricion.eps || '-'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     } else {
         html += `
             <div class="detail-card-compact" style="opacity: 0.4; border-top: 2px solid #475569;">
@@ -2372,7 +2430,7 @@ function generatePlainTextFive(novelty, isArchived, udsName, udsCode) {
         text += `\n[ DATOS DE RETIRO ]\n`;
         text += `  - Documento:      ${r.docType || 'RC'} ${r.document || 'N/A'}\n`;
         text += `  - Nombre:         ${r.name ? r.name.toUpperCase() : 'N/A'}\n`;
-        text += `  - Fecha Retiro:   ${r.retiroDate || novelty.retiroDate || '-'}\n`;
+        text += `  - Fecha Retiro:   ${formatDateDMY(r.retiroDate || novelty.retiroDate || '-')}\n`;
         text += `  - Género:         ${r.gender === 'M' ? 'Masculino' : r.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
     }
 
@@ -2382,8 +2440,8 @@ function generatePlainTextFive(novelty, isArchived, udsName, udsCode) {
         text += `  - Niño:           ${i.name ? i.name.toUpperCase() : 'N/A'}\n`;
         text += `  - Documento:      ${i.docType || 'RC'} ${i.document || 'N/A'}\n`;
         text += `  - Edad:           ${i.age || novelty.age || 'N/A'}\n`;
-        text += `  - F. Nacimiento:  ${i.dob || i.ingresoDOB || novelty.ingresoDOB || '-'}\n`;
-        text += `  - F. Ingreso:     ${i.ingresoDate || novelty.ingresoDate || '-'}\n`;
+        text += `  - F. Nacimiento:  ${formatDateDMY(i.dob || i.ingresoDOB || novelty.ingresoDOB || '-')}\n`;
+        text += `  - F. Ingreso:     ${formatDateDMY(i.ingresoDate || novelty.ingresoDate || '-')}\n`;
         text += `  - Género:         ${i.gender === 'M' ? 'Masculino' : i.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
         text += `  - Comuna:         ${i.comuna || novelty.comuna || '-'}\n`;
         text += `  - Barrio:         ${i.barrio || novelty.barrio || '-'}\n`;
@@ -2393,12 +2451,12 @@ function generatePlainTextFive(novelty, isArchived, udsName, udsCode) {
         text += `\n[ DATOS DEL ACUDIENTE ]\n`;
         text += `  - Nombre:         ${i.acudiente || novelty.acudiente || 'N/A'}\n`;
         text += `  - Documento:      ${i.acudienteDoc || novelty.acudienteDoc || '-'}\n`;
-        text += `  - F. Nacimiento:  ${i.acudienteDOB || novelty.acudienteDOB || '-'}\n`;
+        text += `  - F. Nacimiento:  ${formatDateDMY(i.acudienteDOB || novelty.acudienteDOB || '-')}\n`;
 
         const n = novelty.nutricion || (novelty.ingreso && novelty.ingreso.nutricion);
         if (n && (n.fecha || n.peso)) {
             text += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
-            text += `  - F. Valoración:      ${n.fecha || '-'}\n`;
+            text += `  - F. Valoración:      ${formatDateDMY(n.fecha || '-')}\n`;
             text += `  - Peso:               ${n.peso ? n.peso + ' kg' : '-'}\n`;
             text += `  - Talla:              ${n.talla ? n.talla + ' cm' : '-'}\n`;
             text += `  - Perímetro Braquial: ${n.perimetroBraquial ? n.perimetroBraquial + ' cm' : '-'}\n`;
@@ -2471,6 +2529,163 @@ function viewArchivedNovelty(id) {
     if (!novelty) return;
     viewNoveltyDetails(novelty, true);
 }
+
+// ============================================================
+// EDITAR NUTRICIÓN PENDIENTE DESDE EL PANEL
+// ============================================================
+function abrirEditNutricion(noveltyId) {
+    const novelty = currentNovelties.find(n => n.id === noveltyId);
+    if (!novelty) { showToast('No se encontró la novedad', 'error'); return; }
+
+    // Remove old modal if exists
+    const oldModal = document.getElementById('editNutricionModal');
+    if (oldModal) oldModal.remove();
+
+    const nutricion = novelty.nutricion || {};
+
+    const modal = document.createElement('div');
+    modal.id = 'editNutricionModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    modal.innerHTML = `
+        <div style="background:white;border-radius:20px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
+            <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:18px 22px;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:24px;">🍎</span>
+                <div>
+                    <h3 style="color:white;font-weight:800;font-size:16px;margin:0;">Completar Datos Nutricionales</h3>
+                    <p style="color:#fef3c7;font-size:12px;margin:2px 0 0;">${novelty.ingreso?.name || novelty.name || 'Beneficiario'}</p>
+                </div>
+                <button onclick="document.getElementById('editNutricionModal').remove()" style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:white;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;font-weight:bold;">×</button>
+            </div>
+            <div style="padding:22px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div style="grid-column:1/-1;">
+                    <label style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;">Fecha de Valoración *</label>
+                    <input type="date" id="en_fecha" value="${nutricion.fecha || ''}"
+                        style="width:100%;margin-top:4px;padding:8px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;">Peso (kg) * <span style="font-weight:400;">(5-30)</span></label>
+                    <input type="number" id="en_peso" step="0.1" min="5" max="30" placeholder="Ej: 12.5" value="${nutricion.peso || ''}"
+                        style="width:100%;margin-top:4px;padding:8px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;">Talla (cm) * <span style="font-weight:400;">(65-120)</span></label>
+                    <input type="number" id="en_talla" step="0.1" min="65" max="120" placeholder="Ej: 85.0" value="${nutricion.talla || ''}"
+                        style="width:100%;margin-top:4px;padding:8px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;">Perímetro Braquial (cm) * <span style="font-weight:400;">(6-30)</span></label>
+                    <input type="number" id="en_perimetro" step="0.1" min="6" max="30" placeholder="Ej: 15.5" value="${nutricion.perimetroBraquial || ''}"
+                        style="width:100%;margin-top:4px;padding:8px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;">Régimen</label>
+                    <select id="en_regimen" style="width:100%;margin-top:4px;padding:8px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
+                        <option value="">Seleccione...</option>
+                        <option value="SUBSIDIADO" ${nutricion.regimen==='SUBSIDIADO'?'selected':''}>SUBSIDIADO</option>
+                        <option value="CONTRIBUTIVO" ${nutricion.regimen==='CONTRIBUTIVO'?'selected':''}>CONTRIBUTIVO</option>
+                        <option value="ESPECIAL" ${nutricion.regimen==='ESPECIAL'?'selected':''}>ESPECIAL</option>
+                        <option value="NO_AFILIADO" ${nutricion.regimen==='NO_AFILIADO'?'selected':''}>NO AFILIADO</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;">EPS</label>
+                    <input type="text" id="en_eps" placeholder="Nombre de la EPS" value="${nutricion.eps || ''}"
+                        style="width:100%;margin-top:4px;padding:8px 12px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
+                </div>
+            </div>
+            <div style="padding:0 22px 22px;display:flex;gap:10px;justify-content:flex-end;">
+                <button onclick="document.getElementById('editNutricionModal').remove()" style="padding:10px 20px;border:2px solid #e2e8f0;background:white;color:#64748b;border-radius:12px;font-weight:700;cursor:pointer;">Cancelar</button>
+                <button onclick="guardarEditNutricion('${noveltyId}')" style="padding:10px 24px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:12px;font-weight:800;cursor:pointer;font-size:14px;">💾 Guardar</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+async function guardarEditNutricion(noveltyId) {
+    const fecha = document.getElementById('en_fecha')?.value;
+    const peso = parseFloat(document.getElementById('en_peso')?.value);
+    const talla = parseFloat(document.getElementById('en_talla')?.value);
+    const perimetro = parseFloat(document.getElementById('en_perimetro')?.value);
+    const regimen = document.getElementById('en_regimen')?.value;
+    const eps = document.getElementById('en_eps')?.value;
+
+    if (!fecha) { showToast('❌ La fecha de valoración es obligatoria', 'error'); return; }
+    if (!peso || peso < 5 || peso > 30) { showToast('❌ Peso inválido (5-30 kg)', 'error'); return; }
+    if (!talla || talla < 65 || talla > 120) { showToast('❌ Talla inválida (65-120 cm)', 'error'); return; }
+    if (!perimetro || perimetro < 6 || perimetro > 30) { showToast('❌ Perímetro braquial inválido (6-30 cm)', 'error'); return; }
+
+    // Calculate estado nutricional using existing logic
+    const novelty = currentNovelties.find(n => n.id === noveltyId);
+    const dob = novelty?.ingreso?.dob || novelty?.ingresoDOB || '';
+    const ingresoDate = novelty?.ingreso?.ingresoDate || novelty?.ingresoDate || '';
+    const gender = novelty?.ingreso?.gender || novelty?.gender || '';
+    let estadoNutricional = 'Sin calcular';
+    try {
+        estadoNutricional = calcularEstadoNutricionalDirecto(peso, talla, dob, ingresoDate, gender) || 'Sin calcular';
+    } catch(e) {}
+
+    const nutricionData = {
+        pendiente: false,
+        fecha,
+        peso: peso.toString(),
+        talla: talla.toString(),
+        perimetroBraquial: perimetro.toString(),
+        regimen: regimen || '',
+        eps: eps || '',
+        estadoNutricional
+    };
+
+    try {
+        await database.ref(`novelties/${noveltyId}/nutricion`).set(nutricionData);
+        // Update local cache
+        const idx = currentNovelties.findIndex(n => n.id === noveltyId);
+        if (idx !== -1) currentNovelties[idx].nutricion = nutricionData;
+
+        showToast('✅ Datos nutricionales guardados correctamente', 'success');
+        document.getElementById('editNutricionModal')?.remove();
+
+        // Refresh current modal if open
+        if (currentNoveltyData && currentNoveltyData.id === noveltyId) {
+            currentNoveltyData.nutricion = nutricionData;
+            const cardsView = document.getElementById('cardsView');
+            const plainTextContent = document.getElementById('plainTextContent');
+            let udsCode = '', udsName = currentNoveltyData.udsName || '';
+            if (currentNoveltyData.udsFull && currentNoveltyData.udsFull.includes(' - ')) {
+                const parts = currentNoveltyData.udsFull.split(' - ');
+                udsName = parts[0]; udsCode = parts[1];
+            }
+            if (cardsView) cardsView.innerHTML = generateFiveCards(currentNoveltyData, false, udsName, udsCode);
+            if (plainTextContent) plainTextContent.textContent = generatePlainTextFive(currentNoveltyData, false, udsName, udsCode);
+        }
+
+        loadNovelties();
+    } catch(err) {
+        showToast('❌ Error al guardar: ' + err.message, 'error');
+    }
+}
+
+// Helper para calcular estado nutricional directamente con valores numéricos
+function calcularEstadoNutricionalDirecto(peso, talla, dob, fechaIngreso, gender) {
+    if (!peso || !talla || !dob || !fechaIngreso) return null;
+    const fechaRef = new Date(fechaIngreso);
+    const fechaNac = new Date(dob);
+    if (isNaN(fechaRef) || isNaN(fechaNac)) return null;
+    const meses = (fechaRef.getFullYear() - fechaNac.getFullYear()) * 12 + (fechaRef.getMonth() - fechaNac.getMonth());
+    if (meses < 0 || meses > 60) return null;
+    const zPT = calcularZScore(peso, talla, gender, 'PT', meses);
+    if (zPT === null) return 'Sin datos OMS';
+    if (zPT < -3) return 'Desnutrición Aguda Severa';
+    if (zPT < -2) return 'Desnutrición Aguda Moderada';
+    if (zPT < -1) return 'Riesgo de Desnutrición';
+    if (zPT <= 1) return 'Peso Normal';
+    if (zPT <= 2) return 'Riesgo de Sobrepeso';
+    if (zPT <= 3) return 'Sobrepeso';
+    return 'Obesidad';
+}
+
+
 
 
 
@@ -4808,7 +5023,7 @@ function debounce(func, wait) {
                 formData += `[ DATOS DE RETIRO ]\n`;
                 formData += `  - Documento:  ${retiroDocType ? retiroDocType.value : ''} ${retiroDocNumber ? retiroDocNumber.value : ''}\n`;
                 formData += `  - Nombre:     ${retiroFullName ? retiroFullName.value.toUpperCase() : ''}\n`;
-                formData += `  - Fecha:      ${retiroDate ? retiroDate.value : ''}\n`;
+                formData += `  - Fecha:      ${retiroDate ? formatDateDMY(retiroDate.value) : ''}\n`;
                 formData += `  - Género:     ${retiroGender ? retiroGender.value : 'N/A'}\n\n`;
             }
 
@@ -4832,8 +5047,8 @@ function debounce(func, wait) {
                 formData += `  - Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
                 formData += `  - Documento:  ${ingresoDocType ? ingresoDocType.value : ''} ${ingresoDocNumber ? ingresoDocNumber.value : ''}\n`;
                 formData += `  - Edad:       ${displayAge ? displayAge.value : ''}\n`;
-                formData += `  - F. Nacim:   ${ingresoDOB ? ingresoDOB.value : ''}\n`;
-                formData += `  - F. Ingreso: ${ingresoDate ? ingresoDate.value : ''}\n`;
+                formData += `  - F. Nacim:   ${ingresoDOB ? formatDateDMY(ingresoDOB.value) : ''}\n`;
+                formData += `  - F. Ingreso: ${ingresoDate ? formatDateDMY(ingresoDate.value) : ''}\n`;
                 formData += `  - Género:     ${ingresoGender ? ingresoGender.value : 'N/A'}\n`;
                 formData += `  - Comuna:     ${ingresoComuna ? ingresoComuna.value : ''}\n`;
                 formData += `  - Barrio:     ${ingresoBarrio ? ingresoBarrio.value : ''}\n`;
@@ -4842,7 +5057,7 @@ function debounce(func, wait) {
                 
                 formData += `[ DATOS DEL ACUDIENTE ]\n`;
                 formData += `  - Nombre:     ${acudienteName ? acudienteName.value : ''}\n`;
-                formData += `  - F. Nacim:   ${acudienteDOB ? acudienteDOB.value : ''}\n`;
+                formData += `  - F. Nacim:   ${acudienteDOB ? formatDateDMY(acudienteDOB.value) : ''}\n`;
                 formData += `  - Documento:  ${acudienteDoc ? acudienteDoc.value : ''}\n`;
 
                 const nutricionFecha = document.getElementById('nutricionFecha');
@@ -4853,9 +5068,14 @@ function debounce(func, wait) {
                 const nutricionEPS = document.getElementById('nutricionEPS');
                 const nutricionStatus = document.getElementById('nutricionStatus');
 
-                if (nutricionFecha && nutricionFecha.value) {
+                const nutricionPendienteEl = document.getElementById('nutricionPendiente');
+                const isNutrPend = nutricionPendienteEl && nutricionPendienteEl.checked;
+                if (isNutrPend) {
                     formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
-                    formData += `  - F. Valoración:      ${nutricionFecha.value}\n`;
+                    formData += `  ⏳ DATO PENDIENTE - Se completará desde el panel de administración\n`;
+                } else if (nutricionFecha && nutricionFecha.value) {
+                    formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
+                    formData += `  - F. Valoración:      ${formatDateDMY(nutricionFecha.value)}\n`;
                     formData += `  - Peso:               ${nutricionPeso ? nutricionPeso.value + ' kg' : ''}\n`;
                     formData += `  - Talla:              ${nutricionTalla ? nutricionTalla.value + ' cm' : ''}\n`;
                     formData += `  - Perímetro Braquial: ${nutricionPerimetroBraquial ? nutricionPerimetroBraquial.value + ' cm' : ''}\n`;
@@ -5102,38 +5322,63 @@ function debounce(func, wait) {
                         }
                         acudienteName.classList.remove('input-error');
 
-                        // Validaciones de nutrición
+                        // Documento del acudiente obligatorio
+                        const acudienteDoc = document.getElementById('acudienteDoc');
+                        if (!acudienteDoc || !acudienteDoc.value.trim()) {
+                            showToast("❌ El DOCUMENTO del acudiente es OBLIGATORIO", "error");
+                            acudienteDoc?.classList.add('input-error');
+                            acudienteDoc?.focus();
+                            return;
+                        }
+                        acudienteDoc.classList.remove('input-error');
+
+                        // Fecha de nacimiento del acudiente obligatoria
+                        const acudienteDOBCheck = document.getElementById('acudienteDOB');
+                        if (!acudienteDOBCheck || !acudienteDOBCheck.value) {
+                            showToast("❌ La FECHA DE NACIMIENTO del acudiente es OBLIGATORIA", "error");
+                            acudienteDOBCheck?.classList.add('input-error');
+                            acudienteDOBCheck?.focus();
+                            return;
+                        }
+                        acudienteDOBCheck.classList.remove('input-error');
+
+                        // Validaciones de nutrición (solo si NO es dato pendiente)
+                        const nutricionPendienteCheck = document.getElementById('nutricionPendiente');
+                        const isNutricionPendiente = nutricionPendienteCheck && nutricionPendienteCheck.checked;
+
                         const nutricionPeso = document.getElementById('nutricionPeso');
                         const nutricionTalla = document.getElementById('nutricionTalla');
                         const nutricionFecha = document.getElementById('nutricionFecha');
                         const nutricionPerimetroBraquial = document.getElementById('nutricionPerimetroBraquial');
 
-                        if (!nutricionPeso || !nutricionPeso.value) {
-                            showToast("❌ El PESO es obligatorio para el seguimiento nutricional", "error");
-                            nutricionPeso?.classList.add('input-error');
-                            nutricionPeso?.focus();
-                            return;
-                        }
-                        
-                        if (!nutricionTalla || !nutricionTalla.value) {
-                            showToast("❌ La TALLA es obligatoria para el seguimiento nutricional", "error");
-                            nutricionTalla?.classList.add('input-error');
-                            nutricionTalla?.focus();
-                            return;
-                        }
-                        
-                        if (!nutricionFecha || !nutricionFecha.value) {
-                            showToast("❌ La FECHA DE VALORACIÓN es obligatoria", "error");
-                            nutricionFecha?.classList.add('input-error');
-                            nutricionFecha?.focus();
-                            return;
-                        }
+                        if (!isNutricionPendiente) {
+                            if (!nutricionPeso || !nutricionPeso.value) {
+                                showToast("❌ El PESO es obligatorio para el seguimiento nutricional", "error");
+                                nutricionPeso?.classList.add('input-error');
+                                nutricionPeso?.focus();
+                                return;
+                            }
+                            
+                            if (!nutricionTalla || !nutricionTalla.value) {
+                                showToast("❌ La TALLA es obligatoria para el seguimiento nutricional", "error");
+                                nutricionTalla?.classList.add('input-error');
+                                nutricionTalla?.focus();
+                                return;
+                            }
+                            
+                            if (!nutricionFecha || !nutricionFecha.value) {
+                                showToast("❌ La FECHA DE VALORACIÓN es obligatoria", "error");
+                                nutricionFecha?.classList.add('input-error');
+                                nutricionFecha?.focus();
+                                return;
+                            }
 
-                        if (!nutricionPerimetroBraquial || !nutricionPerimetroBraquial.value) {
-                            showToast("❌ El PERÍMETRO BRAQUIAL es obligatorio", "error");
-                            nutricionPerimetroBraquial?.classList.add('input-error');
-                            nutricionPerimetroBraquial?.focus();
-                            return;
+                            if (!nutricionPerimetroBraquial || !nutricionPerimetroBraquial.value) {
+                                showToast("❌ El PERÍMETRO BRAQUIAL es obligatorio", "error");
+                                nutricionPerimetroBraquial?.classList.add('input-error');
+                                nutricionPerimetroBraquial?.focus();
+                                return;
+                            }
                         }
 
                         const peso = parseFloat(nutricionPeso.value);
@@ -5284,14 +5529,16 @@ function debounce(func, wait) {
 						const nutricionEPS = document.getElementById('nutricionEPS');
 						const nutricionStatus = document.getElementById('nutricionStatus');
 						
+						const nutricionPendienteFlag = document.getElementById('nutricionPendiente');
 						noveltyData.nutricion = {
+							pendiente: nutricionPendienteFlag?.checked || false,
 							fecha: nutricionFecha?.value || '',
 							peso: nutricionPeso?.value || '',
 							talla: nutricionTalla?.value || '',
 							perimetroBraquial: nutricionPerimetroBraquial?.value || '',
 							regimen: nutricionRegimen?.value || '',
 							eps: nutricionEPS?.value || '',
-							estadoNutricional: nutricionStatus?.textContent || 'No calculado'
+							estadoNutricional: nutricionPendienteFlag?.checked ? '⏳ Pendiente' : (nutricionStatus?.textContent || 'No calculado')
 						};
 					}
 
