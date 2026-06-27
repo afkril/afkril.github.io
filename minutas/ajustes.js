@@ -148,55 +148,135 @@ const AjustesModule = (() => {
         const entries = Object.entries(_contratosTemp);
         if (entries.length === 0) {
             container.innerHTML = '<div class="ajustes-empty-contratos">Sin contratos. Agrega uno abajo.</div>';
-        } else {
-            const fallback = ['#D97706','#2563EB','#059669','#E91E63','#9C27B0','#FF5722'];
-            container.innerHTML = entries.map(([codigo, label], i) => {
-                const color    = _coloresTemp[codigo]    || fallback[i % fallback.length];
-                const modal    = _modalidadesTemp[codigo] || '';
-                const regional = _regionalesTemp[codigo]  || '';
-
-                const REGIONALES  = ['Regional Neiva', 'Regional Gaitana'];
-                const MODALIDADES = ['HCB', 'FAMI', 'HI', 'CDI', 'FAMIBIENVENIR'];
-
-                const optsReg = '<option value="">Regional...</option>' +
-                    REGIONALES.map(r => `<option value="${r}" ${regional === r ? 'selected' : ''}>${r}</option>`).join('');
-                const optsMod = '<option value="">Modalidad...</option>' +
-                    MODALIDADES.map(m => `<option value="${m}" ${modal === m ? 'selected' : ''}>${m}</option>`).join('');
-
-                return `
-                <div class="ajustes-contrato-item" id="ctr-${codigo}">
-                    <div class="ajustes-contrato-header">
-                        <div class="ajustes-contrato-izq">
-                            <div id="preview-color-${codigo}" class="ajustes-color-preview" style="background:${color};border-color:${color}"></div>
-                            <span class="ajustes-contrato-codigo" style="color:${color}">📄 ${label || codigo}</span>
-                        </div>
-                        <div class="ajustes-contrato-btns">
-                            <label class="btn-ajustes-color" title="Color" style="background:${color}20;border-color:${color}">
-                                🎨
-                                <input type="color" value="${color}"
-                                    onchange="AjustesModule.actualizarColorContrato('${codigo}', this.value)"
-                                    oninput="AjustesModule.actualizarColorContrato('${codigo}', this.value)"
-                                    style="position:absolute;opacity:0;width:0;height:0">
-                            </label>
-                            <button class="btn-ajustes-sm" onclick="AjustesModule.toggleUnidades('${codigo}')">
-                                📦 Unidades (${(_unidadesTemp[codigo] || []).length})
-                            </button>
-                            <button class="btn-ajustes-delete-sm" onclick="AjustesModule.quitarContrato('${codigo}')">✕</button>
-                        </div>
-                    </div>
-                    <div class="ajustes-contrato-meta">
-                        <select class="ajustes-input-sm" onchange="AjustesModule.actualizarRegionalContrato('${codigo}', this.value)">${optsReg}</select>
-                        <select class="ajustes-input-sm" onchange="AjustesModule.actualizarModalidadContrato('${codigo}', this.value)">${optsMod}</select>
-                    </div>
-                    <div class="ajustes-unidades-panel" id="panel-unidades-${codigo}" style="display:none">
-                        ${_renderUnidades(codigo)}
-                    </div>
-                </div>`;
-            }).join('');
+            return;
         }
+
+        const REGIONALES  = ['Regional Neiva', 'Regional Gaitana'];
+        const MODALIDADES = ['HCB', 'FAMI', 'HI', 'CDI', 'FAMIBIENVENIR'];
+        const fallback    = ['#D97706','#2563EB','#059669','#E91E63','#9C27B0','#FF5722'];
+
+        container.innerHTML = '';
+
+        entries.forEach(([codigo, label], i) => {
+            const color    = _coloresTemp[codigo]     || fallback[i % fallback.length];
+            const modal    = _modalidadesTemp[codigo]  || '';
+            const regional = _regionalesTemp[codigo]   || '';
+
+            // Wrapper
+            const item = document.createElement('div');
+            item.className = 'ajustes-contrato-item';
+            item.id = `ctr-${codigo}`;
+
+            // ── Header ──────────────────────────────────────────
+            const header = document.createElement('div');
+            header.className = 'ajustes-contrato-header';
+
+            // Izquierda: preview color + nombre
+            const izq = document.createElement('div');
+            izq.className = 'ajustes-contrato-izq';
+
+            const preview = document.createElement('div');
+            preview.id = `preview-color-${codigo}`;
+            preview.className = 'ajustes-color-preview';
+            preview.style.cssText = `background:${color};border-color:${color}`;
+
+            const nombre = document.createElement('span');
+            nombre.className = 'ajustes-contrato-codigo';
+            nombre.style.color = color;
+            nombre.textContent = `📄 ${label || codigo}`;
+
+            izq.appendChild(preview);
+            izq.appendChild(nombre);
+
+            // Derecha: botones
+            const btns = document.createElement('div');
+            btns.className = 'ajustes-contrato-btns';
+
+            // Botón color
+            const lblColor = document.createElement('label');
+            lblColor.className = 'btn-ajustes-color';
+            lblColor.title = 'Color';
+            lblColor.style.cssText = `background:${color}20;border-color:${color}`;
+            lblColor.textContent = '🎨';
+            const inputColor = document.createElement('input');
+            inputColor.type = 'color';
+            inputColor.value = color;
+            inputColor.style.cssText = 'position:absolute;opacity:0;width:0;height:0';
+            inputColor.addEventListener('input',  e => AjustesModule.actualizarColorContrato(codigo, e.target.value));
+            inputColor.addEventListener('change', e => AjustesModule.actualizarColorContrato(codigo, e.target.value));
+            lblColor.appendChild(inputColor);
+
+            // Botón unidades
+            const btnUds = document.createElement('button');
+            btnUds.className = 'btn-ajustes-sm';
+            btnUds.textContent = `📦 Unidades (${(_unidadesTemp[codigo] || []).length})`;
+            btnUds.onclick = () => AjustesModule.toggleUnidades(codigo);
+
+            // Botón eliminar
+            const btnDel = document.createElement('button');
+            btnDel.className = 'btn-ajustes-delete-sm';
+            btnDel.textContent = '✕';
+            btnDel.onclick = () => AjustesModule.quitarContrato(codigo);
+
+            btns.appendChild(lblColor);
+            btns.appendChild(btnUds);
+            btns.appendChild(btnDel);
+
+            header.appendChild(izq);
+            header.appendChild(btns);
+
+            // ── Meta: Regional y Modalidad ───────────────────────
+            const meta = document.createElement('div');
+            meta.className = 'ajustes-contrato-meta';
+
+            // Select Regional
+            const selReg = document.createElement('select');
+            selReg.className = 'ajustes-input-sm';
+            selReg.title = 'Regional';
+            const optRegDefault = document.createElement('option');
+            optRegDefault.value = ''; optRegDefault.textContent = '🗺️ Regional...';
+            selReg.appendChild(optRegDefault);
+            REGIONALES.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r; opt.textContent = r;
+                if (regional === r) opt.selected = true;
+                selReg.appendChild(opt);
+            });
+            selReg.addEventListener('change', e => AjustesModule.actualizarRegionalContrato(codigo, e.target.value));
+
+            // Select Modalidad
+            const selMod = document.createElement('select');
+            selMod.className = 'ajustes-input-sm';
+            selMod.title = 'Modalidad';
+            const optModDefault = document.createElement('option');
+            optModDefault.value = ''; optModDefault.textContent = '📋 Modalidad...';
+            selMod.appendChild(optModDefault);
+            MODALIDADES.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m; opt.textContent = m;
+                if (modal === m) opt.selected = true;
+                selMod.appendChild(opt);
+            });
+            selMod.addEventListener('change', e => AjustesModule.actualizarModalidadContrato(codigo, e.target.value));
+
+            meta.appendChild(selReg);
+            meta.appendChild(selMod);
+
+            // ── Panel unidades ────────────────────────────────────
+            const panelUds = document.createElement('div');
+            panelUds.className = 'ajustes-unidades-panel';
+            panelUds.id = `panel-unidades-${codigo}`;
+            panelUds.style.display = 'none';
+            panelUds.innerHTML = _renderUnidades(codigo);
+
+            item.appendChild(header);
+            item.appendChild(meta);
+            item.appendChild(panelUds);
+            container.appendChild(item);
+        });
     }
 
-    // ── Renderizar unidades de un contrato ────────────────────
+        // ── Renderizar unidades de un contrato ────────────────────
     function _renderUnidades(codigo) {
         const lista = _unidadesTemp[codigo] || [];
         return `
