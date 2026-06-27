@@ -1005,6 +1005,11 @@
             const udsFilter = filterUDS ? filterUDS.value : '';
             const statusFilter = filterStatus ? filterStatus.value : '';
 
+            const filterRegional  = document.getElementById('filterRegional');
+            const filterModalidad = document.getElementById('filterModalidad');
+            const regionalFilter  = filterRegional  ? filterRegional.value  : '';
+            const modalidadFilter = filterModalidad ? filterModalidad.value : '';
+
             let pendientesFiltrados = currentNovelties.filter(n => {
                 const matchesSearch = !searchTerm || 
                     (n.name && n.name.toLowerCase().includes(searchTerm)) || 
@@ -1109,6 +1114,11 @@
             const udsFilter = filterUDS ? filterUDS.value : '';
             const statusFilter = filterStatus ? filterStatus.value : '';
 
+            const filterRegional  = document.getElementById('filterRegional');
+            const filterModalidad = document.getElementById('filterModalidad');
+            const regionalFilter  = filterRegional  ? filterRegional.value  : '';
+            const modalidadFilter = filterModalidad ? filterModalidad.value : '';
+
             let cargadosFiltrados = currentNovelties.filter(n => {
                 const matchesSearch = !searchTerm || 
                     (n.name && n.name.toLowerCase().includes(searchTerm)) || 
@@ -1118,7 +1128,9 @@
                     (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
                     (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
                 
-                const matchesContract = !contractFilter || n.contract === contractFilter;
+                const matchesContract  = !contractFilter  || n.contract  === contractFilter;
+                const matchesRegional  = !regionalFilter  || n.regional  === regionalFilter;
+                const matchesModalidad = !modalidadFilter || n.modalidad === modalidadFilter;
                 
                 let matchesType = true;
                 if (typeFilter === 'retiro') {

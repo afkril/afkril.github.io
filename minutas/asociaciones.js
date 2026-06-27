@@ -395,19 +395,62 @@ const AsociacionesModule = (() => {
                 return;
             }
 
-            grid.innerHTML = lista.map(([id, datos]) => `
-                <button class="asoc-card" onclick="AsociacionesModule.seleccionarAsociacion('${id}')">
-                    <div class="asoc-card-logo">
-                        ${datos.logo_url
-                            ? `<img src="${datos.logo_url}" alt="${datos.nombre}" onerror="this.style.display='none'">`
-                            : '<div class="asoc-card-logo-fallback">🏢</div>'}
+            const PALETTE = [
+                { color: '#3b82f6', bg: '#eff6ff' },
+                { color: '#10b981', bg: '#ecfdf5' },
+                { color: '#f59e0b', bg: '#fffbeb' },
+                { color: '#8b5cf6', bg: '#f5f3ff' },
+                { color: '#ef4444', bg: '#fef2f2' },
+                { color: '#06b6d4', bg: '#ecfeff' },
+            ];
+
+            grid.innerHTML = '';
+            lista.forEach(([id, datos], i) => {
+                // Color: primer contrato si tiene color, o paleta por índice
+                const colores = datos.colores_contratos || {};
+                const primerCodigo = Object.keys(datos.contratos || {})[0];
+                const palette = PALETTE[i % PALETTE.length];
+                const color = (primerCodigo && colores[primerCodigo]) || palette.color;
+                const bg    = palette.bg;
+
+                const card = document.createElement('button');
+                card.className = 'asoc-card';
+                card.style.setProperty('--asoc-color', color);
+                card.style.setProperty('--asoc-bg',    bg);
+                card.onclick = () => AsociacionesModule.seleccionarAsociacion(id);
+
+                const numContratos = Object.keys(datos.contratos || {}).length;
+                const ubicacion    = datos.subtitulo || '';
+                const tieneImg     = !!datos.logo_url;
+
+                card.innerHTML = `
+                    <div class="asoc-card-logo-wrap">
+                        ${tieneImg
+                            ? `<img src="${datos.logo_url}" alt="${datos.nombre}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                            : ''}
+                        <div class="asoc-card-logo-fallback" style="${tieneImg ? 'display:none' : ''}">🏢</div>
                     </div>
                     <div class="asoc-card-nombre">${datos.nombre || id}</div>
-                    ${datos.subtitulo ? `<div class="asoc-card-sub">${datos.subtitulo}</div>` : ''}
-                    <div class="asoc-card-contratos">${Object.keys(datos.contratos || {}).length} contrato(s)</div>
-                    ${datos.password_formulario ? '<div class="asoc-card-lock">🔑 Requiere clave</div>' : ''}
-                </button>
-            `).join('');
+                    ${ubicacion ? `
+                    <div class="asoc-card-ubicacion">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        ${ubicacion}
+                    </div>` : ''}
+                    <div class="asoc-card-contratos-wrap">
+                        <div class="asoc-card-contratos-icon">📄</div>
+                        <div>
+                            <div class="asoc-card-contratos-label">Contratos activos</div>
+                            <div class="asoc-card-contratos-value">${numContratos} contrato${numContratos !== 1 ? 's' : ''}</div>
+                        </div>
+                    </div>
+                    ${datos.password_formulario ? '<div class="asoc-card-lock">🔑 Requiere clave de acceso</div>' : ''}
+                    <div class="asoc-card-btn">
+                        Seleccionar
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
         } catch(e) {
             grid.innerHTML = `<div class="asoc-empty">❌ Error al cargar asociaciones.<br><small>${e.message}</small></div>`;
         }
