@@ -388,6 +388,9 @@
                         .catch((error) => showToast("Error: " + error.message, "error"));
                 } else {
                     showToast("❌ Contraseña incorrecta", "error");
+                }
+            } catch(e) {
+                showToast("Error al verificar: " + e.message, "error");
             }
         }
 
