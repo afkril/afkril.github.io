@@ -8,7 +8,9 @@ const AjustesModule = (() => {
     let _asociacionEditando = null; // id de la asociación en edición
     let _contratosTemp = {};        // contratos mientras se edita
     let _unidadesTemp = {};         // unidades por contrato mientras se edita
-    let _coloresTemp  = {};         // colores por contrato mientras se edita
+    let _coloresTemp    = {};         // colores por contrato mientras se edita
+    let _modalidadesTemp = {};         // modalidad por contrato mientras se edita
+    let _regionalesTemp  = {};         // regional por contrato mientras se edita
 
     // ── Abrir panel de ajustes (requiere contraseña) ──────────
     async function abrirPanelAjustes() {
@@ -82,6 +84,8 @@ const AjustesModule = (() => {
         _contratosTemp = {};
         _unidadesTemp = {};
         _coloresTemp  = {};
+        _modalidadesTemp = {};
+        _regionalesTemp  = {};
         _mostrarFormulario({
             id: '',
             nombre: '',
@@ -103,7 +107,9 @@ const AjustesModule = (() => {
             _asociacionEditando = id;
             _contratosTemp = { ...(datos.contratos || {}) };
             _unidadesTemp  = JSON.parse(JSON.stringify(datos.unidades || {}));
-            _coloresTemp   = { ...(datos.colores_contratos || {}) };
+            _coloresTemp      = { ...(datos.colores_contratos || {}) };
+            _modalidadesTemp  = { ...(datos.modalidades_contratos || {}) };
+            _regionalesTemp   = { ...(datos.regionales_contratos || {}) };
             _mostrarFormulario({ id, ...datos }, false);
             // Cargar contraseñas actuales
             const passAdminInput = document.getElementById('ajustesInputPasswordAdmin');
@@ -145,7 +151,18 @@ const AjustesModule = (() => {
         } else {
             const fallback = ['#D97706','#2563EB','#059669','#E91E63','#9C27B0','#FF5722'];
             container.innerHTML = entries.map(([codigo, label], i) => {
-                const color = _coloresTemp[codigo] || fallback[i % fallback.length];
+                const color    = _coloresTemp[codigo]    || fallback[i % fallback.length];
+                const modal    = _modalidadesTemp[codigo] || '';
+                const regional = _regionalesTemp[codigo]  || '';
+
+                const REGIONALES  = ['Regional Neiva', 'Regional Gaitana'];
+                const MODALIDADES = ['HCB', 'FAMI', 'HI', 'CDI', 'FAMIBIENVENIR'];
+
+                const optsReg = '<option value="">Regional...</option>' +
+                    REGIONALES.map(r => `<option value="${r}" ${regional === r ? 'selected' : ''}>${r}</option>`).join('');
+                const optsMod = '<option value="">Modalidad...</option>' +
+                    MODALIDADES.map(m => `<option value="${m}" ${modal === m ? 'selected' : ''}>${m}</option>`).join('');
+
                 return `
                 <div class="ajustes-contrato-item" id="ctr-${codigo}">
                     <div class="ajustes-contrato-header">
@@ -154,7 +171,7 @@ const AjustesModule = (() => {
                             <span class="ajustes-contrato-codigo" style="color:${color}">📄 ${label || codigo}</span>
                         </div>
                         <div class="ajustes-contrato-btns">
-                            <label class="btn-ajustes-color" title="Color del contrato" style="background:${color}20;border-color:${color}">
+                            <label class="btn-ajustes-color" title="Color" style="background:${color}20;border-color:${color}">
                                 🎨
                                 <input type="color" value="${color}"
                                     onchange="AjustesModule.actualizarColorContrato('${codigo}', this.value)"
@@ -166,6 +183,10 @@ const AjustesModule = (() => {
                             </button>
                             <button class="btn-ajustes-delete-sm" onclick="AjustesModule.quitarContrato('${codigo}')">✕</button>
                         </div>
+                    </div>
+                    <div class="ajustes-contrato-meta">
+                        <select class="ajustes-input-sm" onchange="AjustesModule.actualizarRegionalContrato('${codigo}', this.value)">${optsReg}</select>
+                        <select class="ajustes-input-sm" onchange="AjustesModule.actualizarModalidadContrato('${codigo}', this.value)">${optsMod}</select>
                     </div>
                     <div class="ajustes-unidades-panel" id="panel-unidades-${codigo}" style="display:none">
                         ${_renderUnidades(codigo)}
@@ -209,6 +230,14 @@ const AjustesModule = (() => {
         }
     }
 
+    function actualizarModalidadContrato(codigo, valor) {
+        _modalidadesTemp[codigo] = valor;
+    }
+
+    function actualizarRegionalContrato(codigo, valor) {
+        _regionalesTemp[codigo] = valor;
+    }
+
     // ── Toggle panel de unidades ───────────────────────────────
     function toggleUnidades(codigo) {
         const panel = document.getElementById(`panel-unidades-${codigo}`);
@@ -249,6 +278,8 @@ const AjustesModule = (() => {
         delete _contratosTemp[codigo];
         delete _unidadesTemp[codigo];
         delete _coloresTemp[codigo];
+        delete _modalidadesTemp[codigo];
+        delete _regionalesTemp[codigo];
         _renderContratos();
     }
 
@@ -328,9 +359,11 @@ const AjustesModule = (() => {
             google_url,
             password_admin:      passwordAdmin || 'ZAN',
             password_formulario: passwordFormulario || '',
-            contratos:           _contratosTemp,
-            colores_contratos:   _coloresTemp,
-            unidades:            _unidadesTemp,
+            contratos:               _contratosTemp,
+            colores_contratos:       _coloresTemp,
+            modalidades_contratos:   _modalidadesTemp,
+            regionales_contratos:    _regionalesTemp,
+            unidades:                _unidadesTemp,
             actualizadoEn: new Date().toISOString()
         };
 
@@ -372,7 +405,9 @@ const AjustesModule = (() => {
         _asociacionEditando = null;
         _contratosTemp = {};
         _unidadesTemp  = {};
-        _coloresTemp   = {};
+        _coloresTemp      = {};
+        _modalidadesTemp  = {};
+        _regionalesTemp   = {};
     }
 
     // ── Cambiar contraseña del panel de ajustes ────────────────
@@ -400,6 +435,8 @@ const AjustesModule = (() => {
     // API pública
     return {
         actualizarColorContrato,
+        actualizarModalidadContrato,
+        actualizarRegionalContrato,
         abrirPanelAjustes,
         cerrarPanelAjustes,
         cargarListaAsociaciones,

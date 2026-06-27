@@ -1014,7 +1014,9 @@
                     (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
                     (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
                 
-                const matchesContract = !contractFilter || n.contract === contractFilter;
+                const matchesContract  = !contractFilter  || n.contract  === contractFilter;
+                const matchesRegional  = !regionalFilter  || n.regional  === regionalFilter;
+                const matchesModalidad = !modalidadFilter || n.modalidad === modalidadFilter;
                 
                 let matchesType = true;
                 if (typeFilter === 'retiro') {
@@ -1770,20 +1772,24 @@
 
         function filterNovelties() {
             const searchInput = document.getElementById('searchInput');
-            const filterContract = document.getElementById('filterContract');
-            const filterType = document.getElementById('filterType');
-            const filterDate = document.getElementById('filterDate');
-            const filterMonth = document.getElementById('filterMonth');
-            const filterUDS = document.getElementById('filterUDS');
-            const filterStatus = document.getElementById('filterStatus');
+            const filterContract  = document.getElementById('filterContract');
+            const filterType      = document.getElementById('filterType');
+            const filterDate      = document.getElementById('filterDate');
+            const filterMonth     = document.getElementById('filterMonth');
+            const filterUDS       = document.getElementById('filterUDS');
+            const filterStatus    = document.getElementById('filterStatus');
+            const filterRegional  = document.getElementById('filterRegional');
+            const filterModalidad = document.getElementById('filterModalidad');
             
-            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-            const contractFilter = filterContract ? filterContract.value : '';
-            const typeFilter = filterType ? filterType.value : '';
-            const dateFilter = filterDate ? filterDate.value : '';
-            const monthFilter = filterMonth ? filterMonth.value : '';
-            const udsFilter = filterUDS ? filterUDS.value : '';
-            const statusFilter = filterStatus ? filterStatus.value : '';
+            const searchTerm      = searchInput     ? searchInput.value.toLowerCase() : '';
+            const contractFilter  = filterContract  ? filterContract.value  : '';
+            const typeFilter      = filterType      ? filterType.value      : '';
+            const dateFilter      = filterDate      ? filterDate.value      : '';
+            const monthFilter     = filterMonth     ? filterMonth.value     : '';
+            const udsFilter       = filterUDS       ? filterUDS.value       : '';
+            const statusFilter    = filterStatus    ? filterStatus.value    : '';
+            const regionalFilter  = filterRegional  ? filterRegional.value  : '';
+            const modalidadFilter = filterModalidad ? filterModalidad.value : '';
 
             let filtered = currentNovelties.filter(n => {
                 const matchesSearch = !searchTerm || 
@@ -1821,7 +1827,7 @@
                     matchesStatus = n.cuentameStatus === 'cargado';
                 }
 
-                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus;
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && matchesRegional && matchesModalidad;
             });
 
             filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -1956,19 +1962,23 @@
         }
 
         function filterArchivedNovelties() {
-            const searchInput = document.getElementById('searchInputArchivados');
-            const filterContract = document.getElementById('filterContractArchivados');
-            const filterType = document.getElementById('filterTypeArchivados');
-            const filterDate = document.getElementById('filterDateArchivados');
-            const filterMonth = document.getElementById('filterMonthArchivados');
-            const filterUDS = document.getElementById('filterUDSArchivados');
-            
-            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-            const contractFilter = filterContract ? filterContract.value : '';
-            const typeFilter = filterType ? filterType.value : '';
-            const dateFilter = filterDate ? filterDate.value : '';
-            const monthFilter = filterMonth ? filterMonth.value : '';
-            const udsFilter = filterUDS ? filterUDS.value : '';
+            const searchInput       = document.getElementById('searchInputArchivados');
+            const filterContract    = document.getElementById('filterContractArchivados');
+            const filterType        = document.getElementById('filterTypeArchivados');
+            const filterDate        = document.getElementById('filterDateArchivados');
+            const filterMonth       = document.getElementById('filterMonthArchivados');
+            const filterUDS         = document.getElementById('filterUDSArchivados');
+            const filterRegional    = document.getElementById('filterRegionalArchivados');
+            const filterModalidad   = document.getElementById('filterModalidadArchivados');
+
+            const searchTerm        = searchInput     ? searchInput.value.toLowerCase()  : '';
+            const contractFilter    = filterContract  ? filterContract.value              : '';
+            const typeFilter        = filterType      ? filterType.value                  : '';
+            const dateFilter        = filterDate      ? filterDate.value                  : '';
+            const monthFilter       = filterMonth     ? filterMonth.value                 : '';
+            const udsFilter         = filterUDS       ? filterUDS.value                   : '';
+            const regionalFilter    = filterRegional  ? filterRegional.value              : '';
+            const modalidadFilter   = filterModalidad ? filterModalidad.value             : '';
 
             let filtered = archivedNovelties.filter(n => {
                 const matchesSearch = !searchTerm || 
@@ -1978,9 +1988,11 @@
                     (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
                     (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
                     (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
-                
-                const matchesContract = !contractFilter || n.contract === contractFilter;
-                
+
+                const matchesContract  = !contractFilter  || n.contract  === contractFilter;
+                const matchesRegional  = !regionalFilter  || n.regional  === regionalFilter;
+                const matchesModalidad = !modalidadFilter || n.modalidad === modalidadFilter;
+
                 let matchesType = true;
                 if (typeFilter === 'retiro') {
                     matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
@@ -1989,17 +2001,17 @@
                 } else if (typeFilter === 'ambos') {
                     matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
                 }
-                
+
                 const matchesDate = !dateFilter || n.date === dateFilter;
-                const matchesUDS = !udsFilter || n.udsName === udsFilter;
-                
+                const matchesUDS  = !udsFilter  || n.udsName === udsFilter;
+
                 let matchesMonth = true;
                 if (monthFilter !== '') {
                     const nDate = new Date(n.timestamp);
                     matchesMonth = nDate.getMonth() === parseInt(monthFilter);
                 }
 
-                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS;
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesRegional && matchesModalidad;
             });
 
             filtered.sort((a, b) => new Date(b.archivedDate) - new Date(a.archivedDate));
@@ -4452,7 +4464,7 @@ function debounce(func, wait) {
                     matchesStatus = n.cuentameStatus === 'cargado';
                 }
 
-                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus;
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && matchesRegional && matchesModalidad;
             });
 
             if (filtered.length === 0) {
@@ -4899,6 +4911,84 @@ function debounce(func, wait) {
                 }
             }
             return true;
+        }
+
+        // ── Cambio de Regional: filtrar modalidades disponibles ──
+        function onRegionalChange() {
+            const regional = document.getElementById('regionalSelect')?.value || '';
+            const selMod   = document.getElementById('modalidadSelect');
+            const secMod   = document.getElementById('sectionModalidad');
+            const secCtr   = document.getElementById('sectionContrato');
+            const selCtr   = document.getElementById('contractNumber');
+            const selUDS   = document.getElementById('mainUdsDropdown');
+            const secUDS   = document.getElementById('sectionUDS');
+
+            // Resetear aguas abajo
+            if (selCtr) { selCtr.value = ''; selCtr.disabled = true; }
+            if (selUDS) { selUDS.innerHTML = '<option value="">-- Primero Contrato --</option>'; selUDS.disabled = true; }
+            if (secCtr) secCtr.classList.add('opacity-50');
+            if (secUDS) secUDS.style.opacity = '0.5';
+
+            if (!regional) {
+                if (selMod) { selMod.innerHTML = '<option value="">-- Primero Regional --</option>'; selMod.disabled = true; }
+                if (secMod) secMod.classList.add('opacity-50');
+                return;
+            }
+
+            // Obtener modalidades únicas para esta regional
+            const regCtrs = window.REGIONALES_CONTRATOS || {};
+            const modCtrs = window.MODALIDADES_CONTRATOS || {};
+            const modalesDisponibles = [...new Set(
+                Object.entries(regCtrs)
+                    .filter(([cod, reg]) => reg === regional)
+                    .map(([cod]) => modCtrs[cod])
+                    .filter(Boolean)
+            )];
+
+            if (selMod) {
+                selMod.innerHTML = '<option value="">Seleccione...</option>' +
+                    modalesDisponibles.map(m => `<option value="${m}">${m}</option>`).join('');
+                selMod.disabled = false;
+            }
+            if (secMod) secMod.classList.remove('opacity-50');
+            updateStyles();
+        }
+
+        // ── Cambio de Modalidad: filtrar contratos disponibles ──
+        function onModalidadChange() {
+            const regional  = document.getElementById('regionalSelect')?.value  || '';
+            const modalidad = document.getElementById('modalidadSelect')?.value || '';
+            const selCtr    = document.getElementById('contractNumber');
+            const secCtr    = document.getElementById('sectionContrato');
+            const selUDS    = document.getElementById('mainUdsDropdown');
+            const secUDS    = document.getElementById('sectionUDS');
+            const perfil    = AsociacionesModule.getPerfilActivo();
+
+            if (selUDS) { selUDS.innerHTML = '<option value="">-- Primero Contrato --</option>'; selUDS.disabled = true; }
+            if (secUDS) secUDS.style.opacity = '0.5';
+
+            if (!modalidad || !selCtr) {
+                if (selCtr) { selCtr.innerHTML = '<option value="">-- Primero Modalidad --</option>'; selCtr.disabled = true; }
+                if (secCtr) secCtr.classList.add('opacity-50');
+                return;
+            }
+
+            const regCtrs = window.REGIONALES_CONTRATOS  || {};
+            const modCtrs = window.MODALIDADES_CONTRATOS || {};
+            const contratos = perfil?.contratos || {};
+
+            const filtrados = Object.entries(contratos).filter(([cod]) =>
+                regCtrs[cod] === regional && modCtrs[cod] === modalidad
+            );
+
+            selCtr.innerHTML = '<option value="">Seleccione...</option>' +
+                filtrados.map(([cod, lbl]) => `<option value="${cod}">${lbl || 'Contrato ' + cod}</option>`).join('');
+            selCtr.disabled = filtrados.length === 0;
+            if (secCtr) secCtr.classList.remove('opacity-50');
+            if (filtrados.length === 1) {
+                selCtr.value = filtrados[0][0];
+                updateStyles();
+            }
         }
 
         function updateStyles() {
@@ -5453,13 +5543,15 @@ function debounce(func, wait) {
 					// ============================================
 					const udsName = uds.value.split(' - ')[0];
 					const noveltyData = {
-						contract: contract.value,
-						udsName: udsName,
-						udsFull: uds.value,
-						timestamp: new Date().toISOString(),
-						date: new Date().toISOString().split('T')[0],
-						cuentameStatus: 'pendiente',
-						asociacionId: AsociacionesModule.getPerfilActivo()?.id || '',
+						contract:         contract.value,
+						udsName:          udsName,
+						udsFull:          uds.value,
+						regional:         document.getElementById('regionalSelect')?.value  || '',
+						modalidad:        document.getElementById('modalidadSelect')?.value || '',
+						timestamp:        new Date().toISOString(),
+						date:             new Date().toISOString().split('T')[0],
+						cuentameStatus:   'pendiente',
+						asociacionId:     AsociacionesModule.getPerfilActivo()?.id     || '',
 						asociacionNombre: AsociacionesModule.getPerfilActivo()?.nombre || ''
 					};
 

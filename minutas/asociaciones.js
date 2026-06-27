@@ -34,6 +34,16 @@ const AsociacionesModule = (() => {
             '667': '#2563EB',
             '676': '#059669',
         },
+        modalidades_contratos: {
+            '665': 'HCB',
+            '667': 'HCB',
+            '676': 'HCB',
+        },
+        regionales_contratos: {
+            '665': 'Regional Neiva',
+            '667': 'Regional Neiva',
+            '676': 'Regional Neiva',
+        },
         unidades: {
             '665': [
                 {nombre:'ALEGRIA DE VIVIR',      codigo:'4100100115777'},
@@ -271,6 +281,7 @@ const AsociacionesModule = (() => {
         _poblarContratos(perfil);
         _inyectarEstilosContratos(perfil);
         _actualizarUDSData(perfil);
+        _poblarRegionales(perfil);
     }
 
     // ── Inyectar CSS dinámico de colores de contratos ────────
@@ -331,7 +342,35 @@ const AsociacionesModule = (() => {
                 nuevoUDS[contrato] = Object.values(lista).map(u => [u.nombre || '', u.codigo || '']);
             }
         });
-        window.UDS_DATA = nuevoUDS;
+        window.UDS_DATA              = nuevoUDS;
+        window.MODALIDADES_CONTRATOS = perfil.modalidades_contratos || {};
+        window.REGIONALES_CONTRATOS  = perfil.regionales_contratos  || {};
+        window.COLORES_CONTRATOS     = perfil.colores_contratos      || {};
+    }
+
+    // ── Poblar select de Regional ─────────────────────────────
+    function _poblarRegionales(perfil) {
+        // Obtener regionales únicas de los contratos configurados
+        const regionales = [...new Set(Object.values(perfil.regionales_contratos || {}))];
+        const sel = document.getElementById('regionalSelect');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">Seleccione...</option>';
+        regionales.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r; opt.textContent = r;
+            sel.appendChild(opt);
+        });
+        // También poblar filtros del admin
+        ['filterRegional','filterRegionalArchivados'].forEach(id => {
+            const f = document.getElementById(id);
+            if (!f) return;
+            f.innerHTML = '<option value="">Todas las regionales</option>';
+            regionales.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r; opt.textContent = r;
+                f.appendChild(opt);
+            });
+        });
     }
 
     // ── Modal selector ────────────────────────────────────────
