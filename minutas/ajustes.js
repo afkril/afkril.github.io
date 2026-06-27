@@ -11,7 +11,7 @@ const AjustesModule = (() => {
 
     // ── Abrir panel de ajustes (requiere contraseña) ──────────
     async function abrirPanelAjustes() {
-        const password = prompt('🔐 Contraseña del Panel de Ajustes:');
+        const password = prompt('🔐 Contraseña del Panel de Ajustes:\n(Por defecto: JER2024)');
         if (password === null) return;
 
         const passwordCorrecta = await AsociacionesModule.obtenerPasswordAjustes();
