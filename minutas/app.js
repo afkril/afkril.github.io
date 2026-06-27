@@ -52,7 +52,6 @@
             }
         });
 
-        let ADMIN_PASSWORD = "ZAN"; // legacy, se verifica por Firebase en el módulo de ajustes
         
         let typeChartInstance = null, udsChartInstance = null, cuentameChartInstance = null, monthChartInstance = null, contractChartInstance = null;
         let configBloqueo = { activo: false, fechaInicio: 28, fechaFin: 30 };
@@ -170,19 +169,31 @@
             if (toggle) toggle.classList.add('active');
         }
 
-        function promptAdminAccess() {
+        async function promptAdminAccess() {
             // Verificar que hay un perfil activo
             if (!AsociacionesModule.getPerfilActivo()) {
                 showToast('Primero selecciona una asociación', 'warning');
                 AsociacionesModule.mostrarSelectorAsociaciones();
                 return;
             }
-            const password = prompt("Ingrese la contraseña de administrador:");
-            if (password === ADMIN_PASSWORD) {
+            // Si ya está autenticado en esta sesión, abrir directamente
+            if (AsociacionesModule.isAdminAutenticado()) {
                 openAdminPanel();
-                showToast("Acceso concedido al panel de administración", "success");
-            } else if (password !== null) {
-                showToast("Contraseña incorrecta", "error");
+                return;
+            }
+            const password = prompt("🔐 Contraseña de Administrador\n(" + AsociacionesModule.getPerfilActivo().nombre + "):");
+            if (password === null) return;
+            try {
+                const correcta = await AsociacionesModule.obtenerPasswordAdmin();
+                if (password === correcta) {
+                    AsociacionesModule.marcarAdminAutenticado();
+                    openAdminPanel();
+                    showToast("✅ Acceso concedido", "success");
+                } else {
+                    showToast("❌ Contraseña incorrecta", "error");
+                }
+            } catch(e) {
+                showToast("Error al verificar: " + e.message, "error");
             }
         }
 
@@ -201,6 +212,13 @@
         function closeAdminPanel() {
             const panel = document.getElementById('adminPanel');
             if (panel) panel.style.display = 'none';
+            // NO cerramos sesión al cerrar el panel — permanece autenticado en la sesión
+        }
+
+        function cerrarSesionAdmin() {
+            AsociacionesModule.cerrarSesionAdmin();
+            closeAdminPanel();
+            showToast('🔒 Sesión admin cerrada', 'info');
         }
 
         function switchTab(tab) {
@@ -344,25 +362,27 @@
             }
         }
 
-        function accesoAdminDesdeBloqueo() {
+        async function accesoAdminDesdeBloqueo() {
             const password = prompt("🔐 ACCESO ADMINISTRADOR\n\nIngrese la contraseña para desactivar el bloqueo:");
             if (password === null) return;
-            
-            if (password === ADMIN_PASSWORD) {
-                configBloqueo.activo = false;
-                const configRef = database.ref(AsociacionesModule.getRef('configBloqueo'));
-                configRef.set(configBloqueo)
-                    .then(() => {
-                        showToast("✅ Bloqueo desactivado", "success");
-                        actualizarUIConfigBloqueo();
-                        verificarBloqueo();
-                        setTimeout(() => {
-                            if (confirm("¿Desea abrir el panel de administración?")) openAdminPanel();
-                        }, 500);
-                    })
-                    .catch((error) => showToast("Error: " + error.message, "error"));
-            } else {
-                showToast("❌ Contraseña incorrecta", "error");
+            try {
+                const correcta = await AsociacionesModule.obtenerPasswordAdmin();
+                if (password === correcta) {
+                    AsociacionesModule.marcarAdminAutenticado();
+                    configBloqueo.activo = false;
+                    const configRef = database.ref(AsociacionesModule.getRef('configBloqueo'));
+                    configRef.set(configBloqueo)
+                        .then(() => {
+                            showToast("✅ Bloqueo desactivado", "success");
+                            actualizarUIConfigBloqueo();
+                            verificarBloqueo();
+                            setTimeout(() => {
+                                if (confirm("¿Desea abrir el panel de administración?")) openAdminPanel();
+                            }, 500);
+                        })
+                        .catch((error) => showToast("Error: " + error.message, "error"));
+                } else {
+                    showToast("❌ Contraseña incorrecta", "error");
             }
         }
 
