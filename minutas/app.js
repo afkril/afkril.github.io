@@ -1813,6 +1813,8 @@
                     (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
                 
                 const matchesContract = !contractFilter || n.contract === contractFilter;
+                const matchesRegional  = !regionalFilter  || n.regional  === regionalFilter;
+                const matchesModalidad = !modalidadFilter || n.modalidad === modalidadFilter;
                 
                 let matchesType = true;
                 if (typeFilter === 'retiro') {
@@ -4431,6 +4433,8 @@ function debounce(func, wait) {
             const filterMonth = document.getElementById('filterMonth');
             const filterUDS = document.getElementById('filterUDS');
             const filterStatus = document.getElementById('filterStatus');
+            const filterRegional = document.getElementById('filterRegional');
+            const filterModalidad = document.getElementById('filterModalidad');
             
             const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             const contractFilter = filterContract ? filterContract.value : '';
@@ -4439,6 +4443,8 @@ function debounce(func, wait) {
             const monthFilter = filterMonth ? filterMonth.value : '';
             const udsFilter = filterUDS ? filterUDS.value : '';
             const statusFilter = filterStatus ? filterStatus.value : '';
+            const regionalFilter = filterRegional ? filterRegional.value : '';
+            const modalidadFilter = filterModalidad ? filterModalidad.value : '';
 
             let filtered = currentNovelties.filter(n => {
                 const matchesSearch = !searchTerm || 
@@ -4450,6 +4456,8 @@ function debounce(func, wait) {
                     (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
                 
                 const matchesContract = !contractFilter || n.contract === contractFilter;
+                const matchesRegional  = !regionalFilter  || n.regional  === regionalFilter;
+                const matchesModalidad = !modalidadFilter || n.modalidad === modalidadFilter;
                 
                 let matchesType = true;
                 if (typeFilter === 'retiro') {
