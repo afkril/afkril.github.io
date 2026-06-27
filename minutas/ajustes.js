@@ -102,6 +102,9 @@ const AjustesModule = (() => {
             _contratosTemp = { ...(datos.contratos || {}) };
             _unidadesTemp  = JSON.parse(JSON.stringify(datos.unidades || {}));
             _mostrarFormulario({ id, ...datos }, false);
+            // Cargar contraseña admin actual
+            const passInput = document.getElementById('ajustesInputPasswordAdmin');
+            if (passInput) passInput.value = datos.password_admin || 'ZAN';
         } catch(e) {
             showToast('Error al cargar: ' + e.message, 'error');
         }
@@ -281,11 +284,14 @@ const AjustesModule = (() => {
         if (!id)     { showToast('El ID es obligatorio', 'warning'); return; }
         if (!nombre) { showToast('El nombre es obligatorio', 'warning'); return; }
 
+        const passwordAdmin = document.getElementById('ajustesInputPasswordAdmin')?.value?.trim();
+
         const datos = {
             nombre,
             subtitulo,
             logo_url,
             google_url,
+            password_admin: passwordAdmin || 'ZAN',
             contratos: _contratosTemp,
             unidades:  _unidadesTemp,
             actualizadoEn: new Date().toISOString()
@@ -371,3 +377,4 @@ const AjustesModule = (() => {
         cambiarPassword,
     };
 })();
+            
