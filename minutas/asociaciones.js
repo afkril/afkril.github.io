@@ -29,6 +29,11 @@ const AsociacionesModule = (() => {
             '667': 'Contrato 41006672024',
             '676': 'Contrato 41006762024',
         },
+        colores_contratos: {
+            '665': '#D97706',
+            '667': '#2563EB',
+            '676': '#059669',
+        },
         unidades: {
             '665': [
                 {nombre:'ALEGRIA DE VIVIR',      codigo:'4100100115777'},
@@ -264,7 +269,35 @@ const AsociacionesModule = (() => {
         if (form && perfil.google_url) form.action = perfil.google_url;
 
         _poblarContratos(perfil);
+        _inyectarEstilosContratos(perfil);
         _actualizarUDSData(perfil);
+    }
+
+    // ── Inyectar CSS dinámico de colores de contratos ────────
+    function _inyectarEstilosContratos(perfil) {
+        // Eliminar estilos previos
+        const previo = document.getElementById('estilos-contratos-dinamicos');
+        if (previo) previo.remove();
+
+        const colores = perfil.colores_contratos || {};
+        const contratos = Object.keys(perfil.contratos || {});
+
+        // Paleta de fallback si no tiene color configurado
+        const fallback = ['#D97706','#2563EB','#059669','#E91E63','#9C27B0','#FF5722'];
+
+        let css = '';
+        contratos.forEach((cod, i) => {
+            const color = colores[cod] || fallback[i % fallback.length];
+            css += `
+            .contract-${cod} .dynamic-bg { background-color: ${color}; }
+            .contract-${cod} .dynamic-text { color: ${color}; }
+            .contract-${cod} .dynamic-border { border-top-color: ${color}; }`;
+        });
+
+        const style = document.createElement('style');
+        style.id = 'estilos-contratos-dinamicos';
+        style.textContent = css;
+        document.head.appendChild(style);
     }
 
     function _poblarContratos(perfil) {
@@ -387,6 +420,22 @@ const AsociacionesModule = (() => {
         sessionStorage.removeItem('asoc_id');
         sessionStorage.removeItem('asoc_data');
         _perfilActivo = null;
+        // Resetear fondo y tema a gris neutro
+        document.body.style.background = '';
+        const mainCard = document.getElementById('mainCard');
+        if (mainCard) {
+            mainCard.className = mainCard.className.replace(/contract-\S+/g, '').trim();
+        }
+        const indicator = document.getElementById('contractIndicator');
+        if (indicator) {
+            indicator.className = 'px-2 py-0.5 rounded-full text-[10px] font-black text-white bg-slate-400 uppercase whitespace-nowrap';
+            indicator.textContent = 'Sin Contrato';
+        }
+        const contractSel = document.getElementById('contractNumber');
+        if (contractSel) contractSel.value = '';
+        // Eliminar estilos dinámicos de contratos
+        const estilos = document.getElementById('estilos-contratos-dinamicos');
+        if (estilos) estilos.remove();
         mostrarSelectorAsociaciones();
     }
 

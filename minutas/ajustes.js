@@ -8,6 +8,7 @@ const AjustesModule = (() => {
     let _asociacionEditando = null; // id de la asociación en edición
     let _contratosTemp = {};        // contratos mientras se edita
     let _unidadesTemp = {};         // unidades por contrato mientras se edita
+    let _coloresTemp  = {};         // colores por contrato mientras se edita
 
     // ── Abrir panel de ajustes (requiere contraseña) ──────────
     async function abrirPanelAjustes() {
@@ -80,6 +81,7 @@ const AjustesModule = (() => {
         _asociacionEditando = null;
         _contratosTemp = {};
         _unidadesTemp = {};
+        _coloresTemp  = {};
         _mostrarFormulario({
             id: '',
             nombre: '',
@@ -101,6 +103,7 @@ const AjustesModule = (() => {
             _asociacionEditando = id;
             _contratosTemp = { ...(datos.contratos || {}) };
             _unidadesTemp  = JSON.parse(JSON.stringify(datos.unidades || {}));
+            _coloresTemp   = { ...(datos.colores_contratos || {}) };
             _mostrarFormulario({ id, ...datos }, false);
             // Cargar contraseñas actuales
             const passAdminInput = document.getElementById('ajustesInputPasswordAdmin');
@@ -140,11 +143,24 @@ const AjustesModule = (() => {
         if (entries.length === 0) {
             container.innerHTML = '<div class="ajustes-empty-contratos">Sin contratos. Agrega uno abajo.</div>';
         } else {
-            container.innerHTML = entries.map(([codigo, label]) => `
+            const fallback = ['#D97706','#2563EB','#059669','#E91E63','#9C27B0','#FF5722'];
+            container.innerHTML = entries.map(([codigo, label], i) => {
+                const color = _coloresTemp[codigo] || fallback[i % fallback.length];
+                return `
                 <div class="ajustes-contrato-item" id="ctr-${codigo}">
                     <div class="ajustes-contrato-header">
-                        <span class="ajustes-contrato-codigo">📄 ${label || codigo}</span>
+                        <div class="ajustes-contrato-izq">
+                            <div id="preview-color-${codigo}" class="ajustes-color-preview" style="background:${color};border-color:${color}"></div>
+                            <span class="ajustes-contrato-codigo" style="color:${color}">📄 ${label || codigo}</span>
+                        </div>
                         <div class="ajustes-contrato-btns">
+                            <label class="btn-ajustes-color" title="Color del contrato" style="background:${color}20;border-color:${color}">
+                                🎨
+                                <input type="color" value="${color}"
+                                    onchange="AjustesModule.actualizarColorContrato('${codigo}', this.value)"
+                                    oninput="AjustesModule.actualizarColorContrato('${codigo}', this.value)"
+                                    style="position:absolute;opacity:0;width:0;height:0">
+                            </label>
                             <button class="btn-ajustes-sm" onclick="AjustesModule.toggleUnidades('${codigo}')">
                                 📦 Unidades (${(_unidadesTemp[codigo] || []).length})
                             </button>
@@ -154,8 +170,8 @@ const AjustesModule = (() => {
                     <div class="ajustes-unidades-panel" id="panel-unidades-${codigo}" style="display:none">
                         ${_renderUnidades(codigo)}
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         }
     }
 
@@ -182,6 +198,17 @@ const AjustesModule = (() => {
         `;
     }
 
+    // ── Actualizar color de un contrato ──────────────────────
+    function actualizarColorContrato(codigo, color) {
+        _coloresTemp[codigo] = color;
+        // Actualizar preview en tiempo real
+        const preview = document.getElementById(`preview-color-${codigo}`);
+        if (preview) {
+            preview.style.background = color;
+            preview.style.borderColor = color;
+        }
+    }
+
     // ── Toggle panel de unidades ───────────────────────────────
     function toggleUnidades(codigo) {
         const panel = document.getElementById(`panel-unidades-${codigo}`);
@@ -206,6 +233,10 @@ const AjustesModule = (() => {
 
         _contratosTemp[codigo] = label || `Contrato ${codigo}`;
         if (!_unidadesTemp[codigo]) _unidadesTemp[codigo] = [];
+        if (!_coloresTemp[codigo]) {
+            const fallback = ['#D97706','#2563EB','#059669','#E91E63','#9C27B0','#FF5722'];
+            _coloresTemp[codigo] = fallback[Object.keys(_contratosTemp).length % fallback.length];
+        }
 
         if (codigoInput) codigoInput.value = '';
         if (labelInput)  labelInput.value  = '';
@@ -217,6 +248,7 @@ const AjustesModule = (() => {
         if (!confirm(`¿Eliminar el contrato "${_contratosTemp[codigo] || codigo}" y todas sus unidades?`)) return;
         delete _contratosTemp[codigo];
         delete _unidadesTemp[codigo];
+        delete _coloresTemp[codigo];
         _renderContratos();
     }
 
@@ -295,9 +327,10 @@ const AjustesModule = (() => {
             logo_url,
             google_url,
             password_admin:      passwordAdmin || 'ZAN',
-            password_formulario: passwordFormulario || '',   // vacío = acceso libre
-            contratos: _contratosTemp,
-            unidades:  _unidadesTemp,
+            password_formulario: passwordFormulario || '',
+            contratos:           _contratosTemp,
+            colores_contratos:   _coloresTemp,
+            unidades:            _unidadesTemp,
             actualizadoEn: new Date().toISOString()
         };
 
@@ -339,6 +372,7 @@ const AjustesModule = (() => {
         _asociacionEditando = null;
         _contratosTemp = {};
         _unidadesTemp  = {};
+        _coloresTemp   = {};
     }
 
     // ── Cambiar contraseña del panel de ajustes ────────────────
@@ -365,6 +399,7 @@ const AjustesModule = (() => {
 
     // API pública
     return {
+        actualizarColorContrato,
         abrirPanelAjustes,
         cerrarPanelAjustes,
         cargarListaAsociaciones,
