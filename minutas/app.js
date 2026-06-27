@@ -198,6 +198,11 @@
         }
 
         function openAdminPanel() {
+            // Guard: nunca abrir sin autenticación
+            if (!AsociacionesModule.isAdminAutenticado()) {
+                console.warn('[Admin] Intento de apertura sin autenticación bloqueado.');
+                return;
+            }
             const panel = document.getElementById('adminPanel');
             if (panel) panel.style.display = 'block';
             loadNoveltiesTable();
@@ -1344,7 +1349,12 @@
             }
         }
 
-        function showPendientesView() {
+        async function showPendientesView() {
+            // Requiere autenticación admin
+            if (!AsociacionesModule.isAdminAutenticado()) {
+                await promptAdminAccess();
+                if (!AsociacionesModule.isAdminAutenticado()) return;
+            }
             openAdminPanel();
             switchTab('activas');
             document.getElementById('filterStatus').value = 'pendiente';
