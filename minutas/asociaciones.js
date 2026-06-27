@@ -22,6 +22,7 @@ const AsociacionesModule = (() => {
         subtitulo: 'Neiva, Huila',
         logo_url: '',
         google_url: 'https://script.google.com/macros/s/AKfycbwvO5vg4wM9PdHc86IZM8FKcmoaSX7ls-4D-ZdbOVAFR6GUrRIHcXCq0rpQBDOVZvI/exec',
+        password_admin: 'ZAN',
         contratos: {
             '665': 'Contrato 41006652024',
             '667': 'Contrato 41006672024',
@@ -158,6 +159,40 @@ const AsociacionesModule = (() => {
         await _getDB().ref(`${PATHS.ajustes}/password`).set(nueva);
     }
 
+    // ── Obtener / guardar contraseña admin de un perfil ───────
+    async function obtenerPasswordAdmin(id) {
+        const asocId = id || (_perfilActivo && _perfilActivo.id);
+        if (!asocId) return 'ZAN';
+        const snap = await _getDB().ref(`${PATHS.asociaciones}/${asocId}/password_admin`).once('value');
+        return snap.val() || 'ZAN';
+    }
+
+    async function guardarPasswordAdmin(id, nueva) {
+        await _getDB().ref(`${PATHS.asociaciones}/${id}/password_admin`).set(nueva);
+        // Actualizar perfil en sesión si es el activo
+        if (_perfilActivo && _perfilActivo.id === id) {
+            _perfilActivo.password_admin = nueva;
+            sessionStorage.setItem('asoc_data', JSON.stringify(_perfilActivo));
+        }
+    }
+
+    // ── Sesión admin por perfil ────────────────────────────────
+    function isAdminAutenticado() {
+        const id = _perfilActivo && _perfilActivo.id;
+        if (!id) return false;
+        return sessionStorage.getItem(`admin_auth_${id}`) === '1';
+    }
+
+    function marcarAdminAutenticado() {
+        const id = _perfilActivo && _perfilActivo.id;
+        if (id) sessionStorage.setItem(`admin_auth_${id}`, '1');
+    }
+
+    function cerrarSesionAdmin() {
+        const id = _perfilActivo && _perfilActivo.id;
+        if (id) sessionStorage.removeItem(`admin_auth_${id}`);
+    }
+
     // ── Activar perfil ────────────────────────────────────────
     function activarPerfil(id, datos) {
         _perfilActivo = { id, ...datos };
@@ -196,6 +231,7 @@ const AsociacionesModule = (() => {
         if (el('headerNombreAsoc')) el('headerNombreAsoc').textContent = perfil.nombre || '';
         if (el('adminNombreAsoc'))  el('adminNombreAsoc').textContent  = `🏢 ${perfil.nombre || perfil.id}`;
         if (el('indicadorPerfil'))  el('indicadorPerfil').textContent  = perfil.nombre || '';
+        if (el('footerNombreAsoc')) el('footerNombreAsoc').textContent = perfil.subtitulo ? `${perfil.nombre} - ${perfil.subtitulo}` : (perfil.nombre || 'Asociación JER');
 
         const logo = el('logoAsociacion');
         if (logo) logo.src = perfil.logo_url || 'LOGOJER.png';
@@ -304,6 +340,11 @@ const AsociacionesModule = (() => {
     }
 
     function cambiarAsociacion() {
+        // Cerrar sesión admin del perfil actual antes de cambiar
+        cerrarSesionAdmin();
+        // Cerrar panel admin si está abierto
+        const adminPanel = document.getElementById('adminPanel');
+        if (adminPanel) adminPanel.style.display = 'none';
         sessionStorage.removeItem('asoc_id');
         sessionStorage.removeItem('asoc_data');
         _perfilActivo = null;
@@ -345,6 +386,11 @@ const AsociacionesModule = (() => {
         eliminarAsociacion,
         obtenerPasswordAjustes,
         guardarPasswordAjustes,
+        obtenerPasswordAdmin,
+        guardarPasswordAdmin,
+        isAdminAutenticado,
+        marcarAdminAutenticado,
+        cerrarSesionAdmin,
         activarPerfil,
         seleccionarAsociacion,
         cerrarSelectorAsociacion,
@@ -352,3 +398,4 @@ const AsociacionesModule = (() => {
         mostrarSelectorAsociaciones,
     };
 })();
+                 
