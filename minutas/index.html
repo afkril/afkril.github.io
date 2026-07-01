@@ -14,7 +14,6 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1570,12 +1569,11 @@
                                         </div>
                                         <div class="ajustes-clave-item ajustes-clave-admin">
                                             <div class="ajustes-clave-icon">🛡️</div>
-                                            <label class="ajustes-label">Acceso Administrador</label>
-                                            <small class="ajustes-clave-desc">
-                                                Ahora se gestiona con cuentas reales en
-                                                Firebase Authentication (Console → Authentication → Users),
-                                                no con una clave guardada aquí.
-                                            </small>
+                                            <label class="ajustes-label">Clave Admin</label>
+                                            <small class="ajustes-clave-desc">Acceso al panel de novedades</small>
+                                            <input type="password" id="ajustesInputPasswordAdmin"
+                                                placeholder="Contraseña administrador"
+                                                class="ajustes-input" autocomplete="new-password">
                                         </div>
                                     </div>
                                 </div>
@@ -1607,8 +1605,8 @@
 
                 <!-- Seguridad -->
                 <div class="ajustes-security-row">
-                    <div class="ajustes-security-label">🔐 Administradores (Firebase Authentication)</div>
-                    <button class="btn-cambiar-pass" onclick="AjustesModule.cambiarPassword()">📧 Enviar restablecimiento de contraseña</button>
+                    <div class="ajustes-security-label">🔐 Contraseña del Panel de Ajustes</div>
+                    <button class="btn-cambiar-pass" onclick="AjustesModule.cambiarPassword()">🔑 Cambiar Contraseña</button>
                 </div>
 
             </div><!-- /ajustes-body -->

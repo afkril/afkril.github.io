@@ -1,241 +1,6 @@
 
 
         // ============================================================
-        // SEGURIDAD: Escape de HTML para prevenir XSS almacenado
-        // Cualquier dato que venga del formulario público (nombre,
-        // documento, acudiente, dirección, teléfono, etc.) se escapa
-        // ANTES de guardarse en los arreglos que alimentan las tablas,
-        // para que nunca pueda inyectar HTML/JS al renderizarse con
-        // innerHTML en el panel administrativo.
-        // ============================================================
-        function escapeHtml(valor) {
-            if (typeof valor !== 'string') return valor;
-            return valor
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        // Campos de texto libre que pueden venir del formulario público
-        const CAMPOS_TEXTO_SANITIZABLES = [
-            'name', 'document', 'docType', 'udsName', 'udsFull',
-            'acudiente', 'acudienteDoc', 'address', 'phone', 'comuna', 'barrio'
-        ];
-
-        function sanitizeNovedad(novedad) {
-            if (!novedad || typeof novedad !== 'object') return novedad;
-            const limpio = { ...novedad };
-
-            CAMPOS_TEXTO_SANITIZABLES.forEach(campo => {
-                if (typeof limpio[campo] === 'string') {
-                    limpio[campo] = escapeHtml(limpio[campo]);
-                }
-            });
-
-            ['retiro', 'ingreso'].forEach(sub => {
-                if (limpio[sub] && typeof limpio[sub] === 'object') {
-                    const subLimpio = { ...limpio[sub] };
-                    CAMPOS_TEXTO_SANITIZABLES.forEach(campo => {
-                        if (typeof subLimpio[campo] === 'string') {
-                            subLimpio[campo] = escapeHtml(subLimpio[campo]);
-                        }
-                    });
-                    limpio[sub] = subLimpio;
-                }
-            });
-
-            return limpio;
-        }
-
-        // ============================================================
-        // FILTROS DE NOVEDADES — lógica centralizada
-        // Antes este bloque (~30 líneas) estaba copiado y pegado en 5
-        // funciones distintas (filterNovelties, marcarTodosCargados,
-        // archivarTodosCargados, filterArchivedNovelties,
-        // exportToExcelCurrent). Eso fue justo lo que causó el bug de
-        // "matchesRegional is not defined": al copiar el bloque algunas
-        // veces se olvidó una línea, y como estaba repetido 5 veces,
-        // arreglarlo significaba tener que tocar 5 lugares.
-        //
-        // Ahora hay un solo lugar: cualquier cambio futuro a los filtros
-        // (agregar uno nuevo, corregir uno existente) se hace una sola
-        // vez aquí y se aplica automáticamente en los 5 lugares.
-        // ============================================================
-
-        // Lee los valores de los controles de filtro del DOM.
-        // sufijo = '' para la pestaña "Activas", 'Archivados' para "Archivadas"
-        // (los IDs de los inputs llevan ese sufijo, ej. filterContractArchivados).
-        function leerFiltrosNovedades(sufijo = '') {
-            const el = (id) => document.getElementById(id + sufijo);
-            const searchInput     = el('searchInput');
-            const filterContract  = el('filterContract');
-            const filterType      = el('filterType');
-            const filterDate      = el('filterDate');
-            const filterMonth     = el('filterMonth');
-            const filterUDS       = el('filterUDS');
-            const filterStatus    = el('filterStatus');     // no existe en Archivados → ''
-            const filterRegional  = el('filterRegional');
-            const filterModalidad = el('filterModalidad');
-
-            return {
-                searchTerm:      searchInput     ? searchInput.value.toLowerCase() : '',
-                contractFilter:  filterContract  ? filterContract.value  : '',
-                typeFilter:      filterType      ? filterType.value      : '',
-                dateFilter:      filterDate      ? filterDate.value      : '',
-                monthFilter:     filterMonth     ? filterMonth.value     : '',
-                udsFilter:       filterUDS       ? filterUDS.value       : '',
-                statusFilter:    filterStatus    ? filterStatus.value    : '',
-                regionalFilter:  filterRegional  ? filterRegional.value  : '',
-                modalidadFilter: filterModalidad ? filterModalidad.value : ''
-            };
-        }
-
-        // Aplica los filtros a una lista de novedades. `opciones` permite
-        // exigir además un estado puntual (usado por las acciones masivas
-        // de marcar-como-cargado y archivar, que solo deben tocar
-        // pendientes o cargados respectivamente, ADEMÁS de respetar los
-        // filtros visibles en pantalla — antes esas dos acciones masivas
-        // ignoraban silenciosamente los filtros de Regional y Modalidad).
-        function aplicarFiltrosNovedades(lista, filtros, opciones = {}) {
-            const {
-                searchTerm, contractFilter, typeFilter, dateFilter,
-                monthFilter, udsFilter, statusFilter, regionalFilter, modalidadFilter
-            } = filtros;
-
-            return lista.filter(n => {
-                const matchesSearch = !searchTerm ||
-                    (n.name && n.name.toLowerCase().includes(searchTerm)) ||
-                    (n.document && n.document.includes(searchTerm)) ||
-                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
-                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
-                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
-                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
-
-                const matchesContract  = !contractFilter  || n.contract  === contractFilter;
-                const matchesRegional  = !regionalFilter  || n.regional  === regionalFilter;
-                const matchesModalidad = !modalidadFilter || n.modalidad === modalidadFilter;
-
-                let matchesType = true;
-                if (typeFilter === 'retiro') {
-                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
-                } else if (typeFilter === 'ingreso') {
-                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
-                } else if (typeFilter === 'ambos') {
-                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
-                }
-
-                const matchesDate = !dateFilter || n.date === dateFilter;
-                const matchesUDS  = !udsFilter  || n.udsName === udsFilter;
-
-                let matchesMonth = true;
-                if (monthFilter !== '') {
-                    const nDate = new Date(n.timestamp);
-                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
-                }
-
-                let matchesStatus = true;
-                if (statusFilter === 'pendiente') {
-                    matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
-                } else if (statusFilter === 'cargado') {
-                    matchesStatus = n.cuentameStatus === 'cargado';
-                }
-
-                let cumpleExtra = true;
-                if (opciones.soloPendientes) cumpleExtra = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
-                else if (opciones.soloCargados) cumpleExtra = n.cuentameStatus === 'cargado';
-
-                return matchesSearch && matchesContract && matchesType && matchesDate &&
-                       matchesMonth && matchesUDS && matchesStatus &&
-                       matchesRegional && matchesModalidad && cumpleExtra;
-            });
-        }
-
-        // Atajo para la pestaña "Activas" (currentNovelties)
-        function getFilteredNovelties(opciones = {}) {
-            const filtros = leerFiltrosNovedades('');
-            return aplicarFiltrosNovedades(currentNovelties, filtros, opciones);
-        }
-
-        // Atajo para la pestaña "Archivadas" (archivedNovelties)
-        function getFilteredArchivedNovelties() {
-            const filtros = leerFiltrosNovedades('Archivados');
-            return aplicarFiltrosNovedades(archivedNovelties, filtros, {});
-        }
-
-        // ============================================================
-        // ESTADO DE AUTENTICACIÓN — sincronización con Firebase Auth
-        //
-        // Problema con las nuevas Reglas de Firebase (wildcard $nodo):
-        // cuando el admin recarga la página, firebase.auth().currentUser
-        // vale null durante ~200ms mientras Firebase verifica el token
-        // guardado en localStorage. Si openAdminPanel() o loadNoveltiesTable()
-        // se llaman antes de que ese proceso termine, Firebase rechaza la
-        // lectura con PERMISSION_DENIED aunque el admin esté logueado.
-        //
-        // Solución: esperamos a que onAuthStateChanged dispare antes de
-        // permitir cualquier operación que requiera auth, y si el admin
-        // tenía el panel abierto antes de recargar, lo restauramos
-        // automáticamente sin pedirle que vuelva a loguearse.
-        // ============================================================
-
-        let _authReady = false;
-        let _authReadyPromise = new Promise(resolve => {
-            firebase.auth().onAuthStateChanged(user => {
-                _authReady = true;
-                resolve(user);
-
-                if (user) {
-                    // Sesión restaurada (o login recién exitoso):
-                    // si el panel ya estaba montado y visible, refresca datos.
-                    const panel = document.getElementById('adminPanel');
-                    const panelVisible = panel && panel.style.display !== 'none';
-                    if (panelVisible) {
-                        loadNoveltiesTable();
-                        loadArchivedNovelties();
-                    }
-                } else {
-                    // Sesión cerrada (signOut o expiración):
-                    // forzar cierre del panel si estuviera visible.
-                    const panel = document.getElementById('adminPanel');
-                    if (panel && panel.style.display !== 'none') {
-                        panel.style.display = 'none';
-                        showToast('🔒 Sesión expirada. Inicia sesión de nuevo.', 'warning');
-                    }
-                }
-            });
-        });
-
-        // Espera a que Firebase resuelva el estado de auth antes de
-        // ejecutar cualquier función que requiera sesión.
-        async function esperarAuthListo() {
-            if (_authReady) return;
-            await _authReadyPromise;
-        }
-
-        // ============================================================
-        // MANEJO DE ERRORES DE FIREBASE
-        // Con las nuevas Reglas de la Realtime Database, leer
-        // "novedades_*"/"archivados_*" exige sesión real (auth != null).
-        // Antes esas lecturas nunca fallaban por permisos (todo estaba
-        // abierto); ahora SÍ puede pasar (sesión vencida, etc.), así que
-        // cada lectura admin necesita decirle algo claro al usuario en
-        // vez de fallar en silencio o solo en la consola.
-        // ============================================================
-        function manejarErrorFirebase(error, contexto) {
-            console.error(`[Firebase] Error en ${contexto}:`, error);
-            if (error && error.code === 'PERMISSION_DENIED') {
-                showToast('🔒 Sin permisos de acceso. Vuelve a iniciar sesión.', 'error');
-                firebase.auth().signOut().catch(() => {});
-                const panel = document.getElementById('adminPanel');
-                if (panel) panel.style.display = 'none';
-            } else {
-                showToast(`❌ Error al ${contexto}. Intenta de nuevo.`, 'error');
-            }
-        }
-
-        // ============================================================
         // TOGGLE: Dato Pendiente en Nutrición
         // ============================================================
         function toggleNutricionPendiente() {
@@ -404,148 +169,36 @@
             if (toggle) toggle.classList.add('active');
         }
 
-        function promptAdminAccess() {
+        async function promptAdminAccess() {
             // Verificar que hay un perfil activo
             if (!AsociacionesModule.getPerfilActivo()) {
                 showToast('Primero selecciona una asociación', 'warning');
                 AsociacionesModule.mostrarSelectorAsociaciones();
                 return;
             }
-            // Si ya hay una sesión real de Firebase Auth, abrir directamente
+            // Si ya está autenticado en esta sesión, abrir directamente
             if (AsociacionesModule.isAdminAutenticado()) {
                 openAdminPanel();
                 return;
             }
-            mostrarModalLogin(() => {
-                openAdminPanel();
-                showToast("✅ Acceso concedido", "success");
-            });
-        }
-
-        // ============================================================
-        // LOGIN REAL DE ADMINISTRADOR (Firebase Authentication)
-        // Reemplaza el antiguo sistema de prompt() + contraseña en texto
-        // plano. Las cuentas se crean en Firebase Console → Authentication.
-        // ============================================================
-        let _loginAdminCallback = null;
-
-        function mostrarModalLogin(onExito) {
-            const oldModal = document.getElementById('loginAdminModal');
-            if (oldModal) oldModal.remove();
-
-            _loginAdminCallback = onExito;
-
-            const modal = document.createElement('div');
-            modal.id = 'loginAdminModal';
-            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;';
-            modal.innerHTML = `
-                <div style="background:white;border-radius:20px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
-                    <div style="background:linear-gradient(135deg,#1e3a8a,#1e40af);padding:20px 24px;display:flex;align-items:center;gap:12px;">
-                        <span style="font-size:26px;">🔐</span>
-                        <div>
-                            <h3 style="color:white;font-weight:800;font-size:17px;margin:0;">Acceso Administrador</h3>
-                            <p style="color:#bfdbfe;font-size:12px;margin:2px 0 0;">Inicia sesión con tu cuenta</p>
-                        </div>
-                        <button onclick="cerrarModalLogin()" style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:white;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;font-weight:bold;">×</button>
-                    </div>
-                    <div style="padding:24px;">
-                        <div id="loginAdminError" style="display:none;background:#fef2f2;color:#b91c1c;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;font-weight:600;"></div>
-                        <label style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;">Correo</label>
-                        <input type="email" id="loginAdminEmail" placeholder="tu@correo.com" autocomplete="username"
-                            style="width:100%;margin-top:4px;margin-bottom:14px;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
-                        <label style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;">Contraseña</label>
-                        <input type="password" id="loginAdminPassword" placeholder="••••••••" autocomplete="current-password"
-                            style="width:100%;margin-top:4px;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;">
-                        <button id="loginAdminSubmitBtn" onclick="intentarLoginAdmin()"
-                            style="width:100%;margin-top:18px;padding:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;">
-                            Iniciar sesión
-                        </button>
-                        <button onclick="recuperarPasswordAdmin()"
-                            style="width:100%;margin-top:10px;padding:8px;background:none;color:#2563eb;border:none;font-size:12px;cursor:pointer;text-decoration:underline;">
-                            ¿Olvidaste tu contraseña?
-                        </button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            modal.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') intentarLoginAdmin();
-            });
-
-            setTimeout(() => {
-                const emailInput = document.getElementById('loginAdminEmail');
-                if (emailInput) emailInput.focus();
-            }, 100);
-        }
-
-        function cerrarModalLogin() {
-            const modal = document.getElementById('loginAdminModal');
-            if (modal) modal.remove();
-            _loginAdminCallback = null;
-        }
-
-        async function intentarLoginAdmin() {
-            const emailInput = document.getElementById('loginAdminEmail');
-            const passInput = document.getElementById('loginAdminPassword');
-            const errorBox = document.getElementById('loginAdminError');
-            const btn = document.getElementById('loginAdminSubmitBtn');
-
-            const email = emailInput ? emailInput.value.trim() : '';
-            const pass = passInput ? passInput.value : '';
-
-            if (errorBox) errorBox.style.display = 'none';
-
-            if (!email || !pass) {
-                if (errorBox) { errorBox.textContent = 'Ingresa tu correo y contraseña.'; errorBox.style.display = 'block'; }
-                return;
-            }
-
-            if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
-
+            const password = prompt("🔐 Contraseña de Administrador\n(" + AsociacionesModule.getPerfilActivo().nombre + "):");
+            if (password === null) return;
             try {
-                await firebase.auth().signInWithEmailAndPassword(email, pass);
-                const callback = _loginAdminCallback;
-                cerrarModalLogin();
-                if (typeof callback === 'function') callback();
-            } catch (error) {
-                let mensaje = 'No se pudo iniciar sesión. Intenta de nuevo.';
-                if (error.code === 'auth/invalid-email') {
-                    mensaje = 'El correo no es válido.';
-                } else if (['auth/user-not-found', 'auth/wrong-password', 'auth/invalid-credential'].includes(error.code)) {
-                    mensaje = 'Correo o contraseña incorrectos.';
-                } else if (error.code === 'auth/too-many-requests') {
-                    mensaje = 'Demasiados intentos. Espera unos minutos e intenta de nuevo.';
-                } else if (error.code === 'auth/network-request-failed') {
-                    mensaje = 'Sin conexión a internet. Verifica tu red.';
+                const correcta = await AsociacionesModule.obtenerPasswordAdmin();
+                if (password === correcta) {
+                    AsociacionesModule.marcarAdminAutenticado();
+                    openAdminPanel();
+                    showToast("✅ Acceso concedido", "success");
+                } else {
+                    showToast("❌ Contraseña incorrecta", "error");
                 }
-                if (errorBox) { errorBox.textContent = mensaje; errorBox.style.display = 'block'; }
-            } finally {
-                if (btn) { btn.disabled = false; btn.textContent = 'Iniciar sesión'; }
+            } catch(e) {
+                showToast("Error al verificar: " + e.message, "error");
             }
         }
 
-        async function recuperarPasswordAdmin() {
-            const emailInput = document.getElementById('loginAdminEmail');
-            const email = emailInput ? emailInput.value.trim() : '';
-            if (!email) {
-                showToast('Escribe tu correo arriba primero', 'warning');
-                return;
-            }
-            try {
-                await firebase.auth().sendPasswordResetEmail(email);
-                showToast('📧 Te enviamos un correo para restablecer tu contraseña', 'success');
-            } catch (error) {
-                showToast('No se pudo enviar el correo: ' + (error.message || 'intenta de nuevo'), 'error');
-            }
-        }
-
-        async function openAdminPanel() {
-            // Esperar a que Firebase resuelva el estado de auth
-            // (necesario en la primera carga / tras recarga de página)
-            await esperarAuthListo();
-
-            // Guard: nunca abrir sin autenticación real de Firebase
+        function openAdminPanel() {
+            // Guard: nunca abrir sin autenticación
             if (!AsociacionesModule.isAdminAutenticado()) {
                 console.warn('[Admin] Intento de apertura sin autenticación bloqueado.');
                 return;
@@ -568,7 +221,6 @@
         }
 
         function cerrarSesionAdmin() {
-            firebase.auth().signOut();
             AsociacionesModule.cerrarSesionAdmin();
             closeAdminPanel();
             showToast('🔒 Sesión admin cerrada', 'info');
@@ -619,11 +271,6 @@
                     actualizarUIConfigBloqueo();
                     verificarBloqueo();
                 }
-            }, (error) => {
-                // Este nodo debería ser de lectura pública; si falla, probablemente
-                // las Reglas de Firebase quedaron mal pegadas — lo dejamos en consola
-                // sin interrumpir al visitante público con un toast de error.
-                console.error('[Firebase] Error en cargar config de bloqueo:', error);
             });
         }
 
@@ -651,7 +298,7 @@
                     actualizarUIConfigBloqueo();
                     verificarBloqueo();
                 })
-                .catch((error) => manejarErrorFirebase(error, 'guardar la configuración de bloqueo'));
+                .catch((error) => showToast("Error al guardar: " + error.message, "error"));
         }
 
         function toggleBloqueoSistema() {
@@ -663,7 +310,7 @@
                     actualizarUIConfigBloqueo();
                     verificarBloqueo();
                 })
-                .catch((error) => manejarErrorFirebase(error, 'cambiar el estado de bloqueo'));
+                .catch((error) => showToast("Error: " + error.message, "error"));
         }
 
         function actualizarUIConfigBloqueo() {
@@ -720,21 +367,31 @@
             }
         }
 
-        function accesoAdminDesdeBloqueo() {
-            mostrarModalLogin(() => {
-                configBloqueo.activo = false;
-                const configRef = database.ref(AsociacionesModule.getRef('configBloqueo'));
-                configRef.set(configBloqueo)
-                    .then(() => {
-                        showToast("✅ Bloqueo desactivado", "success");
-                        actualizarUIConfigBloqueo();
-                        verificarBloqueo();
-                        setTimeout(() => {
-                            if (confirm("¿Desea abrir el panel de administración?")) openAdminPanel();
-                        }, 500);
-                    })
-                    .catch((error) => manejarErrorFirebase(error, 'desactivar el bloqueo'));
-            });
+        async function accesoAdminDesdeBloqueo() {
+            const password = prompt("🔐 ACCESO ADMINISTRADOR\n\nIngrese la contraseña para desactivar el bloqueo:");
+            if (password === null) return;
+            try {
+                const correcta = await AsociacionesModule.obtenerPasswordAdmin();
+                if (password === correcta) {
+                    AsociacionesModule.marcarAdminAutenticado();
+                    configBloqueo.activo = false;
+                    const configRef = database.ref(AsociacionesModule.getRef('configBloqueo'));
+                    configRef.set(configBloqueo)
+                        .then(() => {
+                            showToast("✅ Bloqueo desactivado", "success");
+                            actualizarUIConfigBloqueo();
+                            verificarBloqueo();
+                            setTimeout(() => {
+                                if (confirm("¿Desea abrir el panel de administración?")) openAdminPanel();
+                            }, 500);
+                        })
+                        .catch((error) => showToast("Error: " + error.message, "error"));
+                } else {
+                    showToast("❌ Contraseña incorrecta", "error");
+                }
+            } catch(e) {
+                showToast("Error al verificar: " + e.message, "error");
+            }
         }
 
         setInterval(verificarBloqueo, 3600000);
@@ -1103,7 +760,10 @@
                 todosLosDatosArchivados = Object.entries(archivedData).map(([id, value]) => ({ id, ...value }));
                 
                 calcularYMostrarEstadisticas();
-            }).catch(error => manejarErrorFirebase(error, 'cargar las estadísticas'));
+            }).catch(error => {
+                console.error('Error cargando datos:', error);
+                showToast('Error al cargar estadísticas: ' + error.message, 'error');
+            });
         }
 
         function calcularYMostrarEstadisticas() {
@@ -1329,7 +989,69 @@
         }
         
         function marcarTodosCargados() {
-            let pendientesFiltrados = getFilteredNovelties({ soloPendientes: true });
+            const searchInput = document.getElementById('searchInput');
+            const filterContract = document.getElementById('filterContract');
+            const filterType = document.getElementById('filterType');
+            const filterDate = document.getElementById('filterDate');
+            const filterMonth = document.getElementById('filterMonth');
+            const filterUDS = document.getElementById('filterUDS');
+            const filterStatus = document.getElementById('filterStatus');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const contractFilter = filterContract ? filterContract.value : '';
+            const typeFilter = filterType ? filterType.value : '';
+            const dateFilter = filterDate ? filterDate.value : '';
+            const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
+            const statusFilter = filterStatus ? filterStatus.value : '';
+
+            const filterRegional  = document.getElementById('filterRegional');
+            const filterModalidad = document.getElementById('filterModalidad');
+            const regionalFilter  = filterRegional  ? filterRegional.value  : '';
+            const modalidadFilter = filterModalidad ? filterModalidad.value : '';
+
+            let pendientesFiltrados = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+                
+                const matchesContract  = !contractFilter  || n.contract  === contractFilter;
+                const matchesRegional  = !regionalFilter  || n.regional  === regionalFilter;
+                const matchesModalidad = !modalidadFilter || n.modalidad === modalidadFilter;
+                
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+                
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
+
+                let matchesStatus = true;
+                if (statusFilter === 'pendiente') {
+                    matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+                } else if (statusFilter === 'cargado') {
+                    matchesStatus = n.cuentameStatus === 'cargado';
+                }
+
+                const isPendiente = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && isPendiente;
+            });
 
             if (pendientesFiltrados.length === 0) {
                 showToast('No hay novedades pendientes en la vista actual para marcar como cargadas', 'warning');
@@ -1376,7 +1098,69 @@
         }
 
         function archivarTodosCargados() {
-            let cargadosFiltrados = getFilteredNovelties({ soloCargados: true });
+            const searchInput = document.getElementById('searchInput');
+            const filterContract = document.getElementById('filterContract');
+            const filterType = document.getElementById('filterType');
+            const filterDate = document.getElementById('filterDate');
+            const filterMonth = document.getElementById('filterMonth');
+            const filterUDS = document.getElementById('filterUDS');
+            const filterStatus = document.getElementById('filterStatus');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const contractFilter = filterContract ? filterContract.value : '';
+            const typeFilter = filterType ? filterType.value : '';
+            const dateFilter = filterDate ? filterDate.value : '';
+            const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
+            const statusFilter = filterStatus ? filterStatus.value : '';
+
+            const filterRegional  = document.getElementById('filterRegional');
+            const filterModalidad = document.getElementById('filterModalidad');
+            const regionalFilter  = filterRegional  ? filterRegional.value  : '';
+            const modalidadFilter = filterModalidad ? filterModalidad.value : '';
+
+            let cargadosFiltrados = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+                
+                const matchesContract  = !contractFilter  || n.contract  === contractFilter;
+                const matchesRegional  = !regionalFilter  || n.regional  === regionalFilter;
+                const matchesModalidad = !modalidadFilter || n.modalidad === modalidadFilter;
+                
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+                
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
+
+                let matchesStatus = true;
+                if (statusFilter === 'pendiente') {
+                    matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+                } else if (statusFilter === 'cargado') {
+                    matchesStatus = n.cuentameStatus === 'cargado';
+                }
+
+                const isCargado = n.cuentameStatus === 'cargado';
+
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && isCargado;
+            });
 
             if (cargadosFiltrados.length === 0) {
                 showToast('No hay novedades cargadas en la vista actual para archivar', 'warning');
@@ -1391,7 +1175,6 @@
 
             let archivados = 0;
             let errores = 0;
-            let huboPermissionDenied = false;
             const fechaArchivo = new Date().toISOString();
 
             const promesas = cargadosFiltrados.map(novedad => {
@@ -1412,22 +1195,13 @@
                     })
                     .catch(error => {
                         errores++;
-                        if (error && error.code === 'PERMISSION_DENIED') huboPermissionDenied = true;
                         console.error(`Error archivando ${novedad.id}:`, error);
                     });
             });
 
             Promise.all(promesas)
                 .then(() => {
-                    if (huboPermissionDenied) {
-                        // La escritura a "archivados" exige sesión activa; si
-                        // expiró a mitad del proceso, avisamos claramente en
-                        // vez de solo decir "X errores" sin explicación.
-                        manejarErrorFirebase({ code: 'PERMISSION_DENIED' }, 'archivar (sesión expiró durante el proceso)');
-                        if (archivados > 0) {
-                            showToast(`Se alcanzaron a archivar ${archivados} antes de perder la sesión.`, 'warning');
-                        }
-                    } else if (errores > 0) {
+                    if (errores > 0) {
                         showToast(`⚠️ ${archivados} archivados, ${errores} errores`, 'warning');
                     } else {
                         showToast(`🗃️ ${archivados} novedades archivadas correctamente`, 'success');
@@ -1497,10 +1271,10 @@
             const noveltiesRef = database.ref(AsociacionesModule.getRef('novelties'));
             noveltiesRef.once('value', (snapshot) => {
                 const data = snapshot.val() || {};
-                currentNovelties = Object.entries(data).map(([id, value]) => sanitizeNovedad({ id, ...value }));
+                currentNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
                 filterNovelties();
                 updatePendientesIndicator();
-            }, (error) => manejarErrorFirebase(error, 'cargar las novedades activas'));
+            });
         }
 
         function checkDuplicate(document, currentId) {
@@ -1542,7 +1316,7 @@
                 loadNoveltiesTable();
                 updatePendientesIndicator();
             })
-            .catch((error) => manejarErrorFirebase(error, 'actualizar el estado'));
+            .catch((error) => showToast('Error al actualizar: ' + error.message, 'error'));
         }
 
         function archivarNovelty(id) {
@@ -1570,7 +1344,7 @@
                     loadNoveltiesTable();
                     updatePendientesIndicator();
                 })
-                .catch((error) => manejarErrorFirebase(error, 'archivar la novedad'));
+                .catch((error) => showToast('Error al archivar: ' + error.message, 'error'));
         }
 
         function updatePendientesIndicator() {
@@ -1592,20 +1366,16 @@
             }
         }
 
-        function showPendientesView() {
-            function mostrarVista() {
-                openAdminPanel();
-                switchTab('activas');
-                const filterStatus = document.getElementById('filterStatus');
-                if (filterStatus) filterStatus.value = 'pendiente';
-                filterNovelties();
+        async function showPendientesView() {
+            // Requiere autenticación admin
+            if (!AsociacionesModule.isAdminAutenticado()) {
+                await promptAdminAccess();
+                if (!AsociacionesModule.isAdminAutenticado()) return;
             }
-            // Requiere autenticación admin real (Firebase Auth)
-            if (AsociacionesModule.isAdminAutenticado()) {
-                mostrarVista();
-            } else {
-                mostrarModalLogin(mostrarVista);
-            }
+            openAdminPanel();
+            switchTab('activas');
+            document.getElementById('filterStatus').value = 'pendiente';
+            filterNovelties();
         }
         
         function abrirModalGrafica() {
@@ -2013,7 +1783,64 @@
         });
 
         function filterNovelties() {
-            let filtered = getFilteredNovelties();
+            const searchInput = document.getElementById('searchInput');
+            const filterContract  = document.getElementById('filterContract');
+            const filterType      = document.getElementById('filterType');
+            const filterDate      = document.getElementById('filterDate');
+            const filterMonth     = document.getElementById('filterMonth');
+            const filterUDS       = document.getElementById('filterUDS');
+            const filterStatus    = document.getElementById('filterStatus');
+            const filterRegional  = document.getElementById('filterRegional');
+            const filterModalidad = document.getElementById('filterModalidad');
+            
+            const searchTerm      = searchInput     ? searchInput.value.toLowerCase() : '';
+            const contractFilter  = filterContract  ? filterContract.value  : '';
+            const typeFilter      = filterType      ? filterType.value      : '';
+            const dateFilter      = filterDate      ? filterDate.value      : '';
+            const monthFilter     = filterMonth     ? filterMonth.value     : '';
+            const udsFilter       = filterUDS       ? filterUDS.value       : '';
+            const statusFilter    = filterStatus    ? filterStatus.value    : '';
+            const regionalFilter  = filterRegional  ? filterRegional.value  : '';
+            const modalidadFilter = filterModalidad ? filterModalidad.value : '';
+
+            let filtered = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+                
+                const matchesContract = !contractFilter || n.contract === contractFilter;
+                
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+                
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
+
+                let matchesStatus = true;
+                if (statusFilter === 'pendiente') {
+                    matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+                } else if (statusFilter === 'cargado') {
+                    matchesStatus = n.cuentameStatus === 'cargado';
+                }
+
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && matchesRegional && matchesModalidad;
+            });
 
             filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             renderTable(filtered);
@@ -2141,13 +1968,63 @@
             const archivedRef = database.ref(AsociacionesModule.getRef('archived'));
             archivedRef.once('value', (snapshot) => {
                 const data = snapshot.val() || {};
-                archivedNovelties = Object.entries(data).map(([id, value]) => sanitizeNovedad({ id, ...value }));
+                archivedNovelties = Object.entries(data).map(([id, value]) => ({ id, ...value }));
                 filterArchivedNovelties();
-            }, (error) => manejarErrorFirebase(error, 'cargar las novedades archivadas'));
+            });
         }
 
         function filterArchivedNovelties() {
-            let filtered = getFilteredArchivedNovelties();
+            const searchInput       = document.getElementById('searchInputArchivados');
+            const filterContract    = document.getElementById('filterContractArchivados');
+            const filterType        = document.getElementById('filterTypeArchivados');
+            const filterDate        = document.getElementById('filterDateArchivados');
+            const filterMonth       = document.getElementById('filterMonthArchivados');
+            const filterUDS         = document.getElementById('filterUDSArchivados');
+            const filterRegional    = document.getElementById('filterRegionalArchivados');
+            const filterModalidad   = document.getElementById('filterModalidadArchivados');
+
+            const searchTerm        = searchInput     ? searchInput.value.toLowerCase()  : '';
+            const contractFilter    = filterContract  ? filterContract.value              : '';
+            const typeFilter        = filterType      ? filterType.value                  : '';
+            const dateFilter        = filterDate      ? filterDate.value                  : '';
+            const monthFilter       = filterMonth     ? filterMonth.value                 : '';
+            const udsFilter         = filterUDS       ? filterUDS.value                   : '';
+            const regionalFilter    = filterRegional  ? filterRegional.value              : '';
+            const modalidadFilter   = filterModalidad ? filterModalidad.value             : '';
+
+            let filtered = archivedNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+
+                const matchesContract  = !contractFilter  || n.contract  === contractFilter;
+                const matchesRegional  = !regionalFilter  || n.regional  === regionalFilter;
+                const matchesModalidad = !modalidadFilter || n.modalidad === modalidadFilter;
+
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS  = !udsFilter  || n.udsName === udsFilter;
+
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
+
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesRegional && matchesModalidad;
+            });
 
             filtered.sort((a, b) => new Date(b.archivedDate) - new Date(a.archivedDate));
             renderArchivedTable(filtered);
@@ -2808,9 +2685,9 @@ async function guardarEditNutricion(noveltyId) {
             if (plainTextContent) plainTextContent.textContent = generatePlainTextFive(currentNoveltyData, false, udsName, udsCode);
         }
 
-        loadNoveltiesTable();
+        loadNovelties();
     } catch(err) {
-        manejarErrorFirebase(err, 'guardar los datos nutricionales');
+        showToast('❌ Error al guardar: ' + err.message, 'error');
     }
 }
 
@@ -2899,14 +2776,7 @@ function initNutricionalSection() {
 // Cargar datos de ambas fuentes (activas y archivadas)
 async function cargarDatosNutricionales() {
     showToast('🍎 Cargando datos nutricionales...', 'info');
-
-    // Esperar auth listo — lee novedades_* y archivados_* que exigen sesión
-    await esperarAuthListo();
-    if (!AsociacionesModule.isAdminAutenticado()) {
-        showToast('🔒 Inicia sesión para ver los datos nutricionales.', 'warning');
-        return;
-    }
-
+    
     try {
         const [activasSnap, archivadasSnap] = await Promise.all([
             database.ref(AsociacionesModule.getRef('novelties')).once('value'),
@@ -2935,7 +2805,8 @@ async function cargarDatosNutricionales() {
         
         showToast(`✅ ${datosNutricionales.length} registros nutricionales cargados`, 'success');
     } catch (error) {
-        manejarErrorFirebase(error, 'cargar los datos nutricionales');
+        console.error('Error cargando datos nutricionales:', error);
+        showToast('❌ Error al cargar datos nutricionales', 'error');
     }
 }
 
@@ -2975,13 +2846,13 @@ function extraerDatosNutricionales(id, data, tipo) {
         originalData: data,
         // Info general
         contract: data.contract || 'N/A',
-        udsName: escapeHtml(udsName),
-        udsCode: escapeHtml(udsCode),
+        udsName,
+        udsCode,
         fechaRegistro: data.timestamp,
         // Info niño
-        nombre: escapeHtml(ingreso.name || 'N/A'),
-        documento: escapeHtml(ingreso.document || 'N/A'),
-        tipoDoc: escapeHtml(ingreso.docType || 'RC'),
+        nombre: ingreso.name || 'N/A',
+        documento: ingreso.document || 'N/A',
+        tipoDoc: ingreso.docType || 'RC',
         edad: ingreso.age || data.age || 'N/A',
         fechaNacimiento: ingreso.dob || ingreso.ingresoDOB || data.ingresoDOB,
         genero: ingreso.gender || 'N/A',
@@ -4388,7 +4259,7 @@ function debounce(func, wait) {
                     filterArchivedNovelties();
                     loadResumenStats();
                 })
-                .catch((error) => manejarErrorFirebase(error, 'eliminar los archivados'));
+                .catch((error) => showToast('Error al eliminar: ' + error.message, 'error'));
         }
 
         function renderArchivedPagination(totalItems) {
@@ -4528,7 +4399,7 @@ function debounce(func, wait) {
                     loadNoveltiesTable();
                     updatePendientesIndicator();
                 })
-                .catch((error) => manejarErrorFirebase(error, 'eliminar el registro'));
+                .catch((error) => showToast('Error al eliminar: ' + error.message, 'error'));
         }
 
         function renderPagination(totalItems) {
@@ -4553,7 +4424,60 @@ function debounce(func, wait) {
                 return;
             }
 
-            let filtered = getFilteredNovelties();
+            const searchInput = document.getElementById('searchInput');
+            const filterContract = document.getElementById('filterContract');
+            const filterType = document.getElementById('filterType');
+            const filterDate = document.getElementById('filterDate');
+            const filterMonth = document.getElementById('filterMonth');
+            const filterUDS = document.getElementById('filterUDS');
+            const filterStatus = document.getElementById('filterStatus');
+            
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const contractFilter = filterContract ? filterContract.value : '';
+            const typeFilter = filterType ? filterType.value : '';
+            const dateFilter = filterDate ? filterDate.value : '';
+            const monthFilter = filterMonth ? filterMonth.value : '';
+            const udsFilter = filterUDS ? filterUDS.value : '';
+            const statusFilter = filterStatus ? filterStatus.value : '';
+
+            let filtered = currentNovelties.filter(n => {
+                const matchesSearch = !searchTerm || 
+                    (n.name && n.name.toLowerCase().includes(searchTerm)) || 
+                    (n.document && n.document.includes(searchTerm)) ||
+                    (n.retiro && n.retiro.name && n.retiro.name.toLowerCase().includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.name && n.ingreso.name.toLowerCase().includes(searchTerm)) ||
+                    (n.retiro && n.retiro.document && n.retiro.document.includes(searchTerm)) ||
+                    (n.ingreso && n.ingreso.document && n.ingreso.document.includes(searchTerm));
+                
+                const matchesContract = !contractFilter || n.contract === contractFilter;
+                
+                let matchesType = true;
+                if (typeFilter === 'retiro') {
+                    matchesType = n.type === 'retiro' || n.type === 'ambos' || (n.hasRetiro && !n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ingreso') {
+                    matchesType = n.type === 'ingreso' || n.type === 'ambos' || (!n.hasRetiro && n.hasIngreso) || (n.hasRetiro && n.hasIngreso);
+                } else if (typeFilter === 'ambos') {
+                    matchesType = n.type === 'ambos' || (n.hasRetiro && n.hasIngreso);
+                }
+                
+                const matchesDate = !dateFilter || n.date === dateFilter;
+                const matchesUDS = !udsFilter || n.udsName === udsFilter;
+                
+                let matchesMonth = true;
+                if (monthFilter !== '') {
+                    const nDate = new Date(n.timestamp);
+                    matchesMonth = nDate.getMonth() === parseInt(monthFilter);
+                }
+
+                let matchesStatus = true;
+                if (statusFilter === 'pendiente') {
+                    matchesStatus = !n.cuentameStatus || n.cuentameStatus === 'pendiente';
+                } else if (statusFilter === 'cargado') {
+                    matchesStatus = n.cuentameStatus === 'cargado';
+                }
+
+                return matchesSearch && matchesContract && matchesType && matchesDate && matchesMonth && matchesUDS && matchesStatus && matchesRegional && matchesModalidad;
+            });
 
             if (filtered.length === 0) {
                 showToast("No hay datos en la vista actual para exportar", "warning");
@@ -4800,7 +4724,7 @@ function debounce(func, wait) {
 
                 XLSX.writeFile(wb, `Reporte_Completo_JER_${new Date().toISOString().split('T')[0]}.xlsx`);
                 showToast(`Excel exportado: ${novelties.length} registros`, "success");
-            }, (error) => manejarErrorFirebase(error, 'exportar el Excel completo'));
+            });
         }
 
         function exportToPDF() {
@@ -4921,7 +4845,7 @@ function debounce(func, wait) {
                 
                 doc.save(`Reporte_Completo_JER_${new Date().toISOString().split('T')[0]}.pdf`);
                 showToast(`PDF exportado: ${count} registros`, "success");
-            }, (error) => manejarErrorFirebase(error, 'exportar el PDF'));
+            });
         }
 
         function checkExistingBeneficiary(document, type) {

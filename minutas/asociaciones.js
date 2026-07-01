@@ -216,28 +216,20 @@ const AsociacionesModule = (() => {
     }
 
     // ── Sesión admin por perfil ────────────────────────────────
-    // ── Sesión admin: ahora basada en Firebase Authentication real ──
-    // (antes se guardaba un simple flag en sessionStorage tras comparar
-    // una contraseña en texto plano; ahora se verifica que exista una
-    // sesión real de Firebase Auth, gestionada por la propia plataforma).
     function isAdminAutenticado() {
-        return !!(firebase.auth && firebase.auth().currentUser);
+        const id = _perfilActivo && _perfilActivo.id;
+        if (!id) return false;
+        return sessionStorage.getItem(`admin_auth_${id}`) === '1';
     }
 
-    // Se mantiene por compatibilidad con código existente; ya no hace
-    // falta "marcar" nada manualmente porque Firebase Auth persiste la
-    // sesión automáticamente tras un login exitoso.
     function marcarAdminAutenticado() {
-        // no-op: la sesión real la maneja Firebase Authentication
+        const id = _perfilActivo && _perfilActivo.id;
+        if (id) sessionStorage.setItem(`admin_auth_${id}`, '1');
     }
 
-    // Cierre de sesión "suave": se usa al cambiar de asociación, para no
-    // desloguear al administrador de Firebase solo por cambiar de perfil
-    // (puede gestionar varias asociaciones en la misma sesión). El cierre
-    // de sesión REAL (signOut de Firebase) se hace desde el botón
-    // "Cerrar sesión" del panel admin, en app.js.
     function cerrarSesionAdmin() {
-        // no-op intencional: ver comentario arriba.
+        const id = _perfilActivo && _perfilActivo.id;
+        if (id) sessionStorage.removeItem(`admin_auth_${id}`);
     }
 
     // ── Activar perfil ────────────────────────────────────────
