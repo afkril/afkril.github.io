@@ -12,17 +12,23 @@ const AjustesModule = (() => {
     let _modalidadesTemp = {};         // modalidad por contrato mientras se edita
     let _regionalesTemp  = {};         // regional por contrato mientras se edita
 
-    // ── Abrir panel de ajustes (requiere contraseña) ──────────
+    // ── Abrir panel de ajustes (requiere login real de administrador) ──
     async function abrirPanelAjustes() {
-        const password = prompt('🔐 Contraseña del Panel de Ajustes:\n(Por defecto: JER2024)');
-        if (password === null) return;
+        // Esperar a que Firebase resuelva el estado de auth (igual que
+        // openAdminPanel) para no pedir login de más justo tras recargar
+        // la página con una sesión ya activa.
+        await esperarAuthListo();
 
-        const passwordCorrecta = await AsociacionesModule.obtenerPasswordAjustes();
-        if (password !== passwordCorrecta) {
-            showToast('Contraseña incorrecta', 'error');
+        if (AsociacionesModule.isAdminAutenticado()) {
+            _abrirPanelAjustesInterno();
             return;
         }
+        mostrarModalLogin(() => {
+            _abrirPanelAjustesInterno();
+        });
+    }
 
+    async function _abrirPanelAjustesInterno() {
         const panel = document.getElementById('panelAjustes');
         if (panel) {
             panel.style.display = 'flex';
@@ -111,9 +117,7 @@ const AjustesModule = (() => {
             _modalidadesTemp  = { ...(datos.modalidades_contratos || {}) };
             _regionalesTemp   = { ...(datos.regionales_contratos || {}) };
             _mostrarFormulario({ id, ...datos }, false);
-            // Cargar contraseñas actuales
-            const passAdminInput = document.getElementById('ajustesInputPasswordAdmin');
-            if (passAdminInput) passAdminInput.value = datos.password_admin || 'ZAN';
+            // Clave del formulario público (la única que sigue siendo una "contraseña" simple)
             const passFormInput = document.getElementById('ajustesInputPasswordFormulario');
             if (passFormInput) passFormInput.value = datos.password_formulario || '';
         } catch(e) {
@@ -429,7 +433,6 @@ const AjustesModule = (() => {
         if (!id)     { showToast('El ID es obligatorio', 'warning'); return; }
         if (!nombre) { showToast('El nombre es obligatorio', 'warning'); return; }
 
-        const passwordAdmin      = document.getElementById('ajustesInputPasswordAdmin')?.value?.trim();
         const passwordFormulario  = document.getElementById('ajustesInputPasswordFormulario')?.value?.trim();
 
         const datos = {
@@ -437,7 +440,6 @@ const AjustesModule = (() => {
             subtitulo,
             logo_url,
             google_url,
-            password_admin:      passwordAdmin || 'ZAN',
             password_formulario: passwordFormulario || '',
             contratos:               _contratosTemp,
             colores_contratos:       _coloresTemp,
@@ -491,24 +493,18 @@ const AjustesModule = (() => {
     }
 
     // ── Cambiar contraseña del panel de ajustes ────────────────
+    // El acceso al panel de ajustes ahora usa cuentas reales de Firebase
+    // Authentication. Para restablecer la contraseña de un administrador,
+    // se envía un correo de restablecimiento (lo gestiona Firebase, nunca
+    // vemos ni guardamos la contraseña real).
     async function cambiarPassword() {
-        const actual  = prompt('🔑 Contraseña actual:');
-        if (actual === null) return;
-
-        const correcta = await AsociacionesModule.obtenerPasswordAjustes();
-        if (actual !== correcta) { showToast('Contraseña actual incorrecta', 'error'); return; }
-
-        const nueva   = prompt('🆕 Nueva contraseña:');
-        if (!nueva || nueva.trim() === '') { showToast('La nueva contraseña no puede estar vacía', 'warning'); return; }
-
-        const confirmar = prompt('🔁 Confirmar nueva contraseña:');
-        if (nueva !== confirmar) { showToast('Las contraseñas no coinciden', 'error'); return; }
-
+        const email = prompt('Escribe el correo del administrador al que quieres enviarle el enlace para restablecer su contraseña:');
+        if (!email) return;
         try {
-            await AsociacionesModule.guardarPasswordAjustes(nueva.trim());
-            showToast('✅ Contraseña actualizada', 'success');
-        } catch(e) {
-            showToast('Error: ' + e.message, 'error');
+            await firebase.auth().sendPasswordResetEmail(email.trim());
+            showToast('📧 Correo de restablecimiento enviado a ' + email.trim(), 'success');
+        } catch (e) {
+            showToast('No se pudo enviar el correo: ' + (e.message || 'intenta de nuevo'), 'error');
         }
     }
 
