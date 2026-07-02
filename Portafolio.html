@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tablero de Aplicaciones — ZAN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Patrick+Hand&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cork-1:#8A6644;
+    --cork-2:#7A5738;
+    --wood:#4A3220;
+    --wood-dark:#33210F;
+    --ink:#3A2A1C;
+    --pin-red:#B5473B;
+    --pin-green:#5B7B4F;
+    --pin-blue:#3E6E86;
+    --note-amber:#F5D869;
+    --note-rose:#F0A9A2;
+    --note-sage:#B9D8AE;
+    --note-sky:#A9D3E3;
+    --note-cream:#F6EBCE;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    font-family:'Patrick Hand', cursive;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,0.05) 0, transparent 40%),
+      repeating-radial-gradient(circle at 0 0, transparent 0, transparent 3px, rgba(0,0,0,0.045) 4px),
+      repeating-linear-gradient(45deg, rgba(0,0,0,0.03) 0 2px, transparent 2px 6px),
+      linear-gradient(160deg, var(--cork-1), var(--cork-2));
+    min-height:100vh;
+  }
+
+  .frame{
+    border:18px solid var(--wood);
+    border-image: linear-gradient(160deg, #5C3D24, #33210F) 1;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.45), 0 12px 30px rgba(0,0,0,0.35);
+    min-height:100vh;
+  }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:50px 34px 70px;
+  }
+
+  header{
+    text-align:center;
+    margin-bottom:48px;
+  }
+
+  header .steam{
+    font-size:34px;
+    display:block;
+    margin-bottom:6px;
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+  }
+
+  header h1{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:clamp(40px,6vw,64px);
+    color:#FBF3DC;
+    margin:0 0 6px;
+    text-shadow:0 3px 6px rgba(0,0,0,0.4);
+    transform:rotate(-1.2deg);
+  }
+
+  header p{
+    font-family:'Space Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#E7D9BC;
+    margin:0;
+  }
+
+  /* corkboard grid */
+  .board{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
+    gap:46px 30px;
+    padding:10px 6px 30px;
+  }
+
+  .note{
+    position:relative;
+    padding:26px 20px 20px;
+    min-height:220px;
+    display:flex;
+    flex-direction:column;
+    box-shadow:
+      0 10px 18px rgba(0,0,0,0.35),
+      0 2px 4px rgba(0,0,0,0.2);
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .note:hover{
+    transform:translateY(-4px) scale(1.02) !important;
+    box-shadow:
+      0 16px 26px rgba(0,0,0,0.4),
+      0 3px 6px rgba(0,0,0,0.25);
+    z-index:5;
+  }
+
+  /* torn paper bottom edge using clip-path */
+  .note{
+    clip-path: polygon(
+      0% 2%, 4% 0%, 9% 2%, 14% 0%, 19% 2%, 24% 0%, 29% 2%, 34% 0%, 39% 2%, 44% 0%,
+      49% 2%, 54% 0%, 59% 2%, 64% 0%, 69% 2%, 74% 0%, 79% 2%, 84% 0%, 89% 2%, 94% 0%, 100% 2%,
+      100% 100%, 0% 100%
+    );
+  }
+
+  .n1{background:var(--note-amber); transform:rotate(-3deg);}
+  .n2{background:var(--note-sky); transform:rotate(2.4deg);}
+  .n3{background:var(--note-rose); transform:rotate(-1.6deg);}
+  .n4{background:var(--note-sage); transform:rotate(3deg);}
+  .n5{background:var(--note-cream); transform:rotate(-2.2deg);}
+
+  .pin{
+    position:absolute;
+    top:-14px;
+    left:50%;
+    transform:translateX(-50%);
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    box-shadow:0 3px 4px rgba(0,0,0,0.45), inset 0 -3px 4px rgba(0,0,0,0.25), inset 0 2px 3px rgba(255,255,255,0.5);
+    z-index:2;
+  }
+  .pin::after{
+    content:'';
+    position:absolute;
+    left:50%;
+    top:100%;
+    width:2px;
+    height:8px;
+    background:rgba(0,0,0,0.25);
+    transform:translateX(-50%);
+  }
+  .pin-red{background:radial-gradient(circle at 35% 30%, #E88178, var(--pin-red));}
+  .pin-blue{background:radial-gradient(circle at 35% 30%, #7DB6CE, var(--pin-blue));}
+  .pin-green{background:radial-gradient(circle at 35% 30%, #8FB57F, var(--pin-green));}
+
+  .note-icon{
+    font-size:30px;
+    margin-bottom:6px;
+    filter:drop-shadow(0 2px 1px rgba(0,0,0,0.15));
+  }
+
+  .note h2{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:26px;
+    margin:0 0 4px;
+    line-height:1.05;
+  }
+
+  .note .tag{
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    opacity:0.65;
+    margin-bottom:10px;
+  }
+
+  .note p{
+    font-size:16px;
+    line-height:1.32;
+    margin:0 0 16px;
+    flex:1;
+    opacity:0.88;
+  }
+
+  .note a{
+    align-self:flex-start;
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:19px;
+    text-decoration:none;
+    color:var(--ink);
+    border-bottom:2.5px solid var(--ink);
+    padding-bottom:1px;
+  }
+  .note a:hover{opacity:0.6;}
+
+  footer{
+    text-align:center;
+    margin-top:20px;
+    font-family:'Space Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:0.05em;
+    color:#D9C9A6;
+    opacity:0.8;
+  }
+
+  @media (max-width:500px){
+    .frame{border-width:10px;}
+    .wrap{padding:36px 16px 50px;}
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="wrap">
+
+    <header>
+      <span class="steam">☕</span>
+      <h1>El tablero de ZAN</h1>
+      <p>Aplicaciones en producción · Neiva, Huila</p>
+    </header>
+
+    <div class="board">
+
+      <div class="note n1">
+        <div class="pin pin-red"></div>
+        <div class="note-icon">📋</div>
+        <span class="tag">Novedades</span>
+        <h2>Novedades JER</h2>
+        <p>Ingresos, retiros y seguimiento nutricional OMS de beneficiarios de la Asociación JER.</p>
+        <a href="https://afkril.github.io/Novedades_JER/index.html" target="_blank" rel="noopener">Abrir →</a>
+      </div>
+
+      <div class="note n2">
+        <div class="pin pin-blue"></div>
+        <div class="note-icon">📝</div>
+        <span class="tag">Novedades</span>
+        <h2>Novedades T3</h2>
+        <p>Misma app de reportes, instancia propia para la Asociación Timanco 3.</p>
+        <a href="https://afkril.github.io/NOVEDADES_T3.html" target="_blank" rel="noopener">Abrir →</a>
+      </div>
+
+      <div class="note n3">
+        <div class="pin pin-green"></div>
+        <div class="note-icon">🗂️</div>
+        <span class="tag">Multi-asociación</span>
+        <h2>Novedades Cuéntame</h2>
+        <p>Selector de operador: cada asociación administra sus regionales y claves desde un solo panel.</p>
+        <a href="https://afkril.github.io/APP-NOVEDADES/index.html" target="_blank" rel="noopener">Abrir →</a>
+      </div>
+
+      <div class="note n4">
+        <div class="pin pin-red"></div>
+        <div class="note-icon">🛒</div>
+        <span class="tag">Logística</span>
+        <h2>Lista Mercado</h2>
+        <p>Minutas, gramajes por regional, proveedores y generación de actas de entrega.</p>
+        <a href="https://afkril.github.io/LISTA_MERCADO_V3/index.html" target="_blank" rel="noopener">Abrir →</a>
+      </div>
+
+      <div class="note n5">
+        <div class="pin pin-blue"></div>
+        <div class="note-icon">⚙️</div>
+        <span class="tag">Sistema base</span>
+        <h2>ZAN · Tabla de Valores</h2>
+        <p>Sistema para llevar un Control de facturas, provedores y Compras Locales.</p>
+        <a href="https://afkril.github.io/ZAN_V2/loading.html" target="_blank" rel="noopener">Abrir →</a>
+      </div>
+
+    </div>
+
+    <footer>hecho por Jhonatan · actualizado julio 2026</footer>
+
+  </div>
+</div>
+</body>
+</html>
