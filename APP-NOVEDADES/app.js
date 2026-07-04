@@ -181,20 +181,20 @@
                 openAdminPanel();
                 return;
             }
-            const password = prompt("🔐 Contraseña de Administrador\n(" + AsociacionesModule.getPerfilActivo().nombre + "):");
-            if (password === null) return;
-            try {
-                const correcta = await AsociacionesModule.obtenerPasswordAdmin();
-                if (password === correcta) {
+            const perfil = AsociacionesModule.getPerfilActivo();
+            ClaveModal.mostrar({
+                icono: '🛡️',
+                titulo: 'Acceso Administrador',
+                subtitulo: perfil ? perfil.nombre : '',
+                onSubmit: async (password) => {
+                    const correcta = await AsociacionesModule.obtenerPasswordAdmin();
+                    if (password !== correcta) return false;
                     AsociacionesModule.marcarAdminAutenticado();
                     openAdminPanel();
                     showToast("✅ Acceso concedido", "success");
-                } else {
-                    showToast("❌ Contraseña incorrecta", "error");
+                    return true;
                 }
-            } catch(e) {
-                showToast("Error al verificar: " + e.message, "error");
-            }
+            });
         }
 
         function openAdminPanel() {
@@ -368,11 +368,14 @@
         }
 
         async function accesoAdminDesdeBloqueo() {
-            const password = prompt("🔐 ACCESO ADMINISTRADOR\n\nIngrese la contraseña para desactivar el bloqueo:");
-            if (password === null) return;
-            try {
-                const correcta = await AsociacionesModule.obtenerPasswordAdmin();
-                if (password === correcta) {
+            ClaveModal.mostrar({
+                icono: '🔒',
+                titulo: 'Acceso Administrador',
+                subtitulo: 'Desactivar bloqueo del formulario',
+                onSubmit: async (password) => {
+                    const correcta = await AsociacionesModule.obtenerPasswordAdmin();
+                    if (password !== correcta) return false;
+
                     AsociacionesModule.marcarAdminAutenticado();
                     configBloqueo.activo = false;
                     const configRef = database.ref(AsociacionesModule.getRef('configBloqueo'));
@@ -386,12 +389,9 @@
                             }, 500);
                         })
                         .catch((error) => showToast("Error: " + error.message, "error"));
-                } else {
-                    showToast("❌ Contraseña incorrecta", "error");
+                    return true;
                 }
-            } catch(e) {
-                showToast("Error al verificar: " + e.message, "error");
-            }
+            });
         }
 
         setInterval(verificarBloqueo, 3600000);

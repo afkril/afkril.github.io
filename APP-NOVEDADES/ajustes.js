@@ -14,20 +14,27 @@ const AjustesModule = (() => {
 
     // ── Abrir panel de ajustes (requiere contraseña) ──────────
     async function abrirPanelAjustes() {
-        const password = prompt('🔐 Contraseña del Panel de Ajustes:\n(Por defecto: ADMIN)');
-        if (password === null) return;
+        ClaveModal.mostrar({
+            icono: '⚙️',
+            titulo: 'Panel de Ajustes del Sistema',
+            subtitulo: 'Gestión de asociaciones: Clave: ADMIN',
+            onSubmit: async (password) => {
+                const passwordCorrecta = await AsociacionesModule.obtenerPasswordAjustes();
+                if (password !== passwordCorrecta) return false;
 
-        const passwordCorrecta  = await AsociacionesModule.obtenerPasswordAjustes();
-        if (password !== passwordCorrecta) {
-            showToast('Contraseña incorrecta', 'error');
-            return;
-        }
+                // Ocultar el selector de asociación: entrar directo a ajustes
+                // sin obligar a elegir un perfil primero.
+                const selector = document.getElementById('modalSelectorAsociacion');
+                if (selector) selector.style.display = 'none';
 
-        const panel = document.getElementById('panelAjustes');
-        if (panel) {
-            panel.style.display = 'flex';
-            await cargarListaAsociaciones();
-        }
+                const panel = document.getElementById('panelAjustes');
+                if (panel) {
+                    panel.style.display = 'flex';
+                    await cargarListaAsociaciones();
+                }
+                return true;
+            }
+        });
     }
 
     // ── Cerrar panel de ajustes ───────────────────────────────
@@ -35,6 +42,12 @@ const AjustesModule = (() => {
         const panel = document.getElementById('panelAjustes');
         if (panel) panel.style.display = 'none';
         cerrarFormularioAsociacion();
+
+        // Si aún no hay un perfil de asociación activo, volver a mostrar
+        // el selector para que el usuario pueda continuar usando la app.
+        if (!AsociacionesModule.getPerfilActivo()) {
+            AsociacionesModule.mostrarSelectorAsociaciones();
+        }
     }
 
     // ── Cargar lista de asociaciones en el panel ───────────────

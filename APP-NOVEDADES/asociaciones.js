@@ -465,23 +465,33 @@ const AsociacionesModule = (() => {
             // Si tiene clave de formulario, pedirla antes de activar el perfil
             const clave = datos.password_formulario || '';
             if (clave.trim() !== '') {
-                const ingresada = prompt(`🔑 Clave de acceso\n${datos.nombre}`);
-                if (ingresada === null) return; // canceló
-                if (ingresada !== clave) {
-                    showToast('❌ Clave incorrecta', 'error');
-                    return;
-                }
-                // Marcar sesión de formulario
-                sessionStorage.setItem(`form_auth_${id}`, '1');
+                ClaveModal.mostrar({
+                    icono: '🔑',
+                    titulo: 'Clave de acceso',
+                    subtitulo: datos.nombre || id,
+                    onSubmit: async (ingresada) => {
+                        if (ingresada !== clave) return false;
+                        // Marcar sesión de formulario
+                        sessionStorage.setItem(`form_auth_${id}`, '1');
+                        _activarYCerrarSelector(id, datos);
+                        return true;
+                    }
+                });
+                return;
             }
 
-            activarPerfil(id, datos);
-            const modal = document.getElementById('modalSelectorAsociacion');
-            if (modal) modal.style.display = 'none';
-            showToast(`✅ Perfil: ${datos.nombre}`, 'success');
+            _activarYCerrarSelector(id, datos);
         } catch(e) {
             showToast('Error: ' + e.message, 'error');
         }
+    }
+
+    // ── Helper: activa el perfil y cierra el selector ──────────
+    function _activarYCerrarSelector(id, datos) {
+        activarPerfil(id, datos);
+        const modal = document.getElementById('modalSelectorAsociacion');
+        if (modal) modal.style.display = 'none';
+        showToast(`✅ Perfil: ${datos.nombre}`, 'success');
     }
 
     function cerrarSelectorAsociacion() {
