@@ -104,46 +104,40 @@
             </div>
         </div>
     </div>
-
-    <main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
+	
+	<main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
         
-        <header class="px-1 py-3 bg-white border-b border-slate-100">
-            <!-- Fila superior: logo + título + reloj + admin -->
-            <div class="flex items-center justify-between gap-3">
-                <!-- Logo -->
-                <div class="flex-shrink-1 w-20 h-20 bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
-                    <img id="logoAsociacion" 
-                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><text y=%2230%22 font-size=%2228%22>🏢</text></svg>'">
-                </div>
-                <!-- Título y nombre asociación -->
-                <div class="flex-1 min-w-0">
-                    <h1 class="text-base font-black text-slate-800 leading-tight truncate">
-                        Reporte de <span class="dynamic-text text-slate-500">Novedades</span>
-                    </h1>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wide truncate" id="headerNombreAsoc">Cargando...</p>
-                </div>
-                <!-- Derecha: reloj + indicador + controles -->
-                <div class="flex flex-col items-end gap-1 flex-shrink-0">
-                    <div id="clockDisplay" class="text-[10px] font-black text-slate-500 bg-slate-100 px-2 py-1 rounded-full font-mono whitespace-nowrap">
-                        00/00/0000 00:00:00
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div id="contractIndicator" class="px-2 py-0.5 rounded-full text-[10px] font-black text-white bg-slate-400 uppercase whitespace-nowrap">
-                            Sin Contrato
-                        </div>
-                        <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema"></div>
-                        <button onclick="promptAdminAccess()" class="text-slate-400 hover:text-slate-600 transition-colors" title="Acceso Admin">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- Fila inferior: botón cambiar asociación -->
-            <div class="mt-2">
-                <button id="btnCambiarPerfil" onclick="AsociacionesModule.cambiarAsociacion()" title="Cambiar asociación">
+        <header class="px-4 sm:px-8 py-4 sm:py-6 bg-white border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start gap-4">
+            <!-- Izquierda: título + nombre de la asociación + cambiar asociación -->
+            <div class="min-w-0">
+                <h1 class="text-2xl font-800 text-slate-800 tracking-tight">
+                    Reporte de <span class="dynamic-text text-slate-500">Novedades</span>
+                </h1>
+                <p class="text-[12px] font-bold text-slate-400 uppercase tracking-widest truncate" id="headerNombreAsoc">Cargando...</p>
+                <button id="btnCambiarPerfil" onclick="AsociacionesModule.cambiarAsociacion()" title="Cambiar asociación" class="mt-3">
                     🔄 Cambiar asociación
                 </button>
             </div>
+            <!-- Derecha: logo + reloj + indicador de contrato + tema + admin -->
+            <div class="flex items-center gap-4 flex-shrink-0">
+                <div class="flex-shrink-0 w-20 h-20 bg-slate-100 rounded-2xl overflow-hidden border-2 border-white shadow-sm">
+                    <img id="logoAsociacion" 
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><text y=%2230%22 font-size=%2228%22>🏢</text></svg>'">
+                </div>
+                <div class="flex flex-col items-end gap-1.5">
+                    <div id="clockDisplay" class="text-[11px] font-black text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-mono whitespace-nowrap">
+                        00/00/0000 00:00:00
+                    </div>
+                    <div id="contractIndicator" class="px-4 py-1.5 rounded-full text-xs font-black text-white bg-slate-400 uppercase whitespace-nowrap">
+                        Sin Contrato
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema"></div>
+                        <button onclick="promptAdminAccess()" class="text-slate-400 hover:text-slate-600 transition-colors" title="Acceso Admin">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        </button>
+                    </div>
+                </div>
         </header>
         
         <!-- FORMULARIO ACTUALIZADO CON COMUNA, BARRIO Y PERÍMETRO BRAQUIAL -->

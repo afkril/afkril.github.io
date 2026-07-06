@@ -236,13 +236,14 @@ const OfflineModule = (() => {
         _renderBanner(_online, pendingCount);
     }
 
-    // ── Banner visual de estado ──────────────────────────────────
+    // ── Banner visual de estado (tarjeta flotante y arrastrable) ──
     function _renderBanner(online, pendingCount) {
         let banner = document.getElementById('offlineBanner');
         if (!banner) {
             banner = document.createElement('div');
             banner.id = 'offlineBanner';
-            document.body.prepend(banner);
+            document.body.appendChild(banner); // NO usar prepend: evita que empuje el layout del formulario
+            _hacerArrastrable(banner);
         }
 
         if (online && pendingCount === 0) {
@@ -253,11 +254,73 @@ const OfflineModule = (() => {
         banner.style.display = 'flex';
         if (!online) {
             banner.className = 'offline-banner offline-banner--offline';
-            banner.innerHTML = `<span>🔴 Sin conexión — viendo datos guardados localmente${pendingCount > 0 ? ` · ${pendingCount} registro(s) pendiente(s) por enviar` : ''}</span>`;
+            banner.innerHTML = `<span class="offline-banner-drag">⠿</span><span>🔴 Sin conexión — viendo datos guardados localmente${pendingCount > 0 ? ` · ${pendingCount} pendiente(s)` : ''}</span>`;
         } else if (pendingCount > 0) {
             banner.className = 'offline-banner offline-banner--syncing';
-            banner.innerHTML = `<span>🟡 Sincronizando ${pendingCount} registro(s) pendiente(s)...</span>`;
+            banner.innerHTML = `<span class="offline-banner-drag">⠿</span><span>🟡 Sincronizando ${pendingCount} registro(s) pendiente(s)...</span>`;
         }
+    }
+
+    // Permite arrastrar la tarjeta con mouse o dedo, y la deja donde
+    // el usuario la soltó (recordado en localStorage entre sesiones).
+    // Al ser "position: fixed" y no estar en el flujo del documento,
+    // nunca desplaza ni descuadra el resto del layout.
+    function _hacerArrastrable(banner) {
+        const guardada = localStorage.getItem('offlineBannerPos');
+        if (guardada) {
+            try {
+                const { left, top } = JSON.parse(guardada);
+                banner.style.left = left;
+                banner.style.top = top;
+                banner.style.right = 'auto';
+                banner.style.bottom = 'auto';
+            } catch (e) { /* usar posición por defecto del CSS (abajo-derecha) */ }
+        }
+
+        let arrastrando = false;
+        let offsetX = 0, offsetY = 0;
+
+        function iniciar(clientX, clientY) {
+            arrastrando = true;
+            const rect = banner.getBoundingClientRect();
+            offsetX = clientX - rect.left;
+            offsetY = clientY - rect.top;
+            banner.classList.add('offline-banner--arrastrando');
+        }
+
+        function mover(clientX, clientY) {
+            if (!arrastrando) return;
+            const maxLeft = window.innerWidth - banner.offsetWidth - 4;
+            const maxTop = window.innerHeight - banner.offsetHeight - 4;
+            const left = Math.min(Math.max(4, clientX - offsetX), maxLeft);
+            const top = Math.min(Math.max(4, clientY - offsetY), maxTop);
+            banner.style.left = left + 'px';
+            banner.style.top = top + 'px';
+            banner.style.right = 'auto';
+            banner.style.bottom = 'auto';
+        }
+
+        function soltar() {
+            if (!arrastrando) return;
+            arrastrando = false;
+            banner.classList.remove('offline-banner--arrastrando');
+            localStorage.setItem('offlineBannerPos', JSON.stringify({ left: banner.style.left, top: banner.style.top }));
+        }
+
+        banner.addEventListener('mousedown', (e) => { iniciar(e.clientX, e.clientY); e.preventDefault(); });
+        window.addEventListener('mousemove', (e) => mover(e.clientX, e.clientY));
+        window.addEventListener('mouseup', soltar);
+
+        banner.addEventListener('touchstart', (e) => {
+            const t = e.touches[0];
+            iniciar(t.clientX, t.clientY);
+        }, { passive: true });
+        window.addEventListener('touchmove', (e) => {
+            if (!arrastrando) return;
+            const t = e.touches[0];
+            mover(t.clientX, t.clientY);
+        }, { passive: true });
+        window.addEventListener('touchend', soltar);
     }
 
     // ── Inicialización ───────────────────────────────────────────
