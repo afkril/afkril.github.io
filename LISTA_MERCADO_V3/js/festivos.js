@@ -11,6 +11,7 @@
             { fecha: '2026-06-08', nombre: 'Corpus Christi' },
             { fecha: '2026-06-15', nombre: 'Sagrado Corazon' },
             { fecha: '2026-06-29', nombre: 'San Pedro y San Pablo' },
+            { fecha: '2026-07-13', nombre: 'Día de Nuestra Señora del Rosario de Chiquinquirá' },
             { fecha: '2026-07-20', nombre: 'Dia de la Independencia' },
             { fecha: '2026-08-07', nombre: 'Batalla de Boyaca' },
             { fecha: '2026-08-17', nombre: 'La Asuncion de la Virgen' },
