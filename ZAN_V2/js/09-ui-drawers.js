@@ -233,7 +233,7 @@
             localStorage.setItem('zan_color_tema', tema);
             applyColorTema(tema);
             // Actualizar UI del modal
-            ['default','ocean','emerald','twilight','volcano','neon','arctic','toxic','amber','amethyst','quantum','sakura'].forEach(t => {
+            ['default','ocean','emerald','twilight','volcano','neon','arctic','toxic','amber','amethyst','quantum','sakura','platinum','titanium','ciberartico','nebulosa','meteoro','cuarzo'].forEach(t => {
                 const card = document.getElementById(`tema-card-${t}`);
                 if (card) card.classList.toggle('activo', t === tema);
             });

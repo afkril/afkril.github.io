@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="css/07-modo-claro.css">
     <link rel="stylesheet" href="css/08-tabs.css">
     <link rel="stylesheet" href="css/09-temas-ajustes.css">
+    <link rel="stylesheet" href="css/10-descuentos.css">
 </head>
 <body>
 
@@ -184,6 +185,10 @@
                 </a>
                 <a class="nav-item" id="nav-facturas" onclick="toggleDrawer('facturas'); toggleSidebarMobile();">
                     <i class="fa-solid fa-file-invoice"></i><span>Validar Facturas</span>
+                </a>
+                <a class="nav-item full-width" id="nav-descuentos" onclick="toggleDrawer('descuentos'); toggleSidebarMobile();">
+                    <i class="fa-solid fa-user-minus" style="color:var(--danger);"></i><span>Novedades / Descuentos</span>
+                    <span class="badge-nuevo badge-nuevo-tl">Nuevo</span>
                 </a>
             </div>
         </div>
@@ -456,6 +461,22 @@
         </div>
     </div>
 
+    <!-- Novedades / Descuentos -->
+    <div class="drawer" id="drawer-descuentos" style="border-left:2px solid var(--danger);">
+        <div class="file-manager-header" style="border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:15px;">
+            <h3 style="color:var(--danger); margin:0; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-user-minus"></i> NOVEDADES / DESCUENTOS
+            </h3>
+            <button class="btn btn-sm btn-danger" onclick="closeAllDrawers()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <p style="color:var(--text-dim); font-size:11px; margin-bottom:15px;">
+            Análisis de novedades (inasistencias, reducción de cupos, Permisos, etc.) que se descuentan del valor a pagar a la Distribuidora.
+        </p>
+        <div id="descuentos-analisis-content"></div>
+    </div>
+
     <!-- ===== MODALES ===== -->
 
     <!-- Modal de Ajustes de Visualización -->
@@ -698,6 +719,93 @@
                         </div>
                     </div>
 
+					<!-- Fila 5 -->
+					<!-- Tema: Platino -->
+                    <div class="color-tema-card" id="tema-card-platinum" onclick="setColorTema('platinum')">
+                        <span class="badge-nuevo badge-nuevo-tr">Nuevo</span>
+                        <div class="color-tema-preview" style="background:linear-gradient(160deg,#182430 0%,#08090c 100%);">
+                            <div class="color-tema-preview-top-bar" style="background:linear-gradient(90deg,#0d0f14,#151a22);"></div>
+                            <div class="color-tema-preview-accent" style="background:#f5f7fa; box-shadow:0 0 1px #fff, 0 0 8px rgba(125,211,252,0.75), 0 0 16px rgba(56,189,248,0.4);"></div>
+                            <div class="color-tema-preview-dot" style="background:#7dd3fc; box-shadow:0 0 6px rgba(125,211,252,0.7);"></div>
+                        </div>
+                        <div class="color-tema-info" style="border-top:2px solid #f5f7fa;">
+                            <div class="color-tema-nombre" style="color:#f5f7fa;">✧ Platino</div>
+                            <div class="color-tema-desc" style="color:#7a8699;">Grafito &amp; Blanco neón</div>
+                        </div>
+                    </div>
+
+					<!-- Tema: Titanio -->
+                    <div class="color-tema-card" id="tema-card-titanium" onclick="setColorTema('titanium')">
+                        <span class="badge-nuevo badge-nuevo-tr">Nuevo</span>
+                        <div class="color-tema-preview" style="background:linear-gradient(160deg,#14263a 0%,#0a0e14 100%);">
+                            <div class="color-tema-preview-top-bar" style="background:linear-gradient(90deg,#0e121a,#182636);"></div>
+                            <div class="color-tema-preview-accent" style="background:#cbd5e1; box-shadow:0 0 7px rgba(56,189,248,0.6);"></div>
+                            <div class="color-tema-preview-dot" style="background:#38bdf8; box-shadow:0 0 6px rgba(56,189,248,0.6);"></div>
+                        </div>
+                        <div class="color-tema-info" style="border-top:2px solid #cbd5e1;">
+                            <div class="color-tema-nombre" style="color:#cbd5e1;">⚙️ Titanio</div>
+                            <div class="color-tema-desc" style="color:#64748b;">Acero &amp; Plata fría</div>
+                        </div>
+                    </div>
+
+					<!-- Fila 6 -->
+					<!-- Tema: Ciber-Ártico -->
+                    <div class="color-tema-card" id="tema-card-ciberartico" onclick="setColorTema('ciberartico')">
+                        <span class="badge-nuevo badge-nuevo-tr">Nuevo</span>
+                        <div class="color-tema-preview" style="background:linear-gradient(160deg,#0e2a38 0%,#070b10 100%);">
+                            <div class="color-tema-preview-top-bar" style="background:linear-gradient(90deg,#0c1017,#122029);"></div>
+                            <div class="color-tema-preview-accent" style="background:#ffffff; box-shadow:0 0 1px #fff, 0 0 9px rgba(0,229,255,0.8), 0 0 18px rgba(0,229,255,0.45);"></div>
+                            <div class="color-tema-preview-dot" style="background:#00e5ff; box-shadow:0 0 7px rgba(0,229,255,0.8);"></div>
+                        </div>
+                        <div class="color-tema-info" style="border-top:2px solid #ffffff;">
+                            <div class="color-tema-nombre" style="color:#ffffff;">❄️ Ciber-Ártico</div>
+                            <div class="color-tema-desc" style="color:#5f7c8a;">Gris azulado &amp; Blanco puro</div>
+                        </div>
+                    </div>
+
+					<!-- Tema: Nebulosa -->
+                    <div class="color-tema-card" id="tema-card-nebulosa" onclick="setColorTema('nebulosa')">
+                        <span class="badge-nuevo badge-nuevo-tr">Nuevo</span>
+                        <div class="color-tema-preview" style="background:linear-gradient(160deg,#0a1440 0%,#050507 100%);">
+                            <div class="color-tema-preview-top-bar" style="background:linear-gradient(90deg,#0a0a10,#121230);"></div>
+                            <div class="color-tema-preview-accent" style="background:#f5f5f7; box-shadow:0 0 1px #fff, 0 0 9px rgba(0,82,255,0.8), 0 0 18px rgba(0,82,255,0.45);"></div>
+                            <div class="color-tema-preview-dot" style="background:#0052ff; box-shadow:0 0 7px rgba(0,82,255,0.8);"></div>
+                        </div>
+                        <div class="color-tema-info" style="border-top:2px solid #f5f5f7;">
+                            <div class="color-tema-nombre" style="color:#f5f5f7;">⚡ Nebulosa</div>
+                            <div class="color-tema-desc" style="color:#5a5f78;">Negro profundo &amp; Azul eléctrico</div>
+                        </div>
+                    </div>
+
+					<!-- Fila 7 -->
+					<!-- Tema: Meteoro -->
+                    <div class="color-tema-card" id="tema-card-meteoro" onclick="setColorTema('meteoro')">
+                        <span class="badge-nuevo badge-nuevo-tr">Nuevo</span>
+                        <div class="color-tema-preview" style="background:linear-gradient(160deg,#123832 0%,#0d0f10 100%);">
+                            <div class="color-tema-preview-top-bar" style="background:linear-gradient(90deg,#131515,#1c2624);"></div>
+                            <div class="color-tema-preview-accent" style="background:#d1d1d6; box-shadow:0 0 8px rgba(0,245,212,0.75);"></div>
+                            <div class="color-tema-preview-dot" style="background:#00f5d4; box-shadow:0 0 7px rgba(0,245,212,0.7);"></div>
+                        </div>
+                        <div class="color-tema-info" style="border-top:2px solid #d1d1d6;">
+                            <div class="color-tema-nombre" style="color:#d1d1d6;">☄️ Meteoro</div>
+                            <div class="color-tema-desc" style="color:#6c7574;">Gris grafito &amp; Turquesa</div>
+                        </div>
+                    </div>
+
+					<!-- Tema: Cuarzo Blanco -->
+                    <div class="color-tema-card" id="tema-card-cuarzo" onclick="setColorTema('cuarzo')">
+                        <span class="badge-nuevo badge-nuevo-tr">Nuevo</span>
+                        <div class="color-tema-preview" style="background:linear-gradient(160deg,#241548 0%,#0a0818 100%);">
+                            <div class="color-tema-preview-top-bar" style="background:linear-gradient(90deg,#120c1e,#1c1332);"></div>
+                            <div class="color-tema-preview-accent" style="background:#fbfbfd; box-shadow:0 0 1px #fff, 0 0 9px rgba(214,199,255,0.8), 0 0 18px rgba(214,199,255,0.45);"></div>
+                            <div class="color-tema-preview-dot" style="background:#d6c7ff; box-shadow:0 0 7px rgba(214,199,255,0.7);"></div>
+                        </div>
+                        <div class="color-tema-info" style="border-top:2px solid #fbfbfd;">
+                            <div class="color-tema-nombre" style="color:#fbfbfd;">🧬 Cuarzo Blanco</div>
+                            <div class="color-tema-desc" style="color:#74688f;">Violeta oscuro &amp; Lila frío</div>
+                        </div>
+                    </div>
+
 				</div>
             </div>
 
@@ -760,6 +868,65 @@
         </div>
     </div>
 
+    <!-- Novedad / Descuento (agregar o editar) -->
+    <div class="modal" id="modal-descuento">
+        <div class="modal-container" style="max-width:480px;">
+            <div class="modal-header">
+                <div class="modal-title" id="descuento-modal-titulo">
+                    <i class="fa-solid fa-user-minus"></i> NUEVA NOVEDAD
+                </div>
+                <button class="btn btn-sm btn-danger" onclick="toggleModal('modal-descuento')">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="descuento-form-group">
+                <label>Tipo de novedad</label>
+                <select id="descuento-input-tipo">
+                    <option value="dia_1">1 día de inasistencia</option>
+                    <option value="dia_2">2 días de inasistencia</option>
+                    <option value="dia_3mas">3+ días de inasistencia</option>
+                    <option value="menos_ninos">Menos niños (reducción de cupos)</option>
+                    <option value="otro">Otra novedad</option>
+                </select>
+            </div>
+
+            <div class="descuento-form-row">
+                <div class="descuento-form-group">
+                    <label>Días afectados</label>
+                    <input type="number" id="descuento-input-dias" placeholder="1" min="0" step="1" oninput="actualizarPreviewDescuento()">
+                </div>
+                <div class="descuento-form-group">
+                    <label>Cupos / niños</label>
+                    <input type="number" id="descuento-input-cupos" placeholder="13" min="0" step="1" oninput="actualizarPreviewDescuento()">
+                </div>
+                <div class="descuento-form-group">
+                    <label>Valor ración ($)</label>
+                    <input type="number" id="descuento-input-valor-racion" placeholder="8094" min="0" step="1" oninput="actualizarPreviewDescuento()">
+                </div>
+            </div>
+
+            <div class="descuento-form-preview">
+                <span id="descuento-preview-raciones">0d × 0c = 0 raciones</span>
+                <b id="descuento-preview-valor">$0</b>
+            </div>
+
+            <div class="descuento-form-group">
+                <label>Nota (opcional)</label>
+                <textarea id="descuento-input-nota" rows="2" placeholder="Ej: Nutricionista no asistió el martes por incapacidad"></textarea>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-sm btn-danger" id="descuento-btn-eliminar-modal" style="display:none;" onclick="eliminarDescuentoDesdeModal()">
+                    <i class="fa-solid fa-trash"></i> ELIMINAR
+                </button>
+                <button class="btn btn-gold btn-block" onclick="guardarDescuentoModal()">
+                    <i class="fa-solid fa-check"></i> GUARDAR NOVEDAD
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== TOAST + CONFIRMACIÓN ===== -->
     <div id="zan-toast-container"></div>
     <div id="zan-confirm-overlay">
@@ -786,6 +953,7 @@
     <script src="js/07-local-storage.js"></script>
     <script src="js/08-firebase.js"></script>
     <script src="js/09-ui-drawers.js"></script>
+    <script src="js/10-descuentos.js"></script>
 
 </body>
 </html>

@@ -307,7 +307,7 @@
             border: 2px solid var(--border-subtle);
             border-radius: 12px;
             cursor: pointer;
-            overflow: hidden;
+            overflow: visible;
             transition: all 0.25s;
             position: relative;
         }
@@ -345,6 +345,7 @@
             height: 55px;
             position: relative;
             overflow: hidden;
+            border-radius: 10px 10px 0 0;
         }
 
         .color-tema-preview-bg {
@@ -382,6 +383,7 @@
         .color-tema-info {
             padding: 8px 8px 6px;
             background: var(--bg-card-solid);
+            border-radius: 0 0 10px 10px;
         }
 
         .color-tema-nombre {
@@ -906,6 +908,322 @@
             background-image:
                 linear-gradient(rgba(255,191,0,0.045) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(224,123,57,0.035) 1px, transparent 1px);
+        }
+
+        /* ── Tema 13: PLATINO ── Grafito profundo & Blanco platino con fulgor cian */
+        [data-color-theme="platinum"] {
+            --bg-body: #08090c;
+            --bg-card: rgba(10, 12, 16, 0.95);
+            --bg-card-solid: #0d0f14;
+            --bg-input: rgba(5,6,9,0.5);
+            --bg-input-solid: #08090c;
+            --bg-subtle: rgba(255,255,255,0.04);
+            --bg-subtle-hover: rgba(255,255,255,0.08);
+            --bg-overlay: rgba(0,0,0,0.3);
+            --primary-gold: #f5f7fa;
+            --primary-gold-light: rgba(245,247,250,0.15);
+            --primary-gold-subtle: rgba(245,247,250,0.07);
+            --accent-cyan: #7dd3fc;
+            --accent-cyan-light: rgba(125,211,252,0.12);
+            --text-main: #eef2f7;
+            --text-dim: #7a8699;
+            --danger: #ff4d6d;
+            --success: #5eead4;
+            --border-color: rgba(245,247,250,0.28);
+            --border-subtle: rgba(255,255,255,0.06);
+            --border-input: #2a2e38;
+            --sidebar-bg: linear-gradient(180deg, rgba(10,12,16,0.98) 0%, rgba(6,7,10,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f5f7fa' fill-opacity='0.035'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="platinum"] body {
+            background-image:
+                radial-gradient(ellipse 120% 60% at 50% -10%, #182430 0%, #050608 55%, #000000 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(125,211,252,0.012) 2px, rgba(125,211,252,0.012) 4px);
+        }
+
+        [data-color-theme="platinum"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(245,247,250,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(125,211,252,0.045) 1px, transparent 1px);
+        }
+
+        /* Efecto "tubo de neón": el acento blanco se apoya en un resplandor cian/azul
+           para que no se vea como un elemento plano sobre el fondo oscuro */
+        [data-color-theme="platinum"] {
+            --neon-white-glow: 0 0 1px #ffffff, 0 0 8px rgba(125,211,252,0.65), 0 0 18px rgba(56,189,248,0.35);
+        }
+        [data-color-theme="platinum"] .btn-ajustes-topbar {
+            filter: drop-shadow(0 0 4px rgba(125,211,252,0.35));
+        }
+        [data-color-theme="platinum"] .btn-ajustes-topbar:hover {
+            box-shadow: var(--neon-white-glow);
+        }
+        [data-color-theme="platinum"] .vista-modo-card.activo,
+        [data-color-theme="platinum"] .color-tema-card.activo {
+            box-shadow: var(--neon-white-glow);
+        }
+        [data-color-theme="platinum"] body[data-view="cards"] .semana-panel:hover {
+            box-shadow: var(--neon-white-glow), 0 8px 28px rgba(0,0,0,0.35);
+        }
+        [data-color-theme="platinum"] .semanas-panel-container {
+            box-shadow: 0 0 60px rgba(125,211,252,0.05) inset;
+        }
+
+        /* ── Tema 14: TITANIO ── Azul acero profundo & Plata fría con brillo eléctrico */
+        [data-color-theme="titanium"] {
+            --bg-body: #0a0e14;
+            --bg-card: rgba(14, 18, 26, 0.95);
+            --bg-card-solid: #0e121a;
+            --bg-input: rgba(6,9,14,0.5);
+            --bg-input-solid: #090c11;
+            --bg-subtle: rgba(148,163,184,0.05);
+            --bg-subtle-hover: rgba(148,163,184,0.09);
+            --bg-overlay: rgba(0,0,0,0.3);
+            --primary-gold: #cbd5e1;
+            --primary-gold-light: rgba(203,213,225,0.15);
+            --primary-gold-subtle: rgba(203,213,225,0.08);
+            --accent-cyan: #38bdf8;
+            --accent-cyan-light: rgba(56,189,248,0.12);
+            --text-main: #e8edf5;
+            --text-dim: #64748b;
+            --danger: #f87171;
+            --success: #67e8f9;
+            --border-color: rgba(203,213,225,0.3);
+            --border-subtle: rgba(148,163,184,0.07);
+            --border-input: #263042;
+            --sidebar-bg: linear-gradient(180deg, rgba(10,14,20,0.98) 0%, rgba(6,9,13,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2338bdf8' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="titanium"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #14263a 0%, #050810 55%, #000000 100%);
+        }
+
+        [data-color-theme="titanium"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(203,213,225,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+        }
+
+        /* ── Tema 15: CIBER-ÁRTICO ── Gris azulado muy oscuro & Blanco puro con fulgor cian glaciar */
+        [data-color-theme="ciberartico"] {
+            --bg-body: #070b10;
+            --bg-card: rgba(10, 15, 22, 0.95);
+            --bg-card-solid: #0c1017;
+            --bg-input: rgba(4,7,11,0.5);
+            --bg-input-solid: #070a0e;
+            --bg-subtle: rgba(0,229,255,0.045);
+            --bg-subtle-hover: rgba(0,229,255,0.09);
+            --bg-overlay: rgba(0,0,0,0.32);
+            --primary-gold: #ffffff;
+            --primary-gold-light: rgba(255,255,255,0.15);
+            --primary-gold-subtle: rgba(255,255,255,0.07);
+            --accent-cyan: #00e5ff;
+            --accent-cyan-light: rgba(0,229,255,0.12);
+            --text-main: #eaf7ff;
+            --text-dim: #5f7c8a;
+            --danger: #ff4d6d;
+            --success: #5eebff;
+            --border-color: rgba(255,255,255,0.28);
+            --border-subtle: rgba(0,229,255,0.07);
+            --border-input: #1c2b33;
+            --sidebar-bg: linear-gradient(180deg, rgba(8,12,18,0.98) 0%, rgba(5,8,12,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.035'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="ciberartico"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #0e2a38 0%, #04070a 55%, #000000 100%);
+        }
+
+        [data-color-theme="ciberartico"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,229,255,0.05) 1px, transparent 1px);
+        }
+
+        [data-color-theme="ciberartico"] {
+            --neon-white-glow: 0 0 1px #ffffff, 0 0 9px rgba(0,229,255,0.7), 0 0 20px rgba(0,229,255,0.4);
+        }
+        [data-color-theme="ciberartico"] .btn-ajustes-topbar {
+            filter: drop-shadow(0 0 4px rgba(0,229,255,0.4));
+        }
+        [data-color-theme="ciberartico"] .btn-ajustes-topbar:hover,
+        [data-color-theme="ciberartico"] .vista-modo-card.activo,
+        [data-color-theme="ciberartico"] .color-tema-card.activo {
+            box-shadow: var(--neon-white-glow);
+        }
+        [data-color-theme="ciberartico"] body[data-view="cards"] .semana-panel:hover {
+            box-shadow: var(--neon-white-glow), 0 8px 28px rgba(0,0,0,0.35);
+        }
+        [data-color-theme="ciberartico"] .semanas-panel-container {
+            box-shadow: 0 0 60px rgba(0,229,255,0.05) inset;
+        }
+
+        /* ── Tema 16: NEBULOSA ── Negro profundo & Blanco titanio con fulgor azul eléctrico */
+        [data-color-theme="nebulosa"] {
+            --bg-body: #050507;
+            --bg-card: rgba(8, 8, 12, 0.95);
+            --bg-card-solid: #0a0a10;
+            --bg-input: rgba(3,3,5,0.55);
+            --bg-input-solid: #060608;
+            --bg-subtle: rgba(0,82,255,0.05);
+            --bg-subtle-hover: rgba(0,82,255,0.1);
+            --bg-overlay: rgba(0,0,0,0.35);
+            --primary-gold: #f5f5f7;
+            --primary-gold-light: rgba(245,245,247,0.15);
+            --primary-gold-subtle: rgba(245,245,247,0.07);
+            --accent-cyan: #0052ff;
+            --accent-cyan-light: rgba(0,82,255,0.14);
+            --text-main: #eef0ff;
+            --text-dim: #5a5f78;
+            --danger: #ff4466;
+            --success: #4d8fff;
+            --border-color: rgba(245,245,247,0.26);
+            --border-subtle: rgba(0,82,255,0.08);
+            --border-input: #16182a;
+            --sidebar-bg: linear-gradient(180deg, rgba(6,6,9,0.98) 0%, rgba(3,3,5,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f5f5f7' fill-opacity='0.03'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="nebulosa"] body {
+            background-image:
+                radial-gradient(ellipse 120% 60% at 50% -10%, #0a1440 0%, #030305 55%, #000000 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,82,255,0.012) 2px, rgba(0,82,255,0.012) 4px);
+        }
+
+        [data-color-theme="nebulosa"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(245,245,247,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,82,255,0.05) 1px, transparent 1px);
+        }
+
+        [data-color-theme="nebulosa"] {
+            --neon-white-glow: 0 0 1px #ffffff, 0 0 9px rgba(0,82,255,0.7), 0 0 20px rgba(0,82,255,0.4);
+        }
+        [data-color-theme="nebulosa"] .btn-ajustes-topbar {
+            filter: drop-shadow(0 0 4px rgba(0,82,255,0.45));
+        }
+        [data-color-theme="nebulosa"] .btn-ajustes-topbar:hover,
+        [data-color-theme="nebulosa"] .vista-modo-card.activo,
+        [data-color-theme="nebulosa"] .color-tema-card.activo {
+            box-shadow: var(--neon-white-glow);
+        }
+        [data-color-theme="nebulosa"] body[data-view="cards"] .semana-panel:hover {
+            box-shadow: var(--neon-white-glow), 0 8px 28px rgba(0,0,0,0.35);
+        }
+        [data-color-theme="nebulosa"] .semanas-panel-container {
+            box-shadow: 0 0 60px rgba(0,82,255,0.06) inset;
+        }
+
+        /* ── Tema 17: METEORO ── Gris grafito & Plata con destellos turquesa */
+        [data-color-theme="meteoro"] {
+            --bg-body: #0d0f10;
+            --bg-card: rgba(16, 18, 19, 0.95);
+            --bg-card-solid: #131515;
+            --bg-input: rgba(8,9,10,0.5);
+            --bg-input-solid: #0e1010;
+            --bg-subtle: rgba(0,245,212,0.045);
+            --bg-subtle-hover: rgba(0,245,212,0.09);
+            --bg-overlay: rgba(0,0,0,0.3);
+            --primary-gold: #d1d1d6;
+            --primary-gold-light: rgba(209,209,214,0.15);
+            --primary-gold-subtle: rgba(209,209,214,0.07);
+            --accent-cyan: #00f5d4;
+            --accent-cyan-light: rgba(0,245,212,0.12);
+            --text-main: #eef2f2;
+            --text-dim: #6c7574;
+            --danger: #ff5252;
+            --success: #34e8c5;
+            --border-color: rgba(209,209,214,0.28);
+            --border-subtle: rgba(0,245,212,0.07);
+            --border-input: #26302f;
+            --sidebar-bg: linear-gradient(180deg, rgba(14,16,17,0.98) 0%, rgba(9,10,11,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d1d1d6' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="meteoro"] body {
+            background-image: radial-gradient(ellipse 120% 60% at 50% -10%, #123832 0%, #060707 55%, #000000 100%);
+        }
+
+        [data-color-theme="meteoro"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(209,209,214,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,245,212,0.045) 1px, transparent 1px);
+        }
+
+        [data-color-theme="meteoro"] {
+            --neon-white-glow: 0 0 1px #f0f0f0, 0 0 8px rgba(0,245,212,0.65), 0 0 18px rgba(0,245,212,0.35);
+        }
+        [data-color-theme="meteoro"] .btn-ajustes-topbar {
+            filter: drop-shadow(0 0 4px rgba(0,245,212,0.4));
+        }
+        [data-color-theme="meteoro"] .btn-ajustes-topbar:hover,
+        [data-color-theme="meteoro"] .vista-modo-card.activo,
+        [data-color-theme="meteoro"] .color-tema-card.activo {
+            box-shadow: var(--neon-white-glow);
+        }
+        [data-color-theme="meteoro"] body[data-view="cards"] .semana-panel:hover {
+            box-shadow: var(--neon-white-glow), 0 8px 28px rgba(0,0,0,0.35);
+        }
+        [data-color-theme="meteoro"] .semanas-panel-container {
+            box-shadow: 0 0 60px rgba(0,245,212,0.05) inset;
+        }
+
+        /* ── Tema 18: CUARZO BLANCO ── Violeta-azul oscuro & Blanco perlado con brillo lila frío */
+        [data-color-theme="cuarzo"] {
+            --bg-body: #0a0818;
+            --bg-card: rgba(16, 10, 28, 0.95);
+            --bg-card-solid: #120c1e;
+            --bg-input: rgba(8,5,16,0.5);
+            --bg-input-solid: #0a0714;
+            --bg-subtle: rgba(214,199,255,0.05);
+            --bg-subtle-hover: rgba(214,199,255,0.09);
+            --bg-overlay: rgba(0,0,0,0.32);
+            --primary-gold: #fbfbfd;
+            --primary-gold-light: rgba(251,251,253,0.15);
+            --primary-gold-subtle: rgba(251,251,253,0.07);
+            --accent-cyan: #d6c7ff;
+            --accent-cyan-light: rgba(214,199,255,0.12);
+            --text-main: #f2edff;
+            --text-dim: #74688f;
+            --danger: #ff5577;
+            --success: #c9b8ff;
+            --border-color: rgba(251,251,253,0.26);
+            --border-subtle: rgba(214,199,255,0.07);
+            --border-input: #241a3c;
+            --sidebar-bg: linear-gradient(180deg, rgba(14,9,24,0.98) 0%, rgba(8,5,16,0.99) 100%);
+            --card-pattern: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fbfbfd' fill-opacity='0.03'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        [data-color-theme="cuarzo"] body {
+            background-image:
+                radial-gradient(ellipse 120% 60% at 50% -10%, #241548 0%, #07050f 55%, #000000 100%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(214,199,255,0.012) 2px, rgba(214,199,255,0.012) 4px);
+        }
+
+        [data-color-theme="cuarzo"] #auth-screen::before {
+            background-image:
+                linear-gradient(rgba(251,251,253,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(214,199,255,0.045) 1px, transparent 1px);
+        }
+
+        [data-color-theme="cuarzo"] {
+            --neon-white-glow: 0 0 1px #ffffff, 0 0 9px rgba(214,199,255,0.7), 0 0 20px rgba(214,199,255,0.4);
+        }
+        [data-color-theme="cuarzo"] .btn-ajustes-topbar {
+            filter: drop-shadow(0 0 4px rgba(214,199,255,0.4));
+        }
+        [data-color-theme="cuarzo"] .btn-ajustes-topbar:hover,
+        [data-color-theme="cuarzo"] .vista-modo-card.activo,
+        [data-color-theme="cuarzo"] .color-tema-card.activo {
+            box-shadow: var(--neon-white-glow);
+        }
+        [data-color-theme="cuarzo"] body[data-view="cards"] .semana-panel:hover {
+            box-shadow: var(--neon-white-glow), 0 8px 28px rgba(0,0,0,0.35);
+        }
+        [data-color-theme="cuarzo"] .semanas-panel-container {
+            box-shadow: 0 0 60px rgba(214,199,255,0.05) inset;
         }
 
         /* Los temas de color no aplican en modo claro */

@@ -133,7 +133,7 @@
         }
 
         .sidebar-footer {
-            margin-top: auto;
+/*             margin-top: auto; */
             padding: 20px;
             border-top: 1px solid rgba(255,255,255,0.05);
             background: rgba(0,0,0,0.2);
@@ -783,4 +783,31 @@
             gap: 2px;
             font-size: 8px;
             color: var(--text-dim);
+        }
+
+        /* ===== ETIQUETA "NUEVO" (badge de esquina reutilizable) ===== */
+        .badge-nuevo {
+            position: absolute;
+            z-index: 5;
+            background: linear-gradient(135deg, var(--danger), #ff8a3d);
+            color: #fff;
+            font-size: 7.5px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+            pointer-events: none;
+            white-space: nowrap;
+            line-height: 1.4;
+            animation: badgeNuevoPulse 2s ease-in-out infinite;
+        }
+
+        .badge-nuevo-tl { top: -6px; left: -6px; }
+        .badge-nuevo-tr { top: -6px; right: -6px; }
+
+        @keyframes badgeNuevoPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
         }

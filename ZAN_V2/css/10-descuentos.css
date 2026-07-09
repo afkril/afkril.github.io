@@ -1,0 +1,390 @@
+
+        /* ============================================================
+           MÓDULO: DESCUENTOS POR NOVEDADES (inasistencias / menos cupos)
+           ============================================================ */
+
+        /* ---- Sección dentro de cada panel de semana ---- */
+        .descuentos-panel-section {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 70, 85, 0.05);
+            border: 1px dashed rgba(255, 70, 85, 0.35);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .descuentos-panel-section.sin-novedades {
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed var(--border-subtle);
+        }
+
+        .descuentos-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .descuentos-panel-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: var(--danger);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .descuentos-panel-title i { opacity: 0.85; }
+
+        .descuentos-lista { display: flex; flex-direction: column; gap: 6px; }
+
+        .descuentos-vacio {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 6px 0;
+        }
+
+        .descuento-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: var(--bg-card-solid);
+            border-left: 3px solid var(--danger);
+            border-radius: 6px;
+            padding: 6px 8px;
+            transition: opacity 0.2s;
+        }
+
+        .descuento-item.inactivo { opacity: 0.45; }
+
+        .descuento-item-main {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .descuento-tipo-badge {
+            font-size: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 10px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .descuento-detalle {
+            font-size: 9.5px;
+            color: var(--text-dim);
+        }
+
+        .descuento-nota {
+            color: var(--accent-cyan);
+            font-size: 10px;
+            cursor: help;
+        }
+
+        .descuento-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .descuento-valor {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--danger);
+            white-space: nowrap;
+        }
+
+        .descuento-item.inactivo .descuento-valor {
+            color: var(--text-dim);
+            text-decoration: line-through;
+        }
+
+        .descuento-icon-btn {
+            background: rgba(255,255,255,0.06);
+            border: none;
+            color: var(--text-dim);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .descuento-icon-btn:hover { background: rgba(255,255,255,0.15); color: var(--text-main); }
+        .descuento-icon-btn.danger:hover { background: rgba(255,70,85,0.25); color: var(--danger); }
+
+        /* ---- Switch (activar/desactivar) ---- */
+        .descuento-switch {
+            position: relative;
+            display: inline-block;
+            width: 30px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .descuento-switch input { opacity: 0; width: 0; height: 0; }
+
+        .descuento-switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            transition: 0.25s;
+        }
+
+        .descuento-switch-slider::before {
+            content: "";
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            left: 2px;
+            bottom: 2px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.25s;
+        }
+
+        .descuento-switch input:checked + .descuento-switch-slider {
+            background: var(--success);
+        }
+
+        .descuento-switch input:checked + .descuento-switch-slider::before {
+            transform: translateX(14px);
+        }
+
+        .descuento-switch input:disabled + .descuento-switch-slider {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* ---- Subtotal por semana ---- */
+        .descuentos-subtotal {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid var(--border-subtle);
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        .descuentos-subtotal b { color: var(--danger); font-size: 12px; }
+
+        /* ---- Badge sobre el tab de semana ---- */
+        .tab-descuento-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--danger);
+            color: white;
+            font-size: 8px;
+            font-weight: 700;
+            min-width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 3px;
+            box-shadow: 0 0 6px rgba(255,70,85,0.6);
+        }
+
+        /* ---- Formulario del modal de novedad ---- */
+        .descuento-form-group { margin-bottom: 12px; }
+
+        .descuento-form-group label {
+            display: block;
+            font-size: 9px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: 0.3px;
+        }
+
+        .descuento-form-group input,
+        .descuento-form-group select,
+        .descuento-form-group textarea {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #444;
+            color: var(--text-on-dark, white);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: inherit;
+        }
+
+        [data-theme="light"] .descuento-form-group input,
+        [data-theme="light"] .descuento-form-group select,
+        [data-theme="light"] .descuento-form-group textarea {
+            background: var(--bg-input-solid);
+            border: 1px solid var(--border-input);
+            color: var(--text-main);
+        }
+
+        .descuento-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .descuento-form-preview {
+            background: rgba(255,70,85,0.08);
+            border: 1px solid rgba(255,70,85,0.3);
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .descuento-form-preview b {
+            color: var(--danger);
+            font-size: 16px;
+        }
+
+        /* ============================================================
+           DRAWER: ANÁLISIS DE DESCUENTOS
+           ============================================================ */
+
+        .descuentos-analisis-resumen {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .descuentos-analisis-card {
+            background: var(--bg-card-solid);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .descuentos-analisis-card .lbl {
+            font-size: 8px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .descuentos-analisis-card .val {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--danger);
+            margin-top: 3px;
+        }
+
+        .descuentos-global-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: rgba(212,175,55,0.08);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 15px;
+        }
+
+        .descuentos-global-toggle .txt {
+            font-size: 10px;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .descuentos-global-toggle .txt small {
+            display: block;
+            color: var(--text-dim);
+            font-size: 9px;
+            margin-top: 2px;
+        }
+
+        .descuentos-tipo-resumen {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+
+        .descuentos-tipo-chip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 8px;
+            background: var(--bg-card-solid);
+            border-left: 3px solid var(--primary-gold);
+            font-size: 10px;
+        }
+
+        .descuentos-tipo-chip .nombre {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .descuentos-tipo-chip .cifras {
+            text-align: right;
+            color: var(--text-dim);
+        }
+
+        .descuentos-tipo-chip .cifras b {
+            color: var(--primary-gold);
+            font-size: 11px;
+        }
+
+        .descuentos-semana-grupo {
+            margin-bottom: 14px;
+        }
+
+        .descuentos-semana-grupo-header {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .descuentos-analisis-vacio {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 11px;
+            padding: 30px 10px;
+        }
+
+        .descuentos-analisis-vacio i {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
