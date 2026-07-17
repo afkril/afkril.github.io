@@ -41,6 +41,8 @@
     box-shadow:var(--shadow-deep);
     padding:32px 34px 30px 46px;
     border:1px solid rgba(0,0,0,0.08);
+	max-height:1020px;
+    overflow:auto;
   }
   /* spine */
   .ledger::before{
@@ -561,21 +563,31 @@ function setFilter(el){
 
 const CATEGORY_ORDER=['granos','Proteinas','Lacteos','Verduras','Frutas','Panaderia'];
 
+// Modificamos esta función para que devuelva un array plano ordenado por categoría
 function buildOrganizedJSON(){
-  const grouped={};
-  CATEGORY_ORDER.forEach(cat=>{
-    const items=db.filter(x=>x.c===cat);
-    if(items.length)grouped[cat]=items;
+  const orderedList = [];
+  
+  // Primero agrega los productos de las categorías en el orden preferido
+  CATEGORY_ORDER.forEach(cat => {
+    const items = db.filter(x => x.c === cat);
+    orderedList.push(...items);
   });
-  const extra=[...new Set(db.map(x=>x.c))].filter(c=>!CATEGORY_ORDER.includes(c));
-  extra.forEach(cat=>{grouped[cat]=db.filter(x=>x.c===cat);});
-  return grouped;
+  
+  // Luego agrega cualquier otra categoría extra que no esté en la lista oficial
+  const extra = [...new Set(db.map(x => x.c))].filter(c => !CATEGORY_ORDER.includes(c));
+  extra.forEach(cat => {
+    const items = db.filter(x => x.c === cat);
+    orderedList.push(...items);
+  });
+  
+  return orderedList; // Ahora devuelve un [...] en lugar de un {...}
 }
 
 function openModal(){
-  document.getElementById('json-output').textContent=JSON.stringify(buildOrganizedJSON(),null,2);
+  // Se mostrará exactamente el formato de lista: [ { "n": "Arroz", ... }, ... ]
+  document.getElementById('json-output').textContent = JSON.stringify(buildOrganizedJSON(), null, 2);
   document.getElementById('modal-overlay').classList.add('open');
-  document.getElementById('copy-btn').textContent='Copiar';
+  document.getElementById('copy-btn').textContent = 'Copiar';
 }
 
 function closeModal(){
@@ -587,10 +599,11 @@ function handleOverlayClick(e){
 }
 
 function copyJSON(){
-  navigator.clipboard.writeText(JSON.stringify(buildOrganizedJSON(),null,2));
-  const btn=document.getElementById('copy-btn');
-  btn.textContent='¡Copiado!';
-  setTimeout(()=>btn.textContent='Copiar',2000);
+  // Copia el formato de lista directamente al portapapeles
+  navigator.clipboard.writeText(JSON.stringify(buildOrganizedJSON(), null, 2));
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '¡Copiado!';
+  setTimeout(() => btn.textContent = 'Copiar', 2000);
 }
 
 function exportToExcel(){
@@ -631,3 +644,4 @@ function importFromExcel(e){
 
 buildGrid();rebuildFilterChips();render();
 </script>
+
