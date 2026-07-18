@@ -1,0 +1,301 @@
+            #section-directorio .dir-card {
+                background: var(--bg-card); border:1px solid var(--border);
+                border-radius:0.625rem; padding:1rem; margin-bottom:0.75rem;
+            }
+            #section-directorio .dir-section-title {
+                font-size:0.72rem; font-weight:700; text-transform:uppercase;
+                letter-spacing:0.05em; margin-bottom:0.6rem;
+            }
+            #section-directorio .dir-input-grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; }
+            #section-directorio .dir-input-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+            #section-directorio .dir-input-grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:0.6rem; }
+            #section-directorio .dir-label { font-size:0.62rem; font-weight:600; color:var(--text-secondary); text-transform:uppercase; display:block; margin-bottom:0.15rem; }
+            #section-directorio .dir-input {
+                width:100%; background:var(--bg-dark); border:1px solid var(--border);
+                border-radius:0.375rem; padding:0.38rem 0.6rem; color:var(--text-primary);
+                font-size:0.78rem; font-family:inherit; outline:none;
+            }
+            #section-directorio .dir-input:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.15); }
+            #section-directorio .dir-btn {
+                padding:0.45rem 0.9rem; border-radius:0.375rem; cursor:pointer;
+                font-size:0.8rem; font-weight:600; font-family:inherit; border:1px solid;
+                transition:all 0.2s;
+            }
+            #section-directorio table { width:100%; border-collapse:collapse; font-size:0.72rem; }
+            #section-directorio table td, #section-directorio table th { padding:0.3rem 0.5rem; }
+            #section-directorio table thead tr { background:var(--bg-dark); }
+            #section-directorio table th { color:var(--text-secondary); font-weight:600; border-bottom:1px solid var(--border); white-space:nowrap; }
+            #section-directorio table tbody tr { border-bottom:1px solid var(--border); }
+            #section-directorio .dir-editable {
+                width:100%; background:transparent; border:1px solid transparent;
+                border-radius:0.25rem; padding:0.15rem 0.3rem; color:var(--text-primary);
+                font-size:0.72rem; font-family:inherit; outline:none;
+            }
+            #section-directorio .dir-editable:focus { background:var(--bg-dark); border-color:#6366f1; }
+            #section-directorio .dir-editable[type=number] { width:5rem; }
+
+            /* ===== PASO 1/2/3 — tarjetas de flujo ===== */
+            #section-directorio .dir-step-card { padding:0; overflow:hidden; }
+            #section-directorio .dir-step-header {
+                display:flex; align-items:center; justify-content:space-between; gap:0.7rem;
+                padding:0.75rem 1rem; cursor:pointer; user-select:none;
+            }
+            #section-directorio .dir-step-header:hover { background:var(--bg-hover); }
+            #section-directorio .dir-step-header.dir-step-static { cursor:default; }
+            #section-directorio .dir-step-header.dir-step-static:hover { background:transparent; }
+            #section-directorio .dir-step-title {
+                font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.07em;
+                color:var(--text-secondary); display:flex; align-items:center; gap:0.4rem;
+            }
+            #section-directorio .dir-step-title b { color:#818cf8; }
+            #section-directorio .dir-step-count {
+                font-size:0.62rem; font-weight:700; color:var(--text-secondary); background:var(--bg-dark);
+                padding:0.15rem 0.5rem; border-radius:1rem; border:1px solid var(--border);
+            }
+            #section-directorio .dir-step-chevron { flex-shrink:0; font-size:0.7rem; color:var(--text-secondary); transition:transform 0.25s; }
+            #section-directorio .dir-step-body { padding:0 1rem 1rem; border-top:1px solid var(--border); }
+            #section-directorio .dir-subgroup-title {
+                font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;
+                margin:0.9rem 0 0.5rem;
+            }
+            #section-directorio .dir-subgroup-title:first-child { margin-top:0.85rem; }
+            #section-directorio .dir-divider { border:none; border-top:1px dashed var(--border); margin:0.9rem 0 0; }
+            #section-directorio .dir-hint { font-size:0.62rem; color:var(--text-secondary); margin-top:0.5rem; line-height:1.4; }
+
+            /* ===== PASO 2 — barra de herramientas unificada ===== */
+            #section-directorio .dir-toolbar-grid {
+                display:grid; grid-template-columns:repeat(4,1fr); gap:0.6rem;
+            }
+            #section-directorio .dir-tool-btn {
+                position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center;
+                gap:0.2rem; padding:0.75rem 0.6rem; border-radius:0.5rem; cursor:pointer;
+                font-family:inherit; text-align:center; border:1px solid var(--border);
+                background:var(--bg-dark); transition:all 0.2s; min-height:10px;
+            }
+            #section-directorio .dir-tool-btn:hover { filter:brightness(5.15); transform:translateY(-1px); }
+            #section-directorio .dir-tool-btn .dir-tool-icon { font-size:5.1rem; }
+            #section-directorio .dir-tool-btn .dir-tool-label { font-size:0.76rem; font-weight:700; }
+            #section-directorio .dir-tool-btn .dir-tool-desc { font-size:0.6rem; color:var(--text-secondary); font-weight:300; }
+            /* .dir-tool-badge está unificado con .badge-nuevo en css/components.css
+               (pastilla verde parpadeante en la esquina). Aquí solo ajustamos su
+               tamaño reducido dentro de los botones compactos (ver más abajo). */
+
+            /* ===== PASO 3 — tabla vista previa ===== */
+            #section-directorio .dir-th-center, #section-directorio .dir-td-center { text-align:center; }
+            #section-directorio .dir-th-right, #section-directorio .dir-td-right { text-align:right; }
+            #section-directorio table th.dir-th-center, #section-directorio table th.dir-th-right { }
+            #section-directorio .dir-action-btn {
+                padding:0.32rem 0.55rem; border-radius:0.35rem; cursor:pointer; font-size:0.72rem;
+                border:1px solid; margin-right:0.25rem; transition:all 0.15s;
+            }
+            #section-directorio .dir-action-btn:hover { filter:brightness(1.2); }
+            #section-directorio .dir-action-btn:last-child { margin-right:0; }
+
+            /* ===== Banner informativo delgado (contexto semana) ===== */
+            #section-directorio .dir-info-banner {
+                display:flex; align-items:flex-start; gap:0.5rem; font-size:0.7rem;
+                color:var(--text-secondary); background:rgba(245,158,11,0.05);
+                border:1px solid rgba(245,158,11,0.25); border-radius:0.5rem;
+                padding:0.55rem 0.75rem; margin-bottom:0.75rem; line-height:1.4;
+            }
+
+            /* ===== Barra de acción inferior (sticky) ===== */
+            #section-directorio .dir-sticky-bar {
+                position:sticky; bottom:0; left:0; right:0; z-index:40; margin-top:0.75rem;
+                background:var(--bg-card); border:1px solid var(--border); border-radius:0.75rem;
+                box-shadow:0 -8px 24px rgba(0,0,0,0.35); padding:0.75rem 0.9rem;
+                display:flex; flex-direction:column; gap:0.6rem;
+            }
+            #section-directorio .dir-sticky-stats {
+                font-size:0.72rem; color:var(--text-secondary); text-align:center; font-weight:600;
+                letter-spacing:0.02em;
+            }
+            #section-directorio .dir-sticky-stats b { color:var(--text-primary); }
+            #section-directorio .dir-sticky-stats .dir-status-ok { color:#10b981; font-weight:700; }
+            #section-directorio .dir-sticky-actions { display:flex; gap:0.6rem; flex-wrap:wrap; }
+            #section-directorio .dir-btn-unify {
+                flex:1; min-width:220px; border:none; border-radius:0.6rem; cursor:pointer;
+                background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:800;
+                font-size:0.9rem; font-family:inherit; box-shadow:0 4px 16px rgba(5,150,105,0.4);
+                display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:transform 0.15s;
+            }
+            #section-directorio .dir-btn-unify:hover { transform:translateY(-1px); }
+            #section-directorio .dir-btn-secondary-action {
+                padding:0.85rem 1rem; border:1px solid rgba(37,99,235,0.35); border-radius:0.6rem; cursor:pointer;
+                background:rgba(37,99,235,0.1); color:#3b82f6; font-weight:700; font-size:1rem;
+                font-family:inherit; transition:all 0.15s; white-space:nowrap;
+            }
+            #section-directorio .dir-btn-secondary-action:hover { background:rgba(37,99,235,0.18); }
+
+            /* ===== PASO 1 compacto (2 columnas) ===== */
+            #section-directorio .dir-step-body-compact { padding-top:0.75rem; }
+            #section-directorio .dir-step-body-compact .dir-subgroup-title { margin:0.7rem 0 0.4rem; }
+            #section-directorio .dir-step-body-compact .dir-subgroup-title:first-child { margin-top:0; }
+            #section-directorio .dir-step-body-compact .dir-input-grid-2 { gap:0.45rem 0.6rem; }
+            #section-directorio .dir-step-body-compact .dir-input { padding:0.32rem 0.55rem; font-size:0.75rem; }
+
+            /* ===== PASO 1 — dos tarjetas lado a lado (Datos Fijos | Datos entrega) ===== */
+            #section-directorio .dir-config-two-col {
+                display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; align-items:start;
+            }
+            #section-directorio .dir-subcard {
+                background:var(--bg-dark); border:1px solid var(--border); border-radius:0.5rem; overflow:hidden;
+            }
+            #section-directorio .dir-subcard-header {
+                display:flex; align-items:center; justify-content:space-between; gap:0.5rem;
+                padding:0.55rem 0.7rem; cursor:pointer; user-select:none;
+                font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+            }
+            #section-directorio .dir-subcard-header:hover { filter:brightness(1.2); }
+            #section-directorio .dir-chevron { flex-shrink:0; font-size:0.65rem; color:var(--text-secondary); transition:transform 0.25s; }
+            #section-directorio .dir-subcard-body { padding:0 0.7rem 0.7rem; border-top:1px solid var(--border); padding-top:0.65rem; }
+            #section-directorio .dir-subcard-body .dir-input-grid-3 { gap:0.45rem 0.6rem; }
+            #section-directorio .dir-subcard-body .dir-input-grid-2 { gap:0.45rem 0.6rem; }
+            @media (max-width:900px) {
+                #section-directorio .dir-config-two-col { grid-template-columns:1fr; }
+            }
+
+            /* ===== PASO 2 — botones de carga compactos ===== */
+            #section-directorio .dir-tool-btn-compact {
+                flex-direction:row; align-items:center;
+                gap:0.5rem; padding:0.5rem 0.65rem; min-height:20px; text-align:left;
+            }
+            #section-directorio .dir-tool-btn-compact .dir-tool-icon { font-size:1rem; flex-shrink:0; }
+            #section-directorio .dir-tool-btn-compact .dir-tool-label { font-size:0.72rem; line-height:1.2; }
+            #section-directorio .dir-tool-btn-compact .dir-tool-desc { display:none; }
+            #section-directorio .dir-tool-btn-compact .dir-tool-badge { top:-5px; right:-5px; font-size:0.5rem; padding:0.1rem 0.35rem; }
+
+            /* ===== PASO 3 — línea de vista previa ===== */
+            #section-directorio .dir-preview-info {
+                font-size:0.78rem; font-weight:700; color:var(--text-primary);
+                margin-bottom:0.75rem; display:flex; align-items:center; gap:0.35rem; flex-wrap:wrap;
+            }
+            #section-directorio .dir-preview-info b { color:#10b981; }
+
+            /* ===== Barra sticky — 3 columnas (info · botón azul · botón verde) ===== */
+            #section-directorio .dir-sticky-actions-3col {
+                display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:0.6rem; align-items:stretch;
+            }
+            #section-directorio .dir-sticky-actions-3col .dir-sticky-info-cell {
+               
+                background:var(--bg-dark); border:1px solid var(--border); border-radius:0.6rem;
+                padding:0.5rem 0.6rem; font-size:0.7rem; font-weight:00; color:var(--text-secondary);
+                text-align:center; line-height:1.3;
+            }
+            #section-directorio .dir-sticky-actions-3col .dir-sticky-info-cell b { color:var(--text-primary); }
+            #section-directorio .dir-sticky-actions-3col .dir-sticky-info-cell .dir-status-ok { color:#10b981; font-weight:700; }
+            #section-directorio .dir-sticky-actions-3col .dir-btn-secondary-action,
+            #section-directorio .dir-sticky-actions-3col .dir-btn-unify {
+                flex:none; width:100%; min-width:0; margin:0;
+            }
+            @media (max-width:768px) {
+                #section-directorio .dir-sticky-actions-3col { grid-template-columns:1fr; }
+            }
+
+            @media (max-width:768px) {
+                #section-directorio .dir-input-grid-3 { grid-template-columns:1fr 1fr; }
+                #section-directorio .dir-input-grid-2 { grid-template-columns:1fr; }
+                #section-directorio .dir-input-grid-4 { grid-template-columns:1fr 1fr; }
+                #section-directorio .dir-toolbar-grid { grid-template-columns:1fr 1fr; }
+            }
+            @media (max-width:520px) {
+                #section-directorio .dir-input-grid-4 { grid-template-columns:1fr; }
+                #section-directorio .dir-toolbar-grid { grid-template-columns:1fr; }
+                #section-directorio .dir-sticky-actions { flex-direction:column; }
+            }
+
+            #section-proveedores .prov-card {
+                background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.75rem;
+                padding: 1rem; margin-bottom: 0.75rem;
+            }
+            #section-proveedores .prov-title {
+                font-size: 0.7rem; font-weight: 700; color: #06b6d4; text-transform: uppercase;
+                letter-spacing: 0.08em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;
+            }
+            #section-proveedores .prov-label { font-size: 0.62rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; display: block; margin-bottom: 0.15rem; }
+            #section-proveedores .prov-input {
+                width: 100%; padding: 0.45rem 0.6rem; background: var(--bg-dark); border: 1px solid var(--border);
+                border-radius: 0.375rem; color: var(--text-primary); font-size: 0.8rem; font-family: inherit; outline: none;
+            }
+            #section-proveedores .prov-input:focus { border-color: #06b6d4; box-shadow: 0 0 0 3px rgba(6,182,212,0.15); }
+            #section-proveedores .prov-btn {
+                display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.8rem;
+                border-radius: 0.375rem; border: 1px solid var(--border); font-size: 0.75rem;
+                font-family: inherit; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            }
+            #section-proveedores .prov-btn-primary { background: linear-gradient(135deg, #0891b2, #06b6d4); color: white; border-color: transparent; }
+            #section-proveedores .prov-btn-danger  { background: rgba(239,68,68,0.08); color: #ef4444; border-color: rgba(239,68,68,0.25); }
+            #section-proveedores .prov-btn-edit    { background: rgba(245,158,11,0.08); color: #f59e0b; border-color: rgba(245,158,11,0.25); }
+            #section-proveedores table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+            #section-proveedores table td, #section-proveedores table th { padding: 0.4rem 0.5rem; }
+            #section-proveedores table thead tr { background: var(--bg-dark); }
+            #section-proveedores table th { color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+            #section-proveedores table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+            #section-proveedores table tbody tr:hover { background: var(--bg-hover); }
+            #section-proveedores .prov-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+            @media(max-width:600px) { #section-proveedores .prov-grid { grid-template-columns: 1fr; } }
+
+                /* ===== ACTAS STYLES ===== */
+                .actas-config-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; }
+                .actas-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+                .actas-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+                @media (max-width: 768px) { .actas-grid { grid-template-columns: 1fr; } }
+                .actas-form-group { display: flex; flex-direction: column; gap: 0.25rem; }
+                .actas-form-group label { font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+                .actas-form-group input, .actas-form-group select, .actas-form-group textarea { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.4rem 0.625rem; color: var(--text-primary); font-size: 0.8125rem; transition: all 0.2s; }
+                .actas-form-group input:focus, .actas-form-group select:focus, .actas-form-group textarea:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+                .actas-form-group textarea { resize: vertical; min-height: 56px; font-family: inherit; }
+                .actas-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+                .btn-acta-excel { background: linear-gradient(135deg, #059669, #10b981); color: white; }
+                .btn-acta-pdf   { background: linear-gradient(135deg, #dc2626, #ef4444); color: white; }
+                .btn-acta-print { background: linear-gradient(135deg, #0369a1, #0ea5e9); color: white; }
+                .btn-acta-preview { background: linear-gradient(135deg, #7c3aed, #8b5cf6); color: white; }
+
+                /* ===== ACTA IMPRIMIBLE ===== */
+                .acta-wrapper { background: white; color: #000; font-family: Arial, sans-serif; font-size: 8pt; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid var(--border); margin-top: 0.75rem; overflow: auto; }
+                .acta-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                .acta-table td, .acta-table th { border: 1px solid #333; padding: 2px 4px; vertical-align: middle; font-size: 7.5pt; }
+                .acta-header-top { background: #d9e1f2; font-weight: bold; text-align: center; }
+                .acta-green { background: #c6efce; }
+                .acta-gray { background: #d6dce4; }
+                .acta-gray-light { background: #f2f2f2; }
+                .acta-row-alt { background: #e2efda; }
+                .acta-logo-cell { text-align: center; padding: 4px !important; }
+                .acta-logo-text { font-size: 9pt; font-weight: 900; color: #375623; line-height: 1.2; }
+                .acta-code-box { font-size: 6.5pt; font-weight: bold; text-align: right; padding: 1px 3px !important; }
+                .acta-main-title { font-size: 9pt; font-weight: bold; text-align: center; background: #fff; }
+                .acta-col-num { width: 28px; text-align: center; }
+                .acta-col-fecha { width: 68px; }
+                .acta-col-comp { width: 120px; }
+                .acta-col-alim { width: 80px; }
+                .acta-col-lote { width: 40px; }
+                .acta-col-venc { width: 60px; }
+                .acta-col-cant { width: 75px; }
+                .acta-col-fecha2 { width: 68px; }
+                .acta-col-recib { width: 75px; }
+                .acta-col-cumple { width: 55px; text-align: center; }
+                .acta-input-cell { background: #fff; }
+                .acta-input { width: 100%; border: none; background: transparent; font-size: 7.5pt; font-family: Arial; color: #000; padding: 0; outline: none; }
+                .acta-firma-row td { height: 36px; vertical-align: bottom; padding: 2px 4px; }
+                .acta-section-header th { background: #bdd7ee; font-weight: bold; text-align: center; font-size: 7pt; padding: 3px !important; }
+                .acta-obs-row td { height: 28px; }
+
+                @media print {
+                    body * { visibility: hidden !important; }
+                    #acta-print-area, #acta-print-area * { visibility: visible !important; }
+                    #acta-print-area { position: fixed; top: 0; left: 0; width: 100%; margin: 0; padding: 4mm; box-shadow: none; border: none; border-radius: 0; font-size: 7.5pt; }
+                    .acta-table td, .acta-table th { border: 0.5pt solid #333 !important; }
+                    .acta-input { font-size: 7pt !important; }
+                    @page { size: letter landscape; margin: 8mm; }
+                }
+
+        #acta-modal-panel input:focus, #acta-modal-panel textarea:focus,
+        #directorio-panel input:focus, #directorio-panel textarea:focus,
+        #directorio-panel select:focus {
+            border-color:#10b981 !important;
+            box-shadow:0 0 0 3px rgba(16,185,129,0.12) !important;
+        }
+        @media (max-width:600px) {
+            #acta-modal-panel > div:nth-child(4) { grid-template-columns:1fr !important; }
+            #directorio-panel [style*="grid-template-columns:repeat(3"] { grid-template-columns:1fr 1fr !important; }
+        }

@@ -1,0 +1,115 @@
+        @media print {
+            @page {
+                size: landscape;
+                margin: 5mm;
+            }
+            
+            body {
+                background: white !important;
+                color: black !important;
+                font-size: 9pt !important;
+            }
+            
+            .mobile-header, .sidebar, .overlay, .no-print,
+            .monthly-summary, .category-filters, .search-container,
+            .weeks-selector, .config-panel, .table-actions,
+            .sidebar-toggle, .editor-toolbar, .firebase-status {
+                display: none !important;
+            }
+            
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            
+            .section {
+                display: block !important;
+            }
+            
+            #section-calculator, #section-saved, #section-editor, #section-actas .actas-config-panel {
+                display: none !important;
+            }
+            
+            #acta-print-area {
+                display: block !important;
+                position: static !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                color: black !important;
+                font-size: 7.5pt !important;
+            }
+            .acta-table td, .acta-table th {
+                border: 0.5pt solid #333 !important;
+                font-size: 7pt !important;
+            }
+            .acta-input { font-size: 7pt !important; color: black !important; }
+            
+            .table-container {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                page-break-inside: auto;
+            }
+            
+            .monthly-table-wrapper {
+                overflow: visible !important;
+                max-width: 100% !important;
+                border: none !important;
+            }
+            
+            .monthly-table {
+                width: 100% !important;
+                font-size: 8pt !important;
+            }
+            
+            .monthly-table th:first-child,
+            .monthly-table td:first-child,
+            .monthly-table th:nth-child(2),
+            .monthly-table td:nth-child(2) {
+                position: relative !important;
+                left: 0 !important;
+                background: white !important;
+            }
+            
+            .monthly-table th,
+            .monthly-table td {
+                padding: 2px 4px !important;
+                height: auto !important;
+                border: 1px solid #ddd !important;
+            }
+            
+            .monthly-table .week-header-col,
+            .monthly-table td.suggested-cell,
+            .monthly-table td.entrega-cell,
+            .monthly-table .total-header,
+            .monthly-table .total-suggested,
+            .monthly-table .total-entrega {
+                min-width: auto !important;
+                max-width: none !important;
+            }
+            
+            .input-entrega-mes {
+                border: 1px solid #999 !important;
+                background: white !important;
+            }
+            
+            tr {
+                animation: none !important;
+                opacity: 1 !important;
+                page-break-inside: avoid;
+            }
+            
+            .monthly-header {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                page-break-after: avoid;
+            }
+            
+            .monthly-title {
+                -webkit-text-fill-color: black !important;
+                color: black !important;
+            }
+        }

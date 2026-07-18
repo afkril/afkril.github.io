@@ -1,0 +1,316 @@
+/* ════════════════════════════════════════════════════════════════
+   SISTEMA DE TUTORIAL GUIADO — botón flotante, menú y coachmarks
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Botón flotante (lado izquierdo, centrado verticalmente) ── */
+.tut-fab {
+    position: fixed;
+    right: 0.9rem;
+    top: 88%;
+    transform: translateY(-50%);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 99940;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    opacity: 0.55;
+    transition: opacity .2s ease, transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+}
+.tut-fab:hover,
+.tut-fab.tut-fab-active {
+    opacity: 1;
+    transform: translateY(-50%) translateX(2px);
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    border-color: transparent;
+    box-shadow: 0 8px 24px rgba(37,99,235,0.35);
+}
+.tut-fab svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    display: block;
+}
+body.tutorial-active .tut-fab { opacity: 1; }
+
+/* Oculta el botón mientras un paso está visible para no estorbar */
+.tut-fab.tut-fab-hidden { opacity: 0; pointer-events: none; transform: translateY(-50%) scale(0.8); }
+
+/* ── Menú flotante (estilo tarjeta oscura, se abre hacia la derecha del botón) ── */
+.tut-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99935;
+    background: transparent;
+    display: none;
+}
+.tut-menu-overlay.open { display: block; }
+
+.tut-menu {
+    position: fixed;
+    right: 3.9rem;
+    top: 50%;
+    transform: translateY(-50%) translateX(-8px) scale(0.97);
+    width: 264px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+    z-index: 99941;
+    padding: 0.5rem;
+    display: none;
+    opacity: 0;
+    transform-origin: left center;
+    transition: opacity .16s ease, transform .16s ease;
+}
+.tut-menu.open {
+    display: block;
+    opacity: 1;
+    transform: translateY(-50%) translateX(0) scale(1);
+}
+.tut-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+.tut-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    padding: 0.2rem 0.4rem;
+    background: none;
+    border: none;
+    border-radius: 0.65rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.83rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background .12s ease;
+}
+.tut-menu-item:hover { background: var(--bg-hover); }
+.tut-menu-icon {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(37,99,235,0.14);
+    color: #60a5fa;
+}
+.tut-menu-icon svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    display: block;
+}
+.tut-menu-item.tut-done .tut-menu-icon { background: rgba(16,185,129,0.16); color: #10b981; }
+.tut-menu-label { flex: 1; line-height: 1.2; }
+.tut-menu-check { color: #10b981; display: flex; align-items: center; }
+.tut-menu-check svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.tut-menu-divider { height: 1px; background: var(--border); margin: 0.4rem 0.3rem; }
+.tut-menu-item.tut-menu-danger .tut-menu-icon { background: rgba(239,68,68,0.14); color: #ef4444; }
+.tut-menu-item.tut-menu-ghost .tut-menu-icon { background: rgba(148,163,184,0.14); color: var(--text-secondary); }
+
+/* ── Capa que bloquea interacción durante el recorrido ── */
+.tut-catcher {
+    position: fixed;
+    inset: 0;
+    z-index: 99950;
+    background: transparent;
+    display: none;
+}
+.tut-catcher.active { display: block; }
+
+/* ── Recuadro de foco (spotlight) ── */
+.tut-spotlight {
+    position: fixed;
+    z-index: 99951;
+    pointer-events: none;
+    border-radius: 12px;
+    box-shadow: 0 0 0 9999px rgba(2, 6, 20, 0.72), 0 0 0 3px #6366f1, 0 0 24px 4px rgba(99,102,241,0.55);
+    transition: top .28s cubic-bezier(.4,0,.2,1), left .28s cubic-bezier(.4,0,.2,1),
+                width .28s cubic-bezier(.4,0,.2,1), height .28s cubic-bezier(.4,0,.2,1),
+                opacity .18s ease;
+    display: none;
+    opacity: 0;
+}
+.tut-spotlight.active { display: block; opacity: 1; }
+.tut-spotlight.tut-spot-center {
+    box-shadow: 0 0 0 9999px rgba(2, 6, 20, 0.72);
+}
+
+/* ── Tarjeta de explicación (coachmark) ── */
+.tut-card {
+    position: fixed;
+    z-index: 99952;
+    width: min(320px, 90vw);
+    background: var(--bg-card);
+    border: 1px solid rgba(99,102,241,0.35);
+    border-radius: 1rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    padding: 1rem 1.1rem 0.9rem;
+    display: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .18s ease, transform .18s ease, top .28s cubic-bezier(.4,0,.2,1), left .28s cubic-bezier(.4,0,.2,1);
+}
+.tut-card.active { display: block; opacity: 1; transform: translateY(0); }
+.tut-card.tut-card-center {
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(360px, 90vw);
+    text-align: center;
+}
+.tut-card.tut-card-center.active { transform: translate(-50%, -50%) !important; }
+
+.tut-card-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+.tut-card-progress {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #818cf8;
+    background: rgba(99,102,241,0.14);
+    padding: 0.15rem 0.55rem;
+    border-radius: 1rem;
+    letter-spacing: 0.02em;
+}
+.tut-card-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1;
+    padding: 0.25rem;
+    border-radius: 0.3rem;
+    display: flex;
+    align-items: center;
+}
+.tut-card-close svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+.tut-card-close:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+.tut-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.tut-card-icon {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(99,102,241,0.16);
+    color: #818cf8;
+}
+.tut-card-icon svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    display: block;
+}
+.tut-card-title-text { line-height: 1.25; }
+.tut-card-text {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    margin-bottom: 0.9rem;
+}
+.tut-card-dots {
+    display: flex;
+    gap: 0.3rem;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
+.tut-card-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border); transition: background .2s, transform .2s; }
+.tut-card-dot.tut-dot-active { background: #6366f1; transform: scale(1.4); }
+
+.tut-card-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.tut-btn {
+    font-family: inherit;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border-radius: 0.55rem;
+    padding: 0.45rem 0.8rem;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.tut-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block; flex-shrink: 0; }
+.tut-btn-primary { background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; flex: 1; justify-content: center; }
+.tut-btn-primary:hover { filter: brightness(1.08); }
+.tut-btn-ghost { background: var(--bg-hover); color: var(--text-secondary); }
+.tut-btn-ghost:hover { color: var(--text-primary); }
+.tut-btn-skip { background: none; color: var(--text-secondary); font-weight: 600; padding: 0.45rem 0.5rem; }
+.tut-btn-skip:hover { color: var(--text-primary); }
+.tut-btn[disabled] { opacity: 0.35; cursor: not-allowed; }
+
+/* Beacon de arranque (pulso) cuando el ? no se ha usado nunca */
+.tut-fab-pulse::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid #6366f1;
+    animation: tutPulse 1.8s ease-out infinite;
+}
+@keyframes tutPulse {
+    0% { opacity: 0.9; transform: scale(0.85); }
+    100% { opacity: 0; transform: scale(1.5); }
+}
+
+@media (max-width: 640px) {
+    .tut-fab { left: 0.65rem; width: 40px; height: 40px; }
+    .tut-menu { left: 3.55rem; width: min(258px, calc(100vw - 4.4rem)); }
+    .tut-card { width: min(300px, 92vw); }
+}
