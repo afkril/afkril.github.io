@@ -2622,10 +2622,12 @@ document.addEventListener('keydown', function(e) {
             document.getElementById('auth-overlay').style.display = 'flex';
             document.getElementById('auth-form-login').style.display = 'block';
             document.getElementById('auth-form-register').style.display = 'none';
+            document.body.classList.add('auth-overlay-active');
         }
 
         function hideLoginOverlay() {
             document.getElementById('auth-overlay').style.display = 'none';
+            document.body.classList.remove('auth-overlay-active');
         }
 
         function switchAuthTab(tab) {

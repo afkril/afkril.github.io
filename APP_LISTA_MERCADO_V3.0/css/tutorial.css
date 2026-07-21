@@ -2,6 +2,13 @@
    SISTEMA DE TUTORIAL GUIADO — botón flotante, menú y coachmarks
    ════════════════════════════════════════════════════════════════ */
 
+/* Ocultar el botón de tutorial mientras se muestra el login */
+body.auth-overlay-active .tut-fab,
+body.auth-overlay-active .tut-menu-overlay,
+body.auth-overlay-active .tut-menu {
+    display: none !important;
+}
+
 /* ── Botón flotante (lado izquierdo, centrado verticalmente) ── */
 .tut-fab {
     position: fixed;

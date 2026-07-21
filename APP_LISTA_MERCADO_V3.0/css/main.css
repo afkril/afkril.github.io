@@ -1410,6 +1410,18 @@
             box-shadow: var(--shadow);
         }
 
+        #resultado {
+            overflow-x: auto;
+            max-width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+            #resultado table {
+                min-width: 560px;
+            }
+        }
+
         .table-header {
             display: flex;
             justify-content: space-between;
