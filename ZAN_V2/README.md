@@ -1,4 +1,4 @@
-# ZAN | Tabla de Valores — v2.5
+# ZAN | Tabla de Valores — v2.6
 
 App web para gestión semanal de pedidos, valores de distribuidora, facturación y
 novedades/descuentos de un servicio de alimentación, con sincronización en la nube

@@ -330,6 +330,41 @@
             text-shadow: 0 0 10px rgba(212,175,55,0.3);
         }
 
+        /* ESTILOS PARA EVIDENCIA DE DESCUENTO POR NOVEDADES EN EL RESUMEN */
+        .descuentos-resumen-evidencia {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-subtle, rgba(255,255,255,0.1));
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            transition: background 0.25s, border-color 0.25s;
+        }
+
+        .descuentos-resumen-evidencia.con-descuento {
+            background: rgba(255, 70, 85, 0.06);
+            border: 1px solid rgba(255, 70, 85, 0.35);
+        }
+
+        .descuento-estado-badge {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .descuento-estado-badge.si {
+            background: rgba(255, 70, 85, 0.18);
+            color: var(--danger);
+            box-shadow: 0 0 8px rgba(255,70,85,0.25);
+        }
+
+        .descuento-estado-badge.no {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--success);
+        }
+
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .sidebar.open { transform: translateX(0); }

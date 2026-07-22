@@ -7,7 +7,9 @@
             display: flex;
             gap: 6px;
             overflow-x: auto;
-            padding-bottom: 0;
+            overflow-y: visible; /* deja que el badge de descuento se vea completo sobre el borde del tab */
+            padding: 10px 12px 0 4px; /* espacio extra arriba/derecha para que el badge no se corte */
+            margin: -10px -12px 0 -4px; /* compensa el padding para no mover el layout general */
             scrollbar-width: none;
             -ms-overflow-style: none;
             position: relative;

@@ -833,7 +833,26 @@
                 });
             }
 
-            const tDist = tPres - tProdCL - tProdOtros;
+            const tDistBruto = tPres - tProdCL - tProdOtros;
+
+            // ===== Descuento por Novedades (semanal) — módulo 10-descuentos.js =====
+            let totalDescuentoActivo = 0;
+            let semanasConDescuento = 0;
+            let descuentoPorSemana = {};
+            const descuentosDisponibles = typeof calcularTotalDescuentosSemana === 'function';
+            const descuentosActivosGlobal = typeof descuentosGlobalActivo === 'undefined' ? true : descuentosGlobalActivo;
+            if (descuentosDisponibles) {
+                for (let s = 1; s <= semanas; s++) {
+                    const dSemana = calcularTotalDescuentosSemana(s, true);
+                    if (dSemana > 0) {
+                        semanasConDescuento++;
+                        descuentoPorSemana[s] = dSemana;
+                    }
+                    totalDescuentoActivo += dSemana;
+                }
+            }
+
+            const tDist = tDistBruto - totalDescuentoActivo;
             const porcCL = tPres > 0 ? (tProdCL / tPres) * 100 : 0;
             const ledColor = porcCL >= 30 ? 'var(--success)' : 'var(--danger)';
 
@@ -944,7 +963,42 @@
                                 <td style="text-align:right;"><b>${formatter.format(tDist)}</b></td>
                                 <td style="text-align:right; color:var(--success);"><b>${tPres > 0 ? ((tDist/tPres)*100).toFixed(1) : 0}%</b></td>
                             </tr>
+                            ${totalDescuentoActivo > 0 ? `
+                            <tr style="color:var(--danger); font-size:9px;">
+                                <td colspan="2">↳ Ya incluye descuento por novedades (${semanasConDescuento} semana${semanasConDescuento !== 1 ? 's' : ''})</td>
+                                <td style="text-align:right;">-${formatter.format(totalDescuentoActivo)}</td>
+                            </tr>` : ''}
                         </table>
+                    </div>
+
+                    <div class="descuentos-resumen-evidencia ${totalDescuentoActivo > 0 ? 'con-descuento' : ''}">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <i class="fa-solid fa-user-minus" style="color: var(--danger); font-size: 16px;"></i>
+                                <span style="font-size: 12px; font-weight: bold; color: var(--danger); text-transform:uppercase;">Descuento por Novedades (semanal)</span>
+                            </div>
+                            <span class="descuento-estado-badge ${(descuentosDisponibles && totalDescuentoActivo > 0) ? 'si' : 'no'}">
+                                ${(descuentosDisponibles && totalDescuentoActivo > 0) ? 'SE APLICÓ' : 'NO SE APLICÓ'}
+                            </span>
+                        </div>
+                        ${(!descuentosDisponibles || totalDescuentoActivo === 0) ? `
+                            <div style="color: var(--text-dim); text-align:center; font-size:10px; padding: 4px 0;">
+                                ${!descuentosActivosGlobal && descuentosDisponibles ? 'Hay novedades registradas, pero el descuento global está desactivado.' : 'No hay novedades activas que descontar en las semanas registradas.'}
+                            </div>
+                        ` : `
+                            <div style="display:flex; flex-direction:column; gap:5px; margin-bottom:8px;">
+                                ${Object.entries(descuentoPorSemana).map(([s, valor]) => `
+                                    <div style="display:flex; justify-content:space-between; font-size:10.5px;">
+                                        <span style="color:var(--text-dim);">Semana ${s}</span>
+                                        <span style="color:var(--danger); font-weight:bold;">-${formatter.format(valor)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-subtle); padding-top:8px;">
+                                <span style="font-size:10px; color:var(--text-dim);">Total descontado de Distribuidora</span>
+                                <span style="font-size:14px; font-weight:900; color:var(--danger);">-${formatter.format(totalDescuentoActivo)}</span>
+                            </div>
+                        `}
                     </div>
 
                     <div class="raciones-resumen">
@@ -966,7 +1020,9 @@
                         <small style="color:var(--text-dim);">PRESUPUESTO TOTAL MES</small>
                         <div style="font-size:1.5em; color:var(--primary-gold); font-weight:bold;">${formatter.format(tPres)}</div>
                         <div style="font-size:10px; color:var(--text-dim); margin-top:5px;">
-                            100% distribuido entre compras y distribuidora
+                            ${totalDescuentoActivo > 0
+                                ? `100% distribuido entre compras, distribuidora y -${formatter.format(totalDescuentoActivo)} de descuento por novedades`
+                                : '100% distribuido entre compras y distribuidora'}
                         </div>
                     </div>
                 `;
@@ -981,7 +1037,7 @@
                     provId: datos.proveedor
                 }));
 
-            renderChart(datosGrafico, tDist);
+            renderChart(datosGrafico, tDist, totalDescuentoActivo);
         }
 
         function toggleResumenProv(id) {
@@ -994,7 +1050,7 @@
             }
         }
 
-        function renderChart(datos, distVal) {
+        function renderChart(datos, distVal, descuentoVal = 0) {
             const canvas = document.getElementById('chartGasto');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -1017,6 +1073,12 @@
                 colors.push('#00ff88');
             }
 
+            if (descuentoVal > 0) {
+                labels.push('DESC. NOVEDADES');
+                data.push(descuentoVal);
+                colors.push('#ff4655');
+            }
+
             if (chartInstance) chartInstance.destroy();
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
@@ -1033,22 +1095,47 @@
         function renderizarValoresDistribuidora() {
             const cont = document.getElementById('distribuidora-semanas');
             const semanas = parseInt(document.getElementById('num-semanas').value) || 4;
-            
+            const descuentosDisponibles = typeof calcularTotalDescuentosSemana === 'function';
+
             let html = '';
+            let totalDescuentoGeneral = 0;
+            let semanasConDescuento = 0;
+
             for (let s = 1; s <= semanas; s++) {
                 const distVal = document.getElementById(`dist-${s}`)?.value || '$0';
+                const descuentoSemana = descuentosDisponibles ? calcularTotalDescuentosSemana(s, true) : 0;
+                if (descuentoSemana > 0) {
+                    totalDescuentoGeneral += descuentoSemana;
+                    semanasConDescuento++;
+                }
+
                 html += `
                     <div class="semana-checkbox" id="dist-check-${s}" onclick="toggleSeleccionDistribuidora(${s})">
                         <input type="checkbox" id="dist-checkbox-${s}" onchange="calcularTotalDistribuidora()">
                         <div style="flex:1;">
                             <div style="font-weight:bold; color:var(--primary-gold);">Semana ${s}</div>
                             <div style="font-size:10px; color:var(--text-dim);">Distribuidora: ${distVal}</div>
+                            ${descuentoSemana > 0 ? `
+                                <div style="font-size:9.5px; color:var(--danger); margin-top:2px;">
+                                    <i class="fa-solid fa-user-minus"></i> Incluye descuento por novedades: -${formatter.format(descuentoSemana)}
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
             }
-            
+
             cont.innerHTML = html;
+
+            const notaDescuentos = document.getElementById('distribuidora-nota-descuentos');
+            const notaHtml = totalDescuentoGeneral > 0
+                ? `<i class="fa-solid fa-circle-info"></i> Los valores ya incluyen -${formatter.format(totalDescuentoGeneral)} en descuentos por novedades aplicados en ${semanasConDescuento} semana${semanasConDescuento !== 1 ? 's' : ''}.`
+                : `<i class="fa-solid fa-circle-info"></i> No hay descuentos por novedades activos en este momento.`;
+            if (notaDescuentos) {
+                notaDescuentos.innerHTML = notaHtml;
+                notaDescuentos.classList.toggle('con-descuento', totalDescuentoGeneral > 0);
+            }
+
             calcularTotalDistribuidora();
         }
 
@@ -1275,11 +1362,15 @@
             let tPresTotal = 0;
             let tProdCL = 0;
             let tProdOtros = 0;
-            let tDistTotal = 0;
+            let tDistTotal = 0; // neta: ya incluye el descuento de novedades (dist-${s} viene descontado)
+            let tDescuentoTotal = 0;
+            let semanasConDescuentoExport = 0;
             let totalesPorProducto = {};
             let racionesPorSemana = {};
             let totalRacionesMes = 0;
-            
+            const descuentosDisponiblesExport = typeof calcularTotalDescuentosSemana === 'function';
+            const descuentosActivosGlobalExport = typeof descuentosGlobalActivo === 'undefined' ? true : descuentosGlobalActivo;
+
             productosBase.forEach(p => {
                 totalesPorProducto[p.nombre] = {
                     cantidad: 0,
@@ -1295,7 +1386,12 @@
                 if (pVal) tPresTotal += limpiarNum(pVal.textContent);
 
                 const distVal = document.getElementById(`dist-${s}`);
-                if (distVal) tDistTotal += limpiarNum(distVal.value || "0");
+                const distNeta = distVal ? limpiarNum(distVal.value || "0") : 0;
+                if (distVal) tDistTotal += distNeta;
+
+                const descuentoSemana = descuentosDisponiblesExport ? calcularTotalDescuentosSemana(s, true) : 0;
+                if (descuentoSemana > 0) semanasConDescuentoExport++;
+                tDescuentoTotal += descuentoSemana;
 
                 const dias = parseFloat(document.getElementById(`dias-${s}`)?.value) || 0;
                 const cupos = parseFloat(document.getElementById(`cupos-${s}`)?.value) || 0;
@@ -1304,7 +1400,10 @@
                     dias: dias,
                     cupos: cupos,
                     raciones: racionesSemana,
-                    presupuesto: dias * cupos * valorCupoBase
+                    presupuesto: dias * cupos * valorCupoBase,
+                    distNeta: distNeta,
+                    distBruta: distNeta + descuentoSemana,
+                    descuento: descuentoSemana
                 };
                 totalRacionesMes += racionesSemana;
 
@@ -1345,9 +1444,16 @@
                 ["Presupuesto Total Mes:", totalGeneral, "100%"],
                 ["Compras Locales (CL):", tProdCL, porcCLTotal + "%"],
                 ["Otros Productos:", tProdOtros, porcOtrosTotal + "%"],
-                ["Distribuidora:", tDistTotal, porcDistTotal + "%"],
+                ["Distribuidora (neta, con descuento aplicado):", tDistTotal, porcDistTotal + "%"],
                 ["Total Raciones Mes:", totalRacionesMes],
                 ["Suma Verificación:", tProdCL + tProdOtros + tDistTotal, "Debe ser igual al Presupuesto"],
+                [],
+                ["DESCUENTO POR NOVEDADES (SISTEMA SEMANAL)"],
+                ["¿Se aplicó descuento?:", tDescuentoTotal > 0 ? "SÍ" : "NO"],
+                ["Estado del descuento global:", descuentosActivosGlobalExport ? "ACTIVADO" : "DESACTIVADO"],
+                ["Total descontado de Distribuidora:", tDescuentoTotal],
+                ["Semanas con descuento aplicado:", `${semanasConDescuentoExport} / ${semanas}`],
+                ["Detalle completo:", "ver hoja 'Novedades y Descuentos'"],
                 [],
                 ["PROVEEDORES CONFIGURADOS"],
                 ["ID", "Nombre", "Sigla", "Color", "Orden"]
@@ -1366,14 +1472,17 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsConfig), "Configuración");
 
             // HOJA 2: DATOS SEMANALES
-            const wsData = [["SEMANA", "DÍAS", "CUPOS", "RACIONES", "PRESUPUESTO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "CL", "%_DEL_PRESUPUESTO_SEMANA", "DISTRIBUIDORA"]];
+            const wsData = [["SEMANA", "DÍAS", "CUPOS", "RACIONES", "PRESUPUESTO", "PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "CANTIDAD", "VALOR_UNIT", "VALOR_TOTAL", "CL", "%_DEL_PRESUPUESTO_SEMANA", "DISTRIBUIDORA_BRUTA", "DESCUENTO_NOVEDADES", "DISTRIBUIDORA_NETA", "DESCUENTO_APLICADO"]];
 
             for (let s = 1; s <= semanas; s++) {
                 const dias = document.getElementById(`dias-${s}`)?.value || "0";
                 const cupos = document.getElementById(`cupos-${s}`)?.value || "0";
                 const raciones = parseFloat(dias) * parseFloat(cupos);
                 const presupuesto = limpiarNum(document.getElementById(`pres-${s}`)?.textContent || "0");
-                const distribuidora = limpiarNum(document.getElementById(`dist-${s}`)?.value || "0");
+                const rSemana = racionesPorSemana[s] || { distNeta: 0, distBruta: 0, descuento: 0 };
+                const distribuidoraNeta = rSemana.distNeta;
+                const distribuidoraBruta = rSemana.distBruta;
+                const descuentoSemana = rSemana.descuento;
 
                 getProveedoresOrdenados().forEach(prov => {
                     const productosProv = getProductosByProveedor(prov.id);
@@ -1391,7 +1500,8 @@
                                 s, dias, cupos, raciones, presupuesto,
                                 prov.nombre, generarSigla(prov.nombre), fac, p.nombre,
                                 cant, valUnit, valTotal, p.cl ? 'SI' : 'NO',
-                                porcDelPresupuesto + '%', distribuidora
+                                porcDelPresupuesto + '%', distribuidoraBruta, descuentoSemana,
+                                distribuidoraNeta, descuentoSemana > 0 ? 'SI' : 'NO'
                             ]);
                         }
                     });
@@ -1434,7 +1544,7 @@
             wsResumen.push([
                 'DISTRIBUIDORA',
                 'DIST',
-                'Valor no asignado a productos',
+                'Valor no asignado a productos (neto, con descuento aplicado)',
                 'N/A',
                 0,
                 tDistTotal,
@@ -1443,31 +1553,80 @@
                 'N/A'
             ]);
 
+            if (tDescuentoTotal > 0) {
+                wsResumen.push([
+                    'DESCUENTO NOVEDADES',
+                    'DESC',
+                    `Ya restado de Distribuidora (${semanasConDescuentoExport} semana${semanasConDescuentoExport !== 1 ? 's' : ''})`,
+                    'N/A',
+                    0,
+                    -tDescuentoTotal,
+                    'NO',
+                    totalGeneral > 0 ? '-' + (tDescuentoTotal / totalGeneral * 100).toFixed(2) + '%' : 'N/A',
+                    'N/A'
+                ]);
+            }
+
             wsResumen.push([]);
             wsResumen.push(["TOTALES", "", "", "", "", totalGeneral, "", "100%", porcCLTotal + "%"]);
             wsResumen.push(["", "", "", "", "", "", "", "", ""]);
             wsResumen.push(["DESGLOSE", "VALOR", "% DEL TOTAL", "RACIONES", "", "", "", "", ""]);
             wsResumen.push(["Compras Locales (CL)", tProdCL, porcCLTotal + "%", "", "", "", "", "", ""]);
             wsResumen.push(["Otros Productos", tProdOtros, porcOtrosTotal + "%", "", "", "", "", "", ""]);
-            wsResumen.push(["Distribuidora", tDistTotal, porcDistTotal + "%", "", "", "", "", "", ""]);
+            wsResumen.push(["Distribuidora (neta)", tDistTotal, porcDistTotal + "%", "", "", "", "", "", ""]);
+            wsResumen.push(["Descuento Novedades (aplicado)", tDescuentoTotal > 0 ? -tDescuentoTotal : 0, tDescuentoTotal > 0 && totalGeneral > 0 ? '-' + (tDescuentoTotal / totalGeneral * 100).toFixed(2) + '%' : '0%', "", "", "", "", "", ""]);
             wsResumen.push(["Total Raciones Mes", "", "", totalRacionesMes, "", "", "", "", ""]);
             wsResumen.push(["TOTAL VERIFICACIÓN", tProdCL + tProdOtros + tDistTotal, (parseFloat(porcCLTotal) + parseFloat(porcOtrosTotal) + parseFloat(porcDistTotal)).toFixed(2) + "%", "", "", "", "", "", ""]);
 
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumen), "Resumen por Producto");
 
             // HOJA 4: RESUMEN DE RACIONES
-            const wsRaciones = [["SEMANA", "DÍAS", "CUPOS", "RACIONES", "PRESUPUESTO", "VALOR_CUPO_HCB"]];
+            const wsRaciones = [["SEMANA", "DÍAS", "CUPOS", "RACIONES", "PRESUPUESTO", "VALOR_CUPO_HCB", "¿DESCUENTO_APLICADO?", "VALOR_DESCUENTO", "DISTRIBUIDORA_NETA"]];
             
             for (let s = 1; s <= semanas; s++) {
-                const r = racionesPorSemana[s] || { dias: 0, cupos: 0, raciones: 0, presupuesto: 0 };
-                wsRaciones.push([s, r.dias, r.cupos, r.raciones, r.presupuesto, valorCupoBase]);
+                const r = racionesPorSemana[s] || { dias: 0, cupos: 0, raciones: 0, presupuesto: 0, descuento: 0, distNeta: 0 };
+                wsRaciones.push([s, r.dias, r.cupos, r.raciones, r.presupuesto, valorCupoBase, r.descuento > 0 ? 'SI' : 'NO', r.descuento, r.distNeta]);
             }
             
             wsRaciones.push([]);
-            wsRaciones.push(["TOTALES", "", "", totalRacionesMes, tPresTotal, ""]);
-            wsRaciones.push(["Promedio raciones/semana", "", "", semanas > 0 ? (totalRacionesMes / semanas).toFixed(2) : 0, "", ""]);
+            wsRaciones.push(["TOTALES", "", "", totalRacionesMes, tPresTotal, "", semanasConDescuentoExport > 0 ? 'SI' : 'NO', tDescuentoTotal, tDistTotal]);
+            wsRaciones.push(["Promedio raciones/semana", "", "", semanas > 0 ? (totalRacionesMes / semanas).toFixed(2) : 0, "", "", "", "", ""]);
 
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsRaciones), "Resumen Raciones");
+
+            // HOJA 4B: NOVEDADES Y DESCUENTOS (detalle del sistema de descuento semanal)
+            if (descuentosDisponiblesExport) {
+                const wsDescuentos = [[
+                    "SEMANA", "TIPO_NOVEDAD", "DÍAS", "CUPOS/NIÑOS_AFECTADOS", "RACIONES_AFECTADAS",
+                    "VALOR_RACIÓN", "VALOR_DESCUENTO", "¿ACTIVO?", "¿APLICA_A_DISTRIBUIDORA?", "NOTA"
+                ]];
+
+                for (let s = 1; s <= semanas; s++) {
+                    const items = (typeof getDescuentosSemana === 'function') ? getDescuentosSemana(s) : [];
+                    items.forEach(d => {
+                        const info = (typeof TIPOS_DESCUENTO !== 'undefined' && TIPOS_DESCUENTO[d.tipo]) ? TIPOS_DESCUENTO[d.tipo].label : d.tipo;
+                        const racionesItem = (parseFloat(d.dias) || 0) * (parseFloat(d.cupos) || 0);
+                        const valorItem = (typeof calcularValorDescuento === 'function') ? calcularValorDescuento(d) : 0;
+                        wsDescuentos.push([
+                            s, info, d.dias, d.cupos, racionesItem, d.valorRacion, valorItem,
+                            d.activo ? 'SI' : 'NO',
+                            (d.activo && descuentosActivosGlobalExport) ? 'SI' : 'NO',
+                            d.nota || ''
+                        ]);
+                    });
+                }
+
+                if (wsDescuentos.length === 1) {
+                    wsDescuentos.push(["Sin novedades registradas en este archivo.", "", "", "", "", "", "", "", "", ""]);
+                } else {
+                    wsDescuentos.push([]);
+                    wsDescuentos.push(["Estado descuento global:", descuentosActivosGlobalExport ? "ACTIVADO" : "DESACTIVADO"]);
+                    wsDescuentos.push(["TOTAL DESCONTADO DE DISTRIBUIDORA:", "", "", "", "", "", tDescuentoTotal]);
+                    wsDescuentos.push(["Semanas con descuento aplicado:", `${semanasConDescuentoExport} / ${semanas}`]);
+                }
+
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsDescuentos), "Novedades y Descuentos");
+            }
 
             // HOJA 5: VALIDACIÓN DE FACTURAS
             const wsFacturas = [["PROVEEDOR", "SIGLA", "FACTURA", "PRODUCTO", "UNIDAD", "CANTIDAD_TOTAL", "VALOR_TOTAL", "SEMANAS"]];

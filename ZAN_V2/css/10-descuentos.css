@@ -190,6 +190,25 @@
 
         .descuentos-subtotal b { color: var(--danger); font-size: 12px; }
 
+        /* ---- Nota de descuentos en el drawer de Valores Distribuidora ---- */
+        .distribuidora-nota-descuentos {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            color: var(--text-dim);
+            background: rgba(255,255,255,0.03);
+            border: 1px dashed var(--border-subtle);
+        }
+
+        .distribuidora-nota-descuentos.con-descuento {
+            color: var(--danger);
+            background: rgba(255, 70, 85, 0.06);
+            border: 1px dashed rgba(255, 70, 85, 0.35);
+        }
+
+        .distribuidora-nota-descuentos i { margin-right: 4px; }
+
         /* ---- Badge sobre el tab de semana ---- */
         .tab-descuento-badge {
             position: absolute;
@@ -206,7 +225,9 @@
             align-items: center;
             justify-content: center;
             padding: 0 3px;
+            border: 1.5px solid var(--bg-card, #1a1a1a);
             box-shadow: 0 0 6px rgba(255,70,85,0.6);
+            z-index: 5;
         }
 
         /* ---- Formulario del modal de novedad ---- */
