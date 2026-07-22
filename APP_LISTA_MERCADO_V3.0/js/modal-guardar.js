@@ -194,14 +194,23 @@
 				showSection('monthly');
 				document.getElementById('monthly-num-p').value = l.personas;
 				monthlyActiveWeeks.clear();
+				document.querySelectorAll('.week-card-repeated').forEach(c => c.remove());
+				repeatedWeekCounters = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 				l.semanas.forEach(({week, days}) => {
 					monthlyActiveWeeks.set(week, new Set(days));
-					const card = document.getElementById(`week-${week}`);
-					const checkbox = document.getElementById(`check-week-${week}`);
+					const esRepetida = week % 1 !== 0;
+					if (esRepetida && !document.getElementById(`week-${wkId(week)}`)) {
+						const patternWeek = Math.floor(week);
+						crearTarjetaSemanaRepetida(week, patternWeek);
+						const instancia = Math.round((week - patternWeek) * 100);
+						if (instancia > repeatedWeekCounters[patternWeek]) repeatedWeekCounters[patternWeek] = instancia;
+					}
+					const card = document.getElementById(`week-${wkId(week)}`);
+					const checkbox = document.getElementById(`check-week-${wkId(week)}`);
 					card.classList.add('active');
 					checkbox.checked = true;
 					days.forEach(day => {
-						const chip = document.querySelector(`#week-${week} .week-day-chip[data-day="${day}"]`);
+						const chip = document.querySelector(`#week-${wkId(week)} .week-day-chip[data-day="${day}"]`);
 						if (chip) chip.classList.add('selected');
 					});
 				});

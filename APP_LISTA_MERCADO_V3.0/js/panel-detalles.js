@@ -202,13 +202,14 @@
 
 			// Calcular datos por semana
 			const datosPorSemana = sortedWeeks.map(weekNum => {
+				const patternWeek = Math.floor(weekNum);
 				const selectedDays = Array.from(monthlyActiveWeeks.get(weekNum)).sort();
 				const diasConDato = [];
 				selectedDays.forEach(dayNum => {
-					const mId = `m${((weekNum - 1) * 5) + dayNum}`;
+					const mId = `m${((patternWeek - 1) * 5) + dayNum}`;
 					const gram = product.g[mId] || 0;
 					if (gram > 0) {
-						const menuNum = ((weekNum - 1) * 5) + dayNum;
+						const menuNum = ((patternWeek - 1) * 5) + dayNum;
 						diasConDato.push({ dayNum, mId, menuNum, gram, total: gram * personas });
 					}
 				});
@@ -217,7 +218,7 @@
 				totalIndividualGlobal += totalSemIndividual;
 				totalGrupalGlobal += totalSemGrupal;
 				totalDiasGlobal += diasConDato.length;
-				return { weekNum, selectedDays, diasConDato, totalSemIndividual, totalSemGrupal };
+				return { weekNum, patternWeek, selectedDays, diasConDato, totalSemIndividual, totalSemGrupal };
 			}).filter(s => s.diasConDato.length > 0);
 
 			if (datosPorSemana.length === 0) {
@@ -251,11 +252,12 @@
 			// Sección por semana
 			html += `<div><div class="dp-section-title">Detalle por semana</div>`;
 
-			datosPorSemana.forEach(({ weekNum, selectedDays, diasConDato, totalSemIndividual, totalSemGrupal }) => {
+			datosPorSemana.forEach(({ weekNum, patternWeek, selectedDays, diasConDato, totalSemIndividual, totalSemGrupal }) => {
+				const esRepetida = weekNum % 1 !== 0;
 				html += `
 					<div class="dp-week-section" style="margin-bottom: 0.625rem;">
 						<div class="dp-week-header">
-							<div class="dp-week-title">📅 Semana ${weekNum}</div>
+							<div class="dp-week-title">📅 Semana ${patternWeek}${esRepetida ? ' <span title="Semana repetida" style="font-size:0.75em;">🔁</span>' : ''}</div>
 							<div class="dp-week-total">${totalSemGrupal.toFixed(2)} ${product.u}</div>
 						</div>
 						<div style="display:flex;gap:0.5rem;padding:0.25rem 0.875rem 0.1rem;font-size:0.6rem;color:var(--text-secondary);">
@@ -267,10 +269,10 @@
 
 				for (let d = 1; d <= 5; d++) {
 					const esSeleccionado = selectedDays.includes(d);
-					const mId = `m${((weekNum - 1) * 5) + d}`;
+					const mId = `m${((patternWeek - 1) * 5) + d}`;
 					const gram = product.g[mId] || 0;
 					const hasData = gram > 0 && esSeleccionado;
-					const menuNum = ((weekNum - 1) * 5) + d;
+					const menuNum = ((patternWeek - 1) * 5) + d;
 
 					let dotClass, lblClass, dotContent, titleTxt;
 					if (!esSeleccionado) {
@@ -302,9 +304,9 @@
 				html += `<div class="dp-days-list">`;
 				for (let d = 1; d <= 5; d++) {
 					const esSeleccionado = selectedDays.includes(d);
-					const mId = `m${((weekNum - 1) * 5) + d}`;
+					const mId = `m${((patternWeek - 1) * 5) + d}`;
 					const gram = product.g[mId] || 0;
-					const menuNum = ((weekNum - 1) * 5) + d;
+					const menuNum = ((patternWeek - 1) * 5) + d;
 					const hasData = gram > 0 && esSeleccionado;
 
 					if (!esSeleccionado) {

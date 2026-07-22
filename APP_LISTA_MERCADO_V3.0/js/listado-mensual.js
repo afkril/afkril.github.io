@@ -1,7 +1,16 @@
         // ==================== FUNCIONES LISTADO MENSUAL ====================
+        // Las semanas 1-5 usan claves enteras. Una "semana repetida" (duplicado de
+        // una semana patron con otros dias) usa una clave decimal, ej: 1.01, 1.02...
+        // Math.floor(clave) siempre da la semana patron (1-5) para buscar los gramajes (mId).
+        let repeatedWeekCounters = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+        function wkId(weekKey) {
+            return String(weekKey).replace('.', '_');
+        }
+
         function toggleWeek(weekNum) {
-            const card = document.getElementById(`week-${weekNum}`);
-            const checkbox = document.getElementById(`check-week-${weekNum}`);
+            const card = document.getElementById(`week-${wkId(weekNum)}`);
+            const checkbox = document.getElementById(`check-week-${wkId(weekNum)}`);
             
             if (monthlyActiveWeeks.has(weekNum)) {
                 monthlyActiveWeeks.delete(weekNum);
@@ -19,7 +28,7 @@
             if (!monthlyActiveWeeks.has(weekNum)) toggleWeek(weekNum);
             
             const days = monthlyActiveWeeks.get(weekNum);
-            const chip = document.querySelector(`#week-${weekNum} .week-day-chip[data-day="${dayNum}"]`);
+            const chip = document.querySelector(`#week-${wkId(weekNum)} .week-day-chip[data-day="${dayNum}"]`);
             
             if (days.has(dayNum)) {
                 days.delete(dayNum);
@@ -30,6 +39,50 @@
             }
             
             if (days.size === 0) toggleWeek(weekNum);
+        }
+
+        // ---------- Semana repetida (duplicado de una semana patron con otros dias) ----------
+        function toggleRepeatWeekPicker() {
+            const picker = document.getElementById('repeatWeekPicker');
+            if (!picker) return;
+            picker.style.display = (picker.style.display === 'none' || !picker.style.display) ? 'flex' : 'none';
+        }
+
+        function crearTarjetaSemanaRepetida(weekKey, patternWeek) {
+            const dias = [['1', 'Lun'], ['2', 'Mar'], ['3', 'Mié'], ['4', 'Jue'], ['5', 'Vie']];
+            const chipsHtml = dias.map(([num, label]) =>
+                `<span class="week-day-chip" data-day="${num}" onclick="toggleWeekDay(${weekKey}, ${num})">${label}</span>`
+            ).join('');
+            const html = `
+                <div class="week-card week-card-repeated active" id="week-${wkId(weekKey)}" onclick="toggleWeek(${weekKey})">
+                    <button class="week-remove-btn no-print" onclick="event.stopPropagation(); eliminarSemanaRepetida(${weekKey})" title="Quitar esta semana repetida">×</button>
+                    <div class="week-header">
+                        <div class="week-title">
+                            <input type="checkbox" class="week-checkbox" id="check-week-${wkId(weekKey)}" checked onchange="event.stopPropagation(); toggleWeek(${weekKey})">
+                            <span>Semana ${patternWeek}</span>
+                            <span class="week-repeated-badge" title="Semana repetida">🔁 Repetida</span>
+                        </div>
+                    </div>
+                    <div class="week-days" onclick="event.stopPropagation()">${chipsHtml}</div>
+                </div>`;
+            const selector = document.getElementById('weeksSelector');
+            if (selector) selector.insertAdjacentHTML('beforeend', html);
+        }
+
+        function agregarSemanaRepetida(patternWeek) {
+            repeatedWeekCounters[patternWeek] = (repeatedWeekCounters[patternWeek] || 0) + 1;
+            const weekKey = patternWeek + (repeatedWeekCounters[patternWeek] / 100);
+            crearTarjetaSemanaRepetida(weekKey, patternWeek);
+            monthlyActiveWeeks.set(weekKey, new Set());
+            const picker = document.getElementById('repeatWeekPicker');
+            if (picker) picker.style.display = 'none';
+            showToast(`Semana ${patternWeek} repetida añadida — elige sus días`, 'success');
+        }
+
+        function eliminarSemanaRepetida(weekKey) {
+            monthlyActiveWeeks.delete(weekKey);
+            const card = document.getElementById(`week-${wkId(weekKey)}`);
+            if (card) card.remove();
         }
 
         function generarMensual() {
@@ -60,8 +113,9 @@
                 let resumen = {};
 
                 monthlyActiveWeeks.forEach((days, weekNum) => {
+                    const patternWeek = Math.floor(weekNum);
                     days.forEach(dayNum => {
-                        const mId = `m${((weekNum - 1) * 5) + dayNum}`;
+                        const mId = `m${((patternWeek - 1) * 5) + dayNum}`;
                         db.forEach(p => {
                             const baseIndividual = (p.g[mId] || 0);
                             const cantTotal = baseIndividual * personas;
@@ -139,8 +193,13 @@
             // Headers
             let theadHtml = `<tr><th>Producto</th><th>Und.</th>`;
             sortedWeeks.forEach(week => {
-                theadHtml += `<th class="week-header-col">S${week}<br><small>Sug.</small></th>
-                             <th class="week-header-col">S${week}<br><small>Ent.</small></th>`;
+                const patternWeek = Math.floor(week);
+                const esRepetida = week % 1 !== 0;
+                const label = esRepetida
+                    ? `S${patternWeek}<span class="week-repeated-tag" title="Semana repetida">🔁</span>`
+                    : `S${patternWeek}`;
+                theadHtml += `<th class="week-header-col">${label}<br><small>Sug.</small></th>
+                             <th class="week-header-col">${label}<br><small>Ent.</small></th>`;
             });
             theadHtml += `<th class="total-header">Total<br>Sug.</th><th class="total-header">Total<br>Ent.</th><th class="no-print" style="min-width:60px;">Det.</th></tr>`;
             document.getElementById('monthlyTableHead').innerHTML = theadHtml;
@@ -455,14 +514,18 @@
             const data = Object.entries(monthlyFilteredData).map(([name, item]) => {
                 const row = { Producto: name, Categoria: item.c, Unidad: item.u };
                 sortedWeeks.forEach(week => {
+                    const patternWeek = Math.floor(week);
+                    const esRepetida = week % 1 !== 0;
+                    const instancia = esRepetida ? Math.round((week - patternWeek) * 100) : 0;
+                    const colLabel = esRepetida ? `Sem${patternWeek}_Rep${instancia}` : `Sem${patternWeek}`;
                     const weekData = item.weeks[week];
                     if (weekData) {
-                        row[`Sem${week}_Sugerido`] = formatCompacto(weekData.qTotal, item.u, name);
+                        row[`${colLabel}_Sugerido`] = formatCompacto(weekData.qTotal, item.u, name);
                         const idBase = `${currentRegional}_monthly_${name.replace(/\s/g, '')}`;
-                        row[`Sem${week}_Entrega`] = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idBase}_w${week}`) || '';
+                        row[`${colLabel}_Entrega`] = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idBase}_w${week}`) || '';
                     } else {
-                        row[`Sem${week}_Sugerido`] = '-';
-                        row[`Sem${week}_Entrega`] = '-';
+                        row[`${colLabel}_Sugerido`] = '-';
+                        row[`${colLabel}_Entrega`] = '-';
                     }
                 });
                 return row;

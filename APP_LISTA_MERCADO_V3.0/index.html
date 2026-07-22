@@ -934,6 +934,21 @@
                 </div>
             </div>
 
+            <!-- Control sutil para agregar una semana repetida (duplicada) -->
+            <div class="repeat-week-control no-print" id="repeatWeekControl">
+                <button type="button" class="repeat-week-toggle" onclick="toggleRepeatWeekPicker()" title="Duplicar una semana con días diferentes (ej: dos veces Semana 1)">
+                    <span>➕</span> Semana repetida
+                </button>
+                <div class="repeat-week-picker" id="repeatWeekPicker" style="display:none;">
+                    <span class="repeat-week-picker-label">Duplicar:</span>
+                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(1)">S1</button>
+                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(2)">S2</button>
+                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(3)">S3</button>
+                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(4)">S4</button>
+                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(5)">S5</button>
+                </div>
+            </div>
+
             <!-- Filtros de Categoria para Mensual -->
             <div class="category-filters no-print" id="monthlyCatFilters" style="display: none;">
                 <div class="category-card cat-granos active" onclick="toggleMonthlyCategory(this, 'granos')">

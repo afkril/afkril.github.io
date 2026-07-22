@@ -118,6 +118,121 @@
             color: white;
         }
 
+        /* SEMANA REPETIDA (duplicado sutil de una semana patron) */
+        .repeat-week-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: -0.35rem 0 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .repeat-week-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: transparent;
+            border: 1px dashed var(--border);
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            padding: 0.3rem 0.65rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .repeat-week-toggle:hover {
+            border-color: #f59e0b;
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.06);
+        }
+
+        .repeat-week-picker {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.5rem;
+            background: rgba(245, 158, 11, 0.06);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .repeat-week-picker-label {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+        }
+
+        .repeat-week-pill {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .repeat-week-pill:hover {
+            border-color: #f59e0b;
+            background: #f59e0b;
+            color: #1a1a1a;
+        }
+
+        .week-card-repeated {
+            border-color: rgba(245, 158, 11, 0.35);
+            border-style: dashed;
+        }
+
+        .week-card-repeated.active {
+            border-color: #f59e0b;
+            border-style: solid;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+        }
+
+        .week-repeated-badge {
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            padding: 0.05rem 0.35rem;
+            border-radius: 1rem;
+            white-space: nowrap;
+        }
+
+        .week-remove-btn {
+            position: absolute;
+            top: 0.4rem;
+            right: 0.4rem;
+            width: 18px;
+            height: 18px;
+            line-height: 16px;
+            text-align: center;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-dark);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .week-remove-btn:hover {
+            border-color: #f87171;
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .week-repeated-tag {
+            font-size: 0.6em;
+            margin-left: 0.15rem;
+        }
+
         /* TABLA MENSUAL - ANCHO RESPONSIVO POR NuMERO DE SEMANAS */
         .monthly-table-wrapper {
             overflow-x: auto;

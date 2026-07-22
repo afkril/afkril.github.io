@@ -214,6 +214,10 @@
 			
 			// Limpiar selector de semanas mensuales
 			monthlyActiveWeeks.clear();
+			document.querySelectorAll('.week-card-repeated').forEach(c => c.remove());
+			repeatedWeekCounters = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+			const repeatWeekPickerNav = document.getElementById('repeatWeekPicker');
+			if (repeatWeekPickerNav) repeatWeekPickerNav.style.display = 'none';
 			for (let i = 1; i <= 5; i++) {
 				const card = document.getElementById(`week-${i}`);
 				const checkbox = document.getElementById(`check-week-${i}`);
