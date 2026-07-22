@@ -132,107 +132,45 @@
         }
 
         /* Sección de Retiro - fondo rojo muy oscuro */
-        body.dark-mode .cf-card-red {
-            background: rgba(69, 10, 10, 0.55) !important;
+        body.dark-mode #sectionRetiro {
+            background: rgba(69, 10, 10, 0.6) !important;
             border-color: #dc2626 !important;
         }
 
-        body.dark-mode .cf-card-red .cf-card-title,
-        body.dark-mode .cf-card-red .cf-field .cf-microlabel {
+        body.dark-mode #sectionRetiro h3 {
             color: #fca5a5 !important; /* Rojo claro */
         }
 
+        body.dark-mode #sectionRetiro label {
+            color: #fecaca !important;
+        }
+
         /* Sección de Ingreso - fondo verde muy oscuro */
-        body.dark-mode .cf-card-green {
-            background: rgba(6, 78, 59, 0.45) !important;
+        body.dark-mode #sectionIngreso .bg-green-100 {
+            background: rgba(6, 78, 59, 0.5) !important;
             border-color: #10b981 !important;
         }
 
-        body.dark-mode .cf-card-green .cf-card-title,
-        body.dark-mode .cf-card-green .cf-field .cf-microlabel {
+        body.dark-mode #sectionIngreso h3 {
             color: #86efac !important; /* Verde claro */
         }
 
+        body.dark-mode #sectionIngreso label.text-green-600 {
+            color: #86efac !important;
+        }
+
         /* Sección de Acudiente - fondo azul muy oscuro */
-        body.dark-mode .cf-card-blue {
+        body.dark-mode .bg-blue-100 {
             background: rgba(30, 58, 138, 0.4) !important;
             border-color: #3b82f6 !important;
         }
 
-        body.dark-mode .cf-card-blue .cf-card-title,
-        body.dark-mode .cf-card-blue .cf-field .cf-microlabel {
+        body.dark-mode .bg-blue-100 h3 {
             color: #93c5fd !important;
         }
 
-        /* Sección Nutricional - microetiquetas en naranja claro (el
-           fondo de .nutricion-card ya se oscurece más abajo) */
-        body.dark-mode .cf-card-orange .cf-field .cf-microlabel {
-            color: #fdba74 !important;
-        }
-
-        /* Título de columna (p.ej. "Ubicación") dentro de la tarjeta verde */
-        body.dark-mode .cf-col-title {
-            color: #cbd5e1 !important;
-        }
-
-        /* Toggle de género - fondo oscuro coherente con los inputs */
-        body.dark-mode .cf-gender {
-            background: #0f172a !important;
-            border-color: #475569 !important;
-        }
-        body.dark-mode .cf-gender label {
-            color: #94a3b8;
-        }
-        body.dark-mode .cf-gender label + label {
-            border-left-color: #475569;
-        }
-
-        /* Zona de soporte documental */
-        body.dark-mode .cf-upload {
-            background: #0f172a !important;
-            border-color: #16a34a !important;
-        }
-        body.dark-mode .cf-upload-hint {
-            color: #64748b !important;
-        }
-        body.dark-mode .cf-upload .cf-ic-static {
-            color: #4ade80;
-        }
-
-        /* Aviso "Dato Pendiente" en nutrición */
-        body.dark-mode .cf-nutricion-pendiente {
-            background: rgba(120, 53, 15, 0.35) !important;
-            border-color: #b45309 !important;
-        }
-        body.dark-mode .cf-nutricion-pendiente span {
-            color: #fcd34d !important;
-        }
-
-        /* Modal selector / cambio de operador */
-        body.dark-mode #modalSelectorAsociacion {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important;
-        }
-        body.dark-mode .asoc-modal-title { color: #f8fafc; }
-        body.dark-mode .asoc-modal-sub { color: #94a3b8; }
-        body.dark-mode .asoc-card {
-            background: #1e293b;
-            border-color: #334155;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-        }
-        body.dark-mode .asoc-card:hover {
-            border-color: var(--asoc-color, #6366f1);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
-        }
-        body.dark-mode .asoc-card-nombre { color: #f1f5f9; }
-        body.dark-mode .asoc-card-ubicacion { color: #94a3b8; }
-        body.dark-mode .asoc-card-contratos-wrap { background: #0f172a; }
-        body.dark-mode .asoc-card-contratos-label { color: #64748b; }
-        body.dark-mode .asoc-empty, body.dark-mode .asoc-loading { color: #94a3b8; }
-        body.dark-mode .btn-asoc-ajustes {
-            background: #1e293b; border-color: #334155; color: #94a3b8;
-        }
-        body.dark-mode .btn-asoc-ajustes:hover {
-            background: #334155; border-color: #6366f1; color: #93c5fd;
+        body.dark-mode .bg-blue-100 label.text-blue-600 {
+            color: #93c5fd !important;
         }
 
         /* Sección Nutricional - fondo naranja muy oscuro */
@@ -1321,8 +1259,8 @@
         .nutricion-status {
             font-size: 15px;
             font-weight: 800;
-            margin-bottom: 1px;
-            padding: 4px 8px;
+            margin-bottom: 8px;
+            padding: 8px 16px;
             border-radius: 8px;
             display: inline-block;
 			text-transform: uppercase;
@@ -3335,3 +3273,36 @@ body.dark-mode .notif-item-mensaje { color: #94a3b8; }
 @media (max-width: 640px) {
     .cf-nutri-col .cf-row4 { grid-template-columns: repeat(2, 1fr) !important; }
 }
+
+/* ============================================================
+   TARJETA "SOPORTE RAM" (adjuntar Ram Diligenciado en Retiro)
+   ============================================================ */
+.cf-card-orange .cf-upload {
+    border-color: #fdba74;
+    background: #fffaf5;
+}
+.cf-card-orange .cf-upload .cf-ic-static { color: #ea580c; }
+
+.cf-ram-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: #fff7ed;
+    border: 1.5px dashed #fdba74;
+    border-radius: 12px;
+}
+.cf-ram-note-ic { font-size: 15px; line-height: 1; flex-shrink: 0; }
+.cf-ram-note p {
+    margin: 0;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: #9a3412;
+}
+
+/* En la sección Retiro, la tarjeta de datos y la de soporte RAM
+   deben quedar con la misma altura visual que en Ingreso. */
+#sectionRetiro .cf-columns2 { align-items: stretch; }
+#sectionRetiro .cf-card-orange { display: flex; flex-direction: column; }

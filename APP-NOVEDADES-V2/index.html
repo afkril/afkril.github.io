@@ -203,44 +203,66 @@
                 </div>
             </div>
 
-            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn cf-card cf-card-red">
-                <div class="cf-card-head">
-                    <div class="cf-card-title"><span class="cf-dot cf-dot-red"></span> Beneficiario Saliente</div>
-                </div>
-                <div class="cf-row2">
-                    <div class="cf-field cf-noicon">
-                        <label class="cf-microlabel">Tipo Documento</label>
-                        <select id="retiroDocType" name="retiro_tipo_doc">
-                            <option value="RC">RC - Registro Civil</option>
-                            <option value="AN">AN - Acta Nacimiento</option>
-                            <option value="PEP">PEP / PPT</option>
-                            <option value="SD">SD - Sin Documento</option>
-                        </select>
+            <div id="sectionRetiro" class="hidden animate__animated animate__fadeIn">
+                <div class="cf-columns2">
+                    <div class="cf-card cf-card-red">
+                        <div class="cf-card-head">
+                            <div class="cf-card-title"><span class="cf-dot cf-dot-red"></span> Beneficiario Saliente</div>
+                        </div>
+                        <div class="cf-row2">
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">Tipo Documento</label>
+                                <select id="retiroDocType" name="retiro_tipo_doc">
+                                    <option value="RC">RC - Registro Civil</option>
+                                    <option value="AN">AN - Acta Nacimiento</option>
+                                    <option value="PEP">PEP / PPT</option>
+                                    <option value="SD">SD - Sin Documento</option>
+                                </select>
+                            </div>
+                            <div class="cf-field">
+                                <!-- <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></span> -->
+                                <label class="cf-microlabel">Número Documento</label>
+                                <input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de documento"
+                                       minlength="7" maxlength="10"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkExistingBeneficiary(this.value, 'retiro')">
+                            </div>
+                        </div>
+                        <div class="cf-field">
+                            <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                            <label class="cf-microlabel">Nombres y Apellidos</label>
+                            <input type="text" id="retiroFullName" name="retiro_nombre" placeholder="Nombres y apellidos completos">
+                        </div>
+                        <div class="cf-row2">
+                            <div class="cf-field">
+                                <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                                <label class="cf-microlabel">Fecha de Retiro</label>
+                                <input type="date" id="retiroDate" name="retiro_fecha" onchange="validateDatesRealTime()">
+                            </div>
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">Género</label>
+                                <div class="cf-gender">
+                                    <label><input type="radio" name="_retiroGender" value="M"> M</label>
+                                    <label><input type="radio" name="_retiroGender" value="F"> F</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="cf-field">
-                        <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></span>
-                        <label class="cf-microlabel">Número Documento</label>
-                        <input type="text" id="retiroDocNumber" name="retiro_documento" placeholder="Número de documento"
-                               minlength="7" maxlength="10"
-                               oninput="this.value = this.value.replace(/[^0-9]/g, ''); checkExistingBeneficiary(this.value, 'retiro')">
-                    </div>
-                </div>
-                <div class="cf-field">
-                    <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                    <label class="cf-microlabel">Nombres y Apellidos</label>
-                    <input type="text" id="retiroFullName" name="retiro_nombre" placeholder="Nombres y apellidos completos">
-                </div>
-                <div class="cf-row2">
-                    <div class="cf-field">
-                        <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-                        <label class="cf-microlabel">Fecha de Retiro</label>
-                        <input type="date" id="retiroDate" name="retiro_fecha" onchange="validateDatesRealTime()">
-                    </div>
-                    <div class="cf-field cf-noicon">
-                        <label class="cf-microlabel">Género</label>
-                        <div class="cf-gender">
-                            <label><input type="radio" name="_retiroGender" value="M"> M</label>
-                            <label><input type="radio" name="_retiroGender" value="F"> F</label>
+
+                    <div class="cf-card cf-card-orange">
+                        <div class="cf-card-head">
+                            <div class="cf-card-title"><span class="cf-dot cf-dot-orange"></span> Soporte RAM</div>
+                        </div>
+                        <div class="cf-field cf-noicon">
+                            <label class="cf-microlabel">Adjuntar Ram Diligenciado</label>
+                            <div class="cf-upload cf-upload-orange">
+                                <span class="cf-ic-static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+                                <input type="file" id="retiroRamFile" name="retiro_ram_diligenciado" accept=".pdf,image/*">
+                            </div>
+                            <p class="cf-upload-hint">Máx. 8MB (PDF, JPG, PNG)</p>
+                        </div>
+                        <div class="cf-ram-note">
+                            <span class="cf-ram-note-ic">📋</span>
+                            <p>Se requiere Ram diligenciado, para marcar las asistencias correspondientes en el Ram Digital. Antes de Desvincularlo</p>
                         </div>
                     </div>
                 </div>
@@ -265,7 +287,7 @@
                                     </select>
                                 </div>
                                 <div class="cf-field">
-                                    <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></span>
+                                    <!-- <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></span> -->
                                     <label class="cf-microlabel">Número</label>
                                     <input type="text" id="ingresoDocNumber" name="ingreso_documento" placeholder="Número documento"
                                            minlength="7" maxlength="10"
@@ -356,7 +378,7 @@
                             <div class="cf-card-title"><span class="cf-dot cf-dot-blue"></span> Datos Madre / Acudiente</div>
                         </div>
                         <div class="cf-field">
-                            <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></span>
+                            <!-- <span class="cf-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg></span> -->
                             <label class="cf-microlabel">Documento *</label>
                             <input type="text" id="acudienteDoc" name="acudiente_documento" placeholder="Documento acudiente">
                         </div>
@@ -404,7 +426,7 @@
 						</div>
 
                         <!-- SEGUIMIENTO NUTRICIONAL — versión compacta -->
-                        <div class="nutricion-card cf-nutricion cf-card-orange">
+                        <div class="nutricion-card cf-nutricion">
                             <div class="nutricion-title">
                                 <div class="flex items-center gap-2">
                                     <span>🍎</span>
@@ -498,7 +520,7 @@
             <div id="feedbackContainer" class="hidden animate__animated p-5 rounded-2xl text-center text-sm font-bold mt-4"></div>
             
             <footer class="mt-10 mb-2 text-[11px] font-black text-slate-400 tracking-[0.4em] text-center uppercase">
-                <span id="footerNombreAsoc">Asociacion J.E.R - Neiva, Huila</span> 2025 V.OP.1.0
+                <span id="footerNombreAsoc">Asociacion J.E.R - Neiva, Huila</span> 2025 V3.1
             </footer>
         </form>
     </main>

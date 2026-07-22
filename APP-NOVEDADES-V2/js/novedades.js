@@ -1055,6 +1055,7 @@ function generatePlainTextFive(novelty, isArchived, udsName, udsCode) {
         text += `  - Nombre:         ${r.name ? r.name.toUpperCase() : 'N/A'}\n`;
         text += `  - Fecha Retiro:   ${formatDateDMY(r.retiroDate || novelty.retiroDate || '-')}\n`;
         text += `  - Género:         ${r.gender === 'M' ? 'Masculino' : r.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
+        text += `  - Ram Diligenciado: ${r.ramFileName ? '📎 ' + r.ramFileName : 'No adjuntado'}\n`;
     }
 
     if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
@@ -1605,6 +1606,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const checkRetiro = document.getElementById('checkRetiro');
                     const checkIngreso = document.getElementById('checkIngreso');
                     const fileInput = document.querySelector('input[name="soporte_documento"]');
+                    const ramFileInput = document.querySelector('input[name="retiro_ram_diligenciado"]');
                     
                     if (!contract || !uds || !checkRetiro || !checkIngreso) {
                         showToast("Error: Elementos del formulario no encontrados", "error");
@@ -2109,6 +2111,30 @@ document.addEventListener('DOMContentLoaded', function() {
                             googleData.file_base64 = base64;
                             googleData.file_type = file.type;
                             googleData.file_name = file.name;
+                        }
+
+                        // 1b. Procesar Ram Diligenciado (solo aplica si hay retiro)
+                        if (ramFileInput?.files?.length > 0) {
+                            const ramFile = ramFileInput.files[0];
+
+                            if (ramFile.size > 8 * 1024 * 1024) {
+                                throw new Error("El archivo del Ram excede 8MB. Use un archivo más pequeño.");
+                            }
+
+                            const ramBase64 = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = e => resolve(e.target.result.split(',')[1]);
+                                reader.onerror = () => reject(new Error("Error al leer el archivo del Ram"));
+                                reader.readAsDataURL(ramFile);
+                            });
+
+                            googleData.ram_file_base64 = ramBase64;
+                            googleData.ram_file_type = ramFile.type;
+                            googleData.ram_file_name = ramFile.name;
+
+                            if (noveltyData.retiro) {
+                                noveltyData.retiro.ramFileName = ramFile.name;
+                            }
                         }
 
                         if (!OfflineModule.isOnline()) {
