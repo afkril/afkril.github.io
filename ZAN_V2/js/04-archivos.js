@@ -204,9 +204,12 @@
             const esActual = archivo.key === currentFileId;
             const fechaStr = archivo.fechaObj.toLocaleDateString('es-CO');
             const horaStr = archivo.fechaObj.toLocaleTimeString('es-CO', {hour: '2-digit', minute:'2-digit'});
-            
+
+            // Determinar función de carga según modo
+            const clickFn = (typeof _modoBoceto !== 'undefined' && _modoBoceto) ? 'cargarBoceto' : 'cargarArchivo';
+
             return `
-                <div class="file-item ${esActual ? 'active-file' : ''}" onclick="cargarArchivo('${archivo.key}')">
+                <div class="file-item ${esActual ? 'active-file' : ''}" onclick="${clickFn}('${archivo.key}')">
                     <div class="file-icon">
                         <i class="fa-solid fa-file-invoice-dollar"></i>
                     </div>
@@ -223,7 +226,7 @@
                         </div>
                     </div>
                     <div class="file-actions" onclick="event.stopPropagation()">
-                        <button class="file-btn" onclick="cargarArchivo('${archivo.key}')" title="Abrir">
+                        <button class="file-btn" onclick="${clickFn}('${archivo.key}')" title="Abrir">
                             <i class="fa-solid fa-folder-open"></i>
                         </button>
                         <button class="file-btn delete" onclick="borrarArchivo('${archivo.key}')" title="Eliminar">
@@ -237,11 +240,14 @@
         function renderizarCardArchivo(archivo) {
             const esActual = archivo.key === currentFileId;
             const fechaStr = archivo.fechaObj.toLocaleDateString('es-CO');
-            
+
+            // Determinar función de carga según modo
+            const clickFn = (typeof _modoBoceto !== 'undefined' && _modoBoceto) ? 'cargarBoceto' : 'cargarArchivo';
+
             return `
-                <div class="file-card ${esActual ? 'active-file' : ''}" onclick="cargarArchivo('${archivo.key}')">
+                <div class="file-card ${esActual ? 'active-file' : ''}" onclick="${clickFn}('${archivo.key}')">
                     <div class="file-card-actions" onclick="event.stopPropagation()">
-                        <button class="file-btn" onclick="cargarArchivo('${archivo.key}')" title="Abrir">
+                        <button class="file-btn" onclick="${clickFn}('${archivo.key}')" title="Abrir">
                             <i class="fa-solid fa-folder-open"></i>
                         </button>
                         <button class="file-btn delete" onclick="borrarArchivo('${archivo.key}')" title="Eliminar">

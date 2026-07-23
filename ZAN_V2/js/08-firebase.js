@@ -257,14 +257,18 @@
         async function cargarArchivo(key) {
 			const snap = await db.ref(`files/${currentUser}/${key}`).once('value');
 			const data = snap.val();
-			
+
 			if (!data) {
 				Toast.error("No se encontraron datos para este archivo");
 				return;
 			}
-			
+
 			currentFileId = key;
 			localStorage.setItem(`elite_current_file_${currentUser}`, key);
+
+			// Si venimos de la pantalla en blanco, ocultarla ahora
+			if (typeof _desdePantallaBlanca !== 'undefined') _desdePantallaBlanca = false;
+			if (typeof ocultarPantallaInicio === 'function') ocultarPantallaInicio();
 			
 			if (data.proveedores) proveedores = data.proveedores;
 			if (data.productosBase) productosBase = data.productosBase;

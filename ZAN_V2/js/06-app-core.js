@@ -43,37 +43,231 @@
 			document.getElementById('sidebar-username').textContent = u.toUpperCase();
 			document.getElementById('user-avatar').textContent = u.charAt(0).toUpperCase();
 			document.getElementById('auth-screen').style.display = 'none';
-			document.getElementById('app-content').style.display = 'block';
 
 			if (window.innerWidth <= 768) {
 				document.getElementById('sidebar').classList.add('collapsed');
 				sidebarOpen = false;
 			}
 
-			// Cargar archivo actual si existe
-			const savedFileId = localStorage.getItem(`elite_current_file_${currentUser}`);
-			if (savedFileId) {
-				currentFileId = savedFileId;
-				console.log("Archivo actual recordado:", currentFileId);
-			}
-
 			// INICIALIZAR MONITOREO DE CONEXIÓN
 			iniciarMonitoreoConexion();
 
-			// VERIFICAR SI HAY PENDIENTES DE SINCRONIZAR
-			verificarPendientesAlIniciar();
+			// Verificar si hay datos pendientes o un archivo activo
+			const savedFileId = localStorage.getItem(`elite_current_file_${currentUser}`);
+			const draftJSON = localStorage.getItem(`elite_draft_${currentUser}`);
+			const pendingJSON = localStorage.getItem(`elite_pending_sync_${currentUser}`);
 
-			inicializarDatos();
-			
-			// VERIFICAR SI ES PRIMERA VEZ O SI DEBE MOSTRAR TUTORIAL
+			if (savedFileId || draftJSON || pendingJSON) {
+				// Hay datos: preguntar si continuar o empezar de nuevo
+				mostrarPantallaInicio(true);
+			} else {
+				// Primera vez o sin datos: mostrar estado en blanco
+				mostrarPantallaInicio(false);
+			}
+		}
+
+		/**
+		 * Muestra la pantalla de inicio con opciones de Cargar o Nuevo
+		 */
+		function mostrarPantallaInicio(hayDatos) {
+			const appContent = document.getElementById('app-content');
+			appContent.style.display = 'block';
+
+			// Crear pantalla de inicio si no existe
+			let blankScreen = document.getElementById('blank-start-screen');
+			if (!blankScreen) {
+				blankScreen = document.createElement('div');
+				blankScreen.id = 'blank-start-screen';
+				blankScreen.className = 'blank-start-screen';
+				blankScreen.innerHTML = `
+					<div class="blank-start-content">
+						<img src="Logo/ZAN--.png" alt="ZAN Logo" class="blank-logo">
+						<h2 class="blank-title">ZAN Tabla de Valores</h2>
+						<p class="blank-subtitle">Gestión semanal de pedidos y valores</p>
+
+						<div class="blank-actions">
+							<button class="blank-btn blank-btn-primary" id="blank-btn-new" onclick="nuevoDesdeBlanco()">
+								<i class="fa-solid fa-plus-circle"></i>
+								<span>Nuevo Trabajo</span>
+								<small>Empezar desde cero</small>
+							</button>
+							<button class="blank-btn blank-btn-accent" id="blank-btn-template" onclick="bocetoDesdeBlanco()">
+								<i class="fa-solid fa-clone"></i>
+								<span>Boceto / Plantilla</span>
+								<small>Cargar solo configuración de un archivo existente</small>
+							</button>
+							<button class="blank-btn blank-btn-secondary" id="blank-btn-load" onclick="cargarDesdeBlanco()">
+								<i class="fa-solid fa-folder-open"></i>
+								<span>Cargar Archivo</span>
+								<small>Abrir un archivo guardado con datos</small>
+							</button>
+							${hayDatos ? `
+							<button class="blank-btn blank-btn-outline" id="blank-btn-continue" onclick="continuarDesdeBlanco()">
+								<i class="fa-solid fa-rotate-left"></i>
+								<span>Continuar</span>
+								<small>Restaurar último borrador</small>
+							</button>` : ''}
+						</div>
+
+						<div class="blank-footer">
+							<small>Presiona <kbd>Ctrl+S</kbd> para guardar · <kbd>Ctrl+Z</kbd> para deshacer</small>
+						</div>
+					</div>
+				`;
+				appContent.insertBefore(blankScreen, appContent.firstChild);
+			}
+			blankScreen.style.display = 'flex';
+
+			// Ocultar el grid principal si existe
+			const mainGrid = document.getElementById('main-grid');
+			if (mainGrid) mainGrid.style.display = 'none';
+			const tabsNav = document.getElementById('semanas-tabs-nav');
+			if (tabsNav) tabsNav.style.display = 'none';
+		}
+
+		/**
+		 * Oculta la pantalla en blanco y muestra el editor
+		 */
+		function ocultarPantallaInicio() {
+			const blankScreen = document.getElementById('blank-start-screen');
+			if (blankScreen) blankScreen.style.display = 'none';
+
+			const mainGrid = document.getElementById('main-grid');
+			if (mainGrid) mainGrid.style.display = '';
+			const tabsNav = document.getElementById('semanas-tabs-nav');
+			if (tabsNav) tabsNav.style.display = '';
+		}
+
+		/**
+		 * Nuevo trabajo: empezar desde cero
+		 */
+		function nuevoDesdeBlanco() {
+			proveedores = JSON.parse(JSON.stringify(PROVEEDORES_INICIALES));
+			productosBase = JSON.parse(JSON.stringify(PRODUCTOS_INICIALES));
+			valorCupoBase = 8094;
+			currentFileId = null;
+			descuentosPorSemana = {};
+			descuentosGlobalActivo = true;
+
+			document.getElementById('main-mes').value = 'Enero';
+			document.getElementById('main-contrato').value = '';
+			document.getElementById('num-semanas').value = '4';
+
+			ocultarPantallaInicio();
+			initGrid();
+			actualizarResumen();
+
+			// Inicializar sistema de undo
+			if (typeof UndoManager !== 'undefined') {
+				UndoManager.clear();
+				setTimeout(() => UndoManager.push(), 100);
+			}
+
+			// Verificar tutorial
 			const tutorialVisto = localStorage.getItem(`tutorial_visto_${currentUser}`);
 			if (tutorialVisto !== 'true') {
 				setTimeout(() => {
-					zanConfirm({ title: 'Tutorial de bienvenida', msg: 'Puedes volver a verlo desde el botón ? en cualquier momento.', tipo: 'info', okLabel: 'Ver tutorial', cancelLabel: 'Ahora no' }).then(ok => {
+					zanConfirm({ title: 'Tutorial de bienvenida', msg: '¿Deseas ver el tutorial paso a paso?', tipo: 'info', okLabel: 'Ver tutorial', cancelLabel: 'Ahora no' }).then(ok => {
 						if (ok) { startTutorial('completo'); } else { marcarTutorialVisto(); }
 					});
-				}, 1000);
+				}, 500);
 			}
+
+			Toast.info('Nuevo espacio de trabajo creado', { title: 'Listo para trabajar' });
+		}
+
+		// Flag para rastrear si venimos de la pantalla en blanco
+		let _desdePantallaBlanca = false;
+
+		/**
+		 * Cargar archivo: abrir el gestor de archivos
+		 */
+		function cargarDesdeBlanco() {
+			_desdePantallaBlanca = true;
+			// NO ocultar la pantalla aún - se oculta cuando se carga un archivo
+			toggleDrawer('archivo');
+		}
+
+		/**
+		 * Continuar: restaurar el último borrador
+		 */
+		function continuarDesdeBlanco() {
+			ocultarPantallaInicio();
+			inicializarDatos();
+		}
+
+		// ===== MODO BOCETO / PLANTILLA =====
+		let _modoBoceto = false;
+
+		/**
+		 * Boceto: abrir selector de archivos en modo plantilla
+		 * Solo carga configuración (proveedores, productos, semanas)
+		 */
+		function bocetoDesdeBlanco() {
+			_modoBoceto = true;
+			_desdePantallaBlanca = true;
+			// Abrir drawer con indicador de modo boceto
+			toggleDrawer('archivo');
+
+			// Actualizar título del drawer para indicar modo boceto
+			setTimeout(() => {
+				const title = document.getElementById('file-manager-title');
+				if (title) title.textContent = 'SELECCIONAR PLANTILLA';
+				const header = document.querySelector('#drawer-archivo .file-manager-header h3');
+				if (header) header.style.color = '#a78bfa';
+			}, 100);
+
+			Toast.info('Selecciona un archivo para usar como plantilla', { title: 'Modo Boceto' });
+		}
+
+		/**
+		 * Carga solo la configuración de un archivo (proveedores, productos, semanas)
+		 * sin cargar los datos semanales (días, cupos, productos ingresados)
+		 */
+		async function cargarBoceto(key) {
+			const snap = await db.ref(`files/${currentUser}/${key}`).once('value');
+			const data = snap.val();
+
+			if (!data) {
+				Toast.error("No se encontraron datos para este archivo");
+				_modoBoceto = false;
+				return;
+			}
+
+			// Cargar SOLO configuración
+			if (data.proveedores) proveedores = JSON.parse(JSON.stringify(data.proveedores));
+			if (data.productosBase) productosBase = JSON.parse(JSON.stringify(data.productosBase));
+			if (data.valorCupo) valorCupoBase = data.valorCupo;
+			if (data.numSemanas) {
+				document.getElementById('num-semanas').value = data.numSemanas;
+			}
+
+			// NO cargar: mes, contrato, datos semanales, descuentos
+			document.getElementById('main-mes').selectedIndex = 0;
+			document.getElementById('main-contrato').value = '';
+
+			// Ocultar pantalla en blanco
+			_modoBoceto = false;
+			_desdePantallaBlanca = false;
+			ocultarPantallaInicio();
+
+			// Inicializar grilla vacía con la configuración cargada
+			currentFileId = null; // No es un archivo existente, es una plantilla
+			initGrid();
+			actualizarResumen();
+
+			// Inicializar undo
+			if (typeof UndoManager !== 'undefined') {
+				UndoManager.clear();
+				setTimeout(() => UndoManager.push(), 100);
+			}
+
+			// Cerrar drawer y mostrar mensaje
+			closeAllDrawers();
+
+			const nombrePlantilla = data.displayName || `${data.mes} - ${data.contrato}`;
+			Toast.success(`Configuración cargada de: ${nombrePlantilla}`, { title: 'Plantilla lista' });
+			Toast.info('Selecciona el mes e ingresa el ID del contrato para comenzar', { title: 'Listo para trabajar' });
 		}
 
 		function verificarPendientesAlIniciar() {
@@ -122,7 +316,7 @@
 
         function inicializarDatos() {
             const saved = localStorage.getItem(`elite_draft_${currentUser}`);
-            
+
             if (saved) {
                 const data = JSON.parse(saved);
                 proveedores = data.proveedores || [];
@@ -141,6 +335,9 @@
             });
 
             cargarLocal();
+
+            // Inicializar sistema de undo después de cargar datos
+            if (typeof initUndoSystem === 'function') initUndoSystem();
         }
 
         function cerrarSesion() {
@@ -316,13 +513,16 @@
             if (!prov) return;
 
             const productosAsignados = productosBase.filter(p => p.proveedor === id).length;
-            
-            let mensaje = productosAsignados > 0 
+
+            let mensaje = productosAsignados > 0
                 ? `¿Eliminar "${prov.nombre}"? Tiene ${productosAsignados} productos asignados que quedarán sin proveedor.`
                 : `¿Eliminar "${prov.nombre}"?`;
 
             const _okElimProv = await zanConfirm({ title: 'Eliminar proveedor', msg: mensaje, tipo: 'danger', okLabel: 'Eliminar' });
             if (!_okElimProv) return;
+
+            // Guardar snapshot para poder deshacer
+            if (typeof UndoManager !== 'undefined') UndoManager.push();
 
             const proveedoresRestantes = proveedores.filter(p => p.id !== id);
             const nuevoProveedorId = proveedoresRestantes.length > 0 ? proveedoresRestantes[0].id : null;
@@ -398,7 +598,9 @@
         }
 
         async function eliminarProducto(index) {
-            if (!await zanConfirm({ title: 'Eliminar producto', msg: '¿Eliminar este producto del listado?', tipo: 'danger', okLabel: 'Eliminar' })) return;
+            if (!await zanConfirm({ title: 'Eliminar producto', msg: '¿Eliminar este producto del listado? Puedes deshacer con Ctrl+Z.', tipo: 'danger', okLabel: 'Eliminar' })) return;
+            // Guardar snapshot para poder deshacer
+            if (typeof UndoManager !== 'undefined') UndoManager.push();
             productosBase.splice(index, 1);
             renderizarProductos();
         }
@@ -777,7 +979,8 @@
             if (card) card.classList.toggle('excedido', dist < 0);
 
             actualizarTabIndicadores(s);
-            actualizarResumen();
+            // Debounce del resumen para evitar lag en inputs rápidos
+            debounceInput('resumen-global', actualizarResumen, 200);
         }
 
         // ===== RESUMEN MEJORADO CON RACIONES =====
@@ -2359,9 +2562,13 @@
             
             actualizarResumen();
             marcarCambio();
-            
+
+            // Si venimos de la pantalla en blanco, ocultarla
+            if (typeof _desdePantallaBlanca !== 'undefined') _desdePantallaBlanca = false;
+            if (typeof ocultarPantallaInicio === 'function') ocultarPantallaInicio();
+
             document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            
+
             Toast.success(`Importación completada: ${proveedores.length} proveedores, ${productosBase.length} productos`, { title: 'Importación exitosa' });
             
         } catch (err) {

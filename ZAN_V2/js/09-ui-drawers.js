@@ -14,6 +14,12 @@
                     busquedaActual = '';
                     document.getElementById('buscar-archivos').value = '';
                     listarCloud();
+
+                    // Mostrar/ocultar indicador de modo boceto
+                    const bocetoBanner = document.getElementById('boceto-banner');
+                    if (bocetoBanner) {
+                        bocetoBanner.style.display = (typeof _modoBoceto !== 'undefined' && _modoBoceto) ? 'flex' : 'none';
+                    }
                 }
                 if (id === 'resumen') actualizarResumen();
                 if (id === 'contabilidad') actualizarVistaContabilidad();
@@ -24,9 +30,41 @@
             }
         }
 
+        function cancelarBoceto() {
+            _modoBoceto = false;
+            _desdePantallaBlanca = false;
+            closeAllDrawers();
+            // Restaurar título del drawer
+            const title = document.getElementById('file-manager-title');
+            if (title) title.textContent = 'REGISTROS EN NUBE';
+            const header = document.querySelector('#drawer-archivo .file-manager-header h3');
+            if (header) header.style.color = 'var(--primary-gold)';
+        }
+
         function closeAllDrawers() {
             document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
             document.getElementById('overlay').classList.remove('active');
+
+            // Ocultar banner de boceto
+            const bocetoBanner = document.getElementById('boceto-banner');
+            if (bocetoBanner) bocetoBanner.style.display = 'none';
+
+            // Restaurar título del drawer
+            const title = document.getElementById('file-manager-title');
+            if (title) title.textContent = 'REGISTROS EN NUBE';
+            const header = document.querySelector('#drawer-archivo .file-manager-header h3');
+            if (header) header.style.color = 'var(--primary-gold)';
+
+            // Si venimos de la pantalla en blanco y no se cargó archivo, volver a mostrarla
+            if (typeof _desdePantallaBlanca !== 'undefined' && _desdePantallaBlanca) {
+                if (!currentFileId && document.getElementById('blank-start-screen')) {
+                    _desdePantallaBlanca = false;
+                    mostrarPantallaInicio(true);
+                } else {
+                    _desdePantallaBlanca = false;
+                    ocultarPantallaInicio();
+                }
+            }
         }
 
         function actualizarVistaContabilidad() {

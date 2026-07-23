@@ -565,10 +565,13 @@
         limpiarSemana = async function (s) {
             const teniaNovedades = getDescuentosSemana(s).length > 0;
             const msg = teniaNovedades
-                ? 'Se borrarán todos los datos ingresados en esta semana, incluyendo las novedades/descuentos registrados.'
-                : 'Se borrarán todos los datos ingresados en esta semana.';
+                ? 'Se borrarán todos los datos ingresados en esta semana, incluyendo las novedades/descuentos registrados. Puedes deshacer con Ctrl+Z.'
+                : 'Se borrarán todos los datos ingresados en esta semana. Puedes deshacer con Ctrl+Z.';
 
             if (!await zanConfirm({ title: `Limpiar Semana ${s}`, msg, tipo: 'danger', okLabel: 'Limpiar' })) return;
+
+            // Guardar snapshot antes de limpiar (para poder deshacer)
+            if (typeof UndoManager !== 'undefined') UndoManager.push();
 
             productosBase.forEach((p, i) => {
                 const fac = document.getElementById(`fac-${s}-${i}`);
@@ -595,10 +598,13 @@
         limpiarTodo = async function () {
             if (!await zanConfirm({
                 title: 'Limpiar todo',
-                msg: 'Se eliminarán todos los datos de semanas, días, cupos, contrato, novedades/descuentos y configuración. Esta acción no se puede deshacer.',
+                msg: 'Se eliminarán todos los datos de semanas, días, cupos, contrato, novedades/descuentos y configuración. Puedes deshacer con Ctrl+Z.',
                 tipo: 'danger',
                 okLabel: 'Limpiar todo'
             })) return;
+
+            // Guardar snapshot antes de limpiar todo (para poder deshacer)
+            if (typeof UndoManager !== 'undefined') UndoManager.push();
 
             const semanas = getNumSemanasActual();
 

@@ -99,7 +99,7 @@
         }
         
         const TUTORIAL_STEPS = {
-			
+
             completo: [
                 {
                     id: 'bienvenida',
@@ -107,6 +107,22 @@
                     icon: 'fa-hand-wave',
                     content: 'Este es el sistema de gestión de compras y presupuestos. Te guiaré paso a paso por todas las funcionalidades principales.',
                     tip: 'Puedes acceder a este tutorial en cualquier momento desde el botón de ayuda (?) en la esquina inferior derecha.',
+                    position: 'center'
+                },
+                {
+                    id: 'pantalla-inicio',
+                    title: 'Pantalla de Inicio',
+                    icon: 'fa-door-open',
+                    content: 'Al iniciar sesión verás la pantalla de inicio con 4 opciones:<br><br>• <strong>Nuevo Trabajo:</strong> Empezar desde cero con configuración predeterminada<br>• <strong>Boceto / Plantilla:</strong> Cargar solo proveedores y productos de un archivo existente<br>• <strong>Cargar Archivo:</strong> Abrir un archivo completo con todos los datos<br>• <strong>Continuar:</strong> Restaurar el último borrador que estabas editando',
+                    tip: 'El modo Boceto es ideal para empezar rápido usando una configuración que ya conoces.',
+                    position: 'center'
+                },
+                {
+                    id: 'atajos-teclado',
+                    title: 'Atajos de Teclado',
+                    icon: 'fa-keyboard',
+                    content: 'ZAN tiene atajos para trabajar más rápido:<br><br>• <strong>Ctrl+Z:</strong> Deshacer última acción<br>• <strong>Ctrl+Shift+Z:</strong> Rehacer acción<br>• <strong>Ctrl+S:</strong> Guardar en la nube<br>• <strong>Escape:</strong> Cerrar paneles/modales<br><br>Los botones de Deshacer/Rehacer también aparecen en la barra superior.',
+                    tip: 'El sistema guarda automáticamente 50 pasos de historial para deshacer.',
                     position: 'center'
                 },
                 {
@@ -124,23 +140,68 @@
                     title: 'Mes y Contrato',
                     icon: 'fa-file-contract',
                     content: 'Selecciona el mes de trabajo e ingresa el ID del contrato. Estos datos aparecerán en todos los reportes exportados.',
+                    tip: 'Recuerda guardar con Ctrl+S o el botón Guardar después de hacer cambios.',
                     position: 'bottom'
+                },
+                {
+                    id: 'modos-vista',
+                    title: 'Modos de Visualización',
+                    icon: 'fa-table-columns',
+                    content: 'ZAN ofrece 4 formas de ver las semanas:<br><br>• <strong>Pestañas:</strong> Una semana a la vez (por defecto)<br>• <strong>Tarjetas:</strong> Todas las semanas lado a lado<br>• <strong>Lista:</strong> Scroll vertical continuo<br>• <strong>Acordeón:</strong> Paneles expandibles/colapsables<br><br>Cambia desde Ajustes en la barra superior.',
+                    tip: 'Los modos se guardan automáticamente y se restauran al recargar.',
+                    position: 'center'
+                },
+                {
+                    id: 'temas-color',
+                    title: 'Temas de Color',
+                    icon: 'fa-palette',
+                    content: 'ZAN incluye <strong>18 temas de color</strong> para el modo oscuro:<br><br>Dorado, Océano, Quantum, Crepúsculo, Amatista, Neón, Ártico, Sakura, Volcán, Esmeralda, Tóxico, Ámbar, Platino, Titanio, Ciber-Ártico, Nebulosa, Meteoro y Cuarzo Blanco.<br><br>Selecciona desde Ajustes → Tema de color.',
+                    tip: 'Los temas claros mantienen una paleta neutra legible.',
+                    position: 'center'
                 },
                 {
                     id: 'tabla-semanal',
                     target: 'main-grid',
                     title: 'Tablas Semanales',
                     icon: 'fa-table',
-                    content: 'Cada semana muestra los proveedores y sus productos. Ingresa: <strong>Factura</strong>, <strong>Cantidad</strong> y el sistema calcula el <strong>Total</strong> automáticamente.',
+                    content: 'Cada semana muestra los proveedores y sus productos. Ingresa: <strong>Factura</strong>, <strong>Cantidad</strong> y el sistema calcula el <strong>Total</strong> automáticamente.<br><br><strong>Presupuesto:</strong> Días × Cupos × Valor Ración = Presupuesto semanal',
                     tip: 'Los badges muestran: CL (Compra Local) y las siglas del proveedor.',
                     position: 'top'
+                },
+                {
+                    id: 'descuentos',
+                    title: 'Novedades / Descuentos',
+                    icon: 'fa-user-minus',
+                    content: 'Registra novedades que descuentan del valor de Distribuidora:<br><br>• <strong>Inasistencias:</strong> 1 día, 2 días, 3+ días<br>• <strong>Reducción de cupos:</strong> Menos niños<br>• <strong>Otras novedades:</strong> Permisos, incapacidades, etc.<br><br>Cada novedad calcula: Días × Cupos × Valor Ración = Descuento',
+                    tip: 'Puedes activar/desactivar cada novedad individualmente o todas de golpe.',
+                    position: 'center'
+                },
+                {
+                    id: 'distribuidora',
+                    target: 'nav-distribuidora',
+                    title: 'Valores Distribuidora',
+                    icon: 'fa-sack-dollar',
+                    content: 'Calcula el presupuesto restante después de compras:<br><br><strong>Distribuidora = Presupuesto - Compras - Descuentos</strong><br><br>Selecciona las semanas para sumar sus valores y ver el consolidado.',
+                    tip: 'Los descuentos de novedades ya están aplicados en este cálculo.',
+                    position: 'right',
+                    action: () => toggleDrawer('distribuidora')
+                },
+                {
+                    id: 'facturas',
+                    target: 'nav-facturas',
+                    title: 'Validar Facturas',
+                    icon: 'fa-file-invoice',
+                    content: 'Compara las facturas registradas contra lo ingresado en las tablas:<br><br>• Resumen agrupado por proveedor<br>• Detalle de cada factura<br>• Comparación de valores<br>• Exportación a CSV o Excel',
+                    tip: 'Útil para verificar que los datos coincidan con las facturas reales.',
+                    position: 'right',
+                    action: () => toggleDrawer('facturas')
                 },
                 {
                     id: 'proveedores',
                     target: 'nav-proveedores',
                     title: 'Gestionar Proveedores',
                     icon: 'fa-truck-field',
-                    content: 'Crea, edita y organiza tus proveedores. Puedes:<br>• Cambiar nombres y colores<br>• Reordenar con flechas<br>• Eliminar proveedores no usados',
+                    content: 'Crea, edita y organiza tus proveedores. Puedes:<br>• Cambiar nombres y colores<br>• Reordenar con flechas<br>• Eliminar proveedores no usados<br><br>También configuras el <strong>Valor de Ración HCB</strong> que se usa para calcular presupuestos y descuentos.',
                     tip: 'El orden de proveedores aquí se refleja en las tablas semanales.',
                     position: 'right',
                     action: () => toggleModal('modal-proveedores')
@@ -177,16 +238,24 @@
 						document.getElementById('modal-productos').style.display = 'none';
 					}
                 },
-				
                 {
                     id: 'resumen',
                     target: 'nav-resumen',
                     title: 'Resumen y Análisis',
                     icon: 'fa-chart-pie',
-                    content: 'Visualiza el análisis completo de gastos:<br>• Total por proveedor y producto<br>• Cantidades acumuladas (kg, lb, und)<br>• Indicador CL por producto<br>• Gráfico de distribución<br>• % de compras locales<br>• <strong>Raciones totales por semana</strong>',
+                    content: 'Visualiza el análisis completo de gastos:<br>• Total por proveedor y producto<br>• Cantidades acumuladas (kg, lb, und)<br>• Indicador CL por producto<br>• Gráfico de distribución<br>• % de compras locales<br>• <strong>Raciones totales por semana</strong><br>• <strong>Descuentos por novedades aplicados</strong>',
                     tip: 'Los paneles de proveedores son plegables. Haz clic en el encabezado para expandir/contraer.',
                     position: 'right',
                     action: () => toggleDrawer('resumen')
+                },
+                {
+                    id: 'guardar-cargar',
+                    target: 'nav-guardar',
+                    title: 'Guardar y Cargar',
+                    icon: 'fa-cloud',
+                    content: '<strong>Guardar:</strong> Sube tus datos a Firebase (la nube). Si no hay internet, se guarda localmente y sincroniza después.<br><br><strong>Cargar:</strong> Abre el gestor de archivos con carpetas para organizar tus tablas guardadas.',
+                    tip: 'La cola "Sincronizar pendientes" aparece cuando tienes guardados locales sin subir.',
+                    position: 'right'
                 },
                 {
                     id: 'exportar',
@@ -220,7 +289,7 @@
                     id: 'final',
                     title: '¡Tutorial Completado!',
                     icon: 'fa-trophy',
-                    content: 'Ya conoces todas las funcionalidades de ZAN. Recuerda:<br><br>• El botón <strong>?</strong> siempre está disponible para volver a ver este tutorial<br>• Guarda en la nube periódicamente<br>• Exporta respaldos semanales<br><br>¡Empieza a gestionar tus compras de manera eficiente!',
+                    content: 'Ya conoces todas las funcionalidades de ZAN. Recuerda:<br><br>• El botón <strong>?</strong> siempre está disponible para volver a ver este tutorial<br>• <strong>Ctrl+Z</strong> para deshacer errores<br>• <strong>Ctrl+S</strong> para guardar rápido<br>• Guarda en la nube periódicamente<br>• Exporta respaldos semanales<br><br>¡Empieza a gestionar tus compras de manera eficiente!',
                     tip: '¿Tienes dudas? Revisa secciones específicas desde el menú de ayuda.',
                     position: 'center'
                 }
@@ -459,6 +528,100 @@
                     tip: 'Disponible en CSV (para sistemas contables) y Excel (para revisión humana).',
                     position: 'right',
                     action: () => toggleDrawer('contabilidad')
+                }
+            ],
+
+            descuentos: [
+                {
+                    id: 'desc-intro',
+                    title: 'Novedades / Descuentos',
+                    icon: 'fa-user-minus',
+                    content: 'Registra novedades que afectan el valor a pagar a la Distribuidora. Estos descuentos se restan automáticamente del cálculo de Distribuidora.',
+                    position: 'center'
+                },
+                {
+                    id: 'desc-tipos',
+                    title: 'Tipos de Novedad',
+                    icon: 'fa-list',
+                    content: 'Puedes registrar diferentes tipos de novedades:<br><br>• <strong>1 día de inasistencia:</strong> Para faltas de un día<br>• <strong>2 días de inasistencia:</strong> Faltas de dos días<br>• <strong>3+ días de inasistencia:</strong> Faltas prolongadas<br>• <strong>Menos niños:</strong> Reducción de cupos<br>• <strong>Otra novedad:</strong> Permisos, incapacidades, etc.',
+                    tip: 'Cada tipo tiene un color diferente para identificarlo rápidamente.',
+                    position: 'center'
+                },
+                {
+                    id: 'desc-calculo',
+                    title: 'Cálculo del Descuento',
+                    icon: 'fa-calculator',
+                    content: 'El descuento se calcula automáticamente:<br><br><strong>Días × Cupos × Valor Ración = Descuento</strong><br><br>• <strong>Días:</strong> Días de inasistencia o reducción<br>• <strong>Cupos:</strong> Niños o cupos afectados<br>• <strong>Valor Ración:</strong> Configurado en Proveedores',
+                    tip: 'Puedes agregar una nota descriptiva para recordar el motivo.',
+                    position: 'center'
+                },
+                {
+                    id: 'desc-agregar',
+                    target: 'nav-descuentos',
+                    title: 'Agregar Novedad',
+                    icon: 'fa-plus-circle',
+                    content: 'Para agregar una novedad:<br><br>1. Haz clic en "+ Novedad" en la semana deseada<br>2. Selecciona el tipo de novedad<br>3. Ingresa días y cupos afectados<br>4. Agrega una nota (opcional)<br>5. Guarda<br><br>La novedad aparecerá en la lista de la semana.',
+                    tip: 'Las novedades se guardan automáticamente.',
+                    position: 'right'
+                },
+                {
+                    id: 'desc-activo',
+                    title: 'Activar / Desactivar',
+                    icon: 'fa-toggle-on',
+                    content: 'Cada novedad tiene un interruptor para activarla o desactivarla:<br><br>• <strong>Activa:</strong> Se descuenta de Distribuidora<br>• <strong>Inactiva:</strong> Solo queda registrada, no se descuenta<br><br>También hay un interruptor maestro que activa/desactiva TODOS los descuentos.',
+                    tip: 'Útil si quieres ver el impacto de los descuentos sin aplicarlos.',
+                    position: 'center'
+                },
+                {
+                    id: 'desc-resumen',
+                    title: 'Resumen de Descuentos',
+                    icon: 'fa-chart-pie',
+                    content: 'El drawer de Novedades muestra:<br><br>• Total de descuento activo<br>• Novedades registradas<br>• Semanas afectadas<br>• Desglose por tipo<br>• Detalle por semana<br><br>Este resumen también aparece en el Análisis General.',
+                    tip: 'Los descuentos se aplican automáticamente al valor de Distribuidora.',
+                    position: 'center'
+                },
+                {
+                    id: 'desc-final',
+                    title: '¡Listo para Usar!',
+                    icon: 'fa-check-circle',
+                    content: 'Recuerda:<br><br>✓ Las novedades se guardan con el archivo<br>✓ Se exportan en el Excel<br>✓ Afectan el cálculo de Distribuidora<br>✓ Puedes deshacer con Ctrl+Z<br><br>¡Registra todas las novedades para tener un cálculo preciso!',
+                    tip: 'Visita este tutorial desde el menú de ayuda (?).',
+                    position: 'center'
+                }
+            ],
+
+            distribuidora: [
+                {
+                    id: 'dist-intro',
+                    title: 'Valores Distribuidora',
+                    icon: 'fa-sack-dollar',
+                    content: 'La Distribuidora es el valor restante del presupuesto después de las compras. Este cálculo te indica cuánto dinero queda disponible.',
+                    position: 'center'
+                },
+                {
+                    id: 'dist-formula',
+                    title: 'Fórmula de Cálculo',
+                    icon: 'fa-calculator',
+                    content: '<strong>Distribuidora = Presupuesto - Compras - Descuentos</strong><br><br>• <strong>Presupuesto:</strong> Días × Cupos × Valor Ración<br>• <strong>Compras:</strong> Total de productos comprados<br>• <strong>Descuentos:</strong> Novedades activas registradas',
+                    tip: 'Si el valor es negativo, significa que se excedió el presupuesto.',
+                    position: 'center'
+                },
+                {
+                    target: 'nav-distribuidora',
+                    title: 'Ver Distribuidora',
+                    icon: 'fa-arrow-pointer',
+                    content: 'Accede al panel desde el menú lateral. Selecciona las semanas que quieres incluir en el cálculo y verás el total consolidado.',
+                    tip: 'Los descuentos de novedades ya están aplicados en este cálculo.',
+                    position: 'right',
+                    action: () => toggleDrawer('distribuidora')
+                },
+                {
+                    id: 'dist-ejemplo',
+                    title: 'Ejemplo Práctico',
+                    icon: 'fa-lightbulb',
+                    content: '<strong>Semana 1:</strong><br>• Presupuesto: 5 días × 100 niños × $8,094 = $4,047,000<br>• Compras: $2,500,000<br>• Descuento: 1 día × 20 niños × $8,094 = $161,880<br>• <strong>Distribuidora: $1,385,120</strong>',
+                    tip: 'El valor de ración se configura en Gestión de Proveedores.',
+                    position: 'center'
                 }
             ]
         };

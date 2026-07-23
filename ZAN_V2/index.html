@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="css/08-tabs.css">
     <link rel="stylesheet" href="css/09-temas-ajustes.css">
     <link rel="stylesheet" href="css/10-descuentos.css">
+    <link rel="stylesheet" href="css/11-undo-blank.css">
 </head>
 <body>
 
@@ -77,6 +78,9 @@
         <div class="help-menu-item" onclick="startTutorial('precios')">
             <i class="fa-solid fa-tags"></i><span>Precios por Semana</span>
         </div>
+        <div class="help-menu-item" onclick="startTutorial('descuentos')">
+            <i class="fa-solid fa-user-minus"></i><span>Novedades / Descuentos</span>
+        </div>
         <div class="help-menu-item" onclick="startTutorial('proveedores')">
             <i class="fa-solid fa-truck-field"></i><span>Proveedores</span>
         </div>
@@ -88,6 +92,9 @@
         </div>
         <div class="help-menu-item" onclick="startTutorial('resumen')">
             <i class="fa-solid fa-chart-pie"></i><span>Resumen y análisis</span>
+        </div>
+        <div class="help-menu-item" onclick="startTutorial('distribuidora')">
+            <i class="fa-solid fa-sack-dollar"></i><span>Valores Distribuidora</span>
         </div>
         <div class="help-menu-item" onclick="startTutorial('exportar')">
             <i class="fa-solid fa-file-export"></i><span>Exportar datos</span>
@@ -293,6 +300,17 @@
                 <span id="sync-text-top" style="font-size:10px; color:var(--text-dim); font-weight:500;">Sincronizado</span>
             </div>
 
+            <div class="undo-redo-bar" style="margin-right:10px;">
+                <button class="undo-btn" onclick="UndoManager.undo(); Toast.info('Acción deshecha', {title:'Deshacer'});"
+                        title="Deshacer (Ctrl+Z)" disabled>
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+                <button class="redo-btn" onclick="UndoManager.redo(); Toast.info('Acción rehecha', {title:'Rehacer'});"
+                        title="Rehacer (Ctrl+Shift+Z)" disabled>
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+
             <div class="week-selector" id="week-selector">
                 <a class="nav-item" id="nav-guardar" onclick="guardarFirebase(); toggleSidebarMobile();">
                     <i class="fa-solid fa-cloud"></i><span>Guardar</span>
@@ -333,6 +351,14 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
+        </div>
+        <!-- Banner modo Boceto -->
+        <div id="boceto-banner" class="boceto-banner" style="display:none;">
+            <i class="fa-solid fa-clone"></i>
+            <span><b>Modo Boceto:</b> Selecciona un archivo para cargar su configuración (proveedores, productos, semanas). Los datos semanales NO se cargarán.</span>
+            <button class="btn btn-sm" onclick="cancelarBoceto()" style="margin-left:auto; background:rgba(167,139,250,0.2); color:#a78bfa; border:1px solid rgba(167,139,250,0.4);">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+            </button>
         </div>
         <div class="breadcrumbs-container" id="breadcrumbs">
             <span class="breadcrumb-item active" onclick="navegarA('root')">
@@ -955,6 +981,7 @@
     <script src="js/08-firebase.js"></script>
     <script src="js/09-ui-drawers.js"></script>
     <script src="js/10-descuentos.js"></script>
+    <script src="js/11-undo-redo.js"></script>
 
 </body>
 </html>

@@ -1,0 +1,320 @@
+/* ============================================================
+   PANTALLA EN BLANCO DE INICIO
+   ============================================================ */
+
+.blank-start-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-main, #0a0a0c);
+    animation: blankFadeIn 0.4s ease;
+}
+
+@keyframes blankFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.blank-start-content {
+    text-align: center;
+    max-width: 500px;
+    padding: 40px 30px;
+}
+
+.blank-logo {
+    width: 180px;
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(212,175,55,0.4));
+    margin-bottom: 20px;
+    animation: blankLogoPulse 3s ease-in-out infinite;
+}
+
+@keyframes blankLogoPulse {
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(212,175,55,0.4)); }
+    50% { filter: drop-shadow(0 0 30px rgba(212,175,55,0.6)); }
+}
+
+.blank-title {
+    font-size: 1.8em;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-gold, #d4af37), var(--accent-cyan, #00f2ff));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+}
+
+.blank-subtitle {
+    color: var(--text-dim, #666);
+    font-size: 14px;
+    margin-bottom: 40px;
+}
+
+.blank-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+.blank-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    font-family: inherit;
+}
+
+.blank-btn i {
+    font-size: 22px;
+    width: 24px;
+    text-align: center;
+}
+
+.blank-btn span {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.blank-btn small {
+    display: block;
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+.blank-btn-primary {
+    background: linear-gradient(135deg, var(--primary-gold, #d4af37), #b8941f);
+    color: #000;
+    box-shadow: 0 4px 20px rgba(212,175,55,0.3);
+}
+
+.blank-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(212,175,55,0.5);
+}
+
+.blank-btn-secondary {
+    background: rgba(0,242,255,0.1);
+    color: var(--accent-cyan, #00f2ff);
+    border: 1px solid rgba(0,242,255,0.3);
+}
+
+.blank-btn-secondary:hover {
+    background: rgba(0,242,255,0.2);
+    transform: translateY(-2px);
+}
+
+.blank-btn-accent {
+    background: rgba(167,139,250,0.12);
+    color: #a78bfa;
+    border: 1px solid rgba(167,139,250,0.3);
+}
+
+.blank-btn-accent:hover {
+    background: rgba(167,139,250,0.22);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(167,139,250,0.2);
+}
+
+.blank-btn-outline {
+    background: transparent;
+    color: var(--text-dim, #888);
+    border: 1px solid var(--border-color, #333);
+}
+
+.blank-btn-outline:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary, #fff);
+}
+
+.blank-footer {
+    margin-top: 50px;
+    color: var(--text-dim, #555);
+    font-size: 11px;
+}
+
+.blank-footer kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-family: monospace;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+}
+
+/* ============================================================
+   BOTONES DE UNDO/REDO EN LA UI
+   ============================================================ */
+
+.undo-redo-bar {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.undo-btn, .redo-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color, #333);
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim, #888);
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 12px;
+}
+
+.undo-btn:hover:not(:disabled), .redo-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.1);
+    color: var(--accent-cyan, #00f2ff);
+    border-color: var(--accent-cyan, #00f2ff);
+}
+
+.undo-btn:disabled, .redo-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ============================================================
+   ANIMACIÓN DE GUARDADO
+   ============================================================ */
+
+@keyframes savingPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.nav-item.saving i {
+    animation: savingPulse 0.8s ease infinite;
+    color: var(--accent-cyan, #00f2ff);
+}
+
+/* ============================================================
+   BANNER MODO BOCETO
+   ============================================================ */
+
+.boceto-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    margin: 0 12px 12px 12px;
+    background: rgba(167,139,250,0.1);
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 8px;
+    font-size: 11px;
+    color: #c4b5fd;
+    line-height: 1.4;
+}
+
+.boceto-banner i:first-child {
+    font-size: 16px;
+    color: #a78bfa;
+    flex-shrink: 0;
+}
+
+[data-theme="light"] .boceto-banner {
+    background: rgba(120,80,200,0.08);
+    border-color: rgba(120,80,200,0.25);
+    color: #5b21b6;
+}
+
+[data-theme="light"] .boceto-banner i:first-child {
+    color: #7c3aed;
+}
+
+/* ============================================================
+   MODO CLARO - PANTALLA EN BLANCO
+   ============================================================ */
+
+[data-theme="light"] .blank-start-screen {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
+}
+
+[data-theme="light"] .blank-logo {
+    filter: drop-shadow(0 0 15px rgba(212,175,55,0.3));
+}
+
+[data-theme="light"] .blank-title {
+    background: linear-gradient(135deg, #b8941f, #d4af37);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+[data-theme="light"] .blank-subtitle {
+    color: #666;
+}
+
+[data-theme="light"] .blank-btn-primary {
+    background: linear-gradient(135deg, #d4af37, #b8941f);
+    color: #000;
+    box-shadow: 0 4px 20px rgba(212,175,55,0.25);
+}
+
+[data-theme="light"] .blank-btn-secondary {
+    background: rgba(0,150,160,0.1);
+    color: #0096a0;
+    border: 1px solid rgba(0,150,160,0.3);
+}
+
+[data-theme="light"] .blank-btn-accent {
+    background: rgba(120,80,200,0.1);
+    color: #7c3aed;
+    border: 1px solid rgba(120,80,200,0.3);
+}
+
+[data-theme="light"] .blank-btn-accent:hover {
+    background: rgba(120,80,200,0.18);
+}
+
+[data-theme="light"] .blank-btn-secondary:hover {
+    background: rgba(0,150,160,0.18);
+}
+
+[data-theme="light"] .blank-btn-outline {
+    background: transparent;
+    color: #666;
+    border: 1px solid #ccc;
+}
+
+[data-theme="light"] .blank-btn-outline:hover {
+    background: rgba(0,0,0,0.04);
+    color: #333;
+}
+
+[data-theme="light"] .blank-footer {
+    color: #888;
+}
+
+[data-theme="light"] .blank-footer kbd {
+    background: rgba(0,0,0,0.06);
+    border-color: rgba(0,0,0,0.15);
+}
+
+[data-theme="light"] .undo-btn, [data-theme="light"] .redo-btn {
+    background: rgba(0,0,0,0.03);
+    border-color: #ccc;
+    color: #888;
+}
+
+[data-theme="light"] .undo-btn:hover:not(:disabled),
+[data-theme="light"] .redo-btn:hover:not(:disabled) {
+    background: rgba(0,0,0,0.08);
+    color: #0096a0;
+    border-color: #0096a0;
+}

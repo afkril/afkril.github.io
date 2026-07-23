@@ -1,4 +1,12 @@
         // ===== UTILIDADES =====
+
+        // ===== DEBOUNCE PARA INPUTS (anti-lag) =====
+        const _debounceTimers = {};
+        function debounceInput(key, fn, delay = 150) {
+            clearTimeout(_debounceTimers[key]);
+            _debounceTimers[key] = setTimeout(fn, delay);
+        }
+
         function limpiarNum(t) {
             if (t === null || t === undefined) return 0;
             if (typeof t === 'number') return t;
@@ -53,7 +61,12 @@
 			const text = document.getElementById('sync-text');
 			const dotTop = document.getElementById('sync-dot-top');
 			const textTop = document.getElementById('sync-text-top');
-			
+
+			// Capturar snapshot para undo (debounced para no saturar)
+			debounceInput('undo-snapshot', () => {
+				if (typeof UndoManager !== 'undefined') UndoManager.push();
+			}, 500);
+
 			// Siempre guardar en draft local automáticamente (para no perder datos)
 			guardarLocal();
 			
