@@ -44,8 +44,32 @@
             return proveedores.find(p => p.id === id);
         }
 
-        function getProductosByProveedor(provId) {
-            return productosBase.filter(p => p.proveedor === provId);
+        // ===== IDs ESTABLES DE PRODUCTO =====
+        // Cada producto tiene un id único que NO cambia aunque se reordene,
+        // edite o elimine otro producto. Los inputs de factura/cantidad/valor
+        // de la tabla semanal se referencian por este id (no por posición en el
+        // arreglo), así al eliminar o mover un producto los datos ya diligenciados
+        // de los demás productos no se desordenan.
+        function generarIdProducto() {
+            return 'prod_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+        }
+
+        function asegurarIdsProductos(arr) {
+            (arr || []).forEach(p => {
+                if (!p.id) p.id = generarIdProducto();
+            });
+            return arr;
+        }
+
+        // semana (opcional): si se indica, además de pertenecer al proveedor,
+        // el producto debe ser de uso general (sin soloSemana) o estar
+        // restringido justo a esa semana (productos "Duplicar para esta semana").
+        function getProductosByProveedor(provId, semana) {
+            return productosBase.filter(p => {
+                if (p.proveedor !== provId) return false;
+                if (semana === undefined) return true;
+                return !p.soloSemana || p.soloSemana === semana;
+            });
         }
 
         function detectarUnidad(nombreProducto) {
@@ -122,8 +146,9 @@
 					if (document.getElementById(`dias-${s}`)?.value) return true;
 					if (document.getElementById(`cupos-${s}`)?.value) return true;
 					for (let i = 0; i < productosBase.length; i++) {
-						if (document.getElementById(`cant-${s}-${i}`)?.value) return true;
-						if (document.getElementById(`fac-${s}-${i}`)?.value) return true;
+						const pid = productosBase[i].id;
+						if (document.getElementById(`cant-${s}-${pid}`)?.value) return true;
+						if (document.getElementById(`fac-${s}-${pid}`)?.value) return true;
 					}
 				}
 				return false;
@@ -150,9 +175,10 @@
 				if (cuposActual !== cuposGuardado) return true;
 				
 				for (let i = 0; i < productosBase.length; i++) {
-					const cantActual = document.getElementById(`cant-${s}-${i}`)?.value || "";
-					const facActual = document.getElementById(`fac-${s}-${i}`)?.value || "";
-					const punitActual = document.getElementById(`punit-${s}-${i}`)?.value || "";
+					const pid = productosBase[i].id;
+					const cantActual = document.getElementById(`cant-${s}-${pid}`)?.value || "";
+					const facActual = document.getElementById(`fac-${s}-${pid}`)?.value || "";
+					const punitActual = document.getElementById(`punit-${s}-${pid}`)?.value || "";
 					
 					const itemGuardado = guardado.semanas?.[s]?.items?.[productosBase[i].nombre];
 					const cantGuardado = itemGuardado?.q || "";

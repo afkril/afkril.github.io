@@ -33,12 +33,12 @@ const UndoManager = (() => {
                 c: document.getElementById(`cupos-${s}`)?.value || '',
                 items: {}
             };
-            productosBase.forEach((p, i) => {
-                state.semanas[s].items[i] = {
-                    f: document.getElementById(`fac-${s}-${i}`)?.value || '',
-                    q: document.getElementById(`cant-${s}-${i}`)?.value || '',
-                    p: document.getElementById(`punit-${s}-${i}`)?.value || p.precio,
-                    v: document.getElementById(`val-${s}-${i}`)?.value || ''
+            productosBase.forEach((p) => {
+                state.semanas[s].items[p.id] = {
+                    f: document.getElementById(`fac-${s}-${p.id}`)?.value || '',
+                    q: document.getElementById(`cant-${s}-${p.id}`)?.value || '',
+                    p: document.getElementById(`punit-${s}-${p.id}`)?.value || p.precio,
+                    v: document.getElementById(`val-${s}-${p.id}`)?.value || ''
                 };
             });
         }
@@ -54,6 +54,7 @@ const UndoManager = (() => {
 
         proveedores = JSON.parse(JSON.stringify(state.proveedores));
         productosBase = JSON.parse(JSON.stringify(state.productosBase));
+        asegurarIdsProductos(productosBase);
         valorCupoBase = state.valorCupo;
 
         document.getElementById('main-mes').value = state.mes;
@@ -71,17 +72,17 @@ const UndoManager = (() => {
             if (document.getElementById(`cupos-${s}`))
                 document.getElementById(`cupos-${s}`).value = sem.c;
 
-            productosBase.forEach((p, i) => {
-                const item = sem.items[i];
+            productosBase.forEach((p) => {
+                const item = sem.items[p.id];
                 if (!item) return;
-                if (document.getElementById(`fac-${s}-${i}`))
-                    document.getElementById(`fac-${s}-${i}`).value = item.f;
-                if (document.getElementById(`cant-${s}-${i}`))
-                    document.getElementById(`cant-${s}-${i}`).value = item.q;
-                if (document.getElementById(`punit-${s}-${i}`))
-                    document.getElementById(`punit-${s}-${i}`).value = item.p;
-                if (document.getElementById(`val-${s}-${i}`))
-                    document.getElementById(`val-${s}-${i}`).value = item.v;
+                if (document.getElementById(`fac-${s}-${p.id}`))
+                    document.getElementById(`fac-${s}-${p.id}`).value = item.f;
+                if (document.getElementById(`cant-${s}-${p.id}`))
+                    document.getElementById(`cant-${s}-${p.id}`).value = item.q;
+                if (document.getElementById(`punit-${s}-${p.id}`))
+                    document.getElementById(`punit-${s}-${p.id}`).value = item.p;
+                if (document.getElementById(`val-${s}-${p.id}`))
+                    document.getElementById(`val-${s}-${p.id}`).value = item.v;
             });
             calcular(s);
         }

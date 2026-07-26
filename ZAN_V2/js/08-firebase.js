@@ -39,10 +39,10 @@
 				};
 				
 				productosBase.forEach((p, i) => {
-					const cant = document.getElementById(`cant-${s}-${i}`)?.value || "";
-					const val = document.getElementById(`val-${s}-${i}`)?.value || "";
-					const fac = document.getElementById(`fac-${s}-${i}`)?.value || "";
-					const punit = document.getElementById(`punit-${s}-${i}`)?.value || p.precio;
+					const cant = document.getElementById(`cant-${s}-${p.id}`)?.value || "";
+					const val = document.getElementById(`val-${s}-${p.id}`)?.value || "";
+					const fac = document.getElementById(`fac-${s}-${p.id}`)?.value || "";
+					const punit = document.getElementById(`punit-${s}-${p.id}`)?.value || p.precio;
 					
 					if (cant || val || fac) {
 						data.semanas[s].items[p.nombre] = {
@@ -271,7 +271,7 @@
 			if (typeof ocultarPantallaInicio === 'function') ocultarPantallaInicio();
 			
 			if (data.proveedores) proveedores = data.proveedores;
-			if (data.productosBase) productosBase = data.productosBase;
+			if (data.productosBase) { productosBase = data.productosBase; asegurarIdsProductos(productosBase); }
 			if (data.valorCupo) valorCupoBase = data.valorCupo;
 			
 			document.getElementById('main-mes').value = data.mes || "Enero";
@@ -298,19 +298,20 @@
 						);
 						
 						if (idxProducto !== -1) {
-							if (document.getElementById(`fac-${s}-${idxProducto}`)) 
-								document.getElementById(`fac-${s}-${idxProducto}`).value = item.f || "";
-							if (document.getElementById(`cant-${s}-${idxProducto}`)) 
-								document.getElementById(`cant-${s}-${idxProducto}`).value = item.q || "";
-							if (document.getElementById(`punit-${s}-${idxProducto}`)) 
-								document.getElementById(`punit-${s}-${idxProducto}`).value = item.p || productosBase[idxProducto].precio;
+							const pid = productosBase[idxProducto].id;
+							if (document.getElementById(`fac-${s}-${pid}`)) 
+								document.getElementById(`fac-${s}-${pid}`).value = item.f || "";
+							if (document.getElementById(`cant-${s}-${pid}`)) 
+								document.getElementById(`cant-${s}-${pid}`).value = item.q || "";
+							if (document.getElementById(`punit-${s}-${pid}`)) 
+								document.getElementById(`punit-${s}-${pid}`).value = item.p || productosBase[idxProducto].precio;
 							
 							const cant = parseFloat(item.q) || 0;
 							const precio = parseFloat(item.p) || productosBase[idxProducto].precio;
 							const total = cant * precio;
 							
-							if (document.getElementById(`val-${s}-${idxProducto}`) && total > 0) 
-								document.getElementById(`val-${s}-${idxProducto}`).value = formatter.format(total);
+							if (document.getElementById(`val-${s}-${pid}`) && total > 0) 
+								document.getElementById(`val-${s}-${pid}`).value = formatter.format(total);
 						}
 					});
 				}

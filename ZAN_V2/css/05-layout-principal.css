@@ -467,6 +467,11 @@
             background: rgba(255,255,255,0.04);
         }
 
+        .fila-producto-extra td {
+            background: rgba(255, 214, 10, 0.05);
+            border-left: 2px solid rgba(255, 214, 10, 0.35);
+        }
+
         .product-table input {
             background: var(--bg-input);
             border: 1px solid var(--border-input, #444);
@@ -521,6 +526,41 @@
         .badge-sigla {
             font-size: 7px;
             padding: 1px 5px;
+        }
+
+        .badge-extra {
+            background: rgba(255, 214, 10, 0.18);
+            color: var(--primary-gold, #ffd60a);
+        }
+
+        .btn-duplicar-producto,
+        .btn-quitar-extra {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            padding: 0;
+            border: none;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-dim);
+            font-size: 7px;
+            cursor: pointer;
+            opacity: 0.55;
+            transition: opacity 0.15s, background 0.15s;
+        }
+
+        .btn-duplicar-producto:hover {
+            opacity: 1;
+            background: rgba(0, 242, 255, 0.2);
+            color: var(--accent-cyan);
+        }
+
+        .btn-quitar-extra:hover {
+            opacity: 1;
+            background: rgba(255, 70, 85, 0.2);
+            color: var(--danger, #ff4655);
         }
 
         .col-cantidad input {
@@ -757,7 +797,7 @@
         /* CONFIGURACIÓN PRODUCTOS */
         .product-config-item {
             display: grid;
-            grid-template-columns: 2fr 80px 140px 30px 35px;
+            grid-template-columns: 30px 2fr 80px 140px 30px 35px;
             gap: 8px;
             align-items: center;
             padding: 1px;
@@ -765,6 +805,12 @@
             border-radius: 9px;
             margin-bottom: 9px;
             border-left: 4px solid;
+        }
+
+        .product-order {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
 
         .product-config-item input, .product-config-item select {

@@ -574,10 +574,10 @@
             if (typeof UndoManager !== 'undefined') UndoManager.push();
 
             productosBase.forEach((p, i) => {
-                const fac = document.getElementById(`fac-${s}-${i}`);
-                const cant = document.getElementById(`cant-${s}-${i}`);
-                const punit = document.getElementById(`punit-${s}-${i}`);
-                const val = document.getElementById(`val-${s}-${i}`);
+                const fac = document.getElementById(`fac-${s}-${p.id}`);
+                const cant = document.getElementById(`cant-${s}-${p.id}`);
+                const punit = document.getElementById(`punit-${s}-${p.id}`);
+                const val = document.getElementById(`val-${s}-${p.id}`);
 
                 if (fac) fac.value = "";
                 if (cant) cant.value = "";
@@ -618,10 +618,10 @@
                 if (cuposInput) cuposInput.value = "";
 
                 productosBase.forEach((p, i) => {
-                    const fac = document.getElementById(`fac-${s}-${i}`);
-                    const cant = document.getElementById(`cant-${s}-${i}`);
-                    const punit = document.getElementById(`punit-${s}-${i}`);
-                    const val = document.getElementById(`val-${s}-${i}`);
+                    const fac = document.getElementById(`fac-${s}-${p.id}`);
+                    const cant = document.getElementById(`cant-${s}-${p.id}`);
+                    const punit = document.getElementById(`punit-${s}-${p.id}`);
+                    const val = document.getElementById(`val-${s}-${p.id}`);
 
                     if (fac) fac.value = "";
                     if (cant) cant.value = "";
@@ -634,6 +634,7 @@
 
             proveedores = JSON.parse(JSON.stringify(PROVEEDORES_INICIALES));
             productosBase = JSON.parse(JSON.stringify(PRODUCTOS_INICIALES));
+            asegurarIdsProductos(productosBase);
             valorCupoBase = 8094;
             descuentosPorSemana = {};
             descuentosGlobalActivo = true;

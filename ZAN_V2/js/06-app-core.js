@@ -167,7 +167,12 @@
 			'Si te quedas sin conexión, el sistema guarda tus cambios localmente y sincroniza apenas vuelvas a estar en línea.',
 			'Tus archivos se organizan solos por carpetas de mes, para que los encuentres más rápido en el gestor de archivos.',
 			'Usa "Validar Facturas" para comparar lo facturado por cada proveedor contra lo que registraste.',
-			'El modo claro u oscuro que elijas queda guardado para la próxima vez que entres.'
+			'El modo claro u oscuro que elijas queda guardado para la próxima vez que entres.',
+			'¿Te llegaron varias facturas de un mismo producto en la misma semana? No tienes que mezclarlas en una sola fila. Junto al nombre de cada producto verás un pequeño ícono de duplicar: al pulsarlo se crea una fila nueva, identificada con la insignia EXTRA',
+			'Si en algún momento te pierdes dentro de la aplicación, no tienes que adivinar: el botón de ayuda (?) en la esquina inferior derecha vuelve a abrir el tutorial completo.',
+			'Cada producto guarda su información de forma independiente, así que puedes reorganizar el listado con confianza en cualquier momento, incluso a mitad de mes.',
+			'presiona Ctrl+Z para deshacer la última acción — no tienes que volver a digitar nada desde cero.'
+		
 		];
 		let _tipInicioIndex = -1;
 
@@ -272,6 +277,7 @@
 		function nuevoDesdeBlanco() {
 			proveedores = JSON.parse(JSON.stringify(PROVEEDORES_INICIALES));
 			productosBase = JSON.parse(JSON.stringify(PRODUCTOS_INICIALES));
+			asegurarIdsProductos(productosBase);
 			valorCupoBase = 8094;
 			currentFileId = null;
 			descuentosPorSemana = {};
@@ -364,7 +370,7 @@
 
 			// Cargar SOLO configuración
 			if (data.proveedores) proveedores = JSON.parse(JSON.stringify(data.proveedores));
-			if (data.productosBase) productosBase = JSON.parse(JSON.stringify(data.productosBase));
+			if (data.productosBase) { productosBase = JSON.parse(JSON.stringify(data.productosBase)); asegurarIdsProductos(productosBase); }
 			if (data.valorCupo) valorCupoBase = data.valorCupo;
 			if (data.numSemanas) {
 				document.getElementById('num-semanas').value = data.numSemanas;
@@ -449,10 +455,12 @@
                 const data = JSON.parse(saved);
                 proveedores = data.proveedores || [];
                 productosBase = data.productosBase || [];
+                asegurarIdsProductos(productosBase);
                 valorCupoBase = data.valorCupo || 8094;
             } else {
                 proveedores = JSON.parse(JSON.stringify(PROVEEDORES_INICIALES));
                 productosBase = JSON.parse(JSON.stringify(PRODUCTOS_INICIALES));
+                asegurarIdsProductos(productosBase);
             }
 
             productosBase.forEach(p => {
@@ -693,7 +701,15 @@
                 
                 return `
                     <div class="product-config-item" style="border-color: ${colorProv}">
-                        <input type="text" value="${p.nombre}" onchange="productosBase[${i}].nombre = this.value" placeholder="Nombre producto">
+                        <div class="product-order">
+                            <button type="button" class="order-btn" title="Subir" ${i === 0 ? 'disabled' : ''} onclick="moverProducto(${i}, -1)">
+                                <i class="fa-solid fa-chevron-up"></i>
+                            </button>
+                            <button type="button" class="order-btn" title="Bajar" ${i === productosBase.length - 1 ? 'disabled' : ''} onclick="moverProducto(${i}, 1)">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <input type="text" value="${p.nombre}" onchange="productosBase[${i}].nombre = this.value" placeholder="Nombre producto"${p.soloSemana ? ` title="Fila adicional creada solo para la semana ${p.soloSemana}"` : ''} style="${p.soloSemana ? 'border-color: rgba(255,214,10,0.5);' : ''}">
                         <input type="number" value="${p.precio}" onchange="productosBase[${i}].precio = parseFloat(this.value) || 0" placeholder="Precio">
                         <select onchange="productosBase[${i}].proveedor = this.value; renderizarProductos()" style="font-size: 9px;">
                             ${provs.map(pr => `<option value="${pr.id}" ${p.proveedor === pr.id ? 'selected' : ''}>${generarSigla(pr.nombre)} - ${pr.nombre}</option>`).join('')}
@@ -712,11 +728,26 @@
             document.getElementById('total-productos').textContent = productosBase.length;
         }
 
+        // Mueve un producto una posición hacia arriba (-1) o abajo (+1) en el
+        // listado. Como los inputs de la tabla semanal se referencian por
+        // producto.id (no por posición), reordenar aquí NO desordena las
+        // facturas/cantidades ya diligenciadas.
+        function moverProducto(index, direccion) {
+            const nuevoIndex = index + direccion;
+            if (nuevoIndex < 0 || nuevoIndex >= productosBase.length) return;
+            if (typeof UndoManager !== 'undefined') UndoManager.push();
+            const temp = productosBase[index];
+            productosBase[index] = productosBase[nuevoIndex];
+            productosBase[nuevoIndex] = temp;
+            renderizarProductos();
+        }
+
         function agregarProducto() {
             const provs = getProveedoresOrdenados();
             const provDefault = provs.length > 0 ? provs[0].id : null;
 
             productosBase.push({
+                id: generarIdProducto(),
                 nombre: 'Nuevo Producto',
                 precio: 0,
                 cl: false,
@@ -731,6 +762,52 @@
             if (typeof UndoManager !== 'undefined') UndoManager.push();
             productosBase.splice(index, 1);
             renderizarProductos();
+        }
+
+        // ===== DUPLICAR PRODUCTO SOLO PARA UNA SEMANA =====
+        // Crea una fila adicional del mismo producto (mismo proveedor, precio y
+        // unidad) visible SOLO en la semana indicada, para poder registrar otra
+        // factura del mismo producto sin mezclar los datos con la fila original.
+        function duplicarProductoSemana(idOriginal, semana) {
+            const original = productosBase.find(p => p.id === idOriginal);
+            if (!original) return;
+
+            // Nombre base sin sufijos "(Adicional N)" previos, para numerar bien
+            const nombreBase = original.nombre.replace(/\s*\(Adicional \d+\)\s*$/i, '');
+
+            // Contar duplicados existentes de este mismo producto en esta semana
+            const existentes = productosBase.filter(p =>
+                p.soloSemana === semana &&
+                p.nombre.replace(/\s*\(Adicional \d+\)\s*$/i, '') === nombreBase
+            );
+            const numero = existentes.length + 1;
+
+            if (typeof UndoManager !== 'undefined') UndoManager.push();
+
+            const nuevo = {
+                id: generarIdProducto(),
+                nombre: `${nombreBase} (Adicional ${numero})`,
+                precio: original.precio,
+                cl: original.cl,
+                proveedor: original.proveedor,
+                soloSemana: semana
+            };
+
+            productosBase.push(nuevo);
+            initGrid(true);
+            marcarCambio();
+            Toast.success(`Se agregó "${nuevo.nombre}" solo para la semana ${semana}`);
+        }
+
+        // Quita una fila "Adicional" agregada con duplicarProductoSemana.
+        async function quitarProductoExtra(id) {
+            const idx = productosBase.findIndex(p => p.id === id);
+            if (idx === -1) return;
+            if (!await zanConfirm({ title: 'Quitar fila adicional', msg: `¿Quitar "${productosBase[idx].nombre}"? Puedes deshacer con Ctrl+Z.`, tipo: 'danger', okLabel: 'Quitar' })) return;
+            if (typeof UndoManager !== 'undefined') UndoManager.push();
+            productosBase.splice(idx, 1);
+            initGrid(true);
+            marcarCambio();
         }
 
         function guardarProductos() {
@@ -751,12 +828,12 @@
                         cupos: document.getElementById(`cupos-${s}`)?.value || "",
                         items: {}
                     };
-                    productosBase.forEach((p, i) => {
-                        datosActuales[s].items[i] = {
-                            f: document.getElementById(`fac-${s}-${i}`)?.value || "",
-                            q: document.getElementById(`cant-${s}-${i}`)?.value || "",
-                            p: document.getElementById(`punit-${s}-${i}`)?.value || p.precio,
-                            v: document.getElementById(`val-${s}-${i}`)?.value || ""
+                    productosBase.forEach((p) => {
+                        datosActuales[s].items[p.id] = {
+                            f: document.getElementById(`fac-${s}-${p.id}`)?.value || "",
+                            q: document.getElementById(`cant-${s}-${p.id}`)?.value || "",
+                            p: document.getElementById(`punit-${s}-${p.id}`)?.value || p.precio,
+                            v: document.getElementById(`val-${s}-${p.id}`)?.value || ""
                         };
                     });
                 }
@@ -778,16 +855,15 @@
                 const provsOrdenados = getProveedoresOrdenados();
 
                 provsOrdenados.forEach(prov => {
-                    const productosProv = getProductosByProveedor(prov.id);
+                    const productosProv = getProductosByProveedor(prov.id, s);
                     if (productosProv.length === 0) return;
 
                     const sigla = generarSigla(prov.nombre);
                     const productosHTML = productosProv.map(p => {
-                        const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
                         return `
-                            <tr>
+                            <tr${p.soloSemana ? ' class="fila-producto-extra"' : ''}>
                                 <td class="col-factura">
-                                    <input type="text" id="fac-${s}-${globalIdx}" placeholder="Factura" onchange="marcarCambio()">
+                                    <input type="text" id="fac-${s}-${p.id}" placeholder="Factura" onchange="marcarCambio()">
                                 </td>
                                 <td class="col-producto">
                                     <div class="product-info">
@@ -795,16 +871,21 @@
                                         <div class="product-badges">
                                             ${p.cl ? '<span class="badge badge-cl">CL</span>' : ''}
                                             <span class="badge badge-sigla" style="background: ${prov.color}30; color: ${prov.color};">${sigla}</span>
+                                            ${p.soloSemana ? '<span class="badge badge-extra" title="Fila adicional, solo para esta semana">EXTRA</span>' : ''}
+                                            <button type="button" class="btn-duplicar-producto" title="Duplicar: agregar otra factura de este producto solo en esta semana" onclick="duplicarProductoSemana('${p.id}', ${s})">
+                                                <i class="fa-solid fa-clone"></i>
+                                            </button>
+                                            ${p.soloSemana ? `<button type="button" class="btn-quitar-extra" title="Quitar esta fila adicional" onclick="quitarProductoExtra('${p.id}')"><i class="fa-solid fa-xmark"></i></button>` : ''}
                                         </div>
                                     </div>
-                                    <input type="hidden" id="punit-${s}-${globalIdx}" value="${p.precio}">
+                                    <input type="hidden" id="punit-${s}-${p.id}" value="${p.precio}">
                                 </td>
                                 <td class="col-cantidad">
-                                    <input type="number" id="cant-${s}-${globalIdx}" placeholder="0" oninput="calcular(${s})" onchange="marcarCambio()">
+                                    <input type="number" id="cant-${s}-${p.id}" placeholder="0" oninput="calcular(${s})" onchange="marcarCambio()">
                                 </td>
                                 <td class="col-total">
-                                    <input type="text" id="val-${s}-${globalIdx}" class="total-input" placeholder="$0" 
-                                        oninput="ajustarPrecioInverso(${s}, ${globalIdx})" onchange="marcarCambio()">
+                                    <input type="text" id="val-${s}-${p.id}" class="total-input" placeholder="$0" 
+                                        oninput="ajustarPrecioInverso(${s}, '${p.id}')" onchange="marcarCambio()">
                                 </td>
                             </tr>
                         `;
@@ -900,17 +981,17 @@
                     if (document.getElementById(`cupos-${s}`)) 
                         document.getElementById(`cupos-${s}`).value = datosActuales[s].cupos;
                         
-                    productosBase.forEach((p, i) => {
-                        const item = datosActuales[s].items[i];
+                    productosBase.forEach((p) => {
+                        const item = datosActuales[s].items[p.id];
                         if (item) {
-                            if (document.getElementById(`fac-${s}-${i}`)) 
-                                document.getElementById(`fac-${s}-${i}`).value = item.f;
-                            if (document.getElementById(`cant-${s}-${i}`)) 
-                                document.getElementById(`cant-${s}-${i}`).value = item.q;
-                            if (document.getElementById(`punit-${s}-${i}`)) 
-                                document.getElementById(`punit-${s}-${i}`).value = item.p;
-                            if (document.getElementById(`val-${s}-${i}`)) 
-                                document.getElementById(`val-${s}-${i}`).value = item.v;
+                            if (document.getElementById(`fac-${s}-${p.id}`)) 
+                                document.getElementById(`fac-${s}-${p.id}`).value = item.f;
+                            if (document.getElementById(`cant-${s}-${p.id}`)) 
+                                document.getElementById(`cant-${s}-${p.id}`).value = item.q;
+                            if (document.getElementById(`punit-${s}-${p.id}`)) 
+                                document.getElementById(`punit-${s}-${p.id}`).value = item.p;
+                            if (document.getElementById(`val-${s}-${p.id}`)) 
+                                document.getElementById(`val-${s}-${p.id}`).value = item.v;
                         }
                     });
                     calcular(s);
@@ -1031,7 +1112,7 @@
             // Calcular total gastado en la semana
             let totalSemana = 0;
             productosBase.forEach((p, i) => {
-                const val = document.getElementById(`val-${s}-${i}`);
+                const val = document.getElementById(`val-${s}-${p.id}`);
                 if (val) totalSemana += limpiarNum(val.value);
             });
 
@@ -1055,11 +1136,11 @@
             if (content) content.classList.toggle('collapsed');
         }
 
-        function ajustarPrecioInverso(s, i) {
-            const totalIngresado = limpiarNum(document.getElementById(`val-${s}-${i}`).value);
-            const cantidad = parseFloat(document.getElementById(`cant-${s}-${i}`).value) || 0;
+        function ajustarPrecioInverso(s, pid) {
+            const totalIngresado = limpiarNum(document.getElementById(`val-${s}-${pid}`).value);
+            const cantidad = parseFloat(document.getElementById(`cant-${s}-${pid}`).value) || 0;
             if (cantidad > 0) {
-                document.getElementById(`punit-${s}-${i}`).value = totalIngresado / cantidad;
+                document.getElementById(`punit-${s}-${pid}`).value = totalIngresado / cantidad;
             }
             calcular(s, false);
         }
@@ -1075,19 +1156,16 @@
             let sumaProd = 0;
 
             getProveedoresOrdenados().forEach(prov => {
-                const productosProv = getProductosByProveedor(prov.id);
+                const productosProv = getProductosByProveedor(prov.id, s);
                 let totalProv = 0;
 
                 productosProv.forEach(p => {
-                    const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
-                    if (globalIdx === -1) return;
-
-                    const cant = parseFloat(document.getElementById(`cant-${s}-${globalIdx}`)?.value) || 0;
-                    const pUnit = parseFloat(document.getElementById(`punit-${s}-${globalIdx}`)?.value) || 0;
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${p.id}`)?.value) || 0;
+                    const pUnit = parseFloat(document.getElementById(`punit-${s}-${p.id}`)?.value) || 0;
                     const total = cant * pUnit;
 
                     if (formatear) {
-                        const valInput = document.getElementById(`val-${s}-${globalIdx}`);
+                        const valInput = document.getElementById(`val-${s}-${p.id}`);
                         if (valInput) valInput.value = formatter.format(total);
                     }
 
@@ -1146,8 +1224,8 @@
                 totalRacionesMes += racionesSemana;
 
                 productosBase.forEach((p, i) => {
-                    const cantInput = document.getElementById(`cant-${s}-${i}`);
-                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    const cantInput = document.getElementById(`cant-${s}-${p.id}`);
+                    const valInput = document.getElementById(`val-${s}-${p.id}`);
                     
                     if (!cantInput || !valInput) return;
 
@@ -1518,14 +1596,14 @@
             
             for (let s = 1; s <= semanas; s++) {
                 productosBase.forEach((p, i) => {
-                    const facInput = document.getElementById(`fac-${s}-${i}`);
-                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    const facInput = document.getElementById(`fac-${s}-${p.id}`);
+                    const valInput = document.getElementById(`val-${s}-${p.id}`);
                     
                     if (!facInput || !valInput) return;
                     
                     const numFactura = facInput.value?.trim();
                     const valor = limpiarNum(valInput.value);
-                    const cantidad = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    const cantidad = parseFloat(document.getElementById(`cant-${s}-${p.id}`)?.value) || 0;
                     
                     if (numFactura && valor > 0) {
                         const provId = p.proveedor;
@@ -1739,8 +1817,8 @@
                 totalRacionesMes += racionesSemana;
 
                 productosBase.forEach((p, i) => {
-                    const cantInput = document.getElementById(`cant-${s}-${i}`);
-                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    const cantInput = document.getElementById(`cant-${s}-${p.id}`);
+                    const valInput = document.getElementById(`val-${s}-${p.id}`);
                     
                     if (!cantInput || !valInput) return;
 
@@ -1816,13 +1894,12 @@
                 const descuentoSemana = rSemana.descuento;
 
                 getProveedoresOrdenados().forEach(prov => {
-                    const productosProv = getProductosByProveedor(prov.id);
+                    const productosProv = getProductosByProveedor(prov.id, s);
                     productosProv.forEach(p => {
-                        const globalIdx = productosBase.findIndex(pb => pb.nombre === p.nombre);
-                        const fac = document.getElementById(`fac-${s}-${globalIdx}`)?.value || "";
-                        const cant = parseFloat(document.getElementById(`cant-${s}-${globalIdx}`)?.value) || 0;
-                        const valUnit = parseFloat(document.getElementById(`punit-${s}-${globalIdx}`)?.value) || p.precio;
-                        const valTotal = limpiarNum(document.getElementById(`val-${s}-${globalIdx}`)?.value || "0");
+                        const fac = document.getElementById(`fac-${s}-${p.id}`)?.value || "";
+                        const cant = parseFloat(document.getElementById(`cant-${s}-${p.id}`)?.value) || 0;
+                        const valUnit = parseFloat(document.getElementById(`punit-${s}-${p.id}`)?.value) || p.precio;
+                        const valTotal = limpiarNum(document.getElementById(`val-${s}-${p.id}`)?.value || "0");
 
                         if (cant > 0 || fac) {
                             const porcDelPresupuesto = presupuesto > 0 ? ((valTotal / presupuesto) * 100).toFixed(2) : 0;
@@ -1969,9 +2046,9 @@
             
             for (let s = 1; s <= semanas; s++) {
                 productosBase.forEach((p, i) => {
-                    const fac = document.getElementById(`fac-${s}-${i}`)?.value?.trim();
-                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
-                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    const fac = document.getElementById(`fac-${s}-${p.id}`)?.value?.trim();
+                    const val = limpiarNum(document.getElementById(`val-${s}-${p.id}`)?.value || "0");
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${p.id}`)?.value) || 0;
                     
                     if (fac && val > 0) {
                         const provId = p.proveedor;
@@ -2099,14 +2176,14 @@
             
             for (let s = 1; s <= semanas; s++) {
                 productosBase.forEach((p, i) => {
-                    const facInput = document.getElementById(`fac-${s}-${i}`);
-                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    const facInput = document.getElementById(`fac-${s}-${p.id}`);
+                    const valInput = document.getElementById(`val-${s}-${p.id}`);
                     
                     if (!facInput || !valInput) return;
                     
                     const numFactura = facInput.value?.trim();
                     const valor = limpiarNum(valInput.value);
-                    const cantidad = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    const cantidad = parseFloat(document.getElementById(`cant-${s}-${p.id}`)?.value) || 0;
                     
                     if (numFactura && valor > 0) {
                         const provId = p.proveedor;
@@ -2179,14 +2256,14 @@
             
             for (let s = 1; s <= semanas; s++) {
                 productosBase.forEach((p, i) => {
-                    const facInput = document.getElementById(`fac-${s}-${i}`);
-                    const valInput = document.getElementById(`val-${s}-${i}`);
+                    const facInput = document.getElementById(`fac-${s}-${p.id}`);
+                    const valInput = document.getElementById(`val-${s}-${p.id}`);
                     
                     if (!facInput || !valInput) return;
                     
                     const numFactura = facInput.value?.trim();
                     const valor = limpiarNum(valInput.value);
-                    const cantidad = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    const cantidad = parseFloat(document.getElementById(`cant-${s}-${p.id}`)?.value) || 0;
                     
                     if (numFactura && valor > 0) {
                         const provId = p.proveedor;
@@ -2240,9 +2317,9 @@
             
             for (let s = 1; s <= semanas; s++) {
                 productosBase.forEach((p, i) => {
-                    const fac = document.getElementById(`fac-${s}-${i}`)?.value?.trim();
-                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
-                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
+                    const fac = document.getElementById(`fac-${s}-${p.id}`)?.value?.trim();
+                    const val = limpiarNum(document.getElementById(`val-${s}-${p.id}`)?.value || "0");
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${p.id}`)?.value) || 0;
                     
                     if (fac && val > 0) {
                         wsDetalle.push([
@@ -2284,9 +2361,9 @@
 
             for (let s = 1; s <= semanas; s++) {
                 productosBase.forEach((p, i) => {
-                    const fac = document.getElementById(`fac-${s}-${i}`)?.value?.trim();
-                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
-                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+                    const fac = document.getElementById(`fac-${s}-${p.id}`)?.value?.trim();
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${p.id}`)?.value) || 0;
+                    const val = limpiarNum(document.getElementById(`val-${s}-${p.id}`)?.value || "0");
 
                     if (fac && cant > 0) {
                         datos.totalFacturas++;
@@ -2330,8 +2407,8 @@
 
             for (let s = 1; s <= semanas; s++) {
                 productosBase.forEach((p, i) => {
-                    const cant = parseFloat(document.getElementById(`cant-${s}-${i}`)?.value) || 0;
-                    const val = limpiarNum(document.getElementById(`val-${s}-${i}`)?.value || "0");
+                    const cant = parseFloat(document.getElementById(`cant-${s}-${p.id}`)?.value) || 0;
+                    const val = limpiarNum(document.getElementById(`val-${s}-${p.id}`)?.value || "0");
                     if (cant > 0) {
                         prodMap[p.nombre].cantidad += cant;
                         prodMap[p.nombre].valor += val;
@@ -2519,6 +2596,7 @@
                             cl: p.cl
                         };
                     }).filter(p => p.proveedor !== null);
+                    asegurarIdsProductos(productosBase);
                     
                     console.log("Productos cargados:", productosBase);
                 }
@@ -2634,12 +2712,13 @@
                         });
                         
                         if (idxProducto !== -1) {
-                            const facInput = document.getElementById(`fac-${s}-${idxProducto}`);
-                            const cantInput = document.getElementById(`cant-${s}-${idxProducto}`);
-                            const punitInput = document.getElementById(`punit-${s}-${idxProducto}`);
-                            const valInput = document.getElementById(`val-${s}-${idxProducto}`);
+                            const pid = productosBase[idxProducto].id;
+                            const facInput = document.getElementById(`fac-${s}-${pid}`);
+                            const cantInput = document.getElementById(`cant-${s}-${pid}`);
+                            const punitInput = document.getElementById(`punit-${s}-${pid}`);
+                            const valInput = document.getElementById(`val-${s}-${pid}`);
                             
-                            console.log(`Asignando a producto ${idxProducto} (${productosBase[idxProducto].nombre}):`, {
+                            console.log(`Asignando a producto ${pid} (${productosBase[idxProducto].nombre}):`, {
                                 factura: item.factura,
                                 cantidad: item.cantidad,
                                 valorUnit: item.valorUnit,
@@ -2661,7 +2740,7 @@
                                 
                                 // Verificar que se asignó correctamente
                                 setTimeout(() => {
-                                    console.log(`Valor actual en input cant-${s}-${idxProducto}: "${cantInput.value}"`);
+                                    console.log(`Valor actual en input cant-${s}-${pid}: "${cantInput.value}"`);
                                 }, 0);
                             }
                             
@@ -2718,10 +2797,10 @@
             if (!await zanConfirm({ title: `Limpiar Semana ${s}`, msg: 'Se borrarán todos los datos ingresados en esta semana.', tipo: 'danger', okLabel: 'Limpiar' })) return;
             
             productosBase.forEach((p, i) => {
-                const fac = document.getElementById(`fac-${s}-${i}`);
-                const cant = document.getElementById(`cant-${s}-${i}`);
-                const punit = document.getElementById(`punit-${s}-${i}`);
-                const val = document.getElementById(`val-${s}-${i}`);
+                const fac = document.getElementById(`fac-${s}-${p.id}`);
+                const cant = document.getElementById(`cant-${s}-${p.id}`);
+                const punit = document.getElementById(`punit-${s}-${p.id}`);
+                const val = document.getElementById(`val-${s}-${p.id}`);
                 
                 if (fac) fac.value = "";
                 if (cant) cant.value = "";
@@ -2748,10 +2827,10 @@
                 if (cuposInput) cuposInput.value = "";
                 
                 productosBase.forEach((p, i) => {
-                    const fac = document.getElementById(`fac-${s}-${i}`);
-                    const cant = document.getElementById(`cant-${s}-${i}`);
-                    const punit = document.getElementById(`punit-${s}-${i}`);
-                    const val = document.getElementById(`val-${s}-${i}`);
+                    const fac = document.getElementById(`fac-${s}-${p.id}`);
+                    const cant = document.getElementById(`cant-${s}-${p.id}`);
+                    const punit = document.getElementById(`punit-${s}-${p.id}`);
+                    const val = document.getElementById(`val-${s}-${p.id}`);
                     
                     if (fac) fac.value = "";
                     if (cant) cant.value = "";
@@ -2764,6 +2843,7 @@
             
             proveedores = JSON.parse(JSON.stringify(PROVEEDORES_INICIALES));
 			productosBase = JSON.parse(JSON.stringify(PRODUCTOS_INICIALES));
+			asegurarIdsProductos(productosBase);
 			valorCupoBase = 8094;
 			
 			initGrid(false);

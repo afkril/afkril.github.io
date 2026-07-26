@@ -191,3 +191,50 @@
         .zan-confirm-btn.confirm-danger:hover  { filter: brightness(1.12); transform: translateY(-1px); }
         .zan-confirm-btn.confirm-warning:hover { filter: brightness(1.1);  transform: translateY(-1px); }
         .zan-confirm-btn.confirm-info:hover    { filter: brightness(1.1);  transform: translateY(-1px); }
+		
+		
+		/* ============================================================
+   EFECTO DE LÍNEAS EN MOVIMIENTO (BIENVENIDA)
+   ============================================================ */
+
+.blank-start-screen {
+    position: fixed; /* Asegura el contexto de posicionamiento */
+    overflow-x: hidden; /* Evita desbordamientos por la rotación del efecto */
+}
+
+/* Pseudo-elemento que replica la cuadrícula tridimensional animada */
+.blank-start-screen::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: 
+        linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    transform: perspective(500px) rotateX(60deg);
+    animation: gridMoveWelcome 20s linear infinite;
+    pointer-events: none;
+    z-index: 0; /* Se renderiza detrás del contenedor de contenido */
+}
+
+/* Asegura que el contenedor principal esté por encima de la animación */
+.blank-start-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Animación idéntica optimizada para el entorno de inicio */
+@keyframes gridMoveWelcome {
+    0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+    100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+}
+
+/* Adaptación opcional para el Modo Claro */
+[data-theme="light"] .blank-start-screen::before {
+    background-image: 
+        linear-gradient(rgba(154, 120, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(154, 120, 0, 0.03) 1px, transparent 1px);
+}
