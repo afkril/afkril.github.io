@@ -80,33 +80,60 @@
 				blankScreen.id = 'blank-start-screen';
 				blankScreen.className = 'blank-start-screen';
 				blankScreen.innerHTML = `
+				
 					<div class="blank-start-content">
 						<img src="Logo/ZAN--.png" alt="ZAN Logo" class="blank-logo">
 						<h2 class="blank-title">ZAN Tabla de Valores</h2>
 						<p class="blank-subtitle">Gestión semanal de pedidos y valores</p>
 
-						<div class="blank-actions">
-							<button class="blank-btn blank-btn-primary" id="blank-btn-new" onclick="nuevoDesdeBlanco()">
-								<i class="fa-solid fa-plus-circle"></i>
-								<span>Nuevo Trabajo</span>
-								<small>Empezar desde cero</small>
-							</button>
-							<button class="blank-btn blank-btn-accent" id="blank-btn-template" onclick="bocetoDesdeBlanco()">
-								<i class="fa-solid fa-clone"></i>
-								<span>Boceto / Plantilla</span>
-								<small>Cargar solo configuración de un archivo existente</small>
-							</button>
-							<button class="blank-btn blank-btn-secondary" id="blank-btn-load" onclick="cargarDesdeBlanco()">
-								<i class="fa-solid fa-folder-open"></i>
-								<span>Cargar Archivo</span>
-								<small>Abrir un archivo guardado con datos</small>
-							</button>
-							${hayDatos ? `
-							<button class="blank-btn blank-btn-outline" id="blank-btn-continue" onclick="continuarDesdeBlanco()">
-								<i class="fa-solid fa-rotate-left"></i>
-								<span>Continuar</span>
-								<small>Restaurar último borrador</small>
-							</button>` : ''}
+						<div class="blank-main-grid">
+							<div class="blank-tip-card" id="blank-tip-card">
+								<div class="blank-tip-header">
+									<span class="blank-tip-icon">💡</span>
+									<span class="blank-tip-label">Consejo</span>
+								</div>
+								<p class="blank-tip-text" id="blank-tip-text"></p>
+								<button class="blank-tip-next" onclick="mostrarSiguienteTip()">
+									<span>Siguiente consejo</span>
+									<i class="fa-solid fa-arrow-right"></i>
+								</button>
+							</div>
+							<div class="blank-logo-wrapper">
+								<div class="blank-actions">
+									<button class="blank-btn blank-btn-primary" id="blank-btn-new" onclick="nuevoDesdeBlanco()">
+										<i class="fa-solid fa-plus-circle"></i>
+										<span>Nuevo Trabajo</span>
+										<small>Empezar desde cero</small>
+									</button>
+									<button class="blank-btn blank-btn-accent" id="blank-btn-template" onclick="bocetoDesdeBlanco()">
+										<i class="fa-solid fa-clone"></i>
+										<span>Boceto / Plantilla</span>
+										<small>Cargar solo configuración de un archivo existente</small>
+									</button>
+									<button class="blank-btn blank-btn-secondary" id="blank-btn-load" onclick="cargarDesdeBlanco()">
+										<i class="fa-solid fa-folder-open"></i>
+										<span>Cargar Archivo</span>
+										<small>Abrir un archivo guardado con datos</small>
+									</button>
+									${hayDatos ? `
+									<button class="blank-btn blank-btn-outline" id="blank-btn-continue" onclick="continuarDesdeBlanco()">
+										<i class="fa-solid fa-rotate-left"></i>
+										<span>Continuar</span>
+										<small>Restaurar último borrador</small>
+									</button>` : ''}
+								</div>
+							</div>
+							<div class="blank-recent-card">
+								<div class="blank-recent-header">
+									<i class="fa-solid fa-clock-rotate-left"></i>
+									<span>Archivos recientes</span>
+								</div>
+								<div class="blank-recent-list" id="blank-recent-list">
+									<div class="blank-recent-loading">
+										<i class="fa-solid fa-spinner fa-spin"></i> Buscando archivos recientes...
+									</div>
+								</div>
+							</div>
 						</div>
 
 						<div class="blank-footer">
@@ -123,6 +150,107 @@
 			if (mainGrid) mainGrid.style.display = 'none';
 			const tabsNav = document.getElementById('semanas-tabs-nav');
 			if (tabsNav) tabsNav.style.display = 'none';
+
+			// Refrescar consejo y archivos recientes cada vez que se muestra la pantalla
+			mostrarSiguienteTip(true);
+			cargarArchivosRecientesInicio();
+		}
+
+		// ===== TIPS DEL SISTEMA (pantalla de inicio) =====
+		const TIPS_SISTEMA = [
+			'Cambia entre Pestañas, Tarjetas, Lista o Acordeón desde Ajustes para ver tus semanas como prefieras.',
+			'Usa "Boceto / Plantilla" para reutilizar proveedores y productos de un contrato anterior, sin arrastrar sus datos ya cargados.',
+			'Registra una novedad (inasistencia, cupo no consumido) y el sistema descuenta automáticamente el valor de Distribuidora.',
+			'Explora los 18 temas de color en modo oscuro desde Ajustes → Tema de color.',
+			'Ctrl+S guarda y Ctrl+Z deshace en cualquier momento, sin necesidad de tocar el mouse.',
+			'Exporta o importa tus tablas en Excel (CSV, XLS, XLSX) cuando lo necesites.',
+			'Si te quedas sin conexión, el sistema guarda tus cambios localmente y sincroniza apenas vuelvas a estar en línea.',
+			'Tus archivos se organizan solos por carpetas de mes, para que los encuentres más rápido en el gestor de archivos.',
+			'Usa "Validar Facturas" para comparar lo facturado por cada proveedor contra lo que registraste.',
+			'El modo claro u oscuro que elijas queda guardado para la próxima vez que entres.'
+		];
+		let _tipInicioIndex = -1;
+
+		function mostrarSiguienteTip(aleatorio) {
+			const el = document.getElementById('blank-tip-text');
+			if (!el) return;
+
+			if (aleatorio || _tipInicioIndex === -1) {
+				_tipInicioIndex = Math.floor(Math.random() * TIPS_SISTEMA.length);
+			} else {
+				_tipInicioIndex = (_tipInicioIndex + 1) % TIPS_SISTEMA.length;
+			}
+
+			el.classList.remove('blank-tip-fade');
+			void el.offsetWidth; // reiniciar animación
+			el.textContent = TIPS_SISTEMA[_tipInicioIndex];
+			el.classList.add('blank-tip-fade');
+		}
+
+		// ===== ARCHIVOS RECIENTES (pantalla de inicio) =====
+		async function cargarArchivosRecientesInicio() {
+			const contenedor = document.getElementById('blank-recent-list');
+			if (!contenedor || !currentUser) return;
+
+			try {
+				const snap = await db.ref(`files/${currentUser}`).once('value');
+
+				if (!snap.exists()) {
+					contenedor.innerHTML = `
+						<div class="blank-recent-empty">
+							<i class="fa-solid fa-inbox"></i>
+							<span>Aún no tienes archivos guardados</span>
+						</div>`;
+					return;
+				}
+
+				const archivos = [];
+				snap.forEach(child => {
+					const data = child.val();
+					archivos.push({
+						key: child.key,
+						contrato: data.contrato,
+						mes: data.mes,
+						fechaObj: new Date(data._metadata?.fechaGuardado || data.fechaGuardado || 0)
+					});
+				});
+
+				archivos.sort((a, b) => b.fechaObj - a.fechaObj);
+				const recientes = archivos.slice(0, 3);
+
+				contenedor.innerHTML = recientes.map(a => `
+					<div class="blank-recent-item">
+						<div class="blank-recent-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+						<div class="blank-recent-info">
+							<span class="blank-recent-name">${a.contrato || a.mes || 'Sin contrato'}</span>
+							<span class="blank-recent-time">${tiempoRelativoInicio(a.fechaObj)}</span>
+							<span class="blank-recent-month">${a.mes || ''}</span>
+						</div>
+						<button class="blank-recent-open" onclick="cargarArchivo('${a.key}')">Abrir</button>
+					</div>
+				`).join('<div class="blank-recent-sep"></div>');
+
+			} catch (error) {
+				console.error('Error cargando archivos recientes:', error);
+				contenedor.innerHTML = `
+					<div class="blank-recent-empty">
+						<i class="fa-solid fa-triangle-exclamation"></i>
+						<span>No se pudieron cargar los archivos recientes</span>
+					</div>`;
+			}
+		}
+
+		function tiempoRelativoInicio(fecha) {
+			const diffMin = Math.floor((new Date() - fecha) / 60000);
+			if (diffMin < 1) return 'Justo ahora';
+			if (diffMin < 60) return `Hace ${diffMin} min`;
+			const diffHoras = Math.floor(diffMin / 60);
+			if (diffHoras < 24) return `Hace ${diffHoras} hora${diffHoras !== 1 ? 's' : ''}`;
+			const diffDias = Math.floor(diffHoras / 24);
+			if (diffDias < 7) return `Hace ${diffDias} día${diffDias !== 1 ? 's' : ''}`;
+			const diffSemanas = Math.floor(diffDias / 7);
+			if (diffSemanas < 5) return `Hace ${diffSemanas} semana${diffSemanas !== 1 ? 's' : ''}`;
+			return fecha.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
 		}
 
 		/**

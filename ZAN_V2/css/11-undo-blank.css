@@ -4,14 +4,23 @@
 
 .blank-start-screen {
     position: fixed;
-    inset: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: var(--sidebar-width);
     z-index: 1000;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    overflow-y: auto;
+    padding: 40px 0;
     background: var(--bg-main, #0a0a0c);
     animation: blankFadeIn 0.4s ease;
+    transition: left 0.3s ease;
 }
+
+/* Se ajusta cuando el panel lateral está colapsado */
+.sidebar.collapsed + .main-wrapper .blank-start-screen { left: 0; }
 
 @keyframes blankFadeIn {
     from { opacity: 0; }
@@ -20,16 +29,22 @@
 
 .blank-start-content {
     text-align: center;
-    max-width: 500px;
-    padding: 40px 30px;
+    max-width: 940px;
+    width: 100%;
+    padding: 0 30px;
+    margin: auto 0;
 }
 
-.blank-logo {
-    width: 180px;
-    height: auto;
-    filter: drop-shadow(0 0 20px rgba(212,175,55,0.4));
-    margin-bottom: 20px;
-    animation: blankLogoPulse 3s ease-in-out infinite;
+
+.blank-logo{
+    position: relative;
+    width:180px;
+    height:auto;
+    margin-bottom:20px;
+    filter:drop-shadow(0 0 20px rgba(212,175,55,.45));
+    animation:
+        blankLogoPulse 3s ease-in-out infinite;
+    overflow:hidden;
 }
 
 @keyframes blankLogoPulse {
@@ -53,6 +68,29 @@
     margin-bottom: 40px;
 }
 
+.blank-main-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+    text-align: left;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .blank-main-grid {
+        grid-template-columns: 280px 1fr;
+    }
+    .blank-recent-card { grid-column: 1 / -1; }
+}
+
+@media (max-width: 620px) {
+    .blank-main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .blank-actions {
     display: flex;
     flex-direction: column;
@@ -61,11 +99,177 @@
     margin: 0 auto;
 }
 
+/* ---- Tarjeta: Tips del sistema ---- */
+.blank-tip-card {
+    background: var(--bg-subtle, rgba(255,255,255,0.03));
+    border: 1px solid var(--border-color, rgba(212,175,55,0.3));
+    border-radius: 12px;
+    padding: 16px 18px;
+}
+
+.blank-tip-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.blank-tip-icon {
+    font-size: 16px;
+}
+
+.blank-tip-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--primary-gold, #d4af37);
+    text-transform: uppercase;
+}
+
+.blank-tip-text {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-main, #e2e8f0);
+    min-height: 58px;
+    margin-bottom: 12px;
+}
+
+.blank-tip-fade {
+    animation: blankTipFadeIn 0.35s ease;
+}
+
+@keyframes blankTipFadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.blank-tip-next {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid rgba(0,242,255,0.3);
+    color: var(--accent-cyan, #00f2ff);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.blank-tip-next:hover {
+    background: rgba(0,242,255,0.1);
+    transform: translateX(2px);
+}
+
+/* ---- Tarjeta: Archivos recientes ---- */
+.blank-recent-card {
+    background: var(--bg-subtle, rgba(255,255,255,0.03));
+    border: 1px solid var(--border-subtle, rgba(255,255,255,0.05));
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.blank-recent-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--text-dim, #94a3b8);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.blank-recent-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.blank-recent-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 2px;
+}
+
+.blank-recent-sep {
+    height: 1px;
+    background: var(--border-subtle, rgba(255,255,255,0.06));
+    margin: 0 2px;
+}
+
+.blank-recent-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: var(--primary-gold-subtle, rgba(212,175,55,0.08));
+    color: var(--primary-gold, #d4af37);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+.blank-recent-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.blank-recent-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-main, #e2e8f0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.blank-recent-time {
+    font-size: 10px;
+    color: var(--text-dim, #94a3b8);
+}
+
+.blank-recent-open {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid var(--border-color, rgba(212,175,55,0.3));
+    color: var(--primary-gold, #d4af37);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.blank-recent-open:hover {
+    background: var(--primary-gold-subtle, rgba(212,175,55,0.08));
+}
+
+.blank-recent-loading,
+.blank-recent-empty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-dim, #94a3b8);
+    padding: 10px 2px;
+}
+
 .blank-btn {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 16px 24px;
+    padding: 10px 20px;
     border: none;
     border-radius: 12px;
     cursor: pointer;
@@ -306,6 +510,39 @@
     border-color: rgba(0,0,0,0.15);
 }
 
+[data-theme="light"] .blank-tip-card {
+    background: rgba(154,120,0,0.05);
+    border-color: rgba(154,120,0,0.25);
+}
+
+[data-theme="light"] .blank-tip-next {
+    border-color: rgba(0,110,158,0.3);
+    color: #006e9e;
+}
+
+[data-theme="light"] .blank-tip-next:hover {
+    background: rgba(0,110,158,0.1);
+}
+
+[data-theme="light"] .blank-recent-card {
+    background: rgba(0,0,0,0.02);
+    border-color: rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .blank-recent-icon {
+    background: rgba(154,120,0,0.08);
+    color: #9a7800;
+}
+
+[data-theme="light"] .blank-recent-open {
+    border-color: rgba(154,120,0,0.3);
+    color: #9a7800;
+}
+
+[data-theme="light"] .blank-recent-open:hover {
+    background: rgba(154,120,0,0.08);
+}
+
 [data-theme="light"] .undo-btn, [data-theme="light"] .redo-btn {
     background: rgba(0,0,0,0.03);
     border-color: #ccc;
@@ -317,4 +554,57 @@
     background: rgba(0,0,0,0.08);
     color: #0096a0;
     border-color: #0096a0;
+}
+.blank-recent-month {
+    font-size: 10px;
+    color: var(--accent-cyan, #00f2ff);
+}
+.blank-logo-wrapper{
+
+    position:relative;
+
+    display:inline-block;
+
+    overflow:hidden;
+
+}
+.blank-logo-wrapper::after{
+    content:"";
+    position:absolute;
+    top:-30%;
+    left:-80%;
+    width:35%;
+    height:180%;
+    transform:rotate(22deg);
+
+    background:linear-gradient(
+        transparent,
+        rgba(255,255,255,.20),
+        rgba(255,255,255,.95),
+        rgba(255,255,255,.20),
+        transparent
+
+    );
+
+    filter:blur(6px);
+    animation:zanLogoShine 12s ease-in-out infinite;
+    pointer-events:none;
+
+}
+@keyframes zanLogoShine{
+    0%{
+        left:-80%;
+        opacity:0;
+    }
+    10%{
+        opacity:1;
+    }
+    55%{
+        left:150%;
+        opacity:1;
+    }
+    100%{
+        left:150%;
+        opacity:0;
+    }
 }
