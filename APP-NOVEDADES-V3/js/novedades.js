@@ -1448,6 +1448,7 @@ function onRegionalChange() {
             if (!regional) {
                 if (selMod) { selMod.innerHTML = '<option value="">-- Primero Regional --</option>'; selMod.disabled = true; }
                 if (secMod) secMod.classList.add('opacity-50');
+                wizardSync();
                 return;
             }
 
@@ -1468,6 +1469,7 @@ function onRegionalChange() {
             }
             if (secMod) secMod.classList.remove('opacity-50');
             updateStyles();
+            wizardSync();
         }
 
 function onModalidadChange() {
@@ -1485,6 +1487,7 @@ function onModalidadChange() {
             if (!modalidad || !selCtr) {
                 if (selCtr) { selCtr.innerHTML = '<option value="">-- Primero Modalidad --</option>'; selCtr.disabled = true; }
                 if (secCtr) secCtr.classList.add('opacity-50');
+                wizardSync();
                 return;
             }
 
@@ -1504,6 +1507,7 @@ function onModalidadChange() {
                 selCtr.value = filtrados[0][0];
                 updateStyles();
             }
+            wizardSync();
         }
 
 function updateStyles() {
@@ -1543,6 +1547,7 @@ function updateStyles() {
                 }
                 if (sectionUDS) sectionUDS.style.opacity = "0.5";
             }
+            wizardSync();
         }
 
 function populateUDS(contract) {
@@ -1563,6 +1568,225 @@ function toggleSection(type) {
             const check = document.getElementById(type === 'retiro' ? 'checkRetiro' : 'checkIngreso');
             if (section && check) section.classList.toggle('hidden', !check.checked);
         }
+
+/* ============================================================
+   RESET COMPLETO DEL FORMULARIO
+   Función única reutilizada tras un envío exitoso, al cambiar
+   de asociación/operador (index.html) y desde el botón manual
+   "Limpiar formulario".
+   ============================================================ */
+function resetFormularioCompleto(opts) {
+    opts = opts || {};
+    const form = document.getElementById('noveltyForm');
+    if (!form) return;
+
+    form.reset(); // dispara también el listener que limpia los dropzones
+
+    if (typeof DuplicadosModule !== 'undefined') DuplicadosModule.limpiarAvisos();
+    if (typeof updateStyles === 'function') updateStyles(); // internamente llama a wizardSync()
+
+    const secRetiro = document.getElementById('sectionRetiro');
+    const secIngreso = document.getElementById('sectionIngreso');
+    if (secRetiro) secRetiro.classList.add('hidden');
+    if (secIngreso) secIngreso.classList.add('hidden');
+
+    const displayAge = document.getElementById('displayAge');
+    if (displayAge) displayAge.value = 'Esperando fechas...';
+
+    const nutricionIndicator = document.getElementById('nutricionIndicator');
+    if (nutricionIndicator) nutricionIndicator.style.display = 'none';
+
+    if (typeof resetDropzones === 'function') resetDropzones();
+    if (typeof wizardSync === 'function') wizardSync();
+
+    if (opts.toastMsg && typeof showToast === 'function') {
+        showToast(opts.toastMsg, opts.toastType || 'info');
+    }
+}
+
+function limpiarFormularioManual() {
+    const form = document.getElementById('noveltyForm');
+    const tieneDatos = form && Array.from(form.elements).some(el => {
+        if (el.disabled) return false;
+        if (el.type === 'checkbox' || el.type === 'radio') return el.checked;
+        if (el.type === 'file') return el.files && el.files.length > 0;
+        if (el.tagName === 'SELECT') return !!el.value;
+        return !!(el.value && el.value.trim());
+    });
+
+    if (tieneDatos && !confirm('¿Seguro que deseas limpiar el formulario? Se perderán los datos no guardados.')) {
+        return;
+    }
+
+    resetFormularioCompleto({ toastMsg: '🧹 Formulario limpio', toastType: 'info' });
+}
+
+/* ============================================================
+   WIZARD — Regional → Modalidad → Contrato → UDS
+   Los <select> originales (regionalSelect, modalidadSelect,
+   contractNumber, mainUdsDropdown) siguen siendo la única
+   fuente de verdad; esto solo controla la presentación visual
+   (qué paso se ve expandido, cuál aparece con check, etc.)
+   ============================================================ */
+let wizardManualStep = null;
+
+function wizardGoToStep(n) {
+    const ids = ['regionalSelect', 'modalidadSelect', 'contractNumber', 'mainUdsDropdown'];
+    const sel = document.getElementById(ids[n - 1]);
+    if (!sel || sel.disabled) return; // paso bloqueado, ignorar clic
+    wizardManualStep = n;
+    wizardRender(n);
+}
+
+function wizardSync() {
+    wizardManualStep = null;
+    const sels = [
+        document.getElementById('regionalSelect'),
+        document.getElementById('modalidadSelect'),
+        document.getElementById('contractNumber'),
+        document.getElementById('mainUdsDropdown')
+    ];
+    let active = 1;
+    for (let i = 0; i < 4; i++) {
+        const s = sels[i];
+        if (!s || s.disabled) { active = Math.max(1, i); break; }
+        if (!s.value) { active = i + 1; break; }
+        active = i + 1;
+    }
+    wizardRender(active, sels);
+}
+
+const WIZARD_LABELS = ['Regional', 'Modalidad', 'Contrato', 'UDS'];
+const WIZARD_FIELD_IDS = ['sectionRegional', 'sectionModalidad', 'sectionContrato', 'sectionUDS'];
+
+function wizardRender(activeStep, sels) {
+    sels = sels || [
+        document.getElementById('regionalSelect'),
+        document.getElementById('modalidadSelect'),
+        document.getElementById('contractNumber'),
+        document.getElementById('mainUdsDropdown')
+    ];
+    if (wizardManualStep) activeStep = wizardManualStep;
+
+    // Mostrar únicamente el campo del paso activo (una sola fila visible)
+    WIZARD_FIELD_IDS.forEach((id, idx) => {
+        const field = document.getElementById(id);
+        if (field) field.classList.toggle('is-visible', (idx + 1) === activeStep);
+    });
+
+    // Encabezado del paso actual
+    const numEl = document.getElementById('wizardCurrentNum');
+    const labelEl = document.getElementById('wizardCurrentLabel');
+    if (numEl) numEl.textContent = String(activeStep);
+    if (labelEl) labelEl.textContent = WIZARD_LABELS[activeStep - 1] || '';
+
+    // Círculos de progreso y conectores
+    for (let i = 1; i <= 4; i++) {
+        const sel = sels[i - 1];
+        const filled = !!(sel && sel.value);
+        const locked = !!(sel && sel.disabled);
+        const isActive = (i === activeStep) && !locked;
+
+        const dot = document.getElementById('wizDot' + i);
+        if (dot) {
+            dot.classList.toggle('is-active', isActive);
+            dot.classList.toggle('is-done', filled);
+            dot.innerHTML = filled ? '&#10003;' : String(i);
+        }
+        if (i < 4) {
+            const conn = document.getElementById('wizConn' + i);
+            if (conn) conn.classList.toggle('is-done', filled);
+        }
+    }
+
+    // Migas de pasos completados (distintos del activo) para volver a editarlos
+    const crumbsWrap = document.getElementById('wizardCrumbs');
+    if (crumbsWrap) {
+        crumbsWrap.innerHTML = '';
+        for (let i = 1; i <= 4; i++) {
+            if (i === activeStep) continue;
+            const sel = sels[i - 1];
+            if (sel && sel.value && !sel.disabled) {
+                const text = sel.options[sel.selectedIndex]?.text || '';
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'wizard-crumb';
+                btn.addEventListener('click', () => wizardGoToStep(i));
+                btn.innerHTML = '<span class="wizard-crumb-label"></span> <span class="wizard-crumb-value"></span>' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
+                btn.querySelector('.wizard-crumb-label').textContent = WIZARD_LABELS[i - 1] + ':';
+                btn.querySelector('.wizard-crumb-value').textContent = text;
+                crumbsWrap.appendChild(btn);
+            }
+        }
+        crumbsWrap.style.display = crumbsWrap.children.length ? 'flex' : 'none';
+    }
+}
+
+/* ============================================================
+   DROPZONES — arrastrar y soltar para los adjuntos (RAM / soporte)
+   ============================================================ */
+function initDropzones() {
+    document.querySelectorAll('.dropzone').forEach(zone => {
+        if (zone.dataset.dzReady) return;
+        zone.dataset.dzReady = '1';
+
+        const input = zone.querySelector('input[type="file"]');
+        const nameEl = zone.querySelector('.dropzone-filename');
+        if (!input) return;
+
+        const updateName = () => {
+            if (input.files && input.files.length > 0) {
+                zone.classList.add('has-file');
+                if (nameEl) nameEl.textContent = '📄 ' + input.files[0].name;
+            } else {
+                zone.classList.remove('has-file');
+                if (nameEl) nameEl.textContent = '';
+            }
+        };
+
+        input.addEventListener('change', updateName);
+
+        ['dragenter', 'dragover'].forEach(evt => {
+            zone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                zone.classList.add('is-dragover');
+            });
+        });
+        ['dragleave', 'dragend', 'drop'].forEach(evt => {
+            zone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                zone.classList.remove('is-dragover');
+            });
+        });
+        zone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                input.files = dt.files;
+                updateName();
+            }
+        });
+
+        updateName();
+    });
+}
+
+function resetDropzones() {
+    document.querySelectorAll('.dropzone').forEach(zone => {
+        zone.classList.remove('has-file', 'is-dragover');
+        const nameEl = zone.querySelector('.dropzone-filename');
+        if (nameEl) nameEl.textContent = '';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initDropzones();
+    wizardSync();
+    const form = document.getElementById('noveltyForm');
+    if (form) form.addEventListener('reset', () => setTimeout(resetDropzones, 0));
+});
 
 function updateAgeDisplay() {
             const dobValue = document.getElementById('ingresoDOB');
@@ -2208,7 +2432,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     if (btn) {
                         btn.disabled = true;
-                        btn.innerHTML = '<span class="spinner"></span> ENVIANDO...';
+                        btn.innerHTML = '<span class="spinner"></span> GUARDANDO...';
                     }
 
                     try {
@@ -2271,20 +2495,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             mostrarResumenEnvio();
                             setTimeout(() => {
-                                document.getElementById('noveltyForm').reset();
-                                if (typeof DuplicadosModule !== 'undefined') DuplicadosModule.limpiarAvisos();
-                                updateStyles();
-                                document.getElementById('sectionRetiro').classList.add('hidden');
-                                document.getElementById('sectionIngreso').classList.add('hidden');
-                                const displayAge = document.getElementById('displayAge');
-                                if (displayAge) displayAge.value = "Esperando fechas...";
-                                const nutricionIndicator = document.getElementById('nutricionIndicator');
-                                if (nutricionIndicator) nutricionIndicator.style.display = 'none';
-                                showToast('📥 Sin conexión: registro guardado en este dispositivo. Se enviará solo cuando vuelva la señal.', 'info');
+                                resetFormularioCompleto({
+                                    toastMsg: '📥 Sin conexión: registro guardado en este dispositivo. Se enviará solo cuando vuelva la señal.',
+                                    toastType: 'info'
+                                });
                             }, 500);
                             if (btn) {
                                 btn.disabled = false;
-                                btn.innerHTML = '<span>Enviar Reporte Al Correo</span>';
+                                btn.innerHTML = '<svg class="cf-submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg><span>Guardar Reporte</span>';
                             }
                             return;
                         }
@@ -2302,7 +2520,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         showToast(error.message, "error");
                         if (btn) {
                             btn.disabled = false;
-                            btn.innerHTML = '<span>Enviar Reporte Al Correo</span>';
+                            btn.innerHTML = '<svg class="cf-submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg><span>Guardar Reporte</span>';
                         }
                     }
                 });
@@ -2343,19 +2561,10 @@ async function enviarAGoogle(data, btn) {
 				
 				// Pequeña pausa para que el usuario vea el resumen antes de limpiar
 				setTimeout(() => {
-					// Resetear formulario
-					document.getElementById('noveltyForm').reset();
-					if (typeof DuplicadosModule !== 'undefined') DuplicadosModule.limpiarAvisos();
-					updateStyles();
-					document.getElementById('sectionRetiro').classList.add('hidden');
-					document.getElementById('sectionIngreso').classList.add('hidden');
-					const displayAge = document.getElementById('displayAge');
-					if (displayAge) displayAge.value = "Esperando fechas...";
-					
-					const nutricionIndicator = document.getElementById('nutricionIndicator');
-					if (nutricionIndicator) nutricionIndicator.style.display = 'none';
-					
-					showToast('✅ ¡Éxito! Reporte enviado correctamente.', 'success');
+					resetFormularioCompleto({
+						toastMsg: '✅ ¡Éxito! Reporte enviado correctamente.',
+						toastType: 'success'
+					});
 				}, 500);
 
 			} catch (error) {
@@ -2365,7 +2574,7 @@ async function enviarAGoogle(data, btn) {
 			} finally {
 				if (btn) {
 					btn.disabled = false;
-					btn.innerHTML = '<span>Enviar Reporte Al Correo</span>';
+					btn.innerHTML = '<svg class="cf-submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg><span>Guardar Reporte</span>';
 				}
 			}
 		}

@@ -14,6 +14,7 @@ const DuplicadosModule = (function () {
     let _casosCache = [];
     const _debounceTimers = {};
     let _casoExpandido = null; // ID del caso actualmente expandido
+    let _ultimoCaso = { retiro: null, ingreso: null }; // último caso encontrado por campo, para "Autocompletar"
 
     // ── Helpers ─────────────────────────────────────────────
     function _esc(s) {
@@ -75,7 +76,18 @@ const DuplicadosModule = (function () {
                     documento: String(r.ingreso.document).trim(),
                     nombre: r.ingreso.name || r.name || '',
                     tipo: 'ingreso',
-                    fecha: r.ingreso.ingresoDate || r.date || ''
+                    fecha: r.ingreso.ingresoDate || r.date || '',
+                    // Datos adicionales para autocompletar (todo menos lo nutricional)
+                    docType: r.ingreso.docType || '',
+                    gender: r.ingreso.gender || '',
+                    dob: r.ingreso.dob || '',
+                    comuna: r.ingreso.comuna || '',
+                    barrio: r.ingreso.barrio || '',
+                    address: r.ingreso.address || '',
+                    phone: r.ingreso.phone || '',
+                    acudiente: r.ingreso.acudiente || '',
+                    acudienteDoc: r.ingreso.acudienteDoc || '',
+                    acudienteDOB: r.ingreso.acudienteDOB || ''
                 });
             }
             if ((r.hasRetiro || r.type === 'retiro' || r.type === 'ambos') && r.retiro && r.retiro.document) {
@@ -84,7 +96,10 @@ const DuplicadosModule = (function () {
                     documento: String(r.retiro.document).trim(),
                     nombre: r.retiro.name || r.name || '',
                     tipo: 'retiro',
-                    fecha: r.retiro.retiroDate || r.date || ''
+                    fecha: r.retiro.retiroDate || r.date || '',
+                    // Datos adicionales para autocompletar
+                    docType: r.retiro.docType || '',
+                    gender: r.retiro.gender || ''
                 });
             }
         });
@@ -218,6 +233,7 @@ const DuplicadosModule = (function () {
     function limpiarAviso(tipoCampo) {
         const box = document.getElementById(tipoCampo === 'retiro' ? 'retiroDupWarning' : 'ingresoDupWarning');
         if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
+        _ultimoCaso[tipoCampo] = null;
     }
 
     function limpiarAvisos() {
@@ -234,16 +250,23 @@ const DuplicadosModule = (function () {
             && caso.ultimoIngreso
             && (!caso.ultimoRetiro || _fechaOrden(caso.ultimoRetiro) < _fechaOrden(caso.ultimoIngreso));
 
+        // ¿El movimiento más reciente de este documento es un RETIRO? (útil sobre todo al ingresar)
+        const retiradoRecientemente = caso.ultimoRetiro
+            && (!caso.ultimoIngreso || _fechaOrden(caso.ultimoRetiro) >= _fechaOrden(caso.ultimoIngreso));
+
         return `
             <div class="dup-warning-header">⚠️ Participante Duplicado${caso.nombre ? ' — ' + _esc(caso.nombre) : ''}</div>
             ${linea(caso.ultimoIngreso, 'Último Ingreso')}
             ${linea(caso.ultimoRetiro, 'Último Retiro')}
             ${activo ? '<div class="dup-line dup-line--danger">🔴 Este participante tiene un INGRESO ACTIVO registrado, sin retiro posterior.</div>' : ''}
+            ${tipoCampo === 'ingreso' && retiradoRecientemente ? '<div class="dup-line dup-line--muted">🟠 Este documento figura como <strong>RETIRADO</strong> en su último movimiento. Al autocompletar se cargará al menos el nombre y el género.</div>' : ''}
             <div class="dup-line dup-line--muted">Operador(es): ${caso.operadores.map(_esc).join(', ') || 'N/A'} · ${caso.eventos.length} movimiento(s)</div>
-            <div style="margin-top:6px;">
-                <button type="button" onclick="DuplicadosModule.abrirModalCaso('${caso.documento}')" 
-                    style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;border:none;padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">
+            <div class="dup-warning-actions">
+                <button type="button" onclick="DuplicadosModule.abrirModalCaso('${caso.documento}')" class="dup-warning-btn dup-warning-btn-blue">
                     📋 Ver Línea de Tiempo
+                </button>
+                <button type="button" onclick="DuplicadosModule.autocompletar('${tipoCampo}')" class="dup-warning-btn dup-warning-btn-purple">
+                    🧩 Autocompletar
                 </button>
             </div>
         `;
@@ -277,6 +300,8 @@ const DuplicadosModule = (function () {
             if (inputActual && inputActual.value.trim() !== doc) return;
             if (!box) return;
 
+            _ultimoCaso[tipoCampo] = caso;
+
             if (!caso) {
                 box.classList.add('hidden');
                 box.innerHTML = '';
@@ -289,6 +314,92 @@ const DuplicadosModule = (function () {
                 showToast(`⚠️ Participante Duplicado — ${caso.eventos.length} movimiento(s) encontrados`, 'warning', 3500);
             }
         }, 450);
+    }
+
+    // ── Autocompletar con datos de un registro existente ───
+    // (nunca toca los campos de nutrición: peso, talla, PB, EPS, régimen)
+    function _mejorFuenteDatos(caso, tipoCampo) {
+        if (!caso || !caso.eventos || !caso.eventos.length) return null;
+        const eventos = [...caso.eventos].sort((a, b) => _fechaOrden(b) - _fechaOrden(a)); // más reciente primero
+
+        if (tipoCampo === 'ingreso') {
+            // Preferir el ingreso más reciente que tenga datos de contacto/ubicación
+            const conDatos = eventos.find(e => e.tipo === 'ingreso' && (e.address || e.phone || e.dob || e.comuna));
+            if (conDatos) return conDatos;
+            // Si no hay un ingreso con datos completos, usar cualquier evento con nombre/género (p.ej. un retiro)
+            return eventos.find(e => e.nombre || e.gender) || eventos[0];
+        }
+
+        // tipoCampo === 'retiro': preferir el último retiro conocido
+        const conRetiro = eventos.find(e => e.tipo === 'retiro');
+        if (conRetiro) return conRetiro;
+        return eventos.find(e => e.nombre || e.gender) || eventos[0];
+    }
+
+    function autocompletar(tipoCampo) {
+        const caso = _ultimoCaso[tipoCampo];
+        if (!caso) {
+            if (typeof showToast === 'function') showToast('No hay un registro anterior disponible para autocompletar.', 'warning');
+            return;
+        }
+        const fuente = _mejorFuenteDatos(caso, tipoCampo);
+        if (!fuente) {
+            if (typeof showToast === 'function') showToast('No se encontraron datos para autocompletar.', 'info');
+            return;
+        }
+
+        let llenados = 0;
+        const flash = (el) => {
+            el.classList.add('dup-autofilled');
+            setTimeout(() => el.classList.remove('dup-autofilled'), 1200);
+        };
+        const setVal = (id, val) => {
+            if (val === undefined || val === null || val === '') return;
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.value = val;
+            flash(el);
+            llenados++;
+        };
+        const setRadio = (name, val) => {
+            if (!val) return;
+            const radio = document.querySelector(`input[name="${name}"][value="${val}"]`);
+            if (!radio) return;
+            radio.checked = true;
+            const wrap = radio.closest('label') || radio;
+            flash(wrap);
+            llenados++;
+        };
+
+        if (tipoCampo === 'retiro') {
+            setVal('retiroDocType', fuente.docType);
+            setVal('retiroFullName', fuente.nombre);
+            setRadio('_retiroGender', fuente.gender);
+        } else {
+            setVal('ingresoDocType', fuente.docType);
+            setVal('ingresoFullName', fuente.nombre);
+            setRadio('_ingresoGender', fuente.gender);
+            setVal('ingresoDOB', fuente.dob);
+            setVal('ingresoComuna', fuente.comuna);
+            setVal('ingresoBarrio', fuente.barrio);
+            setVal('ingresoAddress', fuente.address);
+            setVal('ingresoPhone', fuente.phone);
+            setVal('acudienteName', fuente.acudiente);
+            setVal('acudienteDoc', fuente.acudienteDoc);
+            setVal('acudienteDOB', fuente.acudienteDOB);
+            if (typeof updateAgeDisplay === 'function') updateAgeDisplay();
+            if (typeof calcularEstadoNutricional === 'function') calcularEstadoNutricional();
+        }
+
+        if (typeof showToast === 'function') {
+            showToast(
+                llenados > 0
+                    ? `✅ ${llenados} campo(s) autocompletado(s) desde un registro anterior. Verifica que la dirección y demás datos sigan siendo correctos.`
+                    : 'El registro encontrado no tenía datos adicionales para autocompletar.',
+                llenados > 0 ? 'success' : 'info',
+                4500
+            );
+        }
     }
 
     // ── Badges de categoría ─────────────────────────────────
@@ -646,6 +757,7 @@ const DuplicadosModule = (function () {
         obtenerCasosDuplicados,
         buscarPorDocumento,
         verificarCampo,
+        autocompletar,
         limpiarAviso,
         limpiarAvisos,
         renderPanel,

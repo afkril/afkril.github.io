@@ -542,6 +542,16 @@ const AsociacionesModule = (() => {
         const estilos = document.getElementById('estilos-contratos-dinamicos');
         if (estilos) estilos.remove();
 
+        // Reiniciar el formulario de novedades en blanco: los valores de
+        // Regional/Modalidad/Contrato/UDS y los datos digitados pertenecen
+        // a la asociación anterior y ya no son válidos para la nueva.
+        if (typeof resetFormularioCompleto === 'function') {
+            resetFormularioCompleto();
+        } else {
+            const form = document.getElementById('noveltyForm');
+            if (form) form.reset();
+        }
+
         // Limpiar cache de datos nutricionales de la asociación anterior
         // (evita que al entrar a otra asociación se sigan viendo los
         // datos nutricionales de la asociación anterior)
