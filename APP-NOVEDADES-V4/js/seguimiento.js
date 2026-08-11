@@ -94,7 +94,40 @@ const SeguimientoModule = (() => {
     }
 
     // ── Helpers de datos de la novedad ───────────────────────────
+    // Devuelve un array con cada persona involucrada en la novedad: para
+    // "retiro" o "ingreso" trae solo una; para "ambos" trae LAS DOS (son
+    // beneficiarios distintos: quien se retira y quien ingresa).
+    function _personasDe(n) {
+        const out = [];
+        const fmtFecha = (f) => f ? (typeof formatDateDMY === 'function' ? formatDateDMY(f) : f) : '';
+        if (n.type === 'retiro' || n.type === 'ambos' || n.hasRetiro) {
+            const r = n.retiro || n;
+            out.push({
+                rol: 'retiro',
+                nombre: (r.name || 'Beneficiario').toUpperCase(),
+                rc: r.document ? `${r.docType || 'RC'} ${r.document}` : '-',
+                fecha: fmtFecha(r.retiroDate || n.retiroDate || '')
+            });
+        }
+        if (n.type === 'ingreso' || n.type === 'ambos' || n.hasIngreso) {
+            const i = n.ingreso || n;
+            out.push({
+                rol: 'ingreso',
+                nombre: (i.name || 'Beneficiario').toUpperCase(),
+                rc: i.document ? `${i.docType || 'RC'} ${i.document}` : '-',
+                fecha: fmtFecha(i.ingresoDate || n.ingresoDate || '')
+            });
+        }
+        return out;
+    }
+
     function _nombreDe(n) {
+        if (n.type === 'ambos') {
+            const personas = _personasDe(n);
+            const r = personas.find(p => p.rol === 'retiro');
+            const i = personas.find(p => p.rol === 'ingreso');
+            if (r && i) return `${r.nombre} (retiro) y ${i.nombre} (ingreso)`;
+        }
         return (n.name || n.ingreso?.name || n.retiro?.name || 'Beneficiario').toUpperCase();
     }
     function _tipoDe(n) {
@@ -127,30 +160,43 @@ const SeguimientoModule = (() => {
     }
 
     // Datos adicionales del beneficiario/UDS que se muestran como contexto rápido
-    // en el modal de respuesta y en la bandeja de seguimiento.
+    // en el modal de respuesta y en la bandeja de seguimiento. Cuando la novedad
+    // es "ambos", el RC combina el de la persona que se retira y el de la que
+    // ingresa (son dos beneficiarios distintos).
     function _datosExtra(novelty) {
         let codigoUds = '';
         if (novelty.udsFull && novelty.udsFull.includes(' - ')) {
             codigoUds = novelty.udsFull.split(' - ')[1] || '';
         }
-        const r = novelty.retiro || null;
-        const i = novelty.ingreso || null;
-        let rc = '-';
-        if (r && r.document) rc = `${r.docType || 'RC'} ${r.document}`;
-        else if (i && i.document) rc = `${i.docType || 'RC'} ${i.document}`;
-        else if (novelty.document) rc = `${novelty.docType || 'RC'} ${novelty.document}`;
+        const personas = _personasDe(novelty);
+        const retiroP = personas.find(p => p.rol === 'retiro');
+        const ingresoP = personas.find(p => p.rol === 'ingreso');
 
-        const fmtFecha = (f) => f ? (typeof formatDateDMY === 'function' ? formatDateDMY(f) : f) : '';
-        const fechaRetiro = fmtFecha(r?.retiroDate || novelty.retiroDate || '');
-        const fechaIngreso = fmtFecha(i?.ingresoDate || novelty.ingresoDate || '');
+        let rc = '-';
+        if (retiroP && ingresoP) rc = `${retiroP.rc} (retiro) / ${ingresoP.rc} (ingreso)`;
+        else if (retiroP) rc = retiroP.rc;
+        else if (ingresoP) rc = ingresoP.rc;
+        else if (novelty.document) rc = `${novelty.docType || 'RC'} ${novelty.document}`;
 
         return {
             rc,
             codigoUds: codigoUds || '-',
             contrato: novelty.contract || '-',
             regional: novelty.regional || '-',
-            fechaRetiro, fechaIngreso
+            fechaRetiro: retiroP?.fecha || '',
+            fechaIngreso: ingresoP?.fecha || ''
         };
+    }
+
+    // Texto legible de la(s) fecha(s) relevante(s) — para "ambos" muestra las dos.
+    function _fechaDisplay(novelty, d) {
+        if (novelty.type === 'ambos') {
+            const partes = [];
+            if (d.fechaRetiro) partes.push(`Retiro ${d.fechaRetiro}`);
+            if (d.fechaIngreso) partes.push(`Ingreso ${d.fechaIngreso}`);
+            return partes.join(' · ') || 'N/A';
+        }
+        return novelty.type === 'retiro' ? (d.fechaRetiro || 'N/A') : (d.fechaIngreso || 'N/A');
     }
 
     // ── Badges usados en la tabla de Novedades Activas ──────────
@@ -177,14 +223,38 @@ const SeguimientoModule = (() => {
         wrap.innerHTML = `
         <div id="quickReplyOverlay" class="quick-reply-overlay" style="display:none" onclick="if(event.target===this) SeguimientoModule.cerrarRespuestaRapida()">
           <div class="quick-reply-modal">
-            <div class="quick-reply-head">
-                <h3>📧 Respuesta rápida</h3>
-                <button class="btn-close-compact" onclick="SeguimientoModule.cerrarRespuestaRapida()">×</button>
+            <button class="qr2-close" onclick="SeguimientoModule.cerrarRespuestaRapida()" title="Cerrar">×</button>
+            <div class="qr2-sidebar">
+                <div class="qr2-sidebar-icon">📨</div>
+                <h2>Responder<br>novedad</h2>
+                <p>Responde de forma rápida y efectiva</p>
+                <div class="qr2-illustration">
+                    <svg viewBox="0 0 120 120" width="90" height="90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="60" cy="60" r="58" fill="rgba(255,255,255,0.12)"/>
+                        <path d="M28 44l32 20 32-20" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+                        <rect x="24" y="38" width="72" height="48" rx="8" stroke="#fff" stroke-width="3" opacity="0.9"/>
+                        <path d="M78 30l14-8-4 16z" fill="#fff" opacity="0.85"/>
+                    </svg>
+                </div>
+                <div class="qr2-tip">
+                    <div class="qr2-tip-icon">💡</div>
+                    <div>
+                        <strong>Tip</strong>
+                        <p>Tu respuesta será enviada al correo del solicitante en cuanto la envíes.</p>
+                    </div>
+                </div>
             </div>
-            <div class="quick-reply-body" id="quickReplyBody"></div>
+            <div class="qr2-main" id="quickReplyBody"></div>
+            <div class="qr2-aside" id="quickReplyAside"></div>
           </div>
         </div>`;
         document.body.appendChild(wrap.firstElementChild);
+    }
+
+    function _tipoColor(novelty) {
+        if (novelty.type === 'ambos') return '#3b82f6';
+        if (novelty.type === 'retiro') return '#ef4444';
+        return '#10b981';
     }
 
     function abrirRespuestaRapida(id) {
@@ -193,9 +263,11 @@ const SeguimientoModule = (() => {
         _idModalActual = id;
         _asegurarModal();
         document.getElementById('quickReplyBody').innerHTML = _renderFormularioRespuesta(novelty);
+        document.getElementById('quickReplyAside').innerHTML = _renderResumenLateral(novelty);
         document.getElementById('quickReplyOverlay').style.display = 'flex';
         document.body.classList.add('modal-open');
         _aplicarPlantilla(novelty.seguimiento?.estadoInterno || 'pendiente');
+        _actualizarAside();
     }
 
     function cerrarRespuestaRapida() {
@@ -217,49 +289,151 @@ const SeguimientoModule = (() => {
             return `<option value="${key}" ${key === estadoActual ? 'selected' : ''}>${info.emoji} ${info.label}</option>`;
         }).join('');
         const d = _datosExtra(novelty);
+        const color = _tipoColor(novelty);
+        const fecha = _fechaDisplay(novelty, d);
+
         return `
-        <div class="qr-info-extra">
-            <div class="qr-info-item"><span>🆔 RC</span><strong>${d.rc}</strong></div>
-            <div class="qr-info-item"><span>🔢 Código UDS</span><strong>${d.codigoUds}</strong></div>
-            <div class="qr-info-item"><span>📄 Contrato</span><strong>${d.contrato}</strong></div>
-            <div class="qr-info-item"><span>🌎 Regional</span><strong>${d.regional}</strong></div>
-            ${d.fechaRetiro ? `<div class="qr-info-item"><span>📅 F. Retiro</span><strong>${d.fechaRetiro}</strong></div>` : ''}
-            ${d.fechaIngreso ? `<div class="qr-info-item"><span>📅 F. Ingreso</span><strong>${d.fechaIngreso}</strong></div>` : ''}
+        <button class="qr2-close qr2-close--mobile" onclick="SeguimientoModule.cerrarRespuestaRapida()" title="Cerrar">×</button>
+        <div class="qr2-main-head">
+            <div class="qr2-main-icon">📧</div>
+            <div>
+                <h3>Responder novedad</h3>
+                <p>Completa la información para enviar una respuesta rápida.</p>
+            </div>
         </div>
+
+        <div class="qr2-section">
+            <div class="qr2-section-title">🔓 1. Información de la respuesta</div>
+            <div class="qr2-summary-strip">
+                <div class="qr2-summary-item">
+                    <span class="qr2-summary-label">Tipo</span>
+                    <span class="qr2-summary-val"><i class="qr2-dot" style="background:${color}"></i>${_tipoDe(novelty)}</span>
+                </div>
+                <div class="qr2-summary-item">
+                    <span class="qr2-summary-label">Contrato</span>
+                    <span class="qr2-summary-val">${d.contrato}</span>
+                </div>
+                <div class="qr2-summary-item">
+                    <span class="qr2-summary-label">Código UDS</span>
+                    <span class="qr2-summary-val">${d.codigoUds}</span>
+                </div>
+                <div class="qr2-summary-item">
+                    <span class="qr2-summary-label">Regional</span>
+                    <span class="qr2-summary-val">${d.regional}</span>
+                </div>
+                <div class="qr2-summary-item">
+                    <span class="qr2-summary-label">${novelty.type === 'ambos' ? 'Fechas' : 'Fecha'}</span>
+                    <span class="qr2-summary-val">${fecha || 'N/A'}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="qr2-grid-2">
+            <div class="qr-field">
+                <label>Para (Correo del solicitante) *</label>
+                <input type="email" id="qrTo" value="${correo}" placeholder="correo@ejemplo.com">
+                ${!correo ? '<small class="qr-warning">⚠️ Esta novedad no tiene correo de respuesta registrado. Escríbelo manualmente.</small>' : ''}
+            </div>
+            <div class="qr-field">
+                <label>Beneficiario</label>
+                <input type="text" value="${_nombreDe(novelty)} — ${_tipoDe(novelty)}" disabled>
+            </div>
+        </div>
+
+        <div class="qr2-grid-2">
+            <div class="qr-field">
+                <label>Estado de la novedad *</label>
+                <select id="qrEstado" onchange="SeguimientoModule.onCambioEstadoModal(this.value)">${opciones}</select>
+            </div>
+            <div class="qr-field">
+                <label>Asunto *</label>
+                <input type="text" id="qrAsunto" value="Re: Novedad ${_tipoDe(novelty)} - ${_nombreDe(novelty)}" oninput="SeguimientoModule.actualizarResumenLateral()">
+            </div>
+        </div>
+
         <div class="qr-field">
-            <label>Para</label>
-            <input type="email" id="qrTo" value="${correo}" placeholder="correo@ejemplo.com">
-            ${!correo ? '<small class="qr-warning">⚠️ Esta novedad no tiene correo de respuesta registrado. Escríbelo manualmente.</small>' : ''}
+            <label>Mensaje *</label>
+            <textarea id="qrMensaje" rows="8" oninput="SeguimientoModule.actualizarResumenLateral()"></textarea>
         </div>
-        <div class="qr-field">
-            <label>Beneficiario</label>
-            <input type="text" value="${_nombreDe(novelty)} — ${_tipoDe(novelty)}" disabled>
-        </div>
-        <div class="qr-field">
-            <label>Estado de la novedad</label>
-            <select id="qrEstado" onchange="SeguimientoModule.onCambioEstadoModal(this.value)">${opciones}</select>
-        </div>
-        <div class="qr-field">
-            <label>Asunto</label>
-            <input type="text" id="qrAsunto" value="Re: Novedad ${_tipoDe(novelty)} - ${_nombreDe(novelty)}">
-        </div>
-        <div class="qr-field">
-            <label>Mensaje</label>
-            <textarea id="qrMensaje" rows="7"></textarea>
-        </div>
+
         <div class="qr-actions">
-            <button class="qr-btn-cancel" onclick="SeguimientoModule.cerrarRespuestaRapida()">Cancelar</button>
+            <button class="qr-btn-cancel" onclick="SeguimientoModule.cerrarRespuestaRapida()">✕ Cancelar</button>
             <button class="qr-btn-send" onclick="SeguimientoModule.enviarRespuesta()">📧 Enviar respuesta</button>
         </div>`;
     }
 
-    function onCambioEstadoModal(key) { _aplicarPlantilla(key); }
+    // ── Columna derecha: resumen en vivo de la novedad y del mensaje ──
+    function _renderResumenLateral(novelty) {
+        const d = _datosExtra(novelty);
+        const color = _tipoColor(novelty);
+        const fecha = _fechaDisplay(novelty, d);
+
+        return `
+        <div class="qr2-aside-title">ℹ️ Resumen de la novedad</div>
+        <div class="qr2-aside-rows">
+            <div class="qr2-aside-row"><span>🏷️ Tipo:</span><strong><i class="qr2-dot" style="background:${color}"></i>${_tipoDe(novelty)}</strong></div>
+            <div class="qr2-aside-row"><span>📄 Contrato:</span><strong>${d.contrato}</strong></div>
+            <div class="qr2-aside-row"><span>🔢 Código UDS:</span><strong>${d.codigoUds}</strong></div>
+            <div class="qr2-aside-row"><span>🌎 Regional:</span><strong>${d.regional}</strong></div>
+            <div class="qr2-aside-row"><span>${novelty.type === 'ambos' ? '📅 Fechas:' : '📅 Fecha:'}</span><strong>${fecha || 'N/A'}</strong></div>
+        </div>
+
+        <hr class="qr2-aside-divider">
+
+        <div class="qr2-aside-block">
+            <div class="qr2-aside-label">Beneficiario:</div>
+            <div class="qr2-aside-value">${_nombreDe(novelty)} — ${_tipoDe(novelty)}</div>
+        </div>
+        <div class="qr2-aside-block">
+            <div class="qr2-aside-label">Estado actual:</div>
+            <div id="qrAsideEstado"></div>
+        </div>
+        <div class="qr2-aside-block">
+            <div class="qr2-aside-label">Asunto:</div>
+            <div class="qr2-aside-value" id="qrAsideAsunto">-</div>
+        </div>
+
+        <hr class="qr2-aside-divider">
+
+
+        <a href="#" class="qr2-aside-link" onclick="event.preventDefault(); SeguimientoModule.verDetalleDesdeRespuesta();">👁️ Ver detalles completos</a>`;
+    }
+
+    function actualizarResumenLateral() { _actualizarAside(); }
+
+    function _actualizarAside() {
+        const estadoKey = document.getElementById('qrEstado')?.value || 'pendiente';
+        const asunto = document.getElementById('qrAsunto')?.value?.trim() || '-';
+        const mensaje = document.getElementById('qrMensaje')?.value?.trim() || '-';
+        const info = getEstadoSeg(estadoKey);
+
+        const chipEstado = document.getElementById('qrAsideEstado');
+        if (chipEstado) {
+            chipEstado.innerHTML = `<span class="seg-chip" style="background:${info.color}22;color:${info.color}">${info.emoji} ${info.label}</span>`;
+        }
+        const asideAsunto = document.getElementById('qrAsideAsunto');
+        if (asideAsunto) asideAsunto.textContent = asunto;
+
+        const asideMensaje = document.getElementById('qrAsideMensaje');
+        if (asideMensaje) asideMensaje.innerHTML = mensaje.replace(/\n/g, '<br>');
+    }
+
+    function verDetalleDesdeRespuesta() {
+        const novelty = _buscarNovelty(_idModalActual);
+        if (!novelty) return;
+        const esArchivada = (typeof archivedNovelties !== 'undefined' ? archivedNovelties : []).some(n => n.id === novelty.id);
+        cerrarRespuestaRapida();
+        if (typeof viewNoveltyDetails === 'function') viewNoveltyDetails(novelty, esArchivada);
+    }
+
+    function onCambioEstadoModal(key) { _aplicarPlantilla(key); _actualizarAside(); }
 
     function _aplicarPlantilla(key) {
         const info = getEstadoSeg(key);
         const ta = document.getElementById('qrMensaje');
         const novelty = _buscarNovelty(_idModalActual);
         if (ta) ta.value = _construirMensajeCompleto(novelty, info.mensaje);
+        _actualizarAside();
     }
 
     // Datos generales del beneficiario que se usan para personalizar el mensaje
@@ -276,33 +450,61 @@ const SeguimientoModule = (() => {
         };
     }
 
-    // Reemplaza los tokens {{nombre}}, {{rc}}, {{fecha}}, {{tipo}}, {{contrato}}, {{regional}}
-    // dentro del texto de una plantilla usando los datos reales de la novedad.
-    // {{fecha}} toma la fecha de retiro o de ingreso según corresponda al tipo de novedad.
+    // Reemplaza los tokens dentro del texto de una plantilla usando los datos
+    // reales de la novedad:
+    //   {{nombre}}, {{rc}}, {{fecha}}, {{tipo}}, {{contrato}}, {{regional}}
+    //   → cuando la novedad es "ambos" combinan la info de las dos personas.
+    //   {{nombreRetiro}} / {{rcRetiro}} / {{fechaRetiro}}
+    //   {{nombreIngreso}} / {{rcIngreso}} / {{fechaIngreso}}
+    //   → para referirse puntualmente a quien se retira o a quien ingresa.
     function _interpolar(texto, novelty) {
         if (!novelty) return texto || '';
         const m = _datosMensaje(novelty);
-        const fechaContextual = novelty.type === 'retiro' ? m.fechaRetiro
-            : novelty.type === 'ingreso' ? m.fechaIngreso
-            : (m.fechaRetiro || m.fechaIngreso || '');
+        const personas = _personasDe(novelty);
+        const retiroP = personas.find(p => p.rol === 'retiro');
+        const ingresoP = personas.find(p => p.rol === 'ingreso');
+
+        let fechaContextual;
+        if (novelty.type === 'ambos') {
+            const partes = [];
+            if (m.fechaRetiro) partes.push(`retiro ${m.fechaRetiro}`);
+            if (m.fechaIngreso) partes.push(`ingreso ${m.fechaIngreso}`);
+            fechaContextual = partes.join(' / ');
+        } else {
+            fechaContextual = novelty.type === 'retiro' ? m.fechaRetiro : m.fechaIngreso;
+        }
+
         return (texto || '')
             .replace(/\{\{\s*nombre\s*\}\}/gi, m.nombre)
             .replace(/\{\{\s*rc\s*\}\}/gi, m.rc)
             .replace(/\{\{\s*fecha\s*\}\}/gi, fechaContextual || 'N/A')
             .replace(/\{\{\s*tipo\s*\}\}/gi, m.tipo)
             .replace(/\{\{\s*contrato\s*\}\}/gi, m.contrato)
-            .replace(/\{\{\s*regional\s*\}\}/gi, m.regional);
+            .replace(/\{\{\s*regional\s*\}\}/gi, m.regional)
+            .replace(/\{\{\s*nombreRetiro\s*\}\}/gi, retiroP?.nombre || 'N/A')
+            .replace(/\{\{\s*rcRetiro\s*\}\}/gi, retiroP?.rc || 'N/A')
+            .replace(/\{\{\s*fechaRetiro\s*\}\}/gi, retiroP?.fecha || 'N/A')
+            .replace(/\{\{\s*nombreIngreso\s*\}\}/gi, ingresoP?.nombre || 'N/A')
+            .replace(/\{\{\s*rcIngreso\s*\}\}/gi, ingresoP?.rc || 'N/A')
+            .replace(/\{\{\s*fechaIngreso\s*\}\}/gi, ingresoP?.fecha || 'N/A');
     }
 
-    // Bloque de "Datos generales" (RC, nombre, fecha de ingreso/retiro) que se
-    // antepone al cuerpo del mensaje, para que quede siempre visible en el correo.
+    // Bloque de "Datos generales" que se antepone al cuerpo del mensaje. Cuando
+    // la novedad es "ambos" describe a las DOS personas por separado (quien se
+    // retira y quien ingresa), cada una con su propio RC y fecha.
     function _bloqueDatosGenerales(novelty) {
+        if (novelty.type === 'ambos') {
+            const personas = _personasDe(novelty);
+            const retiroP = personas.find(p => p.rol === 'retiro');
+            const ingresoP = personas.find(p => p.rol === 'ingreso');
+            const lineas = [];
+            if (retiroP) lineas.push(`• Beneficiario que se retira: ${retiroP.nombre} (${retiroP.rc}) — Fecha de retiro: ${retiroP.fecha || 'N/A'}`);
+            if (ingresoP) lineas.push(`• Beneficiario que ingresa: ${ingresoP.nombre} (${ingresoP.rc}) — Fecha de ingreso: ${ingresoP.fecha || 'N/A'}`);
+            return lineas.join('\n');
+        }
         const m = _datosMensaje(novelty);
         const lineas = [`• Beneficiario: ${m.nombre}`, `• RC: ${m.rc}`];
-        if (novelty.type === 'ambos') {
-            lineas.push(`• Fecha de retiro: ${m.fechaRetiro || 'N/A'}`);
-            lineas.push(`• Fecha de ingreso: ${m.fechaIngreso || 'N/A'}`);
-        } else if (novelty.type === 'retiro') {
+        if (novelty.type === 'retiro') {
             lineas.push(`• Fecha de retiro: ${m.fechaRetiro || 'N/A'}`);
         } else {
             lineas.push(`• Fecha de ingreso: ${m.fechaIngreso || 'N/A'}`);
@@ -468,8 +670,11 @@ const SeguimientoModule = (() => {
                 Este texto se sugiere automáticamente al elegir el estado en "Responder". Puedes usar
                 <code>{{nombre}}</code>, <code>{{rc}}</code>, <code>{{fecha}}</code>, <code>{{tipo}}</code>,
                 <code>{{contrato}}</code> y <code>{{regional}}</code> — se reemplazan por los datos reales de
-                cada novedad. Además, cada correo incluye automáticamente un bloque con RC, nombre y fecha de
-                ingreso/retiro antes de este texto.
+                cada novedad. En novedades de tipo <strong>Ambos</strong> (retiro + ingreso), estos tokens
+                combinan la información de las dos personas; si quieres referirte a cada una por separado
+                usa <code>{{nombreRetiro}}</code>, <code>{{rcRetiro}}</code>, <code>{{fechaRetiro}}</code>,
+                <code>{{nombreIngreso}}</code>, <code>{{rcIngreso}}</code> y <code>{{fechaIngreso}}</code>.
+                Además, cada correo incluye automáticamente un bloque con los datos generales antes de este texto.
             </div>
             ${Object.keys(plantillas).map(key => {
                 const info = plantillas[key];
@@ -629,7 +834,7 @@ const SeguimientoModule = (() => {
         enviarRespuesta, renderPanelComunicacion, renderEditorPlantillas,
         toggleHistorialItem, eliminarHistorialItem,
         renderBandeja, filtrarBandeja, verDetalleDesdeBandeja, calcularEstadisticas,
-        actualizarBadgeSidebar
+        actualizarBadgeSidebar, actualizarResumenLateral, verDetalleDesdeRespuesta
     };
 })();
 
