@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Flechas 360 — Juego de Reflejos</title>
+<title>Just A Way — Juego de Reflejos</title>
 <style>
 :root{
   --bg:#0c1119;
@@ -16,7 +16,31 @@
   --text:#eef5ff;
   --muted:#8794a7;
   --ring:#283547;
+  --difficultyGlow:#2e8cff;
+  --difficultyGlowSoft:rgba(46,140,255,.32);
+  --difficultyGlowStrong:rgba(46,140,255,.68);
 }
+
+/* Resplandor de dificultad: fuerte, amplio y parpadeante. */
+.arena::before{
+  content:"";position:absolute;inset:-34px;border-radius:50%;z-index:0;pointer-events:none;
+  background:radial-gradient(circle,transparent 47%,var(--difficultyGlowSoft) 66%,var(--difficultyGlowStrong) 76%,transparent 82%);
+  filter:blur(15px);opacity:.72;
+  animation:difficultyGlowPulse var(--glowSpeed,1.15s) ease-in-out infinite;
+}
+.arena::after{
+  content:"";position:absolute;inset:-12px;border-radius:50%;z-index:0;pointer-events:none;
+  border:3px solid var(--difficultyGlow);
+  box-shadow:0 0 18px var(--difficultyGlowStrong),0 0 45px var(--difficultyGlowSoft),0 0 85px var(--difficultyGlowSoft);
+  animation:difficultyGlowFlash var(--glowSpeed,.95s) ease-in-out infinite;
+}
+@keyframes difficultyGlowPulse{0%,100%{transform:scale(.96);opacity:.35}50%{transform:scale(1.06);opacity:.78}}
+@keyframes difficultyGlowFlash{0%,100%{opacity:.28;filter:brightness(.9)}50%{opacity:.72;filter:brightness(1.25)}}
+.arena.difficulty-1{--difficultyGlow:#2e8cff;--difficultyGlowSoft:rgba(46,140,255,.50);--difficultyGlowStrong:rgba(46,140,255,.68);--glowSpeed:1.35s}
+.arena.difficulty-2{--difficultyGlow:#ffd34d;--difficultyGlowSoft:rgba(255,211,77,.30);--difficultyGlowStrong:rgba(255,211,77,.66);--glowSpeed:1.05s}
+.arena.difficulty-3{--difficultyGlow:#ff8a24;--difficultyGlowSoft:rgba(255,138,36,.32);--difficultyGlowStrong:rgba(255,138,36,.70);--glowSpeed:.82s}
+.arena.difficulty-4{--difficultyGlow:#ff315f;--difficultyGlowSoft:rgba(255,49,95,.34);--difficultyGlowStrong:rgba(255,49,95,.72);--glowSpeed:.58s}
+
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070b11;color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
 body{display:flex;justify-content:center}
@@ -64,22 +88,6 @@ button{font:inherit}
   width:min(78vw,350px);aspect-ratio:1;border-radius:50%;
 }
 
-/* Resplandor de dificultad: aumenta intensidad y velocidad por nivel. */
-.arena::before{
-  content:"";position:absolute;z-index:0;inset:-15%;border-radius:50%;pointer-events:none;
-  opacity:.18;transform:scale(.96);
-  background:radial-gradient(circle,rgba(46,140,255,.34) 0 35%,rgba(46,140,255,.16) 48%,transparent 72%);
-  filter:blur(18px);
-  animation:arenaGlow 2.8s ease-in-out infinite;
-}
-.arena.difficulty-1::before{opacity:.20;animation-duration:2.8s}
-.arena.difficulty-2::before{opacity:.32;animation-duration:1.9s}
-.arena.difficulty-3::before{opacity:.48;animation-duration:1.15s}
-.arena.difficulty-4::before{opacity:.68;animation-duration:.62s}
-@keyframes arenaGlow{
-  0%,100%{opacity:.32;transform:scale(.92)}
-  50%{opacity:1;transform:scale(1.08)}
-}
 .ring{
   position:absolute;inset:0;border-radius:50%;
   /* El inicio y el cierre del temporizador parten de arriba (0deg = 12 en punto), igual que la esfera. */
@@ -251,8 +259,7 @@ h1{font-size:29px;margin:0 0 8px;letter-spacing:1px}
 .tutorial-card{border:1px solid #243348;background:#101925;border-radius:12px;padding:8px 5px;text-align:center;min-height:86px}
 .tutorial-arrow{height:39px;display:flex;justify-content:center;align-items:center;margin-bottom:3px}
 .tutorial-arrow svg{width:34px;height:34px}
-.tutorial-card strong{display:block;font-size:12px;letter-spacing:.8px}
-.tutorial-card span{display:block;font-size:15px;color:#77879b;margin-top:3px;line-height:1.25}
+.tutorial-card strong{display:block;font-size:9px;letter-spacing:.8px}.tutorial-card span{display:block;font-size:8px;color:#77879b;margin-top:3px;line-height:1.25}
 .pause-overlay{position:absolute;z-index:40;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,8,13,.82);backdrop-filter:blur(3px);padding:25px;text-align:center}
 .pause-card{width:100%;max-width:310px;padding:23px;border:1px solid #2c3c50;background:#101925;border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.4)}
 .pause-card h2{margin:0 0 7px;font-size:26px;letter-spacing:2px}.pause-card p{color:#7f8da1;font-size:12px;margin:0 0 18px}
@@ -285,7 +292,7 @@ h1{font-size:29px;margin:0 0 8px;letter-spacing:1px}
         </svg>
       </div>
       <h1>Just A Way</h1>
-      <p class="subtitle">Entrena tus reflejos. interpreta la dirección y responde antes de que se cierre el círculo.</p>
+      <p class="subtitle">Entrena tus reflejos. Lee el color, interpreta la dirección y responde antes de que se cierre el círculo.</p>
 
       <div class="profile-wrap">
         <label for="profileName">Tu perfil</label>
@@ -315,7 +322,7 @@ h1{font-size:29px;margin:0 0 8px;letter-spacing:1px}
         
       </div>
       <button class="start-btn" id="startBtn">COMENZAR</button>
-      
+
       <div style="margin-top:11px;color:#68788e;font-size:11px">RÉCORD: <b id="startBest" style="color:#ffd34d">0</b></div>
       <button class="secondary-btn" id="leaderBtnStart" style="margin-top:8px">LEADERBOARD</button>
     </div>
@@ -386,7 +393,7 @@ h1{font-size:29px;margin:0 0 8px;letter-spacing:1px}
     </div>
   </div>
 
-  <div class="arena">
+  <div class="arena diff-1" id="arena">
     <div class="ring" id="ring"></div>
     <div class="ring-inner"></div>
     <div class="tickmarks"></div>
@@ -404,7 +411,8 @@ h1{font-size:29px;margin:0 0 8px;letter-spacing:1px}
     <button class="control right" data-dir="right" aria-label="Derecha"></button>
   </div>
 
-   <div class="modal-screen" id="leaderboardModal"><div class="modal-card leaderboard-card"><button class="modal-close" data-close="leaderboardModal">×</button><div class="modal-title">🏆 LEADERBOARD</div><div id="leaderboardList"></div><button class="secondary-btn" data-close="leaderboardModal">CERRAR</button></div></div>
+  <div class="modal-screen" id="tutorialModal"><div class="modal-card"><button class="modal-close" data-close="tutorialModal">×</button><div class="modal-title">TUTORIAL</div><div class="tutorial-grid"><div class="tutorial-item"><div class="example-arrow blue-example">↑</div><div><b>AZUL</b><span>Presiona la misma dirección.</span></div></div><div class="tutorial-item"><div class="example-arrow red-example">↑</div><div><b>ROJA</b><span>Presiona la dirección contraria: ↓</span></div></div><div class="tutorial-item"><div class="example-arrow blue-example">←</div><div><b>DOBLE</b><span>Desde la flecha 15 aparecen dos direcciones. En niveles 3 y 4 se revelan después de 0.5 s.</span></div></div></div><button class="secondary-btn" data-close="tutorialModal">ENTENDIDO</button></div></div>
+  <div class="modal-screen" id="leaderboardModal"><div class="modal-card leaderboard-card"><button class="modal-close" data-close="leaderboardModal">×</button><div class="modal-title">🏆 LEADERBOARD</div><div id="leaderboardList"></div><button class="secondary-btn" data-close="leaderboardModal">CERRAR</button></div></div>
 </div>
 
 <!-- Firebase -->
@@ -440,6 +448,7 @@ const endScreen = document.getElementById('endScreen');
 const finalScore = document.getElementById('finalScore');
 const finalText = document.getElementById('finalText');
 const doubleBadge = document.getElementById('doubleBadge');
+const arenaEl = document.getElementById('arena');
 const finalArrows = document.getElementById('finalArrows');
 const finalBest = document.getElementById('finalBest');
 const leaderboardScreen = document.getElementById('leaderboardScreen');
@@ -627,8 +636,9 @@ function createRound(){
   return {items,double,reveal,difficulty,multiplier:getDifficultyMultiplier(),time:getTimeLimit()};
 }
 function nextArrow(){
-  locked=false;currentRound++;current=createRound();
+  locked=false;currentRound++;
   const arenaEl=document.querySelector('.arena');
+  current=createRound();
   arenaEl.classList.remove('difficulty-1','difficulty-2','difficulty-3','difficulty-4');
   arenaEl.classList.add('difficulty-'+current.difficulty);
   arrowsBox.innerHTML='';
