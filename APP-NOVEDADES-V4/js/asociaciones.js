@@ -205,6 +205,11 @@ const AsociacionesModule = (() => {
     function isFormularioAutenticado() {
         const id = _perfilActivo && _perfilActivo.id;
         if (!id) return false;
+        // Si el usuario inició sesión (index.html) y tiene este
+        // operador vinculado a su cuenta, no se le vuelve a pedir clave.
+        if (typeof AuthModule !== 'undefined' && AuthModule.estaLogeado() && AuthModule.tieneAccesoA(id)) {
+            return true;
+        }
         // Si no tiene clave de formulario configurada, acceso libre
         const clave = _perfilActivo.password_formulario;
         if (!clave || clave.trim() === '') return true;
@@ -220,6 +225,11 @@ const AsociacionesModule = (() => {
     function isAdminAutenticado() {
         const id = _perfilActivo && _perfilActivo.id;
         if (!id) return false;
+        // Usuario logeado desde index.html con acceso a este operador:
+        // entra directo al panel admin, sin volver a pedir la clave.
+        if (typeof AuthModule !== 'undefined' && AuthModule.estaLogeado() && AuthModule.tieneAccesoA(id)) {
+            return true;
+        }
         return sessionStorage.getItem(`admin_auth_${id}`) === '1';
     }
 
@@ -393,16 +403,43 @@ const AsociacionesModule = (() => {
         modal.style.display = 'flex';
         grid.innerHTML = '<div class="asoc-loading">⏳ Cargando asociaciones...</div>';
 
+        // Barra de usuario logeado (correo + cambiar contraseña + cerrar sesión)
+        const authBar = document.getElementById('authUserBar');
+        const authLogeado = (typeof AuthModule !== 'undefined' && AuthModule.estaLogeado());
+        if (authBar) {
+            if (authLogeado) {
+                const u = AuthModule.getUsuario();
+                const elEmail = document.getElementById('authUserBarEmail');
+                if (elEmail) elEmail.textContent = '👤 ' + (u && u.email ? u.email : '');
+                authBar.style.display = 'flex';
+            } else {
+                authBar.style.display = 'none';
+            }
+        }
+
         try {
             const asociaciones = await cargarAsociaciones();
-            const lista = Object.entries(asociaciones);
+            let lista = Object.entries(asociaciones);
+
+            // Si el usuario inició sesión desde index.html, solo se le
+            // muestran los operadores vinculados a su cuenta.
+            if (authLogeado) {
+                const permitidos = AuthModule.getOperadoresPermitidos();
+                lista = lista.filter(([id]) => permitidos.includes(id));
+            }
 
             if (lista.length === 0) {
-                grid.innerHTML = `<div class="asoc-empty">
-                    <div style="font-size:2.5rem">🏢</div>
-                    <p>No hay asociaciones configuradas.</p>
-                    <p style="font-size:12px;color:#94a3b8">Usa el Panel de Ajustes para crear la primera.</p>
-                </div>`;
+                grid.innerHTML = authLogeado
+                    ? `<div class="asoc-empty">
+                        <div style="font-size:2.5rem">🔒</div>
+                        <p>Tu cuenta aún no tiene ningún operador asignado.</p>
+                        <p style="font-size:12px;color:#94a3b8">Usa la pestaña "Registrarme" con tu mismo correo para vincular un operador.</p>
+                    </div>`
+                    : `<div class="asoc-empty">
+                        <div style="font-size:2.5rem">🏢</div>
+                        <p>No hay asociaciones configuradas.</p>
+                        <p style="font-size:12px;color:#94a3b8">Usa el Panel de Ajustes para crear la primera.</p>
+                    </div>`;
                 return;
             }
 
@@ -454,7 +491,7 @@ const AsociacionesModule = (() => {
                             <div class="asoc-card-contratos-value">${numContratos} contrato${numContratos !== 1 ? 's' : ''}</div>
                         </div>
                     </div>
-                    ${datos.password_formulario ? '<div class="asoc-card-lock">🔑 Requiere clave de acceso</div>' : ''}
+                    ${(datos.password_formulario && !authLogeado) ? '<div class="asoc-card-lock">🔑 Requiere clave de acceso</div>' : ''}
                     <div class="asoc-card-btn">
                         Seleccionar
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -472,6 +509,14 @@ const AsociacionesModule = (() => {
             const snap = await _getDB().ref(`${PATHS.asociaciones}/${id}`).once('value');
             const datos = snap.val();
             if (!datos) { showToast('Asociación no encontrada', 'error'); return; }
+
+            // Usuario logeado (index.html) con este operador vinculado a su
+            // cuenta: entra directo, sin pedir la clave de formulario.
+            if (typeof AuthModule !== 'undefined' && AuthModule.estaLogeado() && AuthModule.tieneAccesoA(id)) {
+                sessionStorage.setItem(`form_auth_${id}`, '1');
+                _activarYCerrarSelector(id, datos);
+                return;
+            }
 
             // Si tiene clave de formulario, pedirla antes de activar el perfil
             const clave = datos.password_formulario || '';

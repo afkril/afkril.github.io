@@ -649,6 +649,78 @@ function setEstadoNovedad(event, id, nuevoEstado) {
     .catch((error) => showToast('Error al actualizar: ' + error.message, 'error'));
 }
 
+// ── Cambiar estado desde el panel de "Ver detalles" (modal) ─────
+// Usa el mismo diseño (.estado-chip / .estado-menu) que la tabla,
+// pero con IDs propios para no chocar con el menú de la fila y
+// refrescando el contenido del modal tras el cambio.
+
+function renderEstadoMenuOptionsModal(id, currentStatus) {
+    return Object.keys(ESTADOS_CUENTAME).map(statusKey => {
+        const info = ESTADOS_CUENTAME[statusKey];
+        const isActive = (currentStatus || 'pendiente') === statusKey;
+        return `<button class="dropdown-item estado-menu-item ${isActive ? 'estado-menu-item--active' : ''}" onclick="setEstadoNovedadModal(event, '${id}', '${statusKey}')">
+                    <span class="estado-chip-dot">${info.emoji}</span> ${info.label}
+                </button>`;
+    }).join('');
+}
+
+function toggleEstadoMenuModal(event, id) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById(`estadoMenuModal-${id}`);
+    if (!menu) return;
+    const wasOpen = menu.classList.contains('open');
+    closeAllEstadoMenus();
+    if (!wasOpen) menu.classList.add('open');
+}
+
+function setEstadoNovedadModal(event, id, nuevoEstado) {
+    if (event) event.stopPropagation();
+    closeAllEstadoMenus();
+
+    const noveltyRef = database.ref(`${AsociacionesModule.getRef('novelties')}/${id}`);
+    noveltyRef.update({
+        cuentameStatus: nuevoEstado,
+        cuentameDate: nuevoEstado === 'cargado' ? new Date().toISOString() : (currentNoveltyData?.cuentameDate || null)
+    })
+    .then(() => {
+        showToast(`Estado actualizado a "${getEstadoInfo(nuevoEstado).label}"`, 'success');
+
+        // Actualiza también en memoria (tabla + novedad local del propio modelo)
+        const novelty = currentNovelties.find(n => n.id === id);
+        if (novelty) {
+            novelty.cuentameStatus = nuevoEstado;
+            novelty.cuentameDate = nuevoEstado === 'cargado' ? new Date().toISOString() : (novelty.cuentameDate || null);
+        }
+
+        // Refresca el modal de detalles si sigue abierto sobre esta misma novedad
+        if (currentNoveltyData && currentNoveltyData.id === id) {
+            currentNoveltyData.cuentameStatus = nuevoEstado;
+            currentNoveltyData.cuentameDate = nuevoEstado === 'cargado' ? new Date().toISOString() : (currentNoveltyData.cuentameDate || null);
+            refreshNoveltyModal();
+        }
+
+        loadNoveltiesTable();
+        updatePendientesIndicator();
+    })
+    .catch((error) => showToast('Error al actualizar: ' + error.message, 'error'));
+}
+
+// Vuelve a renderizar el contenido del modal de detalles conservando
+// la pestaña actualmente activa (para no "saltar" a Información al
+// cambiar el estado desde dentro del panel).
+function refreshNoveltyModal() {
+    if (!currentNoveltyData) return;
+
+    const cardsView = document.getElementById('cardsView');
+    const activeTab = cardsView?.querySelector('.novelty-tab-btn.active')?.dataset.tab || 'general';
+
+    viewNoveltyDetails(currentNoveltyData, currentNoveltyIsArchived);
+
+    if (activeTab !== 'general') {
+        switchNoveltyTab(activeTab);
+    }
+}
+
 // ══════════ ACCIONES DE FILA (menú ⋮) ══════════
 function toggleRowActionsMenu(event, id) {
     if (event) event.stopPropagation();
@@ -797,9 +869,11 @@ function renderArchivedTable(novelties) {
 let isPlainView = false;
 
 let currentNoveltyData = null;
+let currentNoveltyIsArchived = false;
 
 function viewNoveltyDetails(novelty, isArchived) {
     currentNoveltyData = novelty;
+    currentNoveltyIsArchived = !!isArchived;
     isPlainView = false;
     
     const modal = document.getElementById('viewModal');
@@ -833,317 +907,954 @@ function viewNoveltyDetails(novelty, isArchived) {
     document.body.classList.add('modal-open');
 }
 
+/* ============================================================
+   DETALLE DE NOVEDAD — VISTA POR PESTAÑAS
+============================================================ */
+
 function generateFiveCards(novelty, isArchived, udsName, udsCode) {
     const contract = novelty.contract || 'N/A';
-    const fechaRegistro = new Date(novelty.timestamp).toLocaleString('es-CO');
-    
-    // Determinar tipo y badges
-    let tipoBadge = '';
-    if (novelty.type === 'ambos' || (novelty.hasRetiro && novelty.hasIngreso)) {
-        tipoBadge = '<span class="badge-tipo-c ambos">AMBOS</span>';
-    } else if (novelty.type === 'retiro') {
-        tipoBadge = '<span class="badge-tipo-c retiro">RETIRO</span>';
-    } else if (novelty.type === 'ingreso') {
-        tipoBadge = '<span class="badge-tipo-c ingreso">INGRESO</span>';
+    const fechaRegistro = novelty.timestamp
+        ? new Date(novelty.timestamp).toLocaleString('es-CO')
+        : '-';
+    const tieneRetiro =
+        novelty.type === 'retiro' ||
+        novelty.type === 'ambos' ||
+        novelty.hasRetiro;
+    const tieneIngreso =
+        novelty.type === 'ingreso' ||
+        novelty.type === 'ambos' ||
+        novelty.hasIngreso;
+    const tipo =
+        novelty.type === 'ambos'
+            ? 'AMBOS'
+            : novelty.type === 'retiro'
+                ? 'RETIRO'
+                : 'INGRESO';
+    const isCargado =
+        novelty.cuentameStatus === 'cargado';
+    const estadoTexto =
+        isCargado
+            ? 'Cargado al CUÉNTAME'
+            : 'Pendiente';
+    const estadoClase =
+        isCargado
+            ? 'cargado'
+            : 'pendiente';
+    /* ---------------------------------------------------------
+       TIPO DE NOVEDAD
+    --------------------------------------------------------- */
+    let tipoClase = 'ingreso';
+    if (tipo === 'retiro') {
+        tipoClase = 'retiro';
     }
-    
-    const isCargado = novelty.cuentameStatus === 'cargado';
-    const estadoBadge = `<span class="badge-estado-c ${isCargado ? 'cargado' : 'pendiente'}">${isCargado ? '✓ CARGADO' : '⏳ PENDIENTE'}</span>`;
-    
-    let html = '';
-    
-    // TARJETA 1: INFORMACIÓN GENERAL (siempre presente)
-    html += `
-        <div class="detail-card-compact card-info-c">
-            <div class="card-header-c">
-                <div class="card-icon-c">📋</div>
-                <h4 class="card-title-c">Información General</h4>
+    if (tipo === 'ambos') {
+        tipoClase = 'ambos';
+    }
+    /* ---------------------------------------------------------
+       PERSONA PRINCIPAL
+    --------------------------------------------------------- */
+    let personaNombre = 'Beneficiario';
+    if (novelty.type === 'retiro') {
+
+        personaNombre =
+            novelty.retiro?.name ||
+            novelty.name ||
+            'Beneficiario';
+
+    } else {
+
+        personaNombre =
+            novelty.ingreso?.name ||
+            novelty.name ||
+            'Beneficiario';
+    }
+
+
+    /* ---------------------------------------------------------
+       CABECERA RESUMEN
+    --------------------------------------------------------- */
+    let html = `
+
+        <div class="novelty-summary-header">
+            <div class="novelty-summary-main">
+                <div class="novelty-avatar">
+                    👤
+                </div>
+                <div class="novelty-person">
+                    <div class="novelty-person-name">
+                        ${personaNombre.toUpperCase()}
+                    </div>
+                    <div class="novelty-person-meta">
+                        UDS: <strong>${udsName}</strong>
+                        <span>•</span>
+                        Código: <strong>${udsCode || '-'}</strong>
+                        <span>•</span>
+                        Contrato: <strong>${contract}</strong>
+                    </div>
+
+                </div>
+
             </div>
-            <div class="data-grid-c">
-                <div class="data-item-c">
-                    <span class="data-label-c">📄 Contrato</span>
-                    <span class="data-value-c"><strong>${contract}</strong></span>
-                </div>
-                <div class="data-item-c">
-                    <span class="data-label-c">🏫 UDS</span>
-                    <span class="data-value-c">${udsName}</span>
-                </div>
-                <div class="data-item-c">
-                    <span class="data-label-c">🔢 Código UDS</span>
-                    <span class="data-value-c">${udsCode || '-'}</span>
-                </div>
-                <div class="data-item-c">
-                    <span class="data-label-c">✅ Estado</span>
-                    <span class="data-value-c">${estadoBadge}</span>
-                </div>
-                <div class="data-item-c full-width-c">
-                    <span class="data-label-c">📅 Fecha Registro</span>
-                    <span class="data-value-c">${fechaRegistro}</span>
-                </div>
-                <div class="data-item-c full-width-c">
-                    <span class="data-label-c">🏷️ Tipo Novedad</span>
-                    <span class="data-value-c">${tipoBadge}</span>
-                </div>
+
+
+            <div class="novelty-summary-status">
+
+                <span class="novelty-type-badge ${tipoClase}">
+                    ${tipo === 'AMBOS' ? '↔ AMBOS' : tipo === 'RETIRO' ? '← RETIRO' : '→ INGRESO'}
+                </span>
+
+                ${
+                    isArchived
+                    ? `
+                        <span class="novelty-status-badge ${estadoClase}">
+                            ${isCargado ? '✓' : '⏳'} ${estadoTexto}
+                        </span>
+                    `
+                    : `
+                        <div class="estado-chip-wrap">
+                            <button
+                                type="button"
+                                class="estado-chip estado-chip--${getEstadoInfo(novelty.cuentameStatus).key}"
+                                onclick="toggleEstadoMenuModal(event, '${novelty.id}')"
+                                title="Cambiar estado">
+
+                                <span class="estado-chip-dot">${getEstadoInfo(novelty.cuentameStatus).emoji}</span>
+                                ${getEstadoInfo(novelty.cuentameStatus).label}
+
+                            </button>
+
+                            <div class="estado-menu" id="estadoMenuModal-${novelty.id}">
+                                ${renderEstadoMenuOptionsModal(novelty.id, novelty.cuentameStatus)}
+                            </div>
+                        </div>
+                    `
+                }
+
+            </div>
+
+        </div>
+
+
+        <!--<div class="novelty-summary-info">
+            <div>
+                <span>📅 Registrado</span>
+                <strong>${fechaRegistro}</strong>
+            </div>
+            <div>
+                <span>🏫 UDS</span>
+                <strong>${udsName}</strong>
+            </div>
+            <div>
+                <span>🔢 Código UDS</span>
+                <strong>${udsCode || '-'}</strong>
+            </div>
+            <div>
+                <span>📄 Contrato</span>
+                <strong>${contract}</strong>
+            </div>
+        </div>-->
+
+
+        <!-- =================================================
+             PESTAÑAS
+        ================================================== -->
+
+        <div class="novelty-tab-buttons"
+             role="tablist">
+
+            <button
+                class="novelty-tab-btn active"
+                data-tab="general"
+                onclick="switchNoveltyTab('general')">
+
+                <span class="tab-icon">📋</span>
+                <span>Información</span>
+
+            </button>
+
+
+            ${
+                tieneRetiro
+                ? `
+                    <button
+                        class="novelty-tab-btn"
+                        data-tab="retiro"
+                        onclick="switchNoveltyTab('retiro')">
+
+                        <span class="tab-icon">🔴</span>
+                        <span>Retiro</span>
+
+                    </button>
+                `
+                : ''
+            }
+
+
+            ${
+                tieneIngreso
+                ? `
+                    <button
+                        class="novelty-tab-btn"
+                        data-tab="ingreso"
+                        onclick="switchNoveltyTab('ingreso')">
+
+                        <span class="tab-icon">🟢</span>
+                        <span>Ingreso</span>
+
+                    </button>
+                `
+                : ''
+            }
+
+
+            ${
+                tieneIngreso
+                ? `
+                    <button
+                        class="novelty-tab-btn"
+                        data-tab="acudiente"
+                        onclick="switchNoveltyTab('acudiente')">
+
+                        <span class="tab-icon">👨‍👩‍👧</span>
+                        <span>Acudiente</span>
+
+                    </button>
+                `
+                : ''
+            }
+
+
+            ${
+                tieneIngreso
+                ? `
+                    <button
+                        class="novelty-tab-btn"
+                        data-tab="nutricional"
+                        onclick="switchNoveltyTab('nutricional')">
+
+                        <span class="tab-icon">🥗</span>
+                        <span>Nutricional</span>
+
+                    </button>
+                `
+                : ''
+            }
+
+
+            <button
+                class="novelty-tab-btn"
+                data-tab="comunicacion"
+                onclick="switchNoveltyTab('comunicacion')">
+
+                <span class="tab-icon">📧</span>
+                <span>Comunicación</span>
+
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             CONTENEDORES DE LAS PESTAÑAS
+        ================================================== -->
+
+        <div class="novelty-tab-content">
+
+
+            <!-- =================================================
+                 INFORMACIÓN GENERAL
+            ================================================== -->
+
+            <div
+                class="novelty-tab-panel active"
+                data-panel="general">
+
+                ${renderGeneralTab(
+                    novelty,
+                    udsName,
+                    udsCode,
+                    contract,
+                    fechaRegistro,
+                    tipo
+                )}
+
+            </div>
+
+
+            <!-- =================================================
+                 RETIRO
+            ================================================== -->
+
+            ${
+                tieneRetiro
+                ? `
+                    <div
+                        class="novelty-tab-panel"
+                        data-panel="retiro">
+
+                        ${renderRetiroTab(novelty)}
+
+                    </div>
+                `
+                : ''
+            }
+
+
+            <!-- =================================================
+                 INGRESO
+            ================================================== -->
+
+            ${
+                tieneIngreso
+                ? `
+                    <div
+                        class="novelty-tab-panel"
+                        data-panel="ingreso">
+
+                        ${renderIngresoTab(novelty)}
+
+                    </div>
+                `
+                : ''
+            }
+
+
+            <!-- =================================================
+                 ACUDIENTE
+            ================================================== -->
+
+            ${
+                tieneIngreso
+                ? `
+                    <div
+                        class="novelty-tab-panel"
+                        data-panel="acudiente">
+
+                        ${renderAcudienteTab(novelty)}
+
+                    </div>
+                `
+                : ''
+            }
+
+
+            <!-- =================================================
+                 NUTRICIONAL
+            ================================================== -->
+
+            ${
+                tieneIngreso
+                ? `
+                    <div
+                        class="novelty-tab-panel"
+                        data-panel="nutricional">
+
+                        ${renderNutricionalTab(
+                            novelty,
+                            isArchived
+                        )}
+
+                    </div>
+                `
+                : ''
+            }
+
+
+            <!-- =================================================
+                 COMUNICACIÓN
+            ================================================== -->
+
+            <div
+                class="novelty-tab-panel"
+                data-panel="comunicacion">
+
+                ${
+                    typeof SeguimientoModule !== 'undefined'
+                        ? SeguimientoModule.renderPanelComunicacion(novelty)
+                        : `
+                            <div class="novelty-empty-state">
+                                <div>📧</div>
+                                <strong>Sin módulo de comunicación</strong>
+                                <span>No fue posible cargar el seguimiento.</span>
+                            </div>
+                        `
+                }
+
+            </div>
+
+        </div>
+
+    `;
+
+    return html;
+}
+
+function renderGeneralTab(
+    novelty,
+    udsName,
+    udsCode,
+    contract,
+    fechaRegistro,
+    tipo
+) {
+
+    const estado =
+        novelty.cuentameStatus === 'cargado'
+            ? 'Cargado al CUÉNTAME'
+            : 'Pendiente';
+
+    return `
+
+        <div class="novelty-section-title">
+
+            <div>
+                <span class="section-kicker">
+                    RESUMEN DEL REPORTE
+                </span>
+
+                <h3>
+                    Información General
+                </h3>
+            </div>
+
+            <span class="novelty-section-icon">
+                📋
+            </span>
+
+        </div>
+
+
+        <div class="novelty-data-grid grid-3col">
+
+            <div class="novelty-data-card">
+                <span>📄 Contrato</span>
+                <strong>${contract}</strong>
+            </div>
+
+            <div class="novelty-data-card">
+                <span>🏫 UDS</span>
+                <strong>${udsName}</strong>
+            </div>
+
+            <div class="novelty-data-card">
+                <span>🔢 Código UDS</span>
+                <strong>${udsCode || '-'}</strong>
+            </div>
+
+            <div class="novelty-data-card">
+                <span>🌎 Regional</span>
+                <strong>${novelty.regional || '-'}</strong>
+            </div>
+
+            <div class="novelty-data-card">
+                <span>📅 Fecha del reporte</span>
+                <strong>${fechaRegistro}</strong>
+            </div>
+
+            <div class="novelty-data-card">
+                <span>🏷️ Tipo de novedad</span>
+                <strong class="type-text ${tipo.toLowerCase()}">
+                    ${tipo}
+                </strong>
+            </div>
+            <!--<div class="novelty-data-card">
+                <span>📊 Estado CUÉNTAME</span>
+                <strong>${estado}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🆔 ID del reporte</span>
+                <strong>${novelty.id || '-'}</strong>
+            </div><-->
+        </div>
+        <div class="novelty-action-summary">
+            <div class="action-summary-icon">
+                ${
+                    novelty.cuentameStatus === 'cargado'
+                        ? '✓'
+                        : '!'
+                }
+            </div>
+            <div>
+                <span class="action-summary-title">
+                    ${
+                        novelty.cuentameStatus === 'cargado'
+                            ? 'Novedad procesada'
+                            : 'Novedad pendiente'
+                    }
+                </span>
+                <p>
+                    ${
+                        novelty.cuentameStatus === 'cargado'
+                            ? 'Este reporte ya fue marcado como cargado al CUÉNTAME.'
+                            : 'Este reporte requiere revisión administrativa.'
+                    }
+                </p>
             </div>
         </div>
     `;
-    
-    // TARJETA 2: RETIRO (si aplica)
-    if (novelty.type === 'retiro' || novelty.type === 'ambos' || novelty.hasRetiro) {
-        const r = novelty.retiro || novelty;
-        html += `
-            <div class="detail-card-compact card-retiro-c">
-                <div class="card-header-c">
-                    <div class="card-icon-c">👤</div>
-                    <h4 class="card-title-c">Datos de Retiro</h4>
-                </div>
-                <div class="data-grid-c single-col">
-                    <div class="data-item-c">
-                        <span class="data-label-c">🆔 Documento</span>
-                        <span class="data-value-c">${r.docType || 'RC'} ${r.document || '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">👤 Nombre</span>
-                        <span class="data-value-c name-highlight">${r.name ? r.name.toUpperCase() : 'N/A'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">📅 Fecha Retiro</span>
-                        <span class="data-value-c">${formatDateDMY(r.retiroDate || novelty.retiroDate || '-')}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">⚧ Género</span>
-                        <span class="data-value-c">${r.gender === 'M' ? 'Masculino' : r.gender === 'F' ? 'Femenino' : '-'}</span>
-                    </div>
-                </div>
+}
+function renderRetiroTab(novelty) {
+    const r = novelty.retiro || novelty;
+    const nombre =
+        r.name ||
+        'N/A';
+    const documento =
+        `${r.docType || 'RC'} ${r.document || '-'}`;
+    const genero =
+        r.gender === 'M'
+            ? 'Masculino'
+            : r.gender === 'F'
+                ? 'Femenino'
+                : '-';
+    return `
+        <div class="novelty-section-title">
+            <div>
+                <span class="section-kicker">
+                    INFORMACIÓN DEL BENEFICIARIO
+                </span>
+                <h3>
+                    Datos de Retiro
+                </h3>
             </div>
-        `;
-    } else {
-        html += `
-            <div class="detail-card-compact" style="opacity: 0.4; border-top: 2px solid #475569;">
-                <div class="card-header-c">
-                    <div class="card-icon-c" style="background: rgba(71, 85, 105, 0.2);">👤</div>
-                    <h4 class="card-title-c" style="color: #64748b;">Sin Retiro</h4>
-                </div>
-                <div class="data-grid-c single-col">
-                    <div class="data-item-c full-width-c">
-                        <span class="data-value-c" style="color: #64748b; font-style: italic;">No aplica para este registro</span>
-                    </div>
-                </div>
+            <span class="novelty-section-icon retiro">
+                🔴
+            </span>
+        </div>
+        <div class="novelty-person-highlight retiro">
+            <div class="person-big-icon">
+                👤
+            </div>
+            <div>
+                <span>
+                    BENEFICIARIO QUE SE RETIRA
+                </span>
+                <strong>
+                    ${nombre.toUpperCase()}
+                </strong>
+                <small>
+                    ${documento}
+                </small>
+            </div>
+        </div>
+        <div class="novelty-data-grid">
+            <div class="novelty-data-card">
+                <span>🆔 Documento</span>
+                <strong>${documento}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>👤 Nombre completo</span>
+                <strong>${nombre.toUpperCase()}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>📅 Fecha de retiro</span>
+                <strong>
+                    ${formatDateDMY(
+                        r.retiroDate ||
+                        novelty.retiroDate ||
+                        '-'
+                    )}
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>⚧ Género</span>
+                <strong>${genero}</strong>
+            </div>
+        </div>
+    `;
+}
+function renderIngresoTab(novelty) {
+    const i =
+        novelty.ingreso ||
+        novelty;
+    const nombre =
+        i.name ||
+        'N/A';
+    const documento =
+        `${i.docType || 'RC'} ${i.document || '-'}`;
+    const genero =
+        i.gender === 'M'
+            ? 'Masculino'
+            : i.gender === 'F'
+                ? 'Femenino'
+                : '-';
+
+    return `
+        <div class="novelty-section-title">
+            <div>
+                <span class="section-kicker">
+                    NUEVO BENEFICIARIO
+                </span>
+                <h3>
+                    Datos de Ingreso
+                </h3>
+            </div>
+            <span class="novelty-section-icon ingreso">
+                🟢
+            </span>
+        </div>
+        <div class="novelty-person-highlight ingreso">
+            <div class="person-big-icon">
+                👶
+            </div>
+            <div>
+                <span>
+                    BENEFICIARIO QUE INGRESA
+                </span>
+                <strong>
+                    ${nombre.toUpperCase()}
+                </strong>
+                <small>
+                    ${documento}
+                </small>
+            </div>
+        </div>
+        <div class="novelty-data-grid">
+            <div class="novelty-data-card">
+                <span>👤 Nombre</span>
+                <strong>${nombre.toUpperCase()}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🆔 Documento</span>
+                <strong>${documento}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>📏 Edad</span>
+                <strong>
+                    ${i.age || novelty.age || '-'}
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🎂 Fecha nacimiento</span>
+                <strong>
+                    ${formatDateDMY(
+                        i.dob ||
+                        i.ingresoDOB ||
+                        novelty.ingresoDOB ||
+                        '-'
+                    )}
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>📅 Fecha ingreso</span>
+                <strong>
+                    ${formatDateDMY(
+                        i.ingresoDate ||
+                        novelty.ingresoDate ||
+                        '-'
+                    )}
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>⚧ Género</span>
+                <strong>${genero}</strong>
+            </div>
+        </div>
+    `;
+}
+function renderAcudienteTab(novelty) {
+    const i =
+        novelty.ingreso ||
+        novelty;
+    return `
+        <div class="novelty-section-title">
+            <div>
+                <span class="section-kicker">
+                    INFORMACIÓN FAMILIAR
+                </span>
+                <h3>
+                    Datos del Acudiente
+                </h3>
+            </div>
+            <span class="novelty-section-icon acudiente">
+                👨‍👩‍👧
+            </span>
+        </div>
+        <div class="novelty-data-grid grid-3col">
+            <div class="novelty-data-card wide">
+                <span>👤 Nombre del acudiente</span>
+                <strong>
+                    ${
+                        i.acudiente ||
+                        novelty.acudiente ||
+                        'N/A'
+                    }
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🆔 Documento</span>
+                <strong>
+                    ${
+                        i.acudienteDoc ||
+                        novelty.acudienteDoc ||
+                        '-'
+                    }
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🎂 Fecha nacimiento</span>
+                <strong>
+                    ${formatDateDMY(
+                        i.acudienteDOB ||
+                        novelty.acudienteDOB ||
+                        '-'
+                    )}
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>📞 Teléfono</span>
+
+                <strong>
+                    ${
+                        i.phone ||
+                        novelty.phone ||
+                        '-'
+                    }
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>📍 Comuna</span>
+
+                <strong>
+                    ${
+                        i.comuna ||
+                        novelty.comuna ||
+                        '-'
+                    }
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🏘️ Barrio</span>
+                <strong>
+                    ${
+                        i.barrio ||
+                        novelty.barrio ||
+                        '-'
+                    }
+                </strong>
+            </div>
+            <div class="novelty-data-card wide">
+                <span>🏠 Dirección</span>
+
+                <strong>
+                    ${
+                        i.address ||
+                        novelty.address ||
+                        '-'
+                    }
+                </strong>
+            </div>
+        </div>
+    `;
+}
+function renderNutricionalTab(novelty, isArchived) {
+    const nutricion =
+        novelty.nutricion ||
+        (novelty.ingreso &&
+         novelty.ingreso.nutricion);
+
+    if (!nutricion) {
+        return `
+            <div class="novelty-empty-state">
+                <div>🥗</div>
+                <strong>
+                    Sin seguimiento nutricional
+                </strong>
+                <span>
+                    No se registraron datos nutricionales
+                    para esta novedad.
+                </span>
             </div>
         `;
     }
-    
-    // TARJETA 3: INGRESO (si aplica)
-    if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
-        const i = novelty.ingreso || novelty;
-        html += `
-            <div class="detail-card-compact card-ingreso-c">
-                <div class="card-header-c">
-                    <div class="card-icon-c">👶</div>
-                    <h4 class="card-title-c">Datos de Ingreso</h4>
+    const isPendiente =
+        nutricion.pendiente === true;
+    if (isPendiente) {
+        const editBtn =
+            novelty.id && !isArchived
+                ? `
+                    <button
+                        onclick="abrirEditNutricion('${novelty.id}')"
+                        class="nutri-edit-btn">
+
+                        ✏️ Editar
+
+                    </button>
+                `
+                : '';
+
+        return `
+            <div class="novelty-section-title">
+                <div>
+                    <span class="section-kicker">
+                        SEGUIMIENTO
+                    </span>
+                    <h3>
+                        Seguimiento Nutricional
+                    </h3>
                 </div>
-                <div class="data-grid-c">
-                    <div class="data-item-c full-width-c">
-                        <span class="data-label-c">👤 Niño</span>
-                        <span class="data-value-c name-highlight">${i.name ? i.name.toUpperCase() : 'N/A'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">🆔 Documento</span>
-                        <span class="data-value-c">${i.docType || 'RC'} ${i.document || '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">📏 Edad</span>
-                        <span class="data-value-c" style="color: #fbbf24; font-weight: 700;">${i.age || novelty.age || '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">🎂 F. Nacimiento</span>
-                        <span class="data-value-c">${formatDateDMY(i.dob || i.ingresoDOB || novelty.ingresoDOB || '-')}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">📅 F. Ingreso</span>
-                        <span class="data-value-c">${formatDateDMY(i.ingresoDate || novelty.ingresoDate || '-')}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">⚧ Género</span>
-                        <span class="data-value-c">${i.gender === 'M' ? 'Masculino' : i.gender === 'F' ? 'Femenino' : '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">📍 Comuna</span>
-                        <span class="data-value-c">${i.comuna || novelty.comuna || '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">🏘️ Barrio</span>
-                        <span class="data-value-c">${i.barrio || novelty.barrio || '-'}</span>
-                    </div>
-                </div>
+                ${editBtn}
             </div>
-        `;
-    } else {
-        html += `
-            <div class="detail-card-compact" style="opacity: 0.4; border-top: 2px solid #475569;">
-                <div class="card-header-c">
-                    <div class="card-icon-c" style="background: rgba(71, 85, 105, 0.2);">👶</div>
-                    <h4 class="card-title-c" style="color: #64748b;">Sin Ingreso</h4>
+            <div class="nutri-pending-box">
+
+                <div class="nutri-pending-icon">
+                    ⏳
                 </div>
-                <div class="data-grid-c single-col">
-                    <div class="data-item-c full-width-c">
-                        <span class="data-value-c" style="color: #64748b; font-style: italic;">No aplica para este registro</span>
-                    </div>
-                </div>
+
+                <strong>
+                    DATO PENDIENTE
+                </strong>
+
+                <span>
+                    Los datos nutricionales serán
+                    completados desde el panel de
+                    administración.
+                </span>
+
             </div>
         `;
     }
-    
-    // TARJETA 4: ACUDIENTE (si hay ingreso)
-    if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
-        const i = novelty.ingreso || novelty;
-        html += `
-            <div class="detail-card-compact card-acudiente-c">
-                <div class="card-header-c">
-                    <div class="card-icon-c">👨‍👩‍👧</div>
-                    <h4 class="card-title-c">Datos del Acudiente</h4>
-                </div>
-                <div class="data-grid-c">
-                    <div class="data-item-c full-width-c">
-                        <span class="data-label-c">👤 Nombre</span>
-                        <span class="data-value-c name-highlight">${i.acudiente || novelty.acudiente || 'N/A'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">🆔 Documento</span>
-                        <span class="data-value-c">${i.acudienteDoc || novelty.acudienteDoc || '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">🎂 F. Nacimiento</span>
-                        <span class="data-value-c">${formatDateDMY(i.acudienteDOB || novelty.acudienteDOB || '-')}</span>
-                    </div>
-                    <div class="data-item-c full-width-c">
-                        <span class="data-label-c">📍 Ubicación</span>
-                        <span class="data-value-c">${i.comuna || novelty.comuna || '-'} • ${i.barrio || novelty.barrio || '-'}</span>
-                    </div>
-                    <div class="data-item-c full-width-c">
-                        <span class="data-label-c">🏠 Dirección</span>
-                        <span class="data-value-c">${i.address || novelty.address || '-'}</span>
-                    </div>
-                    <div class="data-item-c">
-                        <span class="data-label-c">📞 Teléfono</span>
-                        <span class="data-value-c">${i.phone || novelty.phone || '-'}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    } else {
-        html += `
-            <div class="detail-card-compact" style="opacity: 0.4; border-top: 2px solid #475569;">
-                <div class="card-header-c">
-                    <div class="card-icon-c" style="background: rgba(71, 85, 105, 0.2);">👨‍👩‍👧</div>
-                    <h4 class="card-title-c" style="color: #64748b;">Sin Acudiente</h4>
-                </div>
-                <div class="data-grid-c single-col">
-                    <div class="data-item-c full-width-c">
-                        <span class="data-value-c" style="color: #64748b; font-style: italic;">No aplica para este registro</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
-    // TARJETA 5: SEGUIMIENTO NUTRICIONAL (si hay datos de ingreso)
-    const nutricion = novelty.nutricion || (novelty.ingreso && novelty.ingreso.nutricion);
-    const isNutrPendiente = nutricion && nutricion.pendiente === true;
-    if ((novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) && nutricion) {
-        
-        const estadoColor = getNutricionColor(nutricion.estadoNutricional);
-        const editBtn = novelty.id && !isArchived
-            ? `<button onclick="abrirEditNutricion('${novelty.id}')" style="margin-left:auto;background:#f59e0b;color:white;border:none;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;">✏️ Editar</button>`
+    const estadoColor =
+        typeof getNutricionColor === 'function'
+            ? getNutricionColor(
+                nutricion.estadoNutricional
+            )
+            : '#3b82f6';
+    const editBtn =
+        novelty.id && !isArchived
+            ? `
+                <button
+                    onclick="abrirEditNutricion('${novelty.id}')"
+                    class="nutri-edit-btn">
+
+                    ✏️ Editar
+                </button>
+            `
             : '';
-        
-        if (isNutrPendiente) {
-            html += `
-                <div class="detail-card-compact card-nutricional-c" style="border-top-color:#f59e0b;">
-                    <div class="card-header-c">
-                        <div class="card-icon-c">🍎</div>
-                        <h4 class="card-title-c">Seguimiento Nutricional</h4>
-                        ${editBtn}
-                    </div>
-                    <div class="data-grid-c single-col">
-                        <div class="data-item-c full-width-c" style="background:#fef3c7;border-radius:10px;padding:12px;text-align:center;">
-                            <span style="font-size:22px;">⏳</span>
-                            <p style="font-weight:700;color:#b45309;margin-top:4px;">DATO PENDIENTE</p>
-                            <p style="font-size:11px;color:#92400e;">Los datos nutricionales serán completados desde el panel de administración</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else if (nutricion.fecha || nutricion.peso) {
-            html += `
-                <div class="detail-card-compact card-nutricional-c">
-                    <div class="card-header-c">
-                        <div class="card-icon-c">🍎</div>
-                        <h4 class="card-title-c">Seguimiento Nutricional</h4>
-                        ${editBtn}
-                    </div>
-                    <div class="data-grid-c">
-                        <div class="data-item-c">
-                            <span class="data-label-c">📅 F. Valoración</span>
-                            <span class="data-value-c">${formatDateDMY(nutricion.fecha || '-')}</span>
-                        </div>
-                        <div class="data-item-c">
-                            <span class="data-label-c">📊 Estado</span>
-                            <span class="data-value-c" style="color: ${estadoColor}; font-weight: 700;">${nutricion.estadoNutricional || 'No calculado'}</span>
-                        </div>
-                        <div class="data-item-c">
-                            <span class="data-label-c">⚖️ Peso</span>
-                            <span class="data-value-c" style="color: #fbbf24; font-weight: 700;">${nutricion.peso ? nutricion.peso + ' kg' : '-'}</span>
-                        </div>
-                        <div class="data-item-c">
-                            <span class="data-label-c">📏 Talla</span>
-                            <span class="data-value-c" style="color: #fbbf24; font-weight: 700;">${nutricion.talla ? nutricion.talla + ' cm' : '-'}</span>
-                        </div>
-                        <div class="data-item-c">
-                            <span class="data-label-c">💪 Perímetro Braquial</span>
-                            <span class="data-value-c">${nutricion.perimetroBraquial ? nutricion.perimetroBraquial + ' cm' : '-'}</span>
-                        </div>
-                        <div class="data-item-c">
-                            <span class="data-label-c">🏥 Régimen</span>
-                            <span class="data-value-c">${nutricion.regimen || '-'}</span>
-                        </div>
-                        <div class="data-item-c">
-                            <span class="data-label-c">🏥 EPS</span>
-                            <span class="data-value-c">${nutricion.eps || '-'}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-    } else {
-        html += `
-            <div class="detail-card-compact" style="opacity: 0.4; border-top: 2px solid #475569;">
-                <div class="card-header-c">
-                    <div class="card-icon-c" style="background: rgba(71, 85, 105, 0.2);">🍎</div>
-                    <h4 class="card-title-c" style="color: #64748b;">Sin Seguimiento Nutricional</h4>
-                </div>
-                <div class="data-grid-c single-col">
-                    <div class="data-item-c full-width-c">
-                        <span class="data-value-c" style="color: #64748b; font-style: italic;">No se registraron datos nutricionales</span>
-                    </div>
-                </div>
+    return `
+        <div class="novelty-section-title">
+            <div>
+                <span class="section-kicker">
+                    SEGUIMIENTO
+                </span>
+                <h3>
+                    Seguimiento Nutricional
+                </h3>
             </div>
-        `;
-    }
+            ${editBtn}
+        </div>
+        <div class="nutrition-status-card">
+            <span>
+                ESTADO NUTRICIONAL
+            </span>
+            <strong style="color:${estadoColor}">
+                ${
+                    nutricion.estadoNutricional ||
+                    'No calculado'
+                }
+            </strong>
+        </div>
+        <div class="novelty-data-grid">
+            <div class="novelty-data-card">
+                <span>📅 Fecha valoración</span>
+                <strong>
+                    ${formatDateDMY(
+                        nutricion.fecha || '-'
+                    )}
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>⚖️ Peso</span>
+                <strong>
+                    ${
+                        nutricion.peso
+                            ? nutricion.peso + ' kg'
+                            : '-'
+                    }
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>📏 Talla</span>
+                <strong>
+                    ${
+                        nutricion.talla
+                            ? nutricion.talla + ' cm'
+                            : '-'
+                    }
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>💪 Perímetro braquial</span>
+                <strong>
+                    ${
+                        nutricion.perimetroBraquial
+                            ? nutricion.perimetroBraquial + ' cm'
+                            : '-'
+                    }
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🏥 Régimen</span>
+                <strong>
+                    ${nutricion.regimen || '-'}
+                </strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🏥 EPS</span>
+                <strong>
+                    ${nutricion.eps || '-'}
+                </strong>
+            </div>
+        </div>
+    `;
+}
+/* ============================================================
+   CONTROL DE PESTAÑAS
+============================================================ */
+function switchNoveltyTab(tabName) {
+    const container =
+        document.getElementById('cardsView');
+    if (!container) return;
+    /* Botones */
+    const buttons =
+        container.querySelectorAll(
+            '.novelty-tab-btn'
+        );
+    buttons.forEach(button => {
+        button.classList.toggle(
+            'active',
+            button.dataset.tab === tabName
+        );
+    });
 
-    // TARJETA 6: SEGUIMIENTO Y COMUNICACIÓN (respuesta al correo de la novedad)
-    if (typeof SeguimientoModule !== 'undefined') {
-        html += SeguimientoModule.renderPanelComunicacion(novelty);
+    /* Paneles */
+    const panels =
+        container.querySelectorAll(
+            '.novelty-tab-panel'
+        );
+    panels.forEach(panel => {
+        panel.classList.toggle(
+            'active',
+            panel.dataset.panel === tabName
+        );
+    });
+    /* Scroll suave al inicio */
+    const content =
+        container.querySelector(
+            '.novelty-tab-content'
+        );
+    if (content) {
+        content.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
     }
-
-    return html;
 }
 
 function generatePlainTextFive(novelty, isArchived, udsName, udsCode) {
     const fechaRegistro = new Date(novelty.timestamp).toLocaleString('es-CO');
     
     let text = `=================================\n`;
-    text +=    ` REPORTE DE NOVEDADES - ASOCIACIÓN JER\n`;
+    text +=    ` REPORTE DE NOVEDADES\n`;
     text +=    `=================================\n\n`;
     
     text += `[ INFORMACIÓN GENERAL ]\n`;
@@ -1852,7 +2563,7 @@ function formatData() {
             const utsCode = udsSelection.value ? udsSelection.value.split(' - ')[1] : 'No Seleccionado';
             
             let formData = `=================================\n`;
-            formData +=    ` REPORTE DE NOVEDADES - ASOCIACIÓN JER\n`;
+            formData +=    ` REPORTE DE NOVEDADES\n`;
             formData +=    `=================================\n\n`;
             
             formData += `[ INFORMACIÓN GENERAL ]\n`;

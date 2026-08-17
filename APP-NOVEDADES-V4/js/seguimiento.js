@@ -302,7 +302,7 @@ const SeguimientoModule = (() => {
             </div>
         </div>
 
-        <div class="qr2-section">
+        <!--<div class="qr2-section">
             <div class="qr2-section-title">🔓 1. Información de la respuesta</div>
             <div class="qr2-summary-strip">
                 <div class="qr2-summary-item">
@@ -326,7 +326,7 @@ const SeguimientoModule = (() => {
                     <span class="qr2-summary-val">${fecha || 'N/A'}</span>
                 </div>
             </div>
-        </div>
+        </div>-->
 
         <div class="qr2-grid-2">
             <div class="qr-field">

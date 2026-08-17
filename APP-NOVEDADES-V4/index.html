@@ -14,6 +14,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -35,6 +36,126 @@
 </head>
 <body>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         PORTAL DE ACCESO — Login / Registro / Recuperar contraseña
+         Solo existe en index.html. Bloquea el uso de la app hasta
+         que haya una sesión válida de Firebase Authentication.
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="authGateOverlay">
+        <div class="auth-box">
+            <div class="auth-box-header">
+                <div class="auth-icon">🔐</div>
+                <h1>App | Reporte Novedades</h1>
+                <p>Ingresa con tu cuenta para continuar</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab-btn" id="authTabBtnLogin" onclick="AuthUI.mostrarVista('login')">Iniciar sesión</button>
+                <button class="auth-tab-btn" id="authTabBtnRegistro" onclick="AuthUI.mostrarVista('registro')">Registrarme</button>
+            </div>
+
+            <div class="auth-box-body">
+
+                <!-- ── Vista: Iniciar sesión ── -->
+                <div id="authViewLogin">
+                    <div class="auth-msg" id="authLoginMsg"></div>
+                    <div class="auth-field">
+                        <label>Correo electrónico</label>
+                        <input type="email" id="authLoginEmail" class="auth-input" placeholder="tucorreo@ejemplo.com" autocomplete="username">
+                    </div>
+                    <div class="auth-field">
+                        <label>Contraseña</label>
+                        <input type="password" id="authLoginPassword" class="auth-input" placeholder="••••••••" autocomplete="current-password"
+                               onkeydown="if(event.key==='Enter'){event.preventDefault();AuthUI.iniciarSesion();}">
+                    </div>
+                    <button class="auth-submit-btn" id="authLoginBtn" onclick="AuthUI.iniciarSesion()">Ingresar</button>
+                    <div class="auth-footer-links">
+                        <button class="auth-link-btn" onclick="AuthUI.mostrarVista('recuperar')">¿Olvidaste tu contraseña?</button>
+                        <span></span>
+                    </div>
+                </div>
+
+                <!-- ── Vista: Registro ── -->
+                <div id="authViewRegistro" style="display:none;">
+                    <div class="auth-msg" id="authRegistroMsg"></div>
+                    <div class="auth-field">
+                        <label>Nombre (opcional)</label>
+                        <input type="text" id="authRegistroNombre" class="auth-input" placeholder="Tu nombre">
+                    </div>
+                    <div class="auth-field">
+                        <label>Correo electrónico</label>
+                        <input type="email" id="authRegistroEmail" class="auth-input" placeholder="tucorreo@ejemplo.com" autocomplete="username">
+                    </div>
+                    <div class="auth-field">
+                        <label>Contraseña</label>
+                        <input type="password" id="authRegistroPassword" class="auth-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                    </div>
+                    <div class="auth-field">
+                        <label>Confirmar contraseña</label>
+                        <input type="password" id="authRegistroPassword2" class="auth-input" placeholder="Repite la contraseña" autocomplete="new-password">
+                    </div>
+                    <div class="auth-field">
+                        <label>Operador al que quieres acceder</label>
+                        <select id="authRegistroOperador" class="auth-input">
+                            <option value="">Selecciona tu operador...</option>
+                        </select>
+                    </div>
+                    <button class="auth-submit-btn" id="authRegistroBtn" onclick="AuthUI.registrarse()">Crear cuenta</button>
+                    <p style="font-size:0.68rem;color:#94a3b8;margin-top:10px;text-align:center;">
+                        ¿Ya tienes cuenta y necesitas acceso a otro operador? Usa el mismo correo y
+                        contraseña aquí — se agregará el nuevo operador a tu cuenta.
+                    </p>
+                </div>
+
+                <!-- ── Vista: Recuperar contraseña ── -->
+                <div id="authViewRecuperar" style="display:none;">
+                    <div class="auth-back-row">
+                        <button class="auth-link-btn" onclick="AuthUI.mostrarVista('login')">← Volver a iniciar sesión</button>
+                    </div>
+                    <div class="auth-msg" id="authRecuperarMsg"></div>
+                    <div class="auth-field">
+                        <label>Correo electrónico</label>
+                        <input type="email" id="authRecuperarEmail" class="auth-input" placeholder="tucorreo@ejemplo.com">
+                    </div>
+                    <button class="auth-submit-btn" id="authRecuperarBtn" onclick="AuthUI.enviarRecuperacion()">Enviar enlace</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL: Cambiar mi contraseña (usuario ya logeado)
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="cambiarPassUsuarioOverlay" style="display:none;position:fixed;inset:0;z-index:9998;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);">
+        <div class="auth-box" style="max-width:380px;">
+            <div class="auth-box-header" style="background:linear-gradient(135deg,#0f172a,#334155);">
+                <div class="auth-icon">🔑</div>
+                <h1>Cambiar mi contraseña</h1>
+            </div>
+            <div class="auth-box-body">
+                <div class="auth-msg" id="cambiarPassUsuarioMsg"></div>
+                <div class="auth-field">
+                    <label>Contraseña actual</label>
+                    <input type="password" id="cambiarPassUsuarioActual" class="auth-input" autocomplete="current-password">
+                </div>
+                <div class="auth-field">
+                    <label>Nueva contraseña</label>
+                    <input type="password" id="cambiarPassUsuarioNueva" class="auth-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                </div>
+                <div class="auth-field">
+                    <label>Confirmar nueva contraseña</label>
+                    <input type="password" id="cambiarPassUsuarioNueva2" class="auth-input" autocomplete="new-password">
+                </div>
+                <button class="auth-submit-btn" id="cambiarPassUsuarioBtn" onclick="AuthUI.confirmarCambiarPasswordUsuario()">Guardar</button>
+                <div class="auth-footer-links">
+                    <button class="auth-link-btn" onclick="AuthUI.cerrarCambiarPasswordUsuario()">Cancelar</button>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toastContainer"></div>
 
     <div id="pendientesIndicator" class="pendientes-indicator" onclick="showPendientesView()" style="display: none;">
@@ -43,43 +164,71 @@
         <span class="pendientes-count" id="pendientesCount">0</span>
     </div>
     
-    <!-- NUEVO MODAL DE DETALLES - 5 TARJETAS REORGANIZADAS -->
-    <div id="viewModal" class="modal-overlay" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header-compact">
-                <div class="header-title-compact">
-                    <div class="header-icon-small">📋</div>
-                    <div>
-                        <h3 class="text-lg font-bold">App| Reporte Novedades</h3>
-                        <p class="text-xs text-slate-400" id="headerSubtitle">Cargando...</p>
-                    </div>
-                </div>
-                <div class="header-actions">
-                    <button onclick="toggleViewMode()" class="btn-toggle-view-compact" title="Cambiar vista">
-                        <span id="viewModeIcon">📝</span>
-                        <span id="viewModeText" class="hidden sm:inline">Texto Plano</span>
-                    </button>
-                    <button onclick="closeModal()" class="btn-close-compact">&times;</button>
-                </div>
-            </div>
-            
-            <div class="modal-body-compact" id="modalBody">
-                <!-- Vista de Tarjetas -->
-                <div id="cardsView" class="cards-grid-five">
-                    <!-- Se llena dinámicamente -->
-                </div>
-                
-                <!-- Vista de Texto Plano -->
-                <div id="plainView" class="plain-view hidden">
-                    <pre id="plainTextContent"></pre>
-                </div>
-            </div>
-            
-            <div class="modal-footer-compact">
-                <button onclick="closeModal()" class="btn-cerrar-compact">Cerrar</button>
-            </div>
-        </div>
-    </div>
+    <!-- =========================================================
+     MODAL DETALLE DE NOVEDAD — VISTA POR PESTAÑAS
+========================================================= -->
+	<div id="viewModal"
+		 class="modal-overlay"
+		 onclick="closeModal(event)">
+		<div class="modal-content novelty-modal-tabs"
+			 onclick="event.stopPropagation()">
+			<!-- HEADER -->
+			<div class="modal-header-compact novelty-tabs-header">
+				<div class="header-title-compact">
+					<div class="header-icon-small">
+						📋
+					</div>
+					<div>
+						<h3 class="text-lg font-bold">
+							Reporte de Novedad
+						</h3>
+						<p class="text-xs text-slate-400"
+						   id="headerSubtitle">
+							Cargando...
+						</p>
+					</div>
+				</div>
+				<div class="header-actions">
+					<button
+						onclick="toggleViewMode()"
+						class="btn-toggle-view-compact"
+						title="Cambiar vista">
+						<span id="viewModeIcon">📝</span>
+						<span id="viewModeText"
+							  class="hidden sm:inline">
+							Texto Plano
+						</span>
+					</button>
+					<button
+						onclick="closeModal()"
+						class="btn-close-compact">
+						&times;
+					</button>
+				</div>
+			</div>
+			<!-- CONTENIDO -->
+			<div class="modal-body-compact novelty-tabs-body">
+				<!-- VISTA PESTAÑAS -->
+				<div id="cardsView"
+					 class="novelty-tabs-container">
+					<!-- Se genera dinámicamente -->
+				</div>
+				<!-- VISTA TEXTO PLANO -->
+				<div id="plainView"
+					 class="plain-view hidden">
+					<pre id="plainTextContent"></pre>
+				</div>
+			</div>
+			<!-- FOOTER -->
+			<div class="modal-footer-compact novelty-tabs-footer">
+				<button
+					onclick="closeModal()"
+					class="btn-cerrar-compact">
+					Cerrar
+				</button>
+			</div>
+		</div>
+	</div>
 
     <div id="bloqueoOverlay" class="bloqueo-overlay">
         <div class="bloqueo-content">
@@ -1479,7 +1628,7 @@
     ═══════════════════════════════════════════════════ */
     #modalSelectorAsociacion {
         position: fixed; inset: 0; z-index: 9999;
-        background: linear-gradient(135deg, #f0f4ff 0%, #e8f5e9 50%, #f0f4ff 100%);
+        background: url('img/background_login.png') center center / cover no-repeat, linear-gradient(135deg, #f0f4ff 0%, #e8f5e9 50%, #f0f4ff 100%);
         display: flex; align-items: flex-start; justify-content: center;
         padding: 28px 16px 40px; overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -1979,6 +2128,71 @@
     .clave-modal-btn-confirmar { background: #6366f1; color: #fff; }
     .clave-modal-btn-confirmar:hover { background: #4f46e5; }
     .clave-modal-btn-confirmar:disabled { opacity: .7; cursor: default; }
+    /* ============================================================
+       PORTAL DE ACCESO (LOGIN / REGISTRO / RECUPERAR CONTRASEÑA)
+       ============================================================ */
+    #authGateOverlay {
+        position: fixed; inset: 0; z-index: 9999;
+        display: none; align-items: center; justify-content: center;
+        background: url('img/background_login.png') center center / cover no-repeat;
+        padding: 16px;
+    }
+    .auth-box {
+        width: 100%; max-width: 420px;
+        background: #fff; border-radius: 18px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+        overflow: hidden;
+        animation: claveModalIn .25s ease;
+    }
+    .dark-mode .auth-box { background: #1e293b; color: #e2e8f0; }
+    .auth-box-header {
+        background: linear-gradient(135deg, #2563eb, #16a34a);
+        color: #fff; padding: 26px 24px 20px; text-align: center;
+    }
+    .auth-box-header .auth-icon { font-size: 2.2rem; margin-bottom: 6px; }
+    .auth-box-header h1 { font-size: 1.15rem; font-weight: 800; margin: 0 0 2px; }
+    .auth-box-header p { font-size: 0.78rem; color: #e0e7ff; margin: 0; }
+    .auth-tabs { display: flex; border-bottom: 1px solid #e2e8f0; }
+    .dark-mode .auth-tabs { border-color: #334155; }
+    .auth-tab-btn {
+        flex: 1; padding: 12px; background: none; border: none; cursor: pointer;
+        font-weight: 700; font-size: 0.82rem; color: #94a3b8;
+        border-bottom: 2px solid transparent;
+    }
+    .auth-tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+    .auth-box-body { padding: 22px 24px 26px; }
+    .auth-field { margin-bottom: 12px; }
+    .auth-field label { display:block; font-size: 0.72rem; font-weight: 700; color: #475569; margin-bottom: 4px; }
+    .dark-mode .auth-field label { color: #cbd5e1; }
+    .auth-input, .ajustes-input {
+        width: 100%; padding: 10px 12px; border-radius: 9px;
+        border: 1.5px solid #e2e8f0; font-size: 0.85rem; box-sizing: border-box;
+    }
+    .auth-input:focus { outline: none; border-color: #6366f1; }
+    .dark-mode .auth-input { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+    .auth-submit-btn {
+        width: 100%; margin-top: 6px; padding: 11px; border: none; border-radius: 9px;
+        background: #4f46e5; color: #fff; font-weight: 800; font-size: 0.86rem; cursor: pointer;
+    }
+    .auth-submit-btn:hover { background: #4338ca; }
+    .auth-submit-btn:disabled { opacity: .7; cursor: default; }
+    .auth-link-btn {
+        background: none; border: none; color: #6366f1; font-size: 0.76rem;
+        cursor: pointer; padding: 0; font-weight: 600;
+    }
+    .auth-link-btn:hover { text-decoration: underline; }
+    .auth-footer-links { display: flex; justify-content: space-between; margin-top: 10px; }
+    .auth-msg {
+        display: none; font-size: 0.76rem; padding: 8px 10px; border-radius: 8px; margin-bottom: 12px;
+    }
+    .auth-msg-error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+    .auth-msg-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .auth-back-row { margin-bottom: 14px; }
+    .auth-user-bar {
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        font-size: 0.72rem; color: #64748b; margin-top: 10px; flex-wrap: wrap;
+    }
+    .dark-mode .auth-user-bar { color: #94a3b8; }
     </style>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -1998,6 +2212,11 @@
                 <div class="asoc-modal-divider"></div>
             </div>
             <div id="gridAsociaciones"></div>
+            <div class="auth-user-bar" id="authUserBar" style="display:none;">
+                <span id="authUserBarEmail"></span>
+                <button class="auth-link-btn" onclick="AuthUI.abrirCambiarPasswordUsuario()">🔑 Cambiar contraseña</button>
+                <button class="auth-link-btn" onclick="AuthUI.cerrarSesion()">🚪 Cerrar sesión</button>
+            </div>
             <div class="asoc-modal-footer">
                 <button class="btn-asoc-ajustes" onclick="AjustesModule.abrirPanelAjustes()">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -2007,121 +2226,284 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         PANEL DE AJUSTES DE ASOCIACIONES
-    ═══════════════════════════════════════════════════════════ -->
-    <div id="panelAjustes">
-        <div class="ajustes-box">
-            <!-- Header -->
-            <div class="ajustes-header">
-                <div class="ajustes-header-title">
-                    ⚙️ Panel de Ajustes del Sistema
-                </div>
-                <button class="btn-ajustes-close" onclick="AjustesModule.cerrarPanelAjustes()">✕</button>
+    
+	<!-- ═══════════════════════════════════════════════════════════
+     CENTRO DE CONFIGURACIÓN DEL SISTEMA — Reemplaza TODO el div #panelAjustes existente
+     ═══════════════════════════════════════════════════════════ -->
+<div id="panelAjustes">
+  <div class="config-center-box">
+
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="config-center-sidebar" id="configCenterSidebar">
+      <div class="config-center-brand">
+        <div class="config-center-brand-mark">⚙️</div>
+        <div class="config-center-brand-text">
+          <strong>Novedades</strong>
+          <span>Configuración del Sistema</span>
+        </div>
+      </div>
+
+      <nav class="config-center-nav">
+        <button class="config-center-nav-item active" data-nav="organizaciones" onclick="AjustesModule.setNav('organizaciones')">
+          <span class="config-center-nav-icon">🏢</span>
+          <span class="config-center-nav-label">Organizaciones</span>
+        </button>
+        <button class="config-center-nav-item" data-nav="seguridad" onclick="AjustesModule.setNav('seguridad')">
+          <span class="config-center-nav-icon">🛡️</span>
+          <span class="config-center-nav-label">Seguridad del Sistema</span>
+        </button>
+      </nav>
+
+      <div class="config-center-help">
+        <strong>¿Necesitas ayuda?</strong>
+        <p>Consulta la guía del sistema</p>
+        <button onclick="alert('Guía del sistema')">Ver guía ↗</button>
+      </div>
+    </aside>
+
+    <!-- ══════════ MAIN ══════════ -->
+    <div class="config-center-main">
+
+      <!-- Topbar -->
+      <header class="config-center-topbar">
+        <div class="config-center-topbar-title">
+          Novedades <span>/ Configuración del Sistema</span>
+        </div>
+        <div class="config-center-topbar-right">
+          <div class="config-center-user">
+            <div class="config-center-user-avatar">👤</div>
+            <div>
+              <div style="font-size:12.5px;font-weight:700">Administrador</div>
+              <div style="font-size:10.5px;color:#64748b">Superadministrador</div>
             </div>
+          </div>
+          <button type="button" class="config-center-close" title="Cerrar panel de configuración (Esc)" onclick="AjustesModule.cerrarPanelAjustes()">
+            <span>✕</span> Cerrar
+          </button>
+        </div>
+      </header>
 
-            <!-- Body -->
-            <div class="ajustes-body">
+      <!-- Body -->
+      <div class="config-center-body" id="configCenterBody">
 
-                <!-- Lista de asociaciones -->
-                <div class="ajustes-section-title">
-                    🏢 Asociaciones registradas
-                    <button class="btn-ajustes-add" onclick="AjustesModule.nuevaAsociacion()">
-                        ➕ Nueva Asociación
-                    </button>
+        <!-- ═══════════════════════════════════════
+             VISTA: LISTADO DE ORGANIZACIONES
+             ═══════════════════════════════════════ -->
+        <div id="vistaOrganizaciones" class="config-center-view active">
+          <div class="config-center-view-header">
+            <div>
+              <h2 class="config-center-view-title">Organizaciones registradas</h2>
+              <p class="config-center-view-desc">Gestiona las asociaciones y operadores del sistema</p>
+            </div>
+            <button class="config-center-btn-primary" onclick="AjustesModule.nuevaAsociacion()">
+              <span>➕</span> Nueva Organización
+            </button>
+          </div>
+
+          <div id="listaAsociaciones" class="config-center-org-list">
+            <div class="ajustes-loading">⏳ Cargando organizaciones...</div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════
+             VISTA: WIZARD CREAR/EDITAR ORGANIZACIÓN
+             ═══════════════════════════════════════ -->
+        <div id="vistaWizard" class="config-center-view">
+          <div class="config-center-back" onclick="AjustesModule.volverALista()">← Volver a organizaciones</div>
+          <h2 class="config-center-view-title" id="wizardTitulo">Nueva organización</h2>
+          <p class="config-center-view-desc" id="wizardSubtitulo">Paso 1 de 5: Información</p>
+
+          <!-- Wizard -->
+          <div class="config-center-wizard" id="configCenterWizard">
+            <div class="cw-step-wrap done" data-step="1">
+              <div class="cw-step"><div class="cw-step-dot done">✓</div><span class="cw-step-label">Información</span></div>
+              <div class="cw-connector done"></div>
+            </div>
+            <div class="cw-step-wrap active" data-step="2">
+              <div class="cw-step"><div class="cw-step-dot active">2</div><span class="cw-step-label">Accesos</span></div>
+              <div class="cw-connector"></div>
+            </div>
+            <div class="cw-step-wrap" data-step="3">
+              <div class="cw-step"><div class="cw-step-dot">3</div><span class="cw-step-label">Contratos</span></div>
+              <div class="cw-connector"></div>
+            </div>
+            <div class="cw-step-wrap" data-step="4">
+              <div class="cw-step"><div class="cw-step-dot">4</div><span class="cw-step-label">UDS</span></div>
+              <div class="cw-connector"></div>
+            </div>
+            <div class="cw-step-wrap" data-step="5">
+              <div class="cw-step"><div class="cw-step-dot">5</div><span class="cw-step-label">Finalizar</span></div>
+            </div>
+          </div>
+
+          <!-- ══ PASO 1: INFORMACIÓN ══ -->
+          <div class="cw-panel" id="cwPanel1">
+            <div class="cw-alert"><span>ℹ️</span> Completa los datos básicos de la asociación u operador.</div>
+            <div class="cw-grid-2">
+              <div class="cw-card">
+                <div class="config-field"><label>ID único <small>(autogenerado, puedes editarlo)</small></label><input type="text" id="ajustesInputId" placeholder="ej: asoc_florida" oninput="AjustesModule.onIdInput()"></div>
+                <div class="config-field"><label>Nombre de la Asociación</label><input type="text" id="ajustesInputNombre" placeholder="ej: Asociación La Florida" oninput="AjustesModule.onNombreInput(this)"></div>
+                <div class="config-field"><label>Subtítulo / Ciudad</label><input type="text" id="ajustesInputSubtitulo" placeholder="ej: Neiva, Huila"></div>
+              </div>
+              <div class="cw-card">
+                <div class="config-field"><label>URL del Logo</label><input type="text" id="ajustesInputLogo" placeholder="https://..."></div>
+                <div class="config-field"><label>URL de Google Apps Script <small>(para envío de correos)</small></label><input type="text" id="ajustesInputGoogle" placeholder="https://script.google.com/macros/s/..."></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ PASO 2: ACCESOS ══ -->
+          <div class="cw-panel active" id="cwPanel2">
+            <div class="cw-alert"><span>ℹ️</span> Configura las claves de acceso que utilizarán los usuarios para ingresar al sistema.</div>
+            <div class="cw-grid-2">
+              <!-- Formulario -->
+              <div class="cw-card cw-card-green">
+                <div class="cw-card-head">
+                  <div class="cw-card-icon">👤</div>
+                  <div><div class="cw-card-title" style="color:#059669">Acceso al formulario</div><div class="cw-card-sub">Usuarios que reportan novedades</div></div>
                 </div>
-                <div id="listaAsociaciones"></div>
-
-                <!-- Formulario crear/editar -->
-                <div id="formAsociacion">
-                    <div class="ajustes-form-box">
-                        <div id="ajustesTituloForm" class="ajustes-form-title">➕ Nueva Asociación</div>
-
-                        <div class="ajustes-form-grid">
-                            <div>
-                                <label class="ajustes-label">ID único <small style="color:#94a3b8">(sin espacios)</small></label>
-                                <input type="text" id="ajustesInputId" placeholder="ej: timanco" class="ajustes-input">
-                            </div>
-                            <div>
-                                <label class="ajustes-label">Nombre de la Asociación</label>
-                                <input type="text" id="ajustesInputNombre" placeholder="ej: Asociación JER Timanco" class="ajustes-input">
-                            </div>
-                            <div>
-                                <label class="ajustes-label">Subtítulo / Ciudad</label>
-                                <input type="text" id="ajustesInputSubtitulo" placeholder="ej: Neiva, Huila" class="ajustes-input">
-                            </div>
-                            <div>
-                                <label class="ajustes-label">URL del Logo</label>
-                                <input type="text" id="ajustesInputLogo" placeholder="https://..." class="ajustes-input">
-                            </div>
-                            <div class="ajustes-form-full">
-                                <label class="ajustes-label">URL de Google Apps Script <small style="color:#94a3b8">(para envío de correos)</small></label>
-                                <input type="text" id="ajustesInputGoogle" placeholder="https://script.google.com/macros/s/..." class="ajustes-input">
-                            </div>
-                            <!-- Claves de acceso -->
-                            <div class="ajustes-form-full">
-                                <div class="ajustes-claves-box">
-                                    <div class="ajustes-claves-title">🔐 Claves de Acceso</div>
-                                    <div class="ajustes-claves-grid">
-                                        <div class="ajustes-clave-item ajustes-clave-formulario">
-                                            <div class="ajustes-clave-icon">👤</div>
-                                            <label class="ajustes-label">Clave Formulario</label>
-                                            <small class="ajustes-clave-desc">Usuarios que reportan novedades</small>
-                                            <input type="password" id="ajustesInputPasswordFormulario"
-                                                placeholder="Sin clave = acceso libre"
-                                                class="ajustes-input" autocomplete="new-password">
-                                        </div>
-                                        <div class="ajustes-clave-item ajustes-clave-admin">
-                                            <div class="ajustes-clave-icon">🛡️</div>
-                                            <label class="ajustes-label">Clave Admin</label>
-                                            <small class="ajustes-clave-desc">Acceso al panel de novedades</small>
-                                            <input type="password" id="ajustesInputPasswordAdmin"
-                                                placeholder="Contraseña administrador"
-                                                class="ajustes-input" autocomplete="new-password">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Contratos y Unidades -->
-                        <div class="ajustes-contratos-section">
-                            <div class="ajustes-section-title" style="margin-top:8px">
-                                📄 Contratos y Unidades (UDS)
-                            </div>
-                            <div id="ajustesContratos"></div>
-
-                            <!-- Agregar contrato -->
-                            <div class="ajustes-add-contrato-row">
-                                <input type="text" id="ajustesNuevoCodigoContrato" placeholder="Código (ej: 665)" class="ajustes-input-sm">
-                                <input type="text" id="ajustesNuevoLabelContrato" placeholder="Etiqueta (ej: Contrato 41006652024)" class="ajustes-input-sm">
-                                <button class="btn-ajustes-add" onclick="AjustesModule.agregarContrato()">+ Contrato</button>
-                            </div>
-                        </div>
-
-                        <!-- Acciones del formulario -->
-                        <div class="ajustes-form-actions">
-                            <button class="btn-cancelar-form" onclick="AjustesModule.cerrarFormularioAsociacion()">Cancelar</button>
-                            <button id="btnGuardarAsociacion" onclick="AjustesModule.guardarAsociacion()">💾 Guardar Asociación</button>
-                        </div>
-                    </div>
+                <div class="config-field"><label>Descripción</label><textarea id="ajustesDescFormulario" rows="2" placeholder="Permite el ingreso al formulario para reportar novedades.">Permite el ingreso al formulario para reportar novedades.</textarea></div>
+                <div class="config-field">
+                  <label>Contraseña</label>
+                  <div class="config-input-row">
+                    <input type="password" id="ajustesInputPasswordFormulario" placeholder="Sin clave = acceso libre" autocomplete="new-password" oninput="AjustesModule.checkStrength(this, 'strengthForm')">
+                    <button type="button" onclick="AjustesModule.togglePass('ajustesInputPasswordFormulario', this)">👁️</button>
+                    <button type="button" onclick="AjustesModule.genPass('ajustesInputPasswordFormulario', 'strengthForm')">🔄 Generar</button>
+                  </div>
+                  <div class="strength-bar" id="strengthForm">
+                    <div class="strength-segment"></div><div class="strength-segment"></div><div class="strength-segment"></div>
+                    <div class="strength-segment"></div><div class="strength-segment"></div><div class="strength-segment"></div>
+                    <span class="strength-label">—</span>
+                  </div>
                 </div>
-
-                <!-- Mantenimiento de datos nutricionales -->
-                <div class="ajustes-security-row" style="margin-top:10px;">
-                    <div class="ajustes-security-label">🩺 Recalcular estados nutricionales (tabla OMS actualizada)</div>
-                    <button class="btn-cambiar-pass" onclick="abrirMigracionOMS()">🔍 Abrir herramienta</button>
+                <div class="cw-note cw-note-green"><span>🛡️</span> Comparte esta contraseña únicamente con los usuarios que deben reportar novedades.</div>
+              </div>
+              <!-- Admin -->
+              <div class="cw-card cw-card-orange">
+                <div class="cw-card-head">
+                  <div class="cw-card-icon">🛡️</div>
+                  <div><div class="cw-card-title" style="color:#d97706">Acceso administrativo</div><div class="cw-card-sub">Panel de administración de novedades</div></div>
                 </div>
-
-                <!-- Seguridad -->
-                <div class="ajustes-security-row">
-                    <div class="ajustes-security-label">🔐 Contraseña del Panel de Ajustes</div>
-                    <button class="btn-cambiar-pass" onclick="AjustesModule.cambiarPassword()">🔑 Cambiar Contraseña</button>
+                <div class="config-field"><label>Descripción</label><textarea id="ajustesDescAdmin" rows="2" placeholder="Permite el acceso al panel administrativo del sistema.">Permite el acceso al panel administrativo del sistema.</textarea></div>
+                <div class="config-field">
+                  <label>Contraseña</label>
+                  <div class="config-input-row">
+                    <input type="password" id="ajustesInputPasswordAdmin" placeholder="Contraseña administrador" autocomplete="new-password" oninput="AjustesModule.checkStrength(this, 'strengthAdmin')">
+                    <button type="button" onclick="AjustesModule.togglePass('ajustesInputPasswordAdmin', this)">👁️</button>
+                    <button type="button" onclick="AjustesModule.genPass('ajustesInputPasswordAdmin', 'strengthAdmin')">🔄 Generar</button>
+                  </div>
+                  <div class="strength-bar" id="strengthAdmin">
+                    <div class="strength-segment"></div><div class="strength-segment"></div><div class="strength-segment"></div>
+                    <div class="strength-segment"></div><div class="strength-segment"></div><div class="strength-segment"></div>
+                    <span class="strength-label">—</span>
+                  </div>
                 </div>
+                <div class="cw-note cw-note-orange"><span>🔒</span> Esta contraseña es de uso exclusivo para administradores del sistema.</div>
+              </div>
+            </div>
+          </div>
 
-            </div><!-- /ajustes-body -->
-        </div><!-- /ajustes-box -->
-    </div><!-- /panelAjustes -->
+          <!-- ══ PASO 3: CONTRATOS ══ -->
+          <div class="cw-panel" id="cwPanel3">
+            <div class="cw-alert"><span>ℹ️</span> Agrega los contratos asociados a esta organización. Cada contrato puede tener un color, regional y modalidad.</div>
+            <div class="cw-card" style="margin-bottom:14px">
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+                <div class="config-field" style="flex:1;min-width:120px;margin-bottom:0"><label style="font-size:10px">Código</label><input type="text" id="ajustesNuevoCodigoContrato" placeholder="ej: 665"></div>
+                <div class="config-field" style="flex:2;min-width:180px;margin-bottom:0"><label style="font-size:10px">Etiqueta</label><input type="text" id="ajustesNuevoLabelContrato" placeholder="ej: Contrato 41006652024"></div>
+                <div class="config-field" style="min-width:150px;margin-bottom:0">
+                  <label style="font-size:10px">Regional</label>
+                  <select id="ajustesNuevaRegionalContrato"><option value="">🗺️ Regional...</option><option>Regional Neiva</option><option>Regional Gaitana</option></select>
+                </div>
+                <div class="config-field" style="min-width:150px;margin-bottom:0">
+                  <label style="font-size:10px">Modalidad</label>
+                  <select id="ajustesNuevaModalidadContrato"><option value="">📋 Modalidad...</option><option>HCB</option><option>FAMI</option><option>HI</option><option>CDI</option><option>FAMIBIENVENIR</option></select>
+                </div>
+                <button class="config-center-btn-primary" style="padding:9px 16px;margin-bottom:0" onclick="AjustesModule.agregarContrato()">+ Agregar</button>
+              </div>
+            </div>
+            <div id="ajustesContratos" class="contract-list">
+              <div class="ajustes-empty-contratos">Sin contratos. Agrega uno arriba.</div>
+            </div>
+          </div>
+
+          <!-- ══ PASO 4: UDS ══ -->
+          <div class="cw-panel" id="cwPanel4">
+            <div class="cw-alert"><span>ℹ️</span> Administra las Unidades de Desarrollo Social (UDS) para cada contrato.</div>
+            <div class="config-field" style="max-width:420px">
+              <label>Seleccionar contrato</label>
+              <select id="ajustesSelectContratoUDS" onchange="AjustesModule.cambiarContratoUDS()"><option value="">— Selecciona un contrato —</option></select>
+            </div>
+            <div class="cw-card" id="panelUDSWrapper" style="display:none">
+              <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+                <input type="text" id="ajustesNombreUDS" placeholder="Nombre UDS" style="flex:1;min-width:150px;padding:9px 12px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:13px">
+                <input type="text" id="ajustesCodigoUDS" placeholder="Código UDS" style="width:140px;padding:9px 12px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:13px">
+                <button class="config-center-btn-primary" style="padding:9px 16px" onclick="AjustesModule.agregarUnidad()">+ Agregar UDS</button>
+              </div>
+              <table class="uds-table" id="tablaUDS">
+                <thead><tr><th>Nombre</th><th>Código</th><th style="width:60px">Acciones</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ══ PASO 5: FINALIZAR ══ -->
+          <div class="cw-panel" id="cwPanel5">
+            <div class="cw-alert cw-alert-success"><span>✅</span> Revisa la información antes de guardar la organización.</div>
+            <div class="summary-grid" id="resumenFinal">
+              <div class="summary-card"><div class="summary-num" id="resNombre">—</div><div class="summary-label">Nombre</div></div>
+              <div class="summary-card"><div class="summary-num" id="resContratos">0</div><div class="summary-label">Contratos</div></div>
+              <div class="summary-card"><div class="summary-num" id="resUDS">0</div><div class="summary-label">UDS totales</div></div>
+            </div>
+            <div class="cw-card" id="resumenDetalle" style="font-size:12.5px;line-height:1.8;color:#475569">
+              <!-- Se llena dinámicamente -->
+            </div>
+          </div>
+
+        </div><!-- /vistaWizard -->
+
+        <!-- ═══════════════════════════════════════
+             VISTA: SEGURIDAD DEL SISTEMA
+             ═══════════════════════════════════════ -->
+        <div id="vistaSeguridad" class="config-center-view">
+          <div class="config-center-view-header">
+            <div>
+              <h2 class="config-center-view-title">Seguridad del Sistema</h2>
+              <p class="config-center-view-desc">Gestiona las contraseñas maestras del panel de ajustes</p>
+            </div>
+          </div>
+          <div class="cw-grid-2" style="max-width:600px">
+            <div class="cw-card">
+              <div class="cw-card-head">
+                <div class="cw-card-icon">🔐</div>
+                <div><div class="cw-card-title" style="color:#2563eb">Contraseña del Centro de Configuración</div><div class="cw-card-sub">Acceso a este panel de ajustes</div></div>
+              </div>
+              <div class="config-field">
+                <label>Nueva contraseña maestra</label>
+                <div class="config-input-row">
+                  <input type="password" id="ajustesNuevaPassSistema" placeholder="••••••••">
+                  <button type="button" onclick="AjustesModule.togglePass('ajustesNuevaPassSistema', this)">👁️</button>
+                </div>
+              </div>
+              <button class="config-center-btn-primary" style="margin-top:6px" onclick="AjustesModule.cambiarPassword()">💾 Actualizar contraseña</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /config-center-body -->
+
+      <!-- Wizard Actions (solo en vista wizard) -->
+      <div class="config-center-actions" id="wizardActions" style="display:none">
+        <div class="config-center-actions-left">
+          <button class="config-center-btn-secondary" id="btnWizardAtras" onclick="AjustesModule.prevStep()">← Atrás</button>
+          <button class="config-center-btn-secondary" onclick="AjustesModule.volverALista()">Cancelar</button>
+        </div>
+        <button class="config-center-btn-primary" id="btnWizardContinuar" onclick="AjustesModule.nextStep()">Continuar →</button>
+      </div>
+
+    </div><!-- /config-center-main -->
+  </div><!-- /config-center-box -->
+</div><!-- /panelAjustes -->
+	
 
     <!-- ═══════════════════════════════════════════════════════════
          MODAL DE CONTRASEÑA (reutilizable)
@@ -2156,6 +2538,10 @@
 
     <!-- Firebase Config (inicialización) -->
     <script src="js/firebase-config.js"></script>
+
+    <!-- Autenticación (SOLO index.html: login / registro / recuperar) -->
+    <script src="js/auth.js"></script>
+    <script src="js/auth-ui.js"></script>
     <!-- Modo Offline: cache de lecturas + cola de sincronización -->
     <!-- (debe ir después de firebase-config.js, usa `database`) -->
     <script src="js/offline.js"></script>
@@ -2201,8 +2587,12 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', async function() {
-        // Inicializar el selector de asociaciones al cargar
-        await AsociacionesModule.init();
+        // Primero se resuelve la sesión de autenticación (login).
+        // AuthUI decide si muestra el portal de acceso o si entra
+        // directo al sistema (AsociacionesModule.init()) cuando ya
+        // hay una sesión guardada por Firebase.
+        await AuthModule.init();
+        await AuthUI.init();
     });
     </script>
 </body>
