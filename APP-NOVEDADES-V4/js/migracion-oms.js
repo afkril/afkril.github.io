@@ -127,6 +127,24 @@ const MigracionOMS = (() => {
 
 
 // ============================================================
+// Integración con el Centro de Configuración del Sistema
+// (Ajustes › Novedades / Configuración del Sistema)
+// ============================================================
+// Fuerza la vista "Mantenimiento Nutricional" como activa dentro
+// del panel de ajustes, sin depender de que ajustes.js conozca
+// esta nueva sección — así funciona aunque AjustesModule.setNav()
+// solo reconozca las pestañas originales (Organizaciones/Seguridad).
+function _mostrarVistaNutricionOMS() {
+    document.querySelectorAll('#configCenterSidebar .config-center-nav-item').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.nav === 'nutricion');
+    });
+    document.querySelectorAll('#configCenterBody .config-center-view').forEach(vista => {
+        vista.classList.toggle('active', vista.id === 'vistaNutricionOMS');
+    });
+}
+
+
+// ============================================================
 // UI: Panel de migración (se inyecta dinámicamente)
 // ============================================================
 function abrirMigracionOMS() {
