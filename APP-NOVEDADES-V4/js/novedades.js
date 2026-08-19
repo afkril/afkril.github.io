@@ -446,6 +446,42 @@ function filterNovelties() {
             renderTable(filtered);
         }
 
+const MESES_ABREV_ES = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
+function formatFechaCorta(dateStr) {
+    if (!dateStr) return '-';
+    let d;
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+        const [y, m, day] = dateStr.split('-');
+        d = new Date(Number(y), Number(m) - 1, Number(day.slice(0, 2)));
+    } else if (dateStr.includes('/')) {
+        const [day, m, y] = dateStr.split('/');
+        d = new Date(Number(y), Number(m) - 1, Number(day));
+    } else {
+        d = new Date(dateStr);
+    }
+    if (isNaN(d.getTime())) return dateStr;
+    return `${String(d.getDate()).padStart(2, '0')} ${MESES_ABREV_ES[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// Celda compacta "MOVIMIENTO": abrevia el tipo (RET/ING) + fecha corta,
+// una línea por movimiento (retiro y/o ingreso cuando el tipo es "ambos").
+function getMovimientoCellHTML(novelty) {
+    const lineas = [];
+
+    if (novelty.type === 'retiro' || novelty.type === 'ambos' || novelty.hasRetiro) {
+        const fechaRetiro = novelty.retiro ? novelty.retiro.retiroDate : (novelty.retiroDate || null);
+        if (fechaRetiro) lineas.push(`<span class="mov-tag mov-tag--ret">RET</span> · ${formatFechaCorta(fechaRetiro)}`);
+    }
+    if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
+        const fechaIngreso = novelty.ingreso ? novelty.ingreso.ingresoDate : (novelty.ingresoDate || null);
+        if (fechaIngreso) lineas.push(`<span class="mov-tag mov-tag--ing">ING</span> · ${formatFechaCorta(fechaIngreso)}`);
+    }
+    if (lineas.length === 0) lineas.push(novelty.date ? formatFechaCorta(novelty.date) : '-');
+
+    return lineas.map(l => `<div class="mov-line">${l}</div>`).join('');
+}
+
 function getFechaMovimiento(novelty) {
             let fechas = [];
             
@@ -537,22 +573,35 @@ function renderTable(novelties) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
-                        <div class="estado-chip-wrap">
-                            <button type="button" class="estado-chip estado-chip--${estadoInfo.key}" onclick="toggleEstadoMenu(event, '${n.id}')" title="Cambiar estado">
-                                <span class="estado-chip-dot">${estadoInfo.emoji}</span> ${estadoInfo.label}
-                            </button>
-                            <div class="estado-menu" id="estadoMenu-${n.id}">
-                                ${renderEstadoMenuOptions(n.id, n.cuentameStatus)}
+                        <div class="estado-fecha-cell">
+                            <div class="estado-chip-wrap">
+                                <button type="button" class="estado-chip estado-chip--${estadoInfo.key}" onclick="toggleEstadoMenu(event, '${n.id}')" title="Cambiar estado">
+                                    <span class="estado-chip-dot">${estadoInfo.emoji}</span> ${estadoInfo.label}
+                                </button>
+                                <div class="estado-menu" id="estadoMenu-${n.id}">
+                                    ${renderEstadoMenuOptions(n.id, n.cuentameStatus)}
+                                </div>
+                            </div>
+                            <div class="fecha-registro-sub">${new Date(n.timestamp).toLocaleDateString('es-CO')}</div>
+                        </div>
+                    </td>
+                    <td>${getMovimientoCellHTML(n)}</td>
+                    <td>
+                        <div class="uds-contrato-cell">
+                            <div class="uds-name">${n.udsName || '-'}</div>
+                            <div class="uds-contrato-row">
+                                <span class="contrato-tag">#${n.contract || 'N/A'}</span>
+                                ${duplicadoHTML}
                             </div>
                         </div>
                     </td>
-                    <td>${new Date(n.timestamp).toLocaleDateString('es-CO')}</td>
-                    <td><strong>${fechaMovimiento}</strong></td>
-                    <td><span class="badge" style="background: ${getContractColor(n.contract)}; color: white;">${n.contract || 'N/A'}</span></td>
-                    <td>${n.udsName} ${duplicadoHTML}</td>
                     <td>${tipoBadge}</td>
-                    <td>${docDisplay}</td>
-                    <td>${nameDisplay}</td>
+                    <td>
+                        <div class="beneficiario-cell">
+                            <div class="beneficiario-nombre">${nameDisplay}</div>
+                            <div class="beneficiario-doc">${docDisplay}</div>
+                        </div>
+                    </td>
                     <td>
                         <div class="comm-cell">
                             ${SeguimientoModule.badgeComunicacion(n)}
@@ -847,14 +896,28 @@ function renderArchivedTable(novelties) {
                 const row = document.createElement('tr');
                 row.className = 'archivado-row';
                 row.innerHTML = `
-                    <td><div class="check-archivado">✓</div></td>
-                    <td>${new Date(n.archivedDate).toLocaleDateString('es-CO')}</td>
-                    <td><strong>${fechaMovimiento}</strong></td>
-                    <td><span class="badge" style="background: ${getContractColor(n.contract)}; color: white;">${n.contract || 'N/A'}</span></td>
-                    <td>${n.udsName}</td>
+                    <td>
+                        <div class="estado-fecha-cell">
+                            <div class="estado-chip estado-chip--cargado" style="cursor:default;">✓ Archivado</div>
+                            <div class="fecha-registro-sub">${new Date(n.archivedDate).toLocaleDateString('es-CO')}</div>
+                        </div>
+                    </td>
+                    <td>${getMovimientoCellHTML(n)}</td>
+                    <td>
+                        <div class="uds-contrato-cell">
+                            <div class="uds-name">${n.udsName || '-'}</div>
+                            <div class="uds-contrato-row">
+                                <span class="contrato-tag">#${n.contract || 'N/A'}</span>
+                            </div>
+                        </div>
+                    </td>
                     <td>${tipoBadge}</td>
-                    <td>${docDisplay}</td>
-                    <td>${nameDisplay}</td>
+                    <td>
+                        <div class="beneficiario-cell">
+                            <div class="beneficiario-nombre">${nameDisplay}</div>
+                            <div class="beneficiario-doc">${docDisplay}</div>
+                        </div>
+                    </td>
                     <td>
                         <button onclick="viewArchivedNovelty('${n.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 bg-blue-50 px-2 py-1 rounded">Ver</button>
                         <button onclick="deleteArchivedNovelty('${n.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold bg-red-50 px-2 py-1 rounded">Eliminar</button>

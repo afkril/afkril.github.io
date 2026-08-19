@@ -30,9 +30,8 @@
 
     <!-- ESTILOS DUPLICADOS v2.0 -->
     <link rel="stylesheet" href="css/duplicados-v2.css">
-</head>
-<body>
-<base target="_blank">
+
+    <base target="_blank">
 </head>
 <body>
 
@@ -326,6 +325,7 @@
                         </button>
                     </div>
                 </div>
+            </div>
         </header>
         
         <!-- FORMULARIO ACTUALIZADO CON COMUNA, BARRIO Y PERÍMETRO BRAQUIAL -->
@@ -1064,16 +1064,13 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Estado</th>
-                                    <th>Fecha Registro</th>
-                                    <th>Fecha Movimiento</th>
-                                    <th>Contrato</th>
-                                    <th>UDS</th>
+                                    <th>Estado / Fecha</th>
+                                    <th>Movimiento</th>
+                                    <th>UDS / Contrato</th>
                                     <th>Tipo</th>
-                                    <th>Documento</th>
-                                    <th>Nombre</th>
+                                    <th>Beneficiario</th>
                                     <th>Comunicación</th>
-                                    <th>Acciones</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody id="noveltiesTableBody"></tbody>
@@ -1201,15 +1198,12 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Estado</th>
-                                    <th>Fecha Archivo</th>
-                                    <th>Fecha Movimiento</th>
-                                    <th>Contrato</th>
-                                    <th>UDS</th>
+                                    <th>Estado / Fecha</th>
+                                    <th>Movimiento</th>
+                                    <th>UDS / Contrato</th>
                                     <th>Tipo</th>
-                                    <th>Documento</th>
-                                    <th>Nombre</th>
-                                    <th>Acciones</th>
+                                    <th>Beneficiario</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody id="archivedTableBody"></tbody>
@@ -1680,7 +1674,7 @@
     .asoc-bg-blob-3 { width: 200px; height: 200px; background: #3b82f6; bottom: 0; left: 30%; }
 
     /* Header del modal */
-    .asoc-modal-header { text-align: center; margin-bottom: 40px; position: relative; z-index: 1; }
+    .asoc-modal-header { text-align: center; margin-bottom: 10px; position: relative; z-index: 1; }
     .asoc-modal-icon-wrap {
         display: flex; align-items: center; justify-content: center; gap: 6px;
         margin-bottom: 16px;
@@ -2634,9 +2628,8 @@
     <script src="js/exports.js"></script>
     <script src="js/notificaciones.js"></script>
     <script src="js/migracion-oms.js"></script>
-	<script src="js/snippet-integracion-badge.js"></script>
     <!-- Inicialización del sistema multi-asociación -->
-    
+
     <!-- MODAL DE DUPLICADOS DESDE NOVEDADES ACTIVAS -->
     <div id="dupModalOverlay" class="dup-modal-overlay" onclick="DuplicadosModule.cerrarModalCaso()">
         <div class="dup-modal-box" onclick="event.stopPropagation()">
