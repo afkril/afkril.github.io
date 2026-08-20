@@ -705,6 +705,7 @@
 							</select>
 							
 						</div>
+						
 				</div>
             </div>
 
@@ -931,21 +932,6 @@
                         <span class="week-day-chip" data-day="4" onclick="toggleWeekDay(5, 4)">Jue</span>
                         <span class="week-day-chip" data-day="5" onclick="toggleWeekDay(5, 5)">Vie</span>
                     </div>
-                </div>
-            </div>
-
-            <!-- Control sutil para agregar una semana repetida (duplicada) -->
-            <div class="repeat-week-control no-print" id="repeatWeekControl">
-                <button type="button" class="repeat-week-toggle" onclick="toggleRepeatWeekPicker()" title="Duplicar una semana con días diferentes (ej: dos veces Semana 1)">
-                    <span>➕</span> Semana repetida
-                </button>
-                <div class="repeat-week-picker" id="repeatWeekPicker" style="display:none;">
-                    <span class="repeat-week-picker-label">Duplicar:</span>
-                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(1)">S1</button>
-                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(2)">S2</button>
-                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(3)">S3</button>
-                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(4)">S4</button>
-                    <button type="button" class="repeat-week-pill" onclick="agregarSemanaRepetida(5)">S5</button>
                 </div>
             </div>
 
@@ -1600,14 +1586,14 @@
 				style="background:rgba(99,102,241,0.12);border-color:rgba(99,102,241,0.3);color:#818cf8;">
 				🗂️ Abrir
 			  </button>
-			  <button class="dir-btn" onclick="tabGuardarDirectorio(false)" title="Guardar directorio nuevo"
+			  <button class="dir-btn" onclick="tabGuardarDirectorio(false)" title="Crear un directorio nuevo con las UDS actuales"
 				style="background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#10b981;">
-				💾 Guardar
+				🆕 Crear Nuevo
 			  </button>
 			  <button class="dir-btn" id="tab-btn-save-modified" onclick="tabGuardarDirectorio(true)"
 				title="Guardar cambios en el directorio cargado"
 				style="display:none;background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.3);color:#f59e0b;">
-				✏️ Modificado
+				✏️ Guardar Cambios
 			  </button>
 			  <button class="dir-btn" onclick="tabEliminarDirectorioGuardadoActual()" title="Eliminar directorio cargado"
 				style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#ef4444;">
@@ -1786,7 +1772,11 @@
           <div class="dir-card dir-step-card" id="tab-dir-preview-container" style="display:none;margin-bottom:0;">
             <div class="dir-step-header dir-step-static">
               <span class="dir-step-title">🧩 <b>Paso 3</b> · Vista Previa Directorio</span>
-              <button onclick="tabLimpiarDirectorio()" style="padding:0.3rem 0.7rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:0.35rem;cursor:pointer;font-size:0.72rem;font-family:inherit;font-weight:600;">🗑️ Limpiar todo</button>
+              <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
+                <button onclick="tabOrdenarPorCobertura()" title="Ordenar la lista de mayor a menor según cobertura" style="padding:0.3rem 0.7rem;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#10b981;border-radius:0.35rem;cursor:pointer;font-size:0.72rem;font-family:inherit;font-weight:600;">🔽 </button>
+                <button onclick="tabResetCobertura()" title="Restablecer la cobertura de todas las UDS al valor por defecto (13)" style="padding:0.3rem 0.7rem;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);color:#818cf8;border-radius:0.35rem;cursor:pointer;font-size:0.72rem;font-family:inherit;font-weight:600;">↺ </button>
+                <button onclick="tabLimpiarDirectorio()" style="padding:0.3rem 0.7rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:0.35rem;cursor:pointer;font-size:0.72rem;font-family:inherit;font-weight:600;">🗑️ Limpiar todo</button>
+              </div>
             </div>
             <div class="dir-step-body" style="padding-top:1rem;">
               <div class="dir-preview-info">📋 Vista Previa — <b id="tab-dir-count">0</b> UDS — <b id="tab-dir-cupos">0</b> cupos</div>

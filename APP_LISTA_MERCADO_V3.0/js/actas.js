@@ -1794,6 +1794,11 @@ document.addEventListener('keydown', function(e) {
             tabRefreshSelect();
             document.getElementById('tab-dir-select').value = nombre;
             document.getElementById('tab-btn-save-modified').style.display = 'inline-block';
+            // El directorio recién creado pasa a ser el "cargado": actualizar la etiqueta visible
+            // para que no siga mostrando el nombre del directorio anterior.
+            var lblNuevo = document.getElementById('tab-dir-loaded-label');
+            if (lblNuevo) { lblNuevo.textContent = '📂 ' + nombre; lblNuevo.style.display = 'block'; lblNuevo.title = nombre; }
+            sincronizarConPanelFlotante();
             document.getElementById('modal-guardar-dir').remove();
             showToast('✅ Directorio "' + nombre + '" guardado (' + directorioUDS.length + ' UDS)', 'success');
 
@@ -2024,6 +2029,26 @@ document.addEventListener('keydown', function(e) {
                         '<button class="dir-action-btn" onclick="tabEliminarUDS(' + i + ')" style="background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#ef4444;" title="Eliminar">✕</button>' +
                     '</td></tr>';
             }).join('');
+        }
+
+        // Restablece la cobertura de todas las UDS del directorio al valor por defecto (13).
+        async function tabResetCobertura() {
+            if (directorioUDS.length === 0) return;
+            try {
+                await mostrarConfirm('Se restablecerá la cobertura de las ' + directorioUDS.length + ' UDS del directorio al valor por defecto (13).', {
+                    titulo: '¿Restablecer cobertura?', icono: '↺', btnOk: 'Sí, restablecer'
+                });
+            } catch { return; }
+            directorioUDS.forEach(function(uds){ uds.cobertura = 13; });
+            tabRenderizarDirectorio();
+            showToast('Cobertura restablecida a 13 en todas las UDS', 'success');
+        }
+
+        // Ordena el directorio de mayor a menor según la cobertura.
+        function tabOrdenarPorCobertura() {
+            if (directorioUDS.length === 0) return;
+            directorioUDS.sort(function(a, b){ return (parseInt(b.cobertura) || 0) - (parseInt(a.cobertura) || 0); });
+            tabRenderizarDirectorio();
         }
 
         function tabImportarDirectorio(input) {
