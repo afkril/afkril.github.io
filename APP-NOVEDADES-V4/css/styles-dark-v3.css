@@ -1,0 +1,717 @@
+/* ============================================================
+   MODO OSCURO V3 — index.html (formulario compartido)
+   Portado 1:1 desde css/styles-operador-dark-v3.css (JER/T3/Florida).
+   Se carga DESPUÉS de styles.css y duplicados-v2.css para que estas
+   reglas tengan prioridad sobre el dark-mode anterior del formulario
+   (wizard, cf-card, theme-toggle, inputs, etc). No afecta selectores
+   exclusivos del panel administrativo (admin-*, dup-*, config-*...),
+   esos siguen definidos en styles.css.
+   ============================================================ */
+
+/* ============================================================
+   DARK MODE V3 — SISTEMA VISUAL UNIFICADO / DARK PROFESSIONAL
+   Objetivo:
+   - Reducir la cantidad de superficies y colores compitiendo.
+   - Mantener verde/rojo/azul/naranja únicamente como estados.
+   - Unificar inputs, tarjetas, wizard, acciones y adjuntos.
+   - Mejorar contraste, profundidad y lectura prolongada.
+   ============================================================ */
+
+body.dark-mode {
+    --dm-bg: #0b1220;
+    --dm-surface: #111827;
+    --dm-surface-2: #172235;
+    --dm-surface-3: #1b283b;
+    --dm-input: #0d1626;
+    --dm-border: #2b3a50;
+    --dm-border-soft: #243247;
+    --dm-text: #f8fafc;
+    --dm-text-2: #cbd5e1;
+    --dm-muted: #7f8ea3;
+    --dm-primary: #3b82f6;
+    --dm-primary-2: #2563eb;
+    --dm-green: #22c55e;
+    --dm-green-soft: #34d399;
+    --dm-red: #ef4444;
+    --dm-orange: #f59e0b;
+    background:
+        radial-gradient(circle at 15% 0%, rgba(59,130,246,.08), transparent 30%),
+        radial-gradient(circle at 85% 100%, rgba(34,197,94,.05), transparent 28%),
+        var(--dm-bg) !important;
+    color: var(--dm-text) !important;
+}
+
+/* Contenedor principal */
+body.dark-mode .glass-container {
+    background: var(--dm-surface) !important;
+    border: 1px solid var(--dm-border) !important;
+    border-top-width: 5px !important;
+    box-shadow:
+        0 30px 70px rgba(0,0,0,.42),
+        0 0 0 1px rgba(255,255,255,.015) inset !important;
+    transform: scale(1) !important;
+}
+
+/* Header */
+body.dark-mode .glass-container > header {
+    background: #0f1929 !important;
+    border-bottom: 1px solid var(--dm-border) !important;
+}
+
+body.dark-mode header h1 {
+    color: var(--dm-text) !important;
+}
+
+body.dark-mode header h1 .dynamic-text {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode header p {
+    color: #8492a6 !important;
+}
+
+body.dark-mode #logoAsociacion {
+    border-color: #334155 !important;
+}
+
+body.dark-mode .glass-container header > div > div:first-child {
+    background: #152033 !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode #clockDisplay {
+    background: #121d2e !important;
+    color: #94a3b8 !important;
+    border: 1px solid #2b3a50 !important;
+}
+
+body.dark-mode #contractIndicator {
+    box-shadow: 0 5px 14px rgba(0,0,0,.25) !important;
+}
+
+body.dark-mode .theme-toggle {
+    width: 54px !important;
+    height: 28px !important;
+    border-radius: 999px !important;
+    background: #243247 !important;
+    border: 1px solid #334155 !important;
+}
+
+body.dark-mode .theme-toggle::after {
+    top: 2px !important;
+    left: 2px !important;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 12px !important;
+}
+
+body.dark-mode .theme-toggle.active::after {
+    transform: translateX(26px) !important;
+}
+
+body.dark-mode header button[title="Limpiar formulario"] {
+    color: #64748b !important;
+}
+body.dark-mode header button[title="Limpiar formulario"]:hover {
+    color: #f87171 !important;
+}
+
+/* Formulario y divisores */
+body.dark-mode #noveltyForm {
+    background: transparent !important;
+}
+
+body.dark-mode .border-slate-100 {
+    border-color: var(--dm-border) !important;
+}
+
+/* Wizard */
+body.dark-mode .wizard-wrap {
+    gap: 12px !important;
+}
+
+body.dark-mode .wizard-dot {
+    background: #172235 !important;
+    border-color: #34445b !important;
+    color: #74839a !important;
+}
+
+body.dark-mode .wizard-dot.is-active {
+    background: var(--dm-primary) !important;
+    border-color: var(--dm-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 5px rgba(59,130,246,.14) !important;
+}
+
+body.dark-mode .wizard-dot.is-done {
+    background: #15803d !important;
+    border-color: #15803d !important;
+    color: #fff !important;
+}
+
+body.dark-mode .wizard-dot-label {
+    color: #6f7f95 !important;
+}
+
+body.dark-mode .wizard-node:has(.wizard-dot.is-active) .wizard-dot-label {
+    color: #60a5fa !important;
+}
+
+body.dark-mode .wizard-node:has(.wizard-dot.is-done) .wizard-dot-label {
+    color: #4ade80 !important;
+}
+
+body.dark-mode .wizard-connector {
+    background: #2b3a50 !important;
+}
+
+body.dark-mode .wizard-connector.is-done {
+    background: #22c55e !important;
+}
+
+body.dark-mode .wizard-current {
+    background: #111d2e !important;
+    border: 1px solid #2e3f56 !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode .wizard-current:focus-within {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.10) !important;
+}
+
+body.dark-mode .wizard-current-label {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .wizard-current-num {
+    background: #3b82f6 !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode .wizard-crumb {
+    background: rgba(34,197,94,.09) !important;
+    border: 1px solid rgba(34,197,94,.16) !important;
+    color: #86efac !important;
+}
+
+body.dark-mode .wizard-crumb:hover {
+    background: rgba(34,197,94,.15) !important;
+}
+
+body.dark-mode .wizard-crumb-label {
+    color: #4ade80 !important;
+}
+
+body.dark-mode .wizard-crumb-value {
+    color: #c7f9d4 !important;
+}
+
+/* Badges superiores */
+body.dark-mode .regional-badge,
+body.dark-mode .modalidad-badge {
+    box-shadow: none !important;
+}
+
+body.dark-mode .regional-neiva,
+body.dark-mode .regional-gaitana,
+body.dark-mode .modalidad-hcb,
+body.dark-mode .modalidad-fami,
+body.dark-mode .modalidad-famibienvenir,
+body.dark-mode .modalidad-cdi {
+    filter: saturate(.82) brightness(.82) !important;
+}
+
+/* Encabezado "¿Qué reportará?" */
+body.dark-mode .step-badge {
+    background: #334155 !important;
+    color: #f8fafc !important;
+    box-shadow: none !important;
+}
+
+/* Tarjetas Retiro / Ingreso */
+body.dark-mode .report-type-card {
+    background: #172235 !important;
+    border: 1px solid #34445b !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode .report-type-card:hover {
+    background: #1b293d !important;
+    border-color: #4a5c75 !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,.18) !important;
+}
+
+body.dark-mode .report-type-icon {
+    background: #223149 !important;
+}
+
+body.dark-mode .report-type-title {
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .report-type-sub {
+    color: #7f8ea3 !important;
+}
+
+body.dark-mode .report-type-red:has(input:checked) {
+    background: rgba(239,68,68,.08) !important;
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 1px rgba(239,68,68,.08) inset !important;
+}
+
+body.dark-mode .report-type-green:has(input:checked) {
+    background: rgba(34,197,94,.08) !important;
+    border-color: #22c55e !important;
+    box-shadow: 0 0 0 1px rgba(34,197,94,.08) inset !important;
+}
+
+body.dark-mode .report-type-red:has(input:checked) .report-type-icon {
+    background: #dc2626 !important;
+}
+
+body.dark-mode .report-type-green:has(input:checked) .report-type-icon {
+    background: #16a34a !important;
+}
+
+/* Tarjetas de datos: una sola superficie, color solo en el borde */
+body.dark-mode .cf-card {
+    background: #151f30 !important;
+    border-width: 1px !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode .cf-card-green {
+    border-color: rgba(34,197,94,.72) !important;
+}
+body.dark-mode .cf-card-red {
+    border-color: rgba(239,68,68,.72) !important;
+}
+body.dark-mode .cf-card-blue {
+    border-color: rgba(59,130,246,.72) !important;
+}
+body.dark-mode .cf-card-orange {
+    border-color: rgba(245,158,11,.72) !important;
+}
+
+body.dark-mode .cf-card-head {
+    margin-bottom: 13px !important;
+}
+
+body.dark-mode .cf-card-title {
+    font-size: 11px !important;
+}
+
+body.dark-mode .cf-card-green .cf-card-title {
+    color: #4ade80 !important;
+}
+body.dark-mode .cf-card-red .cf-card-title {
+    color: #f87171 !important;
+}
+body.dark-mode .cf-card-blue .cf-card-title {
+    color: #60a5fa !important;
+}
+body.dark-mode .cf-card-orange .cf-card-title {
+    color: #fbbf24 !important;
+}
+
+/* Subtítulos internos */
+body.dark-mode .cf-col-title {
+    color: #7f8ea3 !important;
+}
+
+/* Inputs: superficie única */
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea,
+body.dark-mode .cf-field input,
+body.dark-mode .cf-field select {
+    background: #0d1626 !important;
+    color: #f1f5f9 !important;
+    border: 1px solid #314158 !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode input:hover,
+body.dark-mode select:hover,
+body.dark-mode textarea:hover {
+    border-color: #42536b !important;
+}
+
+body.dark-mode input:focus,
+body.dark-mode select:focus,
+body.dark-mode textarea:focus,
+body.dark-mode .cf-field input:focus,
+body.dark-mode .cf-field select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.12) !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #607089 !important;
+    opacity: 1 !important;
+}
+
+body.dark-mode .cf-field .cf-microlabel {
+    color: #8b9ab0 !important;
+    font-size: 9px !important;
+}
+
+body.dark-mode .cf-card-green .cf-field .cf-microlabel {
+    color: #67d391 !important;
+}
+body.dark-mode .cf-card-red .cf-field .cf-microlabel {
+    color: #f28b8b !important;
+}
+body.dark-mode .cf-card-blue .cf-field .cf-microlabel {
+    color: #72a8f7 !important;
+}
+body.dark-mode .cf-card-orange .cf-field .cf-microlabel {
+    color: #f3b75b !important;
+}
+
+/* Fecha / iconos nativos */
+body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) opacity(.65) !important;
+}
+
+body.dark-mode #displayAge {
+    background: #151b35 !important;
+    color: #fbbf24 !important;
+    border-color: #6b4f17 !important;
+}
+
+/* Género */
+body.dark-mode .cf-gender {
+    background: #0d1626 !important;
+    border: 1px solid #314158 !important;
+}
+
+body.dark-mode .cf-gender label {
+    color: #8b9ab0 !important;
+}
+
+body.dark-mode .cf-gender label + label {
+    border-left-color: #314158 !important;
+}
+
+body.dark-mode .cf-card-green .cf-gender label:has(input:checked) {
+    background: #15803d !important;
+    color: #fff !important;
+}
+body.dark-mode .cf-card-red .cf-gender label:has(input:checked) {
+    background: #b91c1c !important;
+    color: #fff !important;
+}
+
+/* Upload / Dropzone */
+body.dark-mode .dropzone {
+    background: #0d1626 !important;
+    border: 1px dashed #3d526d !important;
+    border-radius: 10px !important;
+}
+
+body.dark-mode .dropzone:hover {
+    background: #111d30 !important;
+    border-color: #5d7390 !important;
+}
+
+body.dark-mode .dropzone.is-dragover {
+    background: rgba(34,197,94,.07) !important;
+    border-color: #22c55e !important;
+}
+
+body.dark-mode .dropzone.has-file {
+    background: rgba(34,197,94,.06) !important;
+    border-color: #22c55e !important;
+}
+
+body.dark-mode .dropzone-orange {
+    border-color: #795522 !important;
+}
+
+body.dark-mode .dropzone-orange:hover {
+    border-color: #d97706 !important;
+    background: rgba(245,158,11,.05) !important;
+}
+
+body.dark-mode .dropzone-icon {
+    background: #1d2a3e !important;
+    color: #60a5fa !important;
+}
+
+body.dark-mode .dropzone-orange .dropzone-icon {
+    color: #f59e0b !important;
+}
+
+body.dark-mode .dropzone-title {
+    color: #cbd5e1 !important;
+}
+
+body.dark-mode .dropzone-title span {
+    color: #4ade80 !important;
+}
+
+body.dark-mode .dropzone-hint {
+    color: #64748b !important;
+}
+
+body.dark-mode .cf-ram-note {
+    background: rgba(245,158,11,.055) !important;
+    border: 1px dashed rgba(245,158,11,.42) !important;
+}
+
+body.dark-mode .cf-ram-note p {
+    color: #d8aa55 !important;
+}
+
+/* Nutrición: naranja como acento, no como fondo dominante */
+body.dark-mode .nutricion-card,
+body.dark-mode .cf-nutricion.nutricion-card {
+    background: #151f30 !important;
+    border: 1px solid rgba(245,158,11,.72) !important;
+    box-shadow: none !important;
+}
+
+body.dark-mode .nutricion-title {
+    color: #fbbf24 !important;
+}
+
+body.dark-mode .nutricion-indicator {
+    background: #0d1626 !important;
+    border: 1px solid #35465d !important;
+}
+
+body.dark-mode .nutricion-details {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .cf-nutricion-pendiente,
+body.dark-mode .bg-amber-50 {
+    background: rgba(245,158,11,.07) !important;
+    border-color: rgba(245,158,11,.5) !important;
+}
+
+body.dark-mode .cf-nutricion-pendiente span,
+body.dark-mode .text-amber-700,
+body.dark-mode .text-amber-600 {
+    color: #fbbf24 !important;
+}
+
+/* Madre / Acudiente */
+body.dark-mode .cf-card-blue {
+    background: #151f30 !important;
+}
+
+/* Correos y campos finales */
+body.dark-mode #noveltyForm > div:last-of-type label,
+body.dark-mode .text-slate-500 {
+    color: #8190a5 !important;
+}
+
+/* Botón principal */
+body.dark-mode .cf-submit-btn,
+body.dark-mode .cf-submit-btn-hero,
+body.dark-mode #submitButton {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+    border: 1px solid #3b82f6 !important;
+    color: #fff !important;
+    border-radius: 11px !important;
+    box-shadow: 0 10px 25px rgba(37,99,235,.20) !important;
+    letter-spacing: .03em !important;
+}
+
+body.dark-mode .cf-submit-btn:hover,
+body.dark-mode .cf-submit-btn-hero:hover,
+body.dark-mode #submitButton:hover {
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    box-shadow: 0 12px 28px rgba(37,99,235,.28) !important;
+    transform: translateY(-1px) !important;
+}
+
+body.dark-mode .cf-submit-btn-hero::before {
+    opacity: .45 !important;
+}
+
+/* Botones secundarios del formulario */
+body.dark-mode button:not(#submitButton):not(.theme-toggle) {
+    transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+
+body.dark-mode .btn-secondary,
+body.dark-mode button[class*="border-slate"],
+body.dark-mode .cf-cancel-btn {
+    background: #172235 !important;
+    border-color: #34445b !important;
+    color: #cbd5e1 !important;
+}
+
+body.dark-mode .btn-secondary:hover,
+body.dark-mode button[class*="border-slate"]:hover,
+body.dark-mode .cf-cancel-btn:hover {
+    background: #1d2b40 !important;
+    border-color: #4a5c75 !important;
+}
+
+/* Modal OMS */
+body.dark-mode .modal-grafica-content {
+    background: #111827 !important;
+    border-color: #334155 !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .modal-grafica-overlay {
+    background: rgba(2,6,23,.78) !important;
+    backdrop-filter: blur(5px) !important;
+}
+
+/* Alertas / duplicados */
+body.dark-mode .dup-warning-box {
+    background: rgba(245,158,11,.07) !important;
+    border-color: rgba(245,158,11,.45) !important;
+    color: #fbbf24 !important;
+}
+
+/* Scrollbar */
+body.dark-mode ::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+body.dark-mode ::-webkit-scrollbar-track {
+    background: #0b1220 !important;
+}
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #2b3a50 !important;
+    border-radius: 999px;
+}
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: #42536b !important;
+}
+
+/* Accesibilidad */
+body.dark-mode *:focus-visible {
+    outline: 2px solid #60a5fa !important;
+    outline-offset: 2px !important;
+}
+
+/* Respeta la jerarquía visual en pantallas pequeñas */
+@media (max-width: 700px) {
+    body.dark-mode .glass-container {
+        transform: none !important;
+        border-radius: 18px !important;
+    }
+
+    body.dark-mode #noveltyForm {
+        padding: 1rem !important;
+    }
+
+    body.dark-mode .cf-card {
+        border-radius: 14px !important;
+    }
+}
+
+
+/* ============================================================
+   LOGIN + SELECTOR DE OPERADOR — MODO OSCURO
+   (Portal de acceso #authGateOverlay y modal #modalSelectorAsociacion)
+   Usa las mismas variables --dm-* definidas arriba en body.dark-mode.
+   ============================================================ */
+
+/* Botón sutil de cambiar tema (versión mini, solo icono) para
+   pantallas de login / selección de operador, donde el switch
+   grande no encaja bien. */
+.theme-toggle-subtle {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 20;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    line-height: 1;
+    transition: background .2s, border-color .2s, transform .15s;
+}
+.theme-toggle-subtle:hover { background: rgba(255, 255, 255, 0.4); transform: scale(1.06); }
+.theme-toggle-subtle::before { content: '🌙'; }
+body.dark-mode .theme-toggle-subtle {
+    background: rgba(17, 24, 39, 0.55);
+    border-color: var(--dm-border);
+}
+body.dark-mode .theme-toggle-subtle:hover { background: rgba(23, 34, 53, 0.75); }
+body.dark-mode .theme-toggle-subtle::before { content: '☀️'; }
+
+/* Fondo oscuro del portal de acceso (login) */
+body.dark-mode #authGateOverlay {
+    background:
+        url('../img/background_login_Oscuro.png') center center / cover no-repeat,
+        var(--dm-bg);
+}
+body.dark-mode .auth-box { background: var(--dm-surface); color: var(--dm-text-2); }
+body.dark-mode .auth-tab-btn { color: var(--dm-muted); }
+body.dark-mode .auth-tab-btn.active { color: var(--dm-primary); border-bottom-color: var(--dm-primary); }
+body.dark-mode .auth-link-btn { color: #93c5fd; }
+body.dark-mode .auth-submit-btn { background: var(--dm-primary-2); }
+body.dark-mode .auth-submit-btn:hover { background: var(--dm-primary); }
+
+/* Fondo oscuro del selector de operador/asociación */
+body.dark-mode #modalSelectorAsociacion {
+    background:
+        url('../img/background_login_Oscuro.png') center center / cover no-repeat,
+        linear-gradient(135deg, var(--dm-bg) 0%, var(--dm-surface) 50%, var(--dm-bg) 100%);
+}
+body.dark-mode .asoc-bg-blob { opacity: 0.3; }
+body.dark-mode .asoc-modal-title { color: var(--dm-text); }
+body.dark-mode .asoc-modal-sub { color: var(--dm-muted); }
+body.dark-mode .asoc-modal-dot-1 { background: var(--dm-surface-3); }
+
+/* Tarjetas de operador */
+body.dark-mode .asoc-card {
+    background: var(--dm-surface);
+    border-color: var(--dm-border);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+body.dark-mode .asoc-card:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    border-color: var(--asoc-color, var(--dm-primary));
+}
+body.dark-mode .asoc-card-logo-wrap { background: var(--dm-surface-2); }
+body.dark-mode .asoc-card-nombre { color: var(--dm-text); }
+body.dark-mode .asoc-card-ubicacion { color: var(--dm-muted); }
+body.dark-mode .asoc-card-contratos-wrap { background: var(--dm-surface-2); }
+body.dark-mode .asoc-card-contratos-icon { background: var(--dm-surface-3); }
+body.dark-mode .asoc-card-contratos-label { color: var(--dm-muted); }
+body.dark-mode .asoc-card-btn { background: var(--dm-surface-2); color: var(--dm-primary); }
+body.dark-mode .asoc-card-btn:hover { background: var(--dm-primary); color: #fff; }
+body.dark-mode .asoc-card-lock {
+    background: rgba(245, 158, 11, .12);
+    border-color: rgba(245, 158, 11, .35);
+    color: #fcd34d;
+}
+body.dark-mode .asoc-loading,
+body.dark-mode .asoc-empty { color: var(--dm-muted); }
+
+/* Barra de sesión y footer del selector */
+body.dark-mode #authUserBar { color: var(--dm-text-2); }
+body.dark-mode .btn-asoc-ajustes {
+    background: var(--dm-surface);
+    border-color: var(--dm-border);
+    color: var(--dm-text-2);
+}
+body.dark-mode .btn-asoc-ajustes:hover {
+    background: var(--dm-surface-2);
+    border-color: var(--dm-primary);
+    color: var(--dm-primary);
+}
