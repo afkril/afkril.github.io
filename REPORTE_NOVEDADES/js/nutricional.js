@@ -969,12 +969,6 @@ document.addEventListener('keydown', function(e) {
             }
         });
 
-document.getElementById('modalGraficaOMS').addEventListener('click', function(e) {
-            if (e.target === this) {
-                cerrarModalGrafica();
-            }
-        });
-
 function getNutricionColor(estado) {
     if (!estado) return '#94a3b8';
     if (estado.includes('Severa')) return '#ef4444';
