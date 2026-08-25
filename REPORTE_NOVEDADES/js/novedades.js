@@ -2244,9 +2244,10 @@ function onRegionalChange() {
             // Obtener modalidades únicas para esta regional
             const regCtrs = window.REGIONALES_CONTRATOS || {};
             const modCtrs = window.MODALIDADES_CONTRATOS || {};
+            const estCtrs = window.ESTADO_CONTRATOS      || {};
             const modalesDisponibles = [...new Set(
                 Object.entries(regCtrs)
-                    .filter(([cod, reg]) => reg === regional)
+                    .filter(([cod, reg]) => reg === regional && estCtrs[cod] !== 'inactivo')
                     .map(([cod]) => modCtrs[cod])
                     .filter(Boolean)
             )];
@@ -2282,10 +2283,11 @@ function onModalidadChange() {
 
             const regCtrs = window.REGIONALES_CONTRATOS  || {};
             const modCtrs = window.MODALIDADES_CONTRATOS || {};
+            const estCtrs = window.ESTADO_CONTRATOS       || {};
             const contratos = perfil?.contratos || {};
 
             const filtrados = Object.entries(contratos).filter(([cod]) =>
-                regCtrs[cod] === regional && modCtrs[cod] === modalidad
+                regCtrs[cod] === regional && modCtrs[cod] === modalidad && estCtrs[cod] !== 'inactivo'
             );
 
             selCtr.innerHTML = '<option value="">Seleccione...</option>' +

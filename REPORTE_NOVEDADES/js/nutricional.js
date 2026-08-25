@@ -969,6 +969,8 @@ document.addEventListener('keydown', function(e) {
             }
         });
 
+
+
 function getNutricionColor(estado) {
     if (!estado) return '#94a3b8';
     if (estado.includes('Severa')) return '#ef4444';

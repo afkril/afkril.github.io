@@ -11,6 +11,7 @@ const AjustesModule = (() => {
     let _coloresTemp = {};
     let _modalidadesTemp = {};
     let _regionalesTemp = {};
+    let _estadosTemp = {};   // codigo -> 'activo' | 'inactivo'
     let _currentStep = 1;
     let _idEditadoManualmente = false;
     const TOTAL_STEPS = 5;
@@ -88,9 +89,16 @@ const AjustesModule = (() => {
     function cerrarPanelAjustes() {
         const panel = document.getElementById('panelAjustes');
         if (panel) panel.style.display = 'none';
-        if (!AsociacionesModule.getPerfilActivo()) {
-            AsociacionesModule.mostrarSelectorAsociaciones();
-        }
+        // index.html no tiene ninguna pantalla "de fondo" propia: Ajustes
+        // puede abrirse tanto desde el selector de operadores (sin perfil
+        // activo) como desde el panel admin de un operador ya elegido
+        // (con perfil activo). En ambos casos, al cerrar Ajustes hay que
+        // devolver siempre a la elección de operador — igual que hace
+        // closeAdminPanel() — en vez de dejar la pantalla en blanco
+        // cuando sí había un perfil activo.
+        const adminPanel = document.getElementById('adminPanel');
+        if (adminPanel) adminPanel.style.display = 'none';
+        AsociacionesModule.mostrarSelectorAsociaciones();
     }
 
     // Tecla Esc: si hay un popover de color abierto lo cierra primero;
@@ -130,7 +138,7 @@ const AjustesModule = (() => {
     function nuevaAsociacion() {
         _asociacionEditando = null;
         _contratosTemp = {}; _unidadesTemp = {}; _coloresTemp = {};
-        _modalidadesTemp = {}; _regionalesTemp = {};
+        _modalidadesTemp = {}; _regionalesTemp = {}; _estadosTemp = {};
         _currentStep = 1;
         _idEditadoManualmente = false;
 
@@ -164,6 +172,7 @@ const AjustesModule = (() => {
             _coloresTemp      = { ...(datos.colores_contratos || {}) };
             _modalidadesTemp  = { ...(datos.modalidades_contratos || {}) };
             _regionalesTemp   = { ...(datos.regionales_contratos || {}) };
+            _estadosTemp      = { ...(datos.estado_contratos || {}) };
             _currentStep = 1;
             _idEditadoManualmente = true;
 
@@ -340,18 +349,23 @@ const AjustesModule = (() => {
             const modal = _modalidadesTemp[codigo] || '—';
             const regional = _regionalesTemp[codigo] || '—';
             const numUDS = (_unidadesTemp[codigo] || []).length;
+            const estado = _estadosTemp[codigo] || 'activo';
+            const inactivo = estado === 'inactivo';
             return `
-            <div class="contract-item" id="ctr-row-${codigo}">
+            <div class="contract-item" id="ctr-row-${codigo}" style="${inactivo ? 'opacity:.6' : ''}">
                 <div class="contract-info">
                     <button type="button" class="contract-color" title="Cambiar color" style="background:${color};border-color:${color}" onclick="AjustesModule.toggleColorPicker('${codigo}', this)"></button>
                     <div>
-                        <div class="contract-name">📄 ${label || codigo}</div>
+                        <div class="contract-name">📄 ${label || codigo} ${inactivo ? '<span style="font-size:10px;font-weight:800;color:#94a3b8;border:1px solid #cbd5e1;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:middle">CULMINADO</span>' : ''}</div>
                         <div class="contract-meta">${codigo} · ${regional} · ${modal}</div>
                     </div>
                 </div>
                 <div class="contract-actions">
                     <button onclick="AjustesModule.toggleColorPicker('${codigo}', this)">🎨 Color</button>
                     <button onclick="AjustesModule.irAUnidades('${codigo}')">📦 UDS (${numUDS})</button>
+                    <button onclick="AjustesModule.toggleEstadoContrato('${codigo}')" title="${inactivo ? 'Reactivar contrato: volverá a aparecer en el formulario' : 'Marcar como culminado: dejará de aparecer en el formulario de ingreso/retiro'}" style="${inactivo ? 'color:#059669' : 'color:#d97706'}">
+                        ${inactivo ? '✅ Reactivar' : '🚫 Culminar'}
+                    </button>
                     <button onclick="AjustesModule.quitarContrato('${codigo}')" style="color:#ef4444">🗑️</button>
                 </div>
             </div>
@@ -456,6 +470,7 @@ const AjustesModule = (() => {
         if (regional) _regionalesTemp[codigo] = regional;
         if (modalidad) _modalidadesTemp[codigo] = modalidad;
         if (!_unidadesTemp[codigo]) _unidadesTemp[codigo] = [];
+        if (!_estadosTemp[codigo]) _estadosTemp[codigo] = 'activo';
         if (!_coloresTemp[codigo]) {
             _coloresTemp[codigo] = FALLBACK_COLORS[Object.keys(_contratosTemp).length % FALLBACK_COLORS.length];
         }
@@ -475,6 +490,16 @@ const AjustesModule = (() => {
         delete _coloresTemp[codigo];
         delete _modalidadesTemp[codigo];
         delete _regionalesTemp[codigo];
+        delete _estadosTemp[codigo];
+        renderContratos();
+    }
+
+    // Activa/inactiva un contrato. Los contratos inactivos (culminados) dejan
+    // de ofrecerse en el formulario de ingreso/retiro, pero se conservan
+    // junto a sus UDS y su histórico de novedades para consulta.
+    function toggleEstadoContrato(codigo) {
+        const actual = _estadosTemp[codigo] || 'activo';
+        _estadosTemp[codigo] = actual === 'inactivo' ? 'activo' : 'inactivo';
         renderContratos();
     }
 
@@ -515,6 +540,58 @@ const AjustesModule = (() => {
         }
         wrapper.style.display = 'block';
         renderTablaUDS(codigo);
+        poblarSelectContratoOrigenUDS(codigo);
+    }
+
+    // ── Copiar listado de UDS de un contrato a otro ────────────
+    // Útil en renovaciones de numeración de contrato: la mayoría de las
+    // UDS no cambian entre el contrato viejo y el nuevo, así que en vez
+    // de tipearlas de nuevo se copian desde el contrato de origen.
+    function poblarSelectContratoOrigenUDS(codigoDestino) {
+        const sel = document.getElementById('ajustesSelectContratoOrigenUDS');
+        if (!sel) return;
+        const opciones = Object.entries(_contratosTemp)
+            .filter(([codigo]) => codigo !== codigoDestino)
+            .map(([codigo, label]) => `<option value="${codigo}">📄 ${label || codigo} (${(_unidadesTemp[codigo]||[]).length} UDS)</option>`)
+            .join('');
+        sel.innerHTML = '<option value="">— Copiar UDS desde... —</option>' + opciones;
+        sel.disabled = opciones === '';
+        const btn = document.getElementById('btnCopiarUDS');
+        if (btn) btn.disabled = opciones === '';
+    }
+
+    function copiarUDSDesdeOtroContrato() {
+        const destino = document.getElementById('ajustesSelectContratoUDS')?.value;
+        const origen  = document.getElementById('ajustesSelectContratoOrigenUDS')?.value;
+        if (!destino || !_contratosTemp[destino]) { showToast('Selecciona primero el contrato de destino', 'warning'); return; }
+        if (!origen) { showToast('Selecciona el contrato del que quieres copiar las UDS', 'warning'); return; }
+        if (origen === destino) { showToast('El contrato de origen y destino no pueden ser el mismo', 'warning'); return; }
+
+        const listaOrigen = _unidadesTemp[origen] || [];
+        if (listaOrigen.length === 0) { showToast('El contrato de origen no tiene UDS para copiar', 'warning'); return; }
+
+        if (!_unidadesTemp[destino]) _unidadesTemp[destino] = [];
+        const existentes = new Set(_unidadesTemp[destino].map(u => (u.codigo || '').trim()));
+
+        let copiadas = 0, omitidas = 0;
+        listaOrigen.forEach(u => {
+            const codigoUDS = (u.codigo || '').trim();
+            if (!codigoUDS || existentes.has(codigoUDS)) { omitidas++; return; }
+            _unidadesTemp[destino].push({ nombre: u.nombre, codigo: codigoUDS });
+            existentes.add(codigoUDS);
+            copiadas++;
+        });
+
+        renderTablaUDS(destino);
+        poblarSelectContratoOrigenUDS(destino);
+        const sel = document.getElementById('ajustesSelectContratoOrigenUDS');
+        if (sel) sel.value = '';
+
+        if (copiadas === 0) {
+            showToast('Todas esas UDS ya estaban en el contrato de destino', 'info');
+        } else {
+            showToast(`✅ ${copiadas} UDS copiada(s)` + (omitidas ? ` (${omitidas} ya existían y se omitieron)` : ''), 'success');
+        }
     }
 
     function renderTablaUDS(codigo) {
@@ -619,6 +696,7 @@ const AjustesModule = (() => {
             colores_contratos:       _coloresTemp,
             modalidades_contratos:   _modalidadesTemp,
             regionales_contratos:    _regionalesTemp,
+            estado_contratos:        _estadosTemp,
             unidades:                _unidadesTemp,
             actualizadoEn: new Date().toISOString()
         };
@@ -642,7 +720,7 @@ const AjustesModule = (() => {
     function cerrarFormularioAsociacion() {
         _asociacionEditando = null;
         _contratosTemp = {}; _unidadesTemp = {}; _coloresTemp = {};
-        _modalidadesTemp = {}; _regionalesTemp = {};
+        _modalidadesTemp = {}; _regionalesTemp = {}; _estadosTemp = {};
         _currentStep = 1;
     }
 
@@ -752,9 +830,10 @@ const AjustesModule = (() => {
         onNombreInput, onIdInput,
         nextStep, prevStep, goToStep,
         volverALista, cargarListaAsociaciones,
-        agregarContrato, quitarContrato, irAUnidades,
+        agregarContrato, quitarContrato, irAUnidades, toggleEstadoContrato,
         toggleColorPicker, elegirColorContrato, cerrarColorPicker,
         cambiarContratoUDS, agregarUnidad, quitarUnidad,
+        copiarUDSDesdeOtroContrato,
         guardarAsociacion, confirmarEliminarAsociacion,
         cerrarFormularioAsociacion, cambiarPassword,
         togglePass, genPass, checkStrength

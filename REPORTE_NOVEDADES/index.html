@@ -1859,6 +1859,10 @@
           <span class="config-center-nav-icon">🩺</span>
           <span class="config-center-nav-label">Mantenimiento Nutricional</span>
         </button>
+        <button class="config-center-nav-item" data-nav="renovacion" onclick="try{AjustesModule.setNav('renovacion')}catch(e){}; _mostrarVistaRenovacion()">
+          <span class="config-center-nav-icon">🔄</span>
+          <span class="config-center-nav-label">Renovación de Contratos</span>
+        </button>
       </nav>
 
       <div class="config-center-help">
@@ -2041,6 +2045,11 @@
               <select id="ajustesSelectContratoUDS" onchange="AjustesModule.cambiarContratoUDS()"><option value="">— Selecciona un contrato —</option></select>
             </div>
             <div class="cw-card" id="panelUDSWrapper" style="display:none">
+              <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center;background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:10px;padding:10px 12px">
+                <span style="font-size:12px;color:#475569;white-space:nowrap">📋 Copiar UDS de otro contrato (útil al renovar numeración):</span>
+                <select id="ajustesSelectContratoOrigenUDS" style="flex:1;min-width:180px;padding:8px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:12.5px"><option value="">— Copiar UDS desde... —</option></select>
+                <button type="button" id="btnCopiarUDS" class="config-center-btn-secondary" style="padding:8px 14px;font-size:12.5px" onclick="AjustesModule.copiarUDSDesdeOtroContrato()" disabled>Copiar aquí</button>
+              </div>
               <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
                 <input type="text" id="ajustesNombreUDS" placeholder="Nombre UDS" style="flex:1;min-width:150px;padding:9px 12px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:13px">
                 <input type="text" id="ajustesCodigoUDS" placeholder="Código UDS" style="width:140px;padding:9px 12px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:13px">
@@ -2128,6 +2137,97 @@
           </div>
         </div>
 
+        <!-- ═══════════════════════════════════════
+             VISTA: RENOVACIÓN DE CONTRATOS (desvinculación masiva)
+             ═══════════════════════════════════════ -->
+        <div id="vistaRenovacion" class="config-center-view">
+          <div class="config-center-view-header">
+            <div>
+              <h2 class="config-center-view-title">Renovación de Contratos</h2>
+              <p class="config-center-view-desc">Desvincula en bloque a los usuarios activos de un contrato/UDS antes de reingresarlos al nuevo número de contrato</p>
+            </div>
+          </div>
+
+          <div class="cw-alert">
+            <span>ℹ️</span> Cuando cambia la numeración de un contrato (las UDS casi siempre siguen siendo las mismas),
+            usa esta herramienta para marcar como <strong>desvinculados</strong> a todos los usuarios actualmente activos
+            (con ingreso vigente) de un operador/contrato/UDS. Después, créalos de nuevo con un ingreso bajo el nuevo
+            número de contrato desde el formulario normal.
+          </div>
+
+          <div class="cw-card" style="margin-bottom:14px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div class="config-field" style="flex:1;min-width:200px;margin-bottom:0">
+                <label style="font-size:10px">Operador / Asociación</label>
+                <select id="renovSelectOperador" onchange="RenovacionModule.onOperadorChange()">
+                  <option value="">— Selecciona un operador —</option>
+                </select>
+              </div>
+              <div class="config-field" style="flex:1;min-width:200px;margin-bottom:0">
+                <label style="font-size:10px">Contrato</label>
+                <select id="renovSelectContrato" onchange="RenovacionModule.onContratoChange()" disabled>
+                  <option value="">— Primero un operador —</option>
+                </select>
+              </div>
+              <div class="config-field" style="flex:1;min-width:200px;margin-bottom:0">
+                <label style="font-size:10px">UDS</label>
+                <select id="renovSelectUDS" disabled>
+                  <option value="">— Todas las UDS —</option>
+                </select>
+              </div>
+              <button class="config-center-btn-primary" style="padding:9px 16px;margin-bottom:0" onclick="RenovacionModule.buscarActivos(this)">🔍 Buscar activos</button>
+            </div>
+          </div>
+
+          <div id="renovResultadosWrap" style="display:none">
+            <div class="cw-card" style="margin-bottom:14px">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+                <div style="font-size:13px;font-weight:800;color:#0f172a" id="renovResumenTitulo">0 usuarios activos encontrados</div>
+                <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+                  <input type="checkbox" id="renovCheckTodos" checked onchange="RenovacionModule.toggleTodos(this.checked)"> Seleccionar todos
+                </label>
+              </div>
+              <div style="max-height:320px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:12px">
+                <table class="uds-table" style="width:100%">
+                  <thead style="position:sticky;top:0;background:#f8fafc">
+                    <tr>
+                      <th style="width:32px"></th>
+                      <th>UDS</th>
+                      <th>Documento</th>
+                      <th>Nombre</th>
+                      <th>Fecha ingreso</th>
+                    </tr>
+                  </thead>
+                  <tbody id="renovTablaBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="cw-card" style="background:#fef2f2;border:1px solid #fecaca">
+              <label style="font-size:12px;font-weight:700;color:#991b1b;display:block;margin-bottom:8px">
+                Esta acción crea un registro de retiro para cada usuario seleccionado y no se puede deshacer automáticamente.
+              </label>
+              <div class="config-field" style="max-width:220px;margin-bottom:10px">
+                <label style="font-size:10px;color:#991b1b">Fecha de retiro</label>
+                <input type="date" id="renovFechaRetiro" style="padding:9px 12px;border:2px solid #fca5a5;border-radius:10px;font-size:13px;box-sizing:border-box;width:100%">
+                <div style="font-size:10.5px;color:#991b1b;opacity:.8;margin-top:4px">Con esta fecha quedarán marcados como retirados los usuarios seleccionados.</div>
+              </div>
+              <label style="font-size:12px;font-weight:700;color:#991b1b;display:block;margin-bottom:8px">
+                Para confirmar, escribe <strong>RETIRAR</strong> y presiona el botón:
+              </label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <input type="text" id="renovConfirmInput" placeholder="RETIRAR" oninput="RenovacionModule.toggleAplicar()"
+                  style="flex:1;min-width:160px;padding:9px 12px;border:2px solid #fca5a5;border-radius:10px;font-size:13px;box-sizing:border-box">
+                <button id="renovBtnAplicar" class="config-center-btn-primary" style="background:#dc2626;opacity:.5;cursor:not-allowed" disabled onclick="RenovacionModule.aplicarDesvinculacion()">
+                  🔴 Retirar seleccionados (<span id="renovNumSeleccionados">0</span>)
+                </button>
+              </div>
+            </div>
+
+            <div id="renovLog" style="background:#0f172a;color:#94e2d5;font-family:monospace;font-size:11.5px;border-radius:10px;padding:12px;max-height:140px;overflow-y:auto;display:none;margin-top:14px;white-space:pre-line"></div>
+          </div>
+        </div>
+
       </div><!-- /config-center-body -->
 
       <!-- Wizard Actions (solo en vista wizard) -->
@@ -2204,6 +2304,7 @@
     <script src="js/exports.js"></script>
     <script src="js/notificaciones.js"></script>
     <script src="js/migracion-oms.js"></script>
+    <script src="js/renovacion-contratos.js"></script>
     <!-- Inicialización del sistema multi-asociación -->
 
     <!-- MODAL DE DUPLICADOS DESDE NOVEDADES ACTIVAS -->
