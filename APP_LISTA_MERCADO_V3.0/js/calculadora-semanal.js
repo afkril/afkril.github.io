@@ -120,6 +120,14 @@
             return PROTEINAS_GRAMOS_EXACTOS.some(function(p) { return n.includes(p); });
         }
 
+        // Pollo y tilapia: en vez de gramos exactos, se aproximan al múltiplo de 50 g más cercano.
+        var PROTEINAS_REDONDEO_50 = ['tilapia', 'pechuga', 'pollo'];
+        function esProteinaRedondeo50(nombre) {
+            if (!nombre) return false;
+            var n = nombre.toLowerCase().trim();
+            return PROTEINAS_REDONDEO_50.some(function(p) { return n.includes(p); });
+        }
+
         function redondearComercial(gramos, unidad, nombreProducto) {
             // Unidades que no son gramos
             const uNorm = (unidad || '').toLowerCase();
@@ -140,6 +148,12 @@
 
             // Proteinas especiales: mostrar siempre en gramos exactos
             if ((uNorm === 'gr' || uNorm === 'grs') && esProteinaGramosExactos(nombreProducto)) {
+                // Pollo y tilapia: aproximar al múltiplo de 50g más cercano
+                if (esProteinaRedondeo50(nombreProducto)) {
+                    var redondeo50 = Math.round(gramos / 50) * 50;
+                    if (redondeo50 <= 0) redondeo50 = 50;
+                    return redondeo50 + " gr";
+                }
                 return Math.round(gramos) + " gr";
             }
 
