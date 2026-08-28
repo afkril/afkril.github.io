@@ -2736,6 +2736,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         AsociacionesModule.mostrarSelectorAsociaciones();
                         return;
                     }
+
+                    // ============================================
+                    // VALIDACIÓN CIERRE DE MES (defensa adicional a
+                    // la del overlay visual: bloquea el envío aunque
+                    // el formulario esté visible por cualquier motivo)
+                    // ============================================
+                    if (configBloqueo && configBloqueo.activo) {
+                        const hoyCierre = new Date();
+                        const diaCierre = hoyCierre.getDate();
+                        if (diaCierre >= configBloqueo.fechaInicio && diaCierre <= configBloqueo.fechaFin) {
+                            showToast('🔒 El sistema está en periodo de cierre de mes. No se pueden registrar novedades.', 'error');
+                            return;
+                        }
+                    }
                     
                     const contract = document.getElementById('contractNumber');
                     const uds = document.getElementById('mainUdsDropdown');

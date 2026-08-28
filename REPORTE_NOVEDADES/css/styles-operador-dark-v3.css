@@ -1431,14 +1431,7 @@
 
         body.dark-mode .bloqueo-message { color: #94a3b8; }
 
-        .bloqueo-dates {
-            background: #fef2f2;
-            border: 2px solid #fecaca;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-            display: inline-block;
-        }
+       
 
         body.dark-mode .bloqueo-dates {
             background: #450a0a;
@@ -1446,8 +1439,8 @@
         }
 
         .bloqueo-dates strong {
-            color: #dc2626;
-            font-size: 20px;
+            color: #3a72ec;
+            font-size: 18px;
         }
 
         .bloqueo-contacto {
@@ -6836,3 +6829,8 @@ body.dark-mode *:focus-visible {
     }
 }
 
+
+
+/* Compatibilidad del bloque de fechas legado */
+#bloqueoOverlay .bloqueo-dates{background:transparent;border:0;padding:0}
+#bloqueoOverlay .bloqueo-dates strong{color:inherit;font-size:inherit}
