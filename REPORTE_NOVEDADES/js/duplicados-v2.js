@@ -336,24 +336,6 @@ const DuplicadosModule = (function () {
         return eventos.find(e => e.nombre || e.gender) || eventos[0];
     }
 
-    // Campos que se limpian en CADA "Autocompletar" antes de cargar los datos
-    // encontrados (no toca el número/tipo de documento que el usuario acaba
-    // de digitar para buscar).
-    function _limpiarCamposFormulario(tipoCampo) {
-        const ids = tipoCampo === 'retiro'
-            ? ['retiroDocType', 'retiroFullName']
-            : ['ingresoDocType', 'ingresoFullName', 'ingresoDOB', 'ingresoComuna', 'ingresoBarrio',
-               'ingresoAddress', 'ingresoPhone', 'acudienteName', 'acudienteDoc', 'acudienteDOB'];
-
-        ids.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = '';
-        });
-
-        const radioName = tipoCampo === 'retiro' ? '_retiroGender' : '_ingresoGender';
-        document.querySelectorAll(`input[name="${radioName}"]`).forEach(r => { r.checked = false; });
-    }
-
     function autocompletar(tipoCampo) {
         const caso = _ultimoCaso[tipoCampo];
         if (!caso) {
@@ -372,9 +354,9 @@ const DuplicadosModule = (function () {
             setTimeout(() => el.classList.remove('dup-autofilled'), 1200);
         };
         const setVal = (id, val) => {
+            if (val === undefined || val === null || val === '') return;
             const el = document.getElementById(id);
             if (!el) return;
-            if (val === undefined || val === null || val === '') return; // el campo ya quedó en blanco por la limpieza previa
             el.value = val;
             flash(el);
             llenados++;
@@ -388,13 +370,6 @@ const DuplicadosModule = (function () {
             flash(wrap);
             llenados++;
         };
-
-        // Cada vez que se presiona "Autocompletar" se limpia primero el formulario
-        // y luego se carga únicamente lo que traiga el registro encontrado. Así,
-        // si el nuevo registro sólo tiene el nombre, el resto de campos
-        // (dirección, acudiente, etc.) queda en blanco en vez de conservar
-        // datos de un autocompletado anterior.
-        _limpiarCamposFormulario(tipoCampo);
 
         if (tipoCampo === 'retiro') {
             setVal('retiroDocType', fuente.docType);

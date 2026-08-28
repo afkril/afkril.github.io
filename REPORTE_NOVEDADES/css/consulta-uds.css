@@ -1,0 +1,327 @@
+/* ════════════════════════════════════════════════════════════
+   CONSULTA POR CÓDIGO UDS
+   Panel completo (no modal pequeño): menú lateral izquierdo con
+   "Ver activos" / "Ver inactivos", tabla compacta, y botón de
+   acceso rápido (lupa) junto al panel administrativo.
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Banner / botón disparador (dentro del formulario) ───────── */
+.cuds-trigger-banner {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; margin-bottom: 22px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    border: 1.5px solid #c7d2fe;
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.cuds-trigger-banner:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(99,102,241,0.18);
+}
+.dark-mode .cuds-trigger-banner {
+    background: linear-gradient(135deg, #1e293b 0%, #263449 100%);
+    border-color: #334155;
+}
+.cuds-trigger-icon {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px;
+    background: #6366f1; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+}
+.cuds-trigger-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cuds-trigger-text strong { font-size: 0.92rem; font-weight: 800; color: #312e81; }
+.dark-mode .cuds-trigger-text strong { color: #c7d2fe; }
+.cuds-trigger-text small { font-size: 0.76rem; color: #4f46e5; font-weight: 600; }
+.dark-mode .cuds-trigger-text small { color: #a5b4fc; }
+.cuds-trigger-arrow { flex-shrink: 0; font-size: 1.1rem; color: #6366f1; font-weight: 800; }
+
+/* ── Botón "lupa" junto al ícono del panel administrativo ─────── */
+.cuds-quick-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: none; border: none; padding: 0; margin: 0; cursor: pointer;
+    color: inherit;
+}
+
+/* ── Overlay a pantalla completa (ya no es un modal pequeño) ──── */
+.cuds-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    background: #0f172a;
+    display: none;
+}
+.cuds-overlay.is-open { display: flex; }
+
+/* ── Estructura general: sidebar + contenido ──────────────────── */
+.cuds-page {
+    display: flex; width: 100%; height: 100%;
+    background: #f1f5f9;
+    animation: cudsPageIn .18s ease;
+}
+.dark-mode .cuds-page { background: #0f172a; }
+@keyframes cudsPageIn {
+    from { opacity: 0; } to { opacity: 1; }
+}
+
+/* ── Sidebar izquierdo ─────────────────────────────────────────── */
+.cuds-sidebar {
+    flex-shrink: 0; width: 250px;
+    background: #1e293b; color: #e2e8f0;
+    display: flex; flex-direction: column;
+    padding: 20px 14px; box-sizing: border-box;
+    overflow-y: auto;
+}
+.cuds-sidebar-brand {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 8px 18px; margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.cuds-sidebar-brand-icon {
+    flex-shrink: 0; width: 38px; height: 38px; border-radius: 11px;
+    background: #6366f1; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.cuds-sidebar-brand-text { min-width: 0; display: flex; flex-direction: column; }
+.cuds-sidebar-brand-text strong { font-size: 0.9rem; font-weight: 800; color: #f1f5f9; white-space: nowrap; }
+.cuds-sidebar-brand-text small { font-size: 0.68rem; color: #94a3b8; font-weight: 600; }
+
+.cuds-sidebar-section-label {
+    font-size: 0.64rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.06em; color: #64748b; padding: 0 8px; margin: 8px 0 6px;
+}
+
+.cuds-nav {
+    display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px;
+}
+.cuds-nav-item {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 11px 12px; border-radius: 11px; border: none;
+    background: transparent; color: #cbd5e1; font-weight: 700; font-size: 0.84rem;
+    cursor: pointer; text-align: left; transition: background .15s, color .15s;
+}
+.cuds-nav-item:hover { background: rgba(255,255,255,0.06); color: #f1f5f9; }
+.cuds-nav-item.is-active { background: #6366f1; color: #fff; }
+.cuds-nav-item:disabled { opacity: .4; cursor: not-allowed; }
+.cuds-nav-item:disabled:hover { background: transparent; color: #cbd5e1; }
+.cuds-nav-icon { flex-shrink: 0; font-size: 1rem; width: 20px; text-align: center; }
+.cuds-nav-label { flex: 1; min-width: 0; }
+.cuds-nav-count {
+    flex-shrink: 0; min-width: 22px; text-align: center; padding: 2px 6px;
+    border-radius: 999px; background: rgba(255,255,255,0.14); font-size: 0.7rem; font-weight: 800;
+}
+.cuds-nav-item.is-active .cuds-nav-count { background: rgba(255,255,255,0.28); }
+.cuds-nav-item--activos .cuds-nav-icon { color: #4ade80; }
+.cuds-nav-item--inactivos .cuds-nav-icon { color: #f87171; }
+.cuds-nav-item.is-active .cuds-nav-icon { color: #fff; }
+
+.cuds-sidebar-spacer { flex: 1; }
+
+.cuds-sidebar-footer { display: flex; flex-direction: column; gap: 8px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+.cuds-btn-sidebar {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 10px 12px; border-radius: 11px; border: 1.5px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.05); color: #e2e8f0; font-weight: 700; font-size: 0.8rem;
+    cursor: pointer; transition: background .15s;
+}
+.cuds-btn-sidebar:hover { background: rgba(255,255,255,0.12); }
+.cuds-btn-sidebar--salir { border-color: rgba(248,113,113,0.3); color: #fca5a5; }
+.cuds-btn-sidebar--salir:hover { background: rgba(248,113,113,0.12); }
+
+/* ── Contenido principal ───────────────────────────────────────── */
+.cuds-main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100%; }
+
+.cuds-main-header {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    padding: 16px 26px; background: #fff; border-bottom: 1.5px solid #e2e8f0;
+}
+.dark-mode .cuds-main-header { background: #1e293b; border-color: #334155; }
+.cuds-main-header h2 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #1e293b; }
+.dark-mode .cuds-main-header h2 { color: #f1f5f9; }
+.cuds-main-header-sub { font-size: 0.78rem; color: #64748b; font-weight: 600; margin-top: 2px; }
+.dark-mode .cuds-main-header-sub { color: #94a3b8; }
+
+.cuds-summary-mini {
+    display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+}
+.cuds-summary-item { display: flex; flex-direction: column; gap: 2px; }
+.cuds-summary-label {
+    font-size: 0.64rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.05em; color: #94a3b8;
+}
+.cuds-summary-value { font-size: 0.9rem; font-weight: 800; color: #4f46e5; }
+.dark-mode .cuds-summary-value { color: #a5b4fc; }
+.cuds-summary-value--name { color: #1e293b; font-weight: 700; }
+.dark-mode .cuds-summary-value--name { color: #f1f5f9; }
+
+.cuds-btn-nueva {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 16px; border-radius: 999px; border: none;
+    background: #6366f1; color: #fff; font-weight: 800; font-size: 0.8rem;
+    cursor: pointer; transition: background .2s; white-space: nowrap;
+}
+.cuds-btn-nueva:hover { background: #4f46e5; }
+
+.cuds-main-body { flex: 1; overflow-y: auto; padding: 22px 26px; }
+
+/* ── Paso 1: formulario de código UDS (centrado en el panel) ──── */
+.cuds-form-center {
+    max-width: 420px; margin: 4vh auto 0; padding: 28px;
+    background: #fff; border-radius: 18px; border: 1.5px solid #e2e8f0;
+}
+.dark-mode .cuds-form-center { background: #1e293b; border-color: #334155; }
+.cuds-form-center-icon {
+    width: 46px; height: 46px; border-radius: 13px; margin-bottom: 14px;
+    background: #6366f1; color: #fff; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+}
+.cuds-form-center h3 { margin: 0 0 4px; font-size: 1.05rem; font-weight: 800; color: #1e293b; }
+.dark-mode .cuds-form-center h3 { color: #f1f5f9; }
+.cuds-form-center p.cuds-form-sub { margin: 0 0 18px; font-size: 0.82rem; color: #64748b; font-weight: 600; }
+.dark-mode .cuds-form-center p.cuds-form-sub { color: #94a3b8; }
+
+.cuds-label {
+    display: block; font-size: 0.78rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    color: #475569; margin-bottom: 8px;
+}
+.dark-mode .cuds-label { color: #94a3b8; }
+.cuds-input {
+    width: 100%; padding: 13px 16px; border-radius: 12px;
+    border: 1.5px solid #e2e8f0; font-size: 1rem; outline: none;
+    transition: border-color .2s; box-sizing: border-box;
+}
+.cuds-input:focus { border-color: #6366f1; }
+.dark-mode .cuds-input { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+
+.cuds-error {
+    display: none; margin-top: 10px; font-size: 0.8rem;
+    color: #dc2626; background: #fef2f2; border: 1px solid #fecaca;
+    padding: 8px 12px; border-radius: 10px; font-weight: 600;
+}
+.dark-mode .cuds-error { background: rgba(220,38,38,0.12); border-color: rgba(220,38,38,0.35); color: #fca5a5; }
+
+.cuds-aviso {
+    display: flex; gap: 8px; align-items: flex-start;
+    margin-top: 16px; padding: 12px 14px; border-radius: 12px;
+    background: #fffbeb; border: 1px solid #fde68a;
+    font-size: 0.78rem; line-height: 1.4; color: #92400e; font-weight: 600;
+}
+.dark-mode .cuds-aviso { background: rgba(217,119,6,0.12); border-color: rgba(217,119,6,0.35); color: #fcd34d; }
+
+.cuds-btn-primary {
+    width: 100%; margin-top: 18px; padding: 13px; border-radius: 12px; border: none;
+    font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all .2s;
+    background: #6366f1; color: #fff;
+}
+.cuds-btn-primary:hover { background: #4f46e5; }
+.cuds-btn-primary:disabled { opacity: .7; cursor: default; }
+
+/* ── Paso 2: secciones (activos / inactivos) controladas por el menú ── */
+.cuds-seccion { display: none; }
+.cuds-seccion.is-active { display: block; }
+
+.cuds-seccion-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.cuds-seccion-icon-square {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: 10px;
+    color: #fff; font-size: 0.92rem;
+    display: flex; align-items: center; justify-content: center;
+}
+.cuds-seccion-icon-square--activos { background: #16a34a; }
+.cuds-seccion-icon-square--inactivos { background: #dc2626; }
+.cuds-seccion-title-text { font-size: 0.94rem; font-weight: 800; color: #1e293b; }
+.dark-mode .cuds-seccion-title-text { color: #f1f5f9; }
+.cuds-seccion-count-text { font-weight: 700; color: #94a3b8; }
+
+/* ── Tabla compacta ─────────────────────────────────────────────── */
+.cuds-tabla-wrap {
+    overflow-x: auto; border-radius: 12px; border: 1.5px solid #e2e8f0;
+}
+.dark-mode .cuds-tabla-wrap { border-color: #334155; }
+.cuds-tabla { width: 100%; border-collapse: collapse; font-size: 0.76rem; white-space: nowrap; }
+.cuds-tabla thead { background: #f8fafc; position: sticky; top: 0; }
+.dark-mode .cuds-tabla thead { background: #0f172a; }
+.cuds-tabla th {
+    text-align: left; padding: 7px 10px; font-weight: 800; color: #64748b;
+    text-transform: uppercase; font-size: 0.62rem; letter-spacing: 0.04em;
+    border-bottom: 1.5px solid #e2e8f0;
+}
+.dark-mode .cuds-tabla th { color: #94a3b8; border-color: #334155; }
+.cuds-tabla td {
+    padding: 5px 10px; border-bottom: 1px solid #f1f5f9; color: #334155;
+    line-height: 1.3;
+}
+.dark-mode .cuds-tabla td { border-color: #1e293b; color: #e2e8f0; }
+.cuds-tabla tbody tr { background: #fff; }
+.dark-mode .cuds-tabla tbody tr { background: #1e293b; }
+.cuds-tabla tbody tr:nth-child(even) { background: #fafbfc; }
+.dark-mode .cuds-tabla tbody tr:nth-child(even) { background: #202f45; }
+.cuds-tabla tbody tr:last-child td { border-bottom: none; }
+.cuds-empty { text-align: center; color: #94a3b8; font-style: italic; white-space: normal; padding: 16px !important; }
+
+.cuds-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 0.64rem; font-weight: 800; white-space: nowrap;
+}
+.cuds-estado-activo { background: #dcfce7; color: #15803d; }
+.dark-mode .cuds-estado-activo { background: rgba(22,163,74,0.18); color: #4ade80; }
+.cuds-estado-inactivo { background: #fee2e2; color: #b91c1c; }
+.dark-mode .cuds-estado-inactivo { background: rgba(220,38,38,0.18); color: #f87171; }
+.cuds-carga-cargado { background: #dbeafe; color: #1d4ed8; }
+.dark-mode .cuds-carga-cargado { background: rgba(37,99,235,0.18); color: #93c5fd; }
+.cuds-carga-pendiente { background: #ffedd5; color: #c2410c; }
+.dark-mode .cuds-carga-pendiente { background: rgba(234,88,12,0.18); color: #fdba74; }
+
+.cuds-seccion-footnote {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 10px; margin-bottom: 24px; font-size: 0.74rem; color: #94a3b8; font-weight: 600;
+}
+
+/* ── Recordatorio (pie de la consulta) ──────────────────────────── */
+.cuds-recordatorio {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 14px 16px; border-radius: 14px; margin-top: 4px;
+    background: #eef2ff; border: 1.5px solid #c7d2fe;
+}
+.dark-mode .cuds-recordatorio { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); }
+.cuds-recordatorio-icon {
+    flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+    background: #6366f1; color: #fff; font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+}
+.cuds-recordatorio strong { display: block; font-size: 0.83rem; color: #312e81; margin-bottom: 3px; }
+.dark-mode .cuds-recordatorio strong { color: #c7d2fe; }
+.cuds-recordatorio p { margin: 0; font-size: 0.78rem; line-height: 1.45; color: #4338ca; font-weight: 500; }
+.dark-mode .cuds-recordatorio p { color: #a5b4fc; }
+
+.cuds-spinner {
+    display: inline-block; width: 13px; height: 13px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+    animation: cudsSpin .7s linear infinite; vertical-align: -2px; margin-right: 6px;
+}
+@keyframes cudsSpin { to { transform: rotate(360deg); } }
+
+/* ── Responsive: sidebar se vuelve barra superior en pantallas chicas ── */
+@media (max-width: 860px) {
+    .cuds-page { flex-direction: column; }
+    .cuds-sidebar {
+        width: 100%; flex-direction: row; align-items: center;
+        padding: 10px 12px; gap: 10px; overflow-x: auto; overflow-y: visible;
+    }
+    .cuds-sidebar-brand { border-bottom: none; padding: 0; margin: 0; flex-shrink: 0; }
+    .cuds-sidebar-section-label { display: none; }
+    .cuds-nav { flex-direction: row; margin-bottom: 0; }
+    .cuds-nav-item { white-space: nowrap; padding: 9px 12px; }
+    .cuds-sidebar-spacer { display: none; }
+    .cuds-sidebar-footer { flex-direction: row; border-top: none; padding-top: 0; flex-shrink: 0; }
+    .cuds-btn-sidebar { width: auto; white-space: nowrap; }
+}
+
+@media (max-width: 480px) {
+    .cuds-main-header { padding: 12px 16px; }
+    .cuds-main-body { padding: 16px; }
+    .cuds-tabla { font-size: 0.7rem; }
+    .cuds-summary-mini { gap: 12px; }
+    .cuds-btn-nueva { width: 100%; justify-content: center; }
+    .cuds-form-center { padding: 20px; margin-top: 2vh; }
+    .cuds-sidebar-brand-text small { display: none; }
+}

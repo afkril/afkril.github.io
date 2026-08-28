@@ -2244,10 +2244,9 @@ function onRegionalChange() {
             // Obtener modalidades únicas para esta regional
             const regCtrs = window.REGIONALES_CONTRATOS || {};
             const modCtrs = window.MODALIDADES_CONTRATOS || {};
-            const estCtrs = window.ESTADO_CONTRATOS      || {};
             const modalesDisponibles = [...new Set(
                 Object.entries(regCtrs)
-                    .filter(([cod, reg]) => reg === regional && estCtrs[cod] !== 'inactivo')
+                    .filter(([cod, reg]) => reg === regional)
                     .map(([cod]) => modCtrs[cod])
                     .filter(Boolean)
             )];
@@ -2283,11 +2282,10 @@ function onModalidadChange() {
 
             const regCtrs = window.REGIONALES_CONTRATOS  || {};
             const modCtrs = window.MODALIDADES_CONTRATOS || {};
-            const estCtrs = window.ESTADO_CONTRATOS       || {};
             const contratos = perfil?.contratos || {};
 
             const filtrados = Object.entries(contratos).filter(([cod]) =>
-                regCtrs[cod] === regional && modCtrs[cod] === modalidad && estCtrs[cod] !== 'inactivo'
+                regCtrs[cod] === regional && modCtrs[cod] === modalidad
             );
 
             selCtr.innerHTML = '<option value="">Seleccione...</option>' +
@@ -2737,20 +2735,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         showToast('⚠️ Selecciona una asociación antes de reportar', 'warning');
                         AsociacionesModule.mostrarSelectorAsociaciones();
                         return;
-                    }
-
-                    // ============================================
-                    // VALIDACIÓN CIERRE DE MES (defensa adicional a
-                    // la del overlay visual: bloquea el envío aunque
-                    // el formulario esté visible por cualquier motivo)
-                    // ============================================
-                    if (configBloqueo && configBloqueo.activo) {
-                        const hoyCierre = new Date();
-                        const diaCierre = hoyCierre.getDate();
-                        if (diaCierre >= configBloqueo.fechaInicio && diaCierre <= configBloqueo.fechaFin) {
-                            showToast('🔒 El sistema está en periodo de cierre de mes. No se pueden registrar novedades.', 'error');
-                            return;
-                        }
                     }
                     
                     const contract = document.getElementById('contractNumber');

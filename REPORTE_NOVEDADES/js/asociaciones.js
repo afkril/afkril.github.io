@@ -249,7 +249,6 @@ const AsociacionesModule = (() => {
         sessionStorage.setItem('asoc_id', id);
         sessionStorage.setItem('asoc_data', JSON.stringify(_perfilActivo));
         aplicarBranding(_perfilActivo);
-        _escucharEstadoContratos(id);
         _onPerfilCargado.forEach(fn => { try { fn(_perfilActivo); } catch(e) {} });
     }
 
@@ -260,41 +259,10 @@ const AsociacionesModule = (() => {
             try {
                 _perfilActivo = JSON.parse(data);
                 aplicarBranding(_perfilActivo);
-                // Disparar los callbacks de onPerfilCargado (igual que
-                // activarPerfil) para que módulos como cargarConfigBloqueo
-                // se enganchen también al recuperar sesión en un reload,
-                // y no solo en el primer ingreso al operador.
-                _onPerfilCargado.forEach(fn => { try { fn(_perfilActivo); } catch(e) {} });
-                // El perfil recuperado viene de sessionStorage y puede estar
-                // desactualizado (p. ej. un contrato culminado desde otra
-                // pestaña/dispositivo después de guardarse la sesión). Se
-                // engancha igualmente la escucha en tiempo real para que
-                // ese cambio llegue sin depender de un F5.
-                _escucharEstadoContratos(id);
                 return true;
             } catch(e) {}
         }
         return false;
-    }
-
-    // Escucha en tiempo real (.on en vez de .once) el estado de los
-    // contratos (activo/inactivo) del operador activo. Si desde el paso 3
-    // de Ajustes se "culmina" o "reactiva" un contrato, el formulario de
-    // ingreso/retiro (JER/T3/FLORIDA) actualiza su selector de inmediato,
-    // sin recargar la página ni depender de la sesión guardada en caché.
-    let _estadoContratosRef = null;
-    function _escucharEstadoContratos(id) {
-        if (_estadoContratosRef) { _estadoContratosRef.off('value'); _estadoContratosRef = null; }
-        try {
-            _estadoContratosRef = _getDB().ref(`${PATHS.asociaciones}/${id}/estado_contratos`);
-        } catch (e) { return; }
-        _estadoContratosRef.on('value', (snap) => {
-            if (!_perfilActivo || _perfilActivo.id !== id) return;
-            _perfilActivo.estado_contratos = snap.val() || {};
-            sessionStorage.setItem('asoc_data', JSON.stringify(_perfilActivo));
-            _poblarContratos(_perfilActivo);
-            _actualizarUDSData(_perfilActivo);
-        });
     }
 
     function getPerfilActivo() { return _perfilActivo; }
@@ -356,7 +324,6 @@ const AsociacionesModule = (() => {
 
     function _poblarContratos(perfil) {
         const contratos = perfil.contratos || {};
-        const estados   = perfil.estado_contratos || {};
         const ids = ['contractNumber','filterContract','filterContractArchivados'];
         ids.forEach(id => {
             const sel = document.getElementById(id);
@@ -365,11 +332,6 @@ const AsociacionesModule = (() => {
             const label = id === 'contractNumber' ? 'Seleccione...' : 'Todos los contratos';
             sel.innerHTML = `<option value="">${label}</option>`;
             Object.entries(contratos).forEach(([cod, etiqueta]) => {
-                // El formulario de ingreso/retiro (contractNumber) solo debe
-                // ofrecer contratos vigentes. Los filtros del panel admin
-                // (filterContract*) siguen mostrando todos, incluidos los ya
-                // culminados, para poder consultar el histórico.
-                if (id === 'contractNumber' && estados[cod] === 'inactivo') return;
                 const opt = document.createElement('option');
                 opt.value = cod;
                 opt.textContent = etiqueta || `Contrato ${cod}`;
@@ -395,10 +357,6 @@ const AsociacionesModule = (() => {
         window.MODALIDADES_CONTRATOS = perfil.modalidades_contratos || {};
         window.REGIONALES_CONTRATOS  = perfil.regionales_contratos  || {};
         window.COLORES_CONTRATOS     = perfil.colores_contratos      || {};
-        // Contratos marcados como 'inactivo' (culminados) no deben ofrecerse
-        // en los formularios de ingreso/retiro, aunque siguen existiendo
-        // para consultar su histórico desde los filtros del panel admin.
-        window.ESTADO_CONTRATOS      = perfil.estado_contratos       || {};
     }
 
     // ── Poblar select de Regional ─────────────────────────────
@@ -621,7 +579,6 @@ const AsociacionesModule = (() => {
         sessionStorage.removeItem('asoc_id');
         sessionStorage.removeItem('asoc_data');
         _perfilActivo = null;
-        if (_estadoContratosRef) { _estadoContratosRef.off('value'); _estadoContratosRef = null; }
         // Resetear fondo y tema a gris neutro
         document.body.style.background = '';
         const mainCard = document.getElementById('mainCard');
