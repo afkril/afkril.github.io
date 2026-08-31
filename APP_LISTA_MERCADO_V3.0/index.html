@@ -1561,6 +1561,7 @@
                 <div style="font-weight:700;font-size:1rem;">Directorios UDS</div>
                 <div style="font-size:0.7rem;color:var(--text-secondary);">Generación masiva de Actas de Entrega</div>
               </div>
+              
             </div>
             <!-- Save/Load buttons -->
 			<div style="display:flex;align-items:center;flex-wrap:wrap;gap:0;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.6rem;padding:0.35rem 0.5rem;gap:0.3rem;">
@@ -1773,7 +1774,12 @@
             <div class="dir-step-header dir-step-static">
               <span class="dir-step-title">🧩 <b>Paso 3</b> · Vista Previa Directorio</span>
               <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
-                <button onclick="tabOrdenarPorCobertura()" title="Ordenar la lista de mayor a menor según cobertura" style="padding:0.3rem 0.7rem;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#10b981;border-radius:0.35rem;cursor:pointer;font-size:0.72rem;font-family:inherit;font-weight:600;">🔽 </button>
+                <button type="button" onclick="abrirConfigActaFormato()" title="Configurar formato del acta (orientación, color, tamaño de letra, cumple)"
+                  style="margin-left:0.5rem;display:flex;align-items:center;gap:0.35rem;background:none;border:1px solid var(--border);border-radius:6px;padding:0.35rem 0.6rem;cursor:pointer;font-size:0.78rem;color:var(--text-primary);white-space:nowrap;position:relative">
+                  ⚙️ Configurar hoja excel<span class="badge-nuevo">Nuevo</span></span>
+				</button>
+				
+				<button onclick="tabOrdenarPorCobertura()" title="Ordenar la lista de mayor a menor según cobertura" style="padding:0.3rem 0.7rem;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#10b981;border-radius:0.35rem;cursor:pointer;font-size:0.72rem;font-family:inherit;font-weight:600;">🔽 </button>
                 <button onclick="tabResetCobertura()" title="Restablecer la cobertura de todas las UDS al valor por defecto (13)" style="padding:0.3rem 0.7rem;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);color:#818cf8;border-radius:0.35rem;cursor:pointer;font-size:0.72rem;font-family:inherit;font-weight:600;">↺ </button>
                 <button onclick="tabLimpiarDirectorio()" style="padding:0.3rem 0.7rem;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:0.35rem;cursor:pointer;font-size:0.72rem;font-family:inherit;font-weight:600;">🗑️ Limpiar todo</button>
               </div>
@@ -1903,7 +1909,14 @@
         <div id="section-actas" class="section">
 
             <div class="actas-config-panel no-print">
-                <div class="actas-title">📋 Generar Acta — Formato F3.MT1.PP</div>
+                <div class="actas-title" style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
+                    <span>📋 Generar Acta — Formato F3.MT1.PP</span>
+                    <button type="button" onclick="abrirConfigActaFormato()"
+                        title="Configurar formato del acta"
+                        style="background:none;border:1px solid var(--border-color,#ccc);border-radius:6px;padding:0.3rem 0.6rem;cursor:pointer;font-size:0.85rem;display:flex;align-items:center;gap:0.35rem;">
+                        ⚙️ Configurar formato
+                    </button>
+                </div>
                 <div class="actas-grid">
                     <!-- Col 1 -->
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -2474,7 +2487,7 @@
                 </div>
 
                 <!-- Botones de generación: una por una vs unificada -->
-                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:stretch;">
                     <button onclick="generarTodasLasActas()" title="Descarga un archivo .xlsx independiente por cada UDS del directorio" style="
                         flex:1;min-width:180px;display:flex;align-items:center;justify-content:center;gap:0.5rem;
                         padding:0.75rem 1rem;border:none;border-radius:0.625rem;cursor:pointer;
@@ -2490,6 +2503,13 @@
                         font-weight:700;font-size:0.85rem;font-family:inherit;
                         box-shadow:0 3px 14px rgba(37,99,235,0.4);">
                         📦 Unificar Actas (<span id="dir-count-btn-uni">0</span>)
+                    </button>
+                    <button type="button" onclick="abrirConfigActaFormato()" title="Configurar formato del acta (orientación, color, tamaño de letra, cumple)" style="
+                        display:flex;align-items:center;justify-content:center;gap:0.4rem;
+                        padding:0.75rem 1rem;border:1px solid var(--border);border-radius:0.625rem;cursor:pointer;
+                        background:var(--bg-dark);color:var(--text-primary);
+                        font-weight:700;font-size:0.85rem;font-family:inherit;">
+                        ⚙️ Configurar formato
                     </button>
                 </div>
             </div>
@@ -2935,5 +2955,128 @@
     <script src="js/actas.js"></script>
     <script src="js/confirm-dialog.js"></script>
     <script src="js/tutorial.js"></script>
+    <!-- MODAL CONFIGURACIÓN DE FORMATO DE ACTA -->
+    <div id="config-acta-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:9995;backdrop-filter:blur(4px);" onclick="cerrarConfigActaFormato()"></div>
+    <div id="config-acta-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+        background:var(--bg-card);border:1px solid var(--border);border-radius:1rem;
+        width:min(920px,96vw);max-height:92vh;overflow:hidden;z-index:9996;
+        box-shadow:0 25px 60px rgba(0,0,0,0.55);flex-direction:column;">
+
+        <!-- Header -->
+        <div class="cfgacta-header">
+            <div class="cfgacta-header-icon">⚙️</div>
+            <div>
+                <div class="cfgacta-title">Configuración de formato de acta</div>
+                <div class="cfgacta-subtitle">Personaliza cómo se generará tu documento.</div>
+            </div>
+            <button class="cfgacta-close" onclick="cerrarConfigActaFormato()">×</button>
+        </div>
+
+        <!-- Body: opciones + vista previa -->
+        <div class="cfgacta-body">
+
+            <!-- Columna de opciones -->
+            <div>
+                <!-- 1. Orientación -->
+                <div class="cfgacta-section">
+                    <div class="cfgacta-section-title">1. Orientación de la hoja</div>
+                    <div class="cfgacta-orient-grid">
+                        <label class="cfgacta-card" id="cfgacta-card-orient-h">
+                            <input type="radio" name="cfg-acta-orient" id="cfg-acta-orient-h" checked onchange="onCambioOrientacionActa()">
+                            <span class="cfgacta-card-check">✓</span>
+                            <div class="cfgacta-card-label">Horizontal</div>
+                        </label>
+                        <label class="cfgacta-card" id="cfgacta-card-orient-v">
+                            <input type="radio" name="cfg-acta-orient" id="cfg-acta-orient-v" onchange="onCambioOrientacionActa()">
+                            <span class="cfgacta-card-check">✓</span>
+                            <div class="cfgacta-card-label">Vertical</div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. Color de autocompletado -->
+                <div class="cfgacta-section">
+                    <div class="cfgacta-section-title">2. Color de autocompletado</div>
+                    <div class="cfgacta-section-desc">Se aplica a las celdas de producto/cantidad que se llenan automáticamente.</div>
+                    <div class="cfgacta-color-row" id="cfgacta-color-row">
+                        <button type="button" class="cfgacta-swatch" data-color="#e3f0d9" style="background:#e3f0d9;" onclick="seleccionarColorActa('#e3f0d9', this)"><span class="cfgacta-swatch-check">✓</span></button>
+                        <button type="button" class="cfgacta-swatch" data-color="#bfdbfe" style="background:#bfdbfe;" onclick="seleccionarColorActa('#bfdbfe', this)"><span class="cfgacta-swatch-check">✓</span></button>
+                        <button type="button" class="cfgacta-swatch" data-color="#fde68a" style="background:#fde68a;" onclick="seleccionarColorActa('#fde68a', this)"><span class="cfgacta-swatch-check">✓</span></button>
+                        <button type="button" class="cfgacta-swatch" data-color="#ffffff" style="background:#ffffff;" onclick="seleccionarColorActa('#ffffff', this)"><span class="cfgacta-swatch-check">✓</span></button>
+                        <label class="cfgacta-swatch cfgacta-swatch-custom" id="cfgacta-swatch-custom" title="Color personalizado">
+                            <span id="cfg-acta-color-plus">+</span>
+                            <input type="color" id="cfg-acta-color" value="#e3f0d9" oninput="onColorPersonalizadoActa(this.value)">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 3. Tamaño de letra -->
+                <div class="cfgacta-section">
+                    <div class="cfgacta-section-title">3. Tamaño de letra del texto</div>
+                    <div class="cfgacta-section-desc">Tamaño del texto que se autocompleta con los productos de la lista.</div>
+                    <div class="cfgacta-slider-row">
+                        <button type="button" class="cfgacta-slider-btn" onclick="ajustarFuenteActa(-1)">A-</button>
+                        <div class="cfgacta-slider-wrap">
+                            <span class="cfgacta-slider-bubble" id="cfg-acta-fuente-bubble">12 pt</span>
+                            <input type="range" id="cfg-acta-fuente" min="12" max="24" step="1" value="12" oninput="onSliderFuenteActa(this.value)">
+                            <div class="cfgacta-slider-minmax"><span>12 pt</span><span>24 pt</span></div>
+                        </div>
+                        <button type="button" class="cfgacta-slider-btn" onclick="ajustarFuenteActa(1)">A+</button>
+                    </div>
+                </div>
+
+                <!-- 4. Cumple -->
+                <div class="cfgacta-section">
+                    <div class="cfgacta-section-title">4. Marcar "X" automáticamente en la columna CUMPLE</div>
+                    <div class="cfgacta-section-desc">El sistema marcará una "X" automáticamente en la columna CUMPLE cuando corresponda.</div>
+                    <div class="cfgacta-cumple-grid">
+                        <label class="cfgacta-card cfgacta-card-radio" id="cfgacta-card-cumple-auto">
+                            <input type="radio" name="cfg-acta-cumple-mode" id="cfg-acta-cumple-auto" checked onchange="onCambioCumpleActa()">
+                            <span class="cfgacta-radio-dot"></span>
+                            <div>
+                                <div class="cfgacta-card-label-sm">✏️ Automático</div>
+                            </div>
+                        </label>
+                        <label class="cfgacta-card cfgacta-card-radio" id="cfgacta-card-cumple-manual">
+                            <input type="radio" name="cfg-acta-cumple-mode" id="cfg-acta-cumple-manual" onchange="onCambioCumpleActa()">
+                            <span class="cfgacta-radio-dot"></span>
+                            <div>
+                                <div class="cfgacta-card-label-sm">✏️ Manual</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna de vista previa en vivo -->
+            <div class="cfgacta-preview">
+                <div class="cfgacta-preview-title">👁️ Vista previa en vivo</div>
+                <div class="cfgacta-preview-desc">Así se verá tu acta con esta configuración.</div>
+                <div class="cfgacta-preview-table-wrap">
+                    <table class="cfgacta-preview-table">
+                        <thead>
+                            <tr>
+                                <th>PRODUCTO</th>
+                                <th>CANTIDAD</th>
+                                <th>CUMPLE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cfgacta-preview-tbody"></tbody>
+                    </table>
+                </div>
+                <div class="cfgacta-preview-hint">💡 Los colores y tamaños en esta vista previa son aproximados.</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="cfgacta-footer">
+            <button type="button" class="cfgacta-btn-ghost" onclick="restaurarConfigActaFormatoRecomendada()">↺ Restaurar configuración recomendada</button>
+            <div style="display:flex;gap:0.6rem;">
+                <button type="button" class="cfgacta-btn-secondary" onclick="cerrarConfigActaFormato()">Cancelar</button>
+                <button type="button" class="cfgacta-btn-primary" onclick="guardarConfigActaFormatoDesdeUI()">💾 Guardar configuración</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
