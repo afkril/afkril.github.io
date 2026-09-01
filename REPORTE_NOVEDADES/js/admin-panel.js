@@ -129,28 +129,15 @@ function populateUDSFilter() {
             }
         }
 
-let _configBloqueoRef = null;
-
 function cargarConfigBloqueo() {
-            // Escucha en tiempo real (.on en vez de .once): si el administrador
-            // activa/desactiva el cierre de mes o cambia las fechas desde
-            // index.html, el formulario público (JER/T3/FLORIDA) refleja el
-            // cambio de inmediato, sin necesidad de recargar la página.
             const configRef = database.ref(AsociacionesModule.getRef('configBloqueo'));
-
-            // Si ya había una suscripción activa (cambio de asociación,
-            // reapertura del panel, etc.) se retira antes para no acumular
-            // listeners duplicados sobre la misma referencia.
-            if (_configBloqueoRef) {
-                _configBloqueoRef.off('value');
-            }
-            _configBloqueoRef = configRef;
-
-            configRef.on('value', (snapshot) => {
+            configRef.once('value', (snapshot) => {
                 const data = snapshot.val();
-                configBloqueo = data || { activo: false, fechaInicio: 28, fechaFin: 30 };
-                actualizarUIConfigBloqueo();
-                verificarBloqueo();
+                if (data) {
+                    configBloqueo = data;
+                    actualizarUIConfigBloqueo();
+                    verificarBloqueo();
+                }
             });
         }
 

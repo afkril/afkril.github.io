@@ -23,9 +23,6 @@
 
     <!-- ESTILOS DUPLICADOS v2.0 -->
     <link rel="stylesheet" href="css/duplicados-v2-operador.css">
-
-    <!-- CONSULTA POR CÓDIGO UDS -->
-    <link rel="stylesheet" href="css/consulta-uds.css">
     <style id="formulario-background-integrado">
         /*
          * Fondo visual del formulario:
@@ -122,53 +119,6 @@
     </style>
 
 
-<style id="cierre-mes-overlay-style">
-/* CIERRE DE MES — DISEÑO REDISEÑADO Y AISLADO DEL FORMULARIO */
-#bloqueoOverlay {
-    --cm-blue:#2563eb; --cm-blue-dark:#183b73; --cm-green:#16a085;
-    --cm-green-soft:#dff5ec; --cm-muted:#667085; --cm-border:#dbe5f2;
-    position:fixed; inset:0; z-index:9998; display:none; align-items:center;
-    justify-content:center; padding:32px; overflow:auto;
-    font-family:"Segoe UI",Inter,Arial,sans-serif; color:#344054;
-    background:radial-gradient(circle at 82% 12%,rgba(37,99,235,.12),transparent 28%),
-               radial-gradient(circle at 8% 88%,rgba(22,160,133,.10),transparent 30%),
-               linear-gradient(135deg,#13213a 0%,#0f1b30 55%,#0b162a 100%);
-}
-#bloqueoOverlay::before,#bloqueoOverlay::after{content:"";position:fixed;pointer-events:none;border-radius:50%;border:1px solid rgba(255,255,255,.055)}
-#bloqueoOverlay::before{width:620px;height:620px;top:-390px;right:-170px}
-#bloqueoOverlay::after{width:520px;height:520px;bottom:-360px;left:-180px}
-#bloqueoOverlay .cm-card{position:relative;z-index:2;width:min(1120px,100%);min-height:610px;display:grid;grid-template-columns:44% 56%;overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.78);border-radius:30px;box-shadow:0 34px 90px rgba(0,0,0,.28),0 8px 26px rgba(0,0,0,.16)}
-#bloqueoOverlay .cm-visual{position:relative;min-height:610px;display:flex;align-items:center;justify-content:center;padding:42px 36px 34px;overflow:hidden;background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.98),transparent 31%),linear-gradient(165deg,#eef6ff 0%,#dceafe 58%,#e6f7f2 100%)}
-#bloqueoOverlay .cm-visual::before{content:"";position:absolute;width:390px;height:390px;border:1px solid rgba(37,99,235,.14);border-radius:50%}
-#bloqueoOverlay .cm-visual::after{content:"";position:absolute;width:570px;height:190px;left:-90px;bottom:-100px;border-radius:50%;background:rgba(22,160,133,.13)}
-#bloqueoOverlay .cm-illustration{position:relative;z-index:2;width:min(92%,445px);height:auto;object-fit:contain;filter:drop-shadow(0 20px 20px rgba(37,99,235,.13));animation:cmFloat 3.6s ease-in-out infinite}
-@keyframes cmFloat{0%,100%{transform:translateY(4px)}50%{transform:translateY(-8px)}}
-#bloqueoOverlay .cm-visual-note{position:absolute;z-index:3;left:34px;right:34px;bottom:30px;display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid rgba(37,99,235,.13);border-radius:16px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);box-shadow:0 8px 24px rgba(35,65,105,.07);color:#36506f;font-size:13px;font-weight:600;line-height:1.45}
-#bloqueoOverlay .cm-note-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:50%;color:#2563eb;background:#e9f1ff;font-size:16px}
-#bloqueoOverlay .cm-content{display:flex;flex-direction:column;justify-content:center;padding:56px 58px 46px}
-#bloqueoOverlay .cm-badge{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;margin-bottom:24px;padding:9px 15px 9px 10px;border-radius:999px;background:#dff5ec;color:#147a67;font-size:13px;font-weight:800}
-#bloqueoOverlay .cm-badge-icon{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;color:#fff;background:#16a085;box-shadow:0 0 0 4px rgba(22,160,133,.10);font-size:14px}
-#bloqueoOverlay .cm-title{max-width:610px;margin:0 0 16px;color:#183b73;font-size:clamp(31px,3.25vw,44px);line-height:1.08;letter-spacing:-.9px;font-weight:800}
-#bloqueoOverlay .cm-description{max-width:590px;margin:0 0 28px;color:#667085;font-size:16px;line-height:1.65}
-#bloqueoOverlay .cm-period{display:flex;align-items:center;gap:16px;width:100%;margin-bottom:20px;padding:18px 20px;border:1px solid #dbe5f2;border-radius:18px;background:linear-gradient(180deg,#fff,#f7fbff);box-shadow:0 8px 24px rgba(34,60,95,.055)}
-#bloqueoOverlay .cm-period-icon{width:50px;height:50px;flex:0 0 50px;display:grid;place-items:center;border-radius:50%;color:#fff;background:linear-gradient(145deg,#19a984,#118a6f);box-shadow:0 8px 18px rgba(22,160,133,.18);font-size:22px}
-#bloqueoOverlay .cm-period-copy{min-width:0}
-#bloqueoOverlay .cm-period-label{display:block;margin-bottom:3px;color:#344054;font-size:13px;font-weight:700}
-#bloqueoOverlay .cm-period-value{display:block;color:#168c72;line-height:1.2;font-weight:800}
-#bloqueoOverlay .cm-contact{display:flex;align-items:center;gap:13px;width:100%;margin-bottom:28px;padding:16px 18px;border:1px solid #d8e7fb;border-radius:16px;background:#eef6ff;color:#2563eb;text-decoration:none;transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
-#bloqueoOverlay .cm-contact:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(37,99,235,.10);background:#e9f3ff}
-#bloqueoOverlay .cm-contact-icon{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border-radius:50%;color:#fff;background:#2563eb;font-size:18px}
-#bloqueoOverlay .cm-contact-copy{min-width:0}
-#bloqueoOverlay .cm-contact-title{display:block;margin-bottom:2px;font-size:13px;font-weight:800}
-#bloqueoOverlay .cm-contact-sub{display:block;color:#58708e;font-size:12px;font-weight:500}
-#bloqueoOverlay .cm-footer{display:flex;align-items:center;gap:9px;padding-top:20px;border-top:1px solid #e7edf5;color:#8a98ab;font-size:12px}
-#bloqueoOverlay .cm-footer-icon{font-size:15px;color:#70849e}
-#bloqueoOverlay #bloqueoFechasDisplay{display:inline}
-@media(max-width:900px){#bloqueoOverlay{padding:22px}#bloqueoOverlay .cm-card{grid-template-columns:1fr;max-width:650px;min-height:auto}#bloqueoOverlay .cm-visual{min-height:390px;padding:28px 28px 88px}#bloqueoOverlay .cm-illustration{width:min(72%,360px)}#bloqueoOverlay .cm-content{padding:40px 38px 34px}}
-@media(max-width:560px){#bloqueoOverlay{padding:12px}#bloqueoOverlay .cm-card{border-radius:22px}#bloqueoOverlay .cm-visual{min-height:315px;padding:22px 20px 82px}#bloqueoOverlay .cm-visual-note{left:18px;right:18px;bottom:18px;padding:11px 12px;font-size:11.5px}#bloqueoOverlay .cm-content{padding:30px 22px 24px}#bloqueoOverlay .cm-badge{margin-bottom:18px}#bloqueoOverlay .cm-title{font-size:30px}#bloqueoOverlay .cm-description{font-size:14px;margin-bottom:22px}#bloqueoOverlay .cm-period{padding:14px;gap:12px}#bloqueoOverlay .cm-period-icon{width:44px;height:44px;flex-basis:44px;font-size:19px}#bloqueoOverlay .cm-period-value{font-size:20px}#bloqueoOverlay .cm-contact{padding:13px}}
-</style>
-
-
     <base target="_blank">
 </head>
 <body id="appBody">
@@ -176,25 +126,21 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <div id="bloqueoOverlay" class="bloqueo-overlay">
-
-
-<main class="cm-card" role="dialog" aria-labelledby="cierreMesTitle" aria-describedby="cierreMesDescription">
-  <section class="cm-visual" aria-hidden="true">
-    <img class="cm-illustration" src="img/cierre_mes.png" alt="Calendario con candado indicando cierre de mes">
-    <div class="cm-visual-note"><span class="cm-note-icon">✓</span><span>Durante este período no se pueden registrar nuevas novedades.</span></div>
-  </section>
-  <section class="cm-content">
-    <div class="cm-badge"><span class="cm-badge-icon">🔒</span><span>Cierre de mes</span></div>
-    <h1 class="cm-title" id="cierreMesTitle">El sistema se encuentra en período de cierre.</h1>
-    <p class="cm-description" id="cierreMesDescription">No se pueden registrar nuevas novedades en este momento. Agradecemos su comprensión.</p>
-    <div class="cm-period">
-      <span class="cm-period-icon">▣</span>
-      <div class="cm-period-copy"><span class="cm-period-label">Período de cierre:</span><strong class="cm-period-value" id="bloqueoFechasDisplay">22 - 30 de cada mes</strong></div>
-    </div>
-    <a class="cm-contact" id="manual" href="#"><span class="cm-contact-icon">☎</span><span class="cm-contact-copy"><span class="cm-contact-title">Comuníquese con el administrativo de Cuéntame</span><span class="cm-contact-sub">Para cualquier consulta o solicitud relacionada.</span></span></a>
-    <div class="cm-footer"><span class="cm-footer-icon">♢</span><span>Gracias por utilizar App Reporte Novedades.</span></div>
-  </section>
-</main>
+        <div class="bloqueo-content">
+            <div class="bloqueo-icon">🔒</div>
+            <h2 class="bloqueo-title">CIERRE DE MES</h2>
+            <p class="bloqueo-message">
+                El sistema se encuentra en periodo de cierre.<br>
+                No se pueden registrar nuevas novedades en este momento.
+            </p>
+            <div class="bloqueo-dates">
+                <strong id="bloqueoFechasDisplay">Periodo de cierre: 28 - 30 de cada mes</strong>
+            </div>
+            <div class="bloqueo-contacto">
+                📞 Comuníquese con el administrativo de Cuentame
+            </div>
+            
+        </div>
     </div>
 	
 	<main id="mainCard" class="glass-container w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden border-t-[14px] border-slate-300 dynamic-border animate__animated animate__fadeIn">
@@ -229,14 +175,11 @@
 						<a href="index.html" target="_self" class="text-slate-400 hover:text-indigo-500 transition-colors" title="Panel administrativo">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                         </a>
-                        <button type="button" onclick="ConsultaUDSModule.abrirModal()" class="cuds-quick-btn text-slate-400 hover:text-indigo-500 transition-colors" title="Consultar UDS">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        </button>
 					</div>
                 </div>
             </div>
         </header>
-
+        
         <!-- FORMULARIO ACTUALIZADO CON COMUNA, BARRIO Y PERÍMETRO BRAQUIAL -->
         <form id="noveltyForm" action="https://script.google.com/macros/s/AKfycbwvO5vg4wM9PdHc86IZM8FKcmoaSX7ls-4D-ZdbOVAFR6GUrRIHcXCq0rpQBDOVZvI/exec" method="POST" class="p-8 space-y-6">
         
@@ -824,180 +767,10 @@
     <script src="js/clave-modal.js"></script>
     <!-- Lógica principal -->
     <script src="js/core.js"></script>
-    <script src="js/admin-panel.js"></script>
     <!-- Estado nutricional + gráfica OMS del formulario -->
     <script src="js/nutricional.js"></script>
     <!-- Formulario, envío y confirmación -->
     <script src="js/novedades.js"></script>
-
-    <!-- Módulo de Consulta por Código UDS -->
-    <script src="js/consulta-uds.js"></script>
-
-    <!-- ═══════════════════════════════════════════════════════════
-         CONSULTA POR CÓDIGO UDS — Panel completo
-         Cada UDS puede digitar su propio código para ver su listado
-         de vinculados activos y desvinculados/inactivos, con menú
-         lateral para alternar entre ambas vistas. Solo lee datos de
-         la asociación activa, filtrados por esa UDS.
-    ═══════════════════════════════════════════════════════════ -->
-    <div id="consultaUdsOverlay" class="cuds-overlay">
-        <div class="cuds-page">
-
-            <!-- ── Menú lateral izquierdo ── -->
-            <aside class="cuds-sidebar">
-                <div class="cuds-sidebar-brand">
-                    <span class="cuds-sidebar-brand-icon">🔍</span>
-                    <div class="cuds-sidebar-brand-text">
-                        <strong>Consulta UDS</strong>
-                        <small>Vinculados y desvinculados</small>
-                    </div>
-                </div>
-
-                <div class="cuds-sidebar-section-label">Listado</div>
-                <nav class="cuds-nav">
-                    <button type="button" class="cuds-nav-item cuds-nav-item--activos is-active" data-view="activos" disabled
-                            onclick="ConsultaUDSModule.mostrarSeccion('activos')">
-                        <span class="cuds-nav-icon">✅</span>
-                        <span class="cuds-nav-label">Ver activos</span>
-                        <span class="cuds-nav-count" id="consultaUdsNavCountActivos">0</span>
-                    </button>
-                    <button type="button" class="cuds-nav-item cuds-nav-item--inactivos" data-view="inactivos" disabled
-                            onclick="ConsultaUDSModule.mostrarSeccion('inactivos')">
-                        <span class="cuds-nav-icon">🚫</span>
-                        <span class="cuds-nav-label">Ver inactivos</span>
-                        <span class="cuds-nav-count" id="consultaUdsNavCountInactivos">0</span>
-                    </button>
-                </nav>
-
-                <div class="cuds-sidebar-spacer"></div>
-
-                <div class="cuds-sidebar-footer">
-                    <button type="button" class="cuds-btn-sidebar" onclick="ConsultaUDSModule.nuevaConsulta()">
-                        <span>🔄</span> Nueva consulta
-                    </button>
-                    <button type="button" class="cuds-btn-sidebar cuds-btn-sidebar--salir" onclick="ConsultaUDSModule.cerrarModal()">
-                        <span>✕</span> Cerrar panel
-                    </button>
-                </div>
-            </aside>
-
-            <!-- ── Contenido principal ── -->
-            <div class="cuds-main">
-
-                <header class="cuds-main-header">
-                    <div>
-                        <h2>Consulta de vinculados</h2>
-                        <div class="cuds-main-header-sub" id="consultaUdsMainHeaderSub">Digite el código de su UDS para ver el listado</div>
-                    </div>
-
-                    <div class="cuds-summary-mini" id="consultaUdsResumenMini" style="display:none">
-                        <div class="cuds-summary-item">
-                            <span class="cuds-summary-label">UDS consultada</span>
-                            <span class="cuds-summary-value" id="consultaUdsCodigoConsultado">—</span>
-                        </div>
-                        <div class="cuds-summary-item">
-                            <span class="cuds-summary-label">Nombre UDS</span>
-                            <span class="cuds-summary-value cuds-summary-value--name" id="consultaUdsNombreUDS">—</span>
-                        </div>
-                    </div>
-                </header>
-
-                <div class="cuds-main-body">
-
-                    <!-- PASO 1: ingreso de código -->
-                    <div id="consultaUdsPasoInput">
-                        <div class="cuds-form-center">
-                            <span class="cuds-form-center-icon">👤</span>
-                            <h3>Identifique su UDS</h3>
-                            <p class="cuds-form-sub">Digite el código asignado a su unidad para ver el listado completo.</p>
-
-                            <label class="cuds-label" for="consultaUdsCodigo">Código UDS</label>
-                            <input type="text" id="consultaUdsCodigo" class="cuds-input"
-                                   placeholder="Ej: 4100100041381" autocomplete="off" spellcheck="false"
-                                   onkeydown="ConsultaUDSModule.manejarTecla(event)">
-                            <div class="cuds-error" id="consultaUdsError"></div>
-
-                            <div class="cuds-aviso">
-                                <span>🔒</span>
-                                <span>Acceso restringido: esta consulta solo muestra la información correspondiente a la UDS del código ingresado. No se permite el acceso a datos de otras unidades.</span>
-                            </div>
-
-                            <button type="button" class="cuds-btn-primary" id="consultaUdsBtnBuscar" onclick="ConsultaUDSModule.consultar()">
-                                Consultar información
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- PASO 2: resultado de la consulta -->
-                    <div id="consultaUdsPasoResultado" style="display:none">
-
-                        <!-- Sección: vinculados activos (controlada por el menú lateral) -->
-                        <section id="consultaUdsSeccionActivos" class="cuds-seccion is-active">
-                            <div class="cuds-seccion-header">
-                                <span class="cuds-seccion-icon-square cuds-seccion-icon-square--activos">👥</span>
-                                <span class="cuds-seccion-title-text">Vinculados Activos <span class="cuds-seccion-count-text" id="consultaUdsCountActivos">(0)</span></span>
-                            </div>
-                            <div class="cuds-tabla-wrap">
-                                <table class="cuds-tabla">
-                                    <thead>
-                                        <tr>
-                                            <th>Tipo doc.</th>
-                                            <th>Número</th>
-                                            <th>Nombres y apellidos</th>
-                                            <th>Estado</th>
-                                            <th>Fecha vinculación</th>
-                                            <th>Estado carga</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="consultaUdsTablaActivos"></tbody>
-                                </table>
-                            </div>
-                            <div class="cuds-seccion-footnote">
-                                <span>📅</span> Los datos de fecha corresponden a la fecha de vinculación.
-                            </div>
-                        </section>
-
-                        <!-- Sección: desvinculados inactivos (controlada por el menú lateral) -->
-                        <section id="consultaUdsSeccionInactivos" class="cuds-seccion">
-                            <div class="cuds-seccion-header">
-                                <span class="cuds-seccion-icon-square cuds-seccion-icon-square--inactivos">🚫</span>
-                                <span class="cuds-seccion-title-text">Desvinculados Inactivos <span class="cuds-seccion-count-text" id="consultaUdsCountInactivos">(0)</span></span>
-                            </div>
-                            <div class="cuds-tabla-wrap">
-                                <table class="cuds-tabla">
-                                    <thead>
-                                        <tr>
-                                            <th>Tipo doc.</th>
-                                            <th>Número</th>
-                                            <th>Nombres y apellidos</th>
-                                            <th>Estado</th>
-                                            <th>Fecha desvinculación</th>
-                                            <th>Estado carga</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="consultaUdsTablaInactivos"></tbody>
-                                </table>
-                            </div>
-                            <div class="cuds-seccion-footnote">
-                                <span>📅</span> Los datos de fecha corresponden a la fecha de desvinculación.
-                            </div>
-                        </section>
-
-                        <!-- Recordatorio -->
-                        <div class="cuds-recordatorio">
-                            <span class="cuds-recordatorio-icon">ℹ️</span>
-                            <div>
-                                <strong>Recuerda</strong>
-                                <p>Mantén tu información actualizada. Los datos cargados correctamente facilitan tus procesos y reportes.</p>
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- MODAL DE DUPLICADOS DESDE NOVEDADES ACTIVAS -->
     <div id="dupModalOverlay" class="dup-modal-overlay" onclick="DuplicadosModule.cerrarModalCaso()">
