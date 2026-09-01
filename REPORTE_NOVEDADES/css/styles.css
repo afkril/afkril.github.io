@@ -4787,7 +4787,7 @@ body.dark-mode .seg-hist-msg { color: #cbd5e1; }
 }
 .quick-reply-modal {
     position: relative;
-    background: #fff; border-radius: 20px; width: 100%; max-width: 1100px;
+    background: #fff; border-radius: 20px; width: 100%; max-width: 1250px;
     max-height: 90vh; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.35);
     display: flex; align-items: stretch;
 }

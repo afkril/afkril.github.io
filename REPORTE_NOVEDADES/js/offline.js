@@ -109,17 +109,11 @@ const OfflineModule = (() => {
             }, timeoutMs);
 
             fetchFn().then(async (snapshot) => {
-                // Aunque ya se haya resuelto por timeout (respuesta lenta),
-                // igual actualizamos la caché con el dato real más reciente.
-                // Si no hiciéramos esto, una lectura lenta pero exitosa dejaría
-                // la caché "congelada" en un estado viejo para siempre, y cada
-                // recarga posterior volvería a mostrar registros ya eliminados
-                // en Firebase (causando eliminaciones/duplicados fantasma).
-                const data = snapshot.val();
-                await _saveToCache(cacheKey, data);
-                if (settled) return; // ya se resolvió por timeout, no resolver de nuevo
+                if (settled) return; // ya se resolvió por timeout, ignorar respuesta tardía
                 settled = true;
                 clearTimeout(timeout);
+                const data = snapshot.val();
+                await _saveToCache(cacheKey, data);
                 resolve(snapshot);
             }).catch(async (err) => {
                 if (settled) return;

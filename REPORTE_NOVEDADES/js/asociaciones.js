@@ -259,6 +259,11 @@ const AsociacionesModule = (() => {
             try {
                 _perfilActivo = JSON.parse(data);
                 aplicarBranding(_perfilActivo);
+                // Disparar los callbacks de onPerfilCargado (igual que
+                // activarPerfil) para que módulos como cargarConfigBloqueo
+                // se enganchen también al recuperar sesión en un reload,
+                // y no solo en el primer ingreso al operador.
+                _onPerfilCargado.forEach(fn => { try { fn(_perfilActivo); } catch(e) {} });
                 return true;
             } catch(e) {}
         }

@@ -2037,18 +2037,7 @@ function deleteArchivedNovelty(id) {
                 .then(() => database.ref(`${AsociacionesModule.getRef('archived')}/${id}`).remove())
                 .then(() => {
                     showToast('🗑️ Registro movido a la Papelera de Reciclaje', 'success');
-                    // Quitamos el registro de la lista en memoria de inmediato.
-                    // OJO: a propósito NO volvemos a llamar loadArchivedNovelties()
-                    // aquí. Esa función lee a través de la caché offline
-                    // (OfflineModule.cachedRead), que si la conexión responde
-                    // lento puede devolver el último dato guardado ANTES de este
-                    // borrado (todavía con el registro adentro) y repintar la
-                    // tabla con el registro "resucitado", dando la falsa
-                    // impresión de que nunca se eliminó. Como el remove() de
-                    // arriba ya se confirmó contra Firebase, la lista local es
-                    // la fuente de verdad más confiable en este momento.
-                    archivedNovelties = archivedNovelties.filter(n => n.id !== id);
-                    filterArchivedNovelties();
+                    loadArchivedNovelties();
                     loadResumenStats();
                     if (typeof updatePapeleraBadge === 'function') updatePapeleraBadge();
                 })
@@ -2089,9 +2078,6 @@ function eliminarTodosArchivados() {
                 .then(() => database.ref(AsociacionesModule.getRef('archived')).remove())
                 .then(() => {
                     showToast(`🗑️ ${count} archivados movidos a la Papelera de Reciclaje`, 'success');
-                    // No recargamos desde Firebase por la misma razón explicada
-                    // en deleteArchivedNovelty: la caché offline podría devolver
-                    // datos viejos y hacer reaparecer registros ya eliminados.
                     archivedNovelties = [];
                     filterArchivedNovelties();
                     loadResumenStats();
@@ -2133,12 +2119,7 @@ function deleteNovelty(id) {
                 .then(() => database.ref(`${AsociacionesModule.getRef('novelties')}/${id}`).remove())
                 .then(() => {
                     showToast('🗑️ Registro movido a la Papelera de Reciclaje', 'success');
-                    // Igual que en archivados: quitamos el registro de memoria ya
-                    // mismo y NO recargamos desde Firebase (evita que la caché
-                    // offline devuelva datos viejos y haga reaparecer el registro
-                    // ya eliminado).
-                    currentNovelties = currentNovelties.filter(n => n.id !== id);
-                    if (typeof filterNovelties === 'function') filterNovelties();
+                    loadNoveltiesTable();
                     updatePendientesIndicator();
                     if (typeof updatePapeleraBadge === 'function') updatePapeleraBadge();
                 })
@@ -2754,6 +2735,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         showToast('⚠️ Selecciona una asociación antes de reportar', 'warning');
                         AsociacionesModule.mostrarSelectorAsociaciones();
                         return;
+                    }
+
+                    // ============================================
+                    // VALIDACIÓN CIERRE DE MES (defensa adicional a
+                    // la del overlay visual: bloquea el envío aunque
+                    // el formulario esté visible por cualquier motivo)
+                    // ============================================
+                    if (configBloqueo && configBloqueo.activo) {
+                        const hoyCierre = new Date();
+                        const diaCierre = hoyCierre.getDate();
+                        if (diaCierre >= configBloqueo.fechaInicio && diaCierre <= configBloqueo.fechaFin) {
+                            showToast('🔒 El sistema está en periodo de cierre de mes. No se pueden registrar novedades.', 'error');
+                            return;
+                        }
                     }
                     
                     const contract = document.getElementById('contractNumber');

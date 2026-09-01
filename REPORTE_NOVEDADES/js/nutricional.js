@@ -969,14 +969,6 @@ document.addEventListener('keydown', function(e) {
             }
         });
 
-const _modalGraficaOMSEl = document.getElementById('modalGraficaOMS');
-if (_modalGraficaOMSEl) {
-    _modalGraficaOMSEl.addEventListener('click', function(e) {
-        if (e.target === this) {
-            cerrarModalGrafica();
-        }
-    });
-}
 
 function getNutricionColor(estado) {
     if (!estado) return '#94a3b8';
