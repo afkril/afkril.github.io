@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nueva versión | AppI Reporte Novedades</title>
+
+<style>
+:root {
+  --blue:#2563eb;
+  --blue-dark:#183b73;
+  --blue-soft:#dbeafe;
+  --green:#16a085;
+  --green-soft:#dff5ec;
+  --text:#344054;
+  --muted:#667085;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  font-family:"Segoe UI",Inter,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 88% 8%,rgba(37,99,235,.15),transparent 25%),
+    radial-gradient(circle at 5% 85%,rgba(22,160,133,.14),transparent 27%),
+    linear-gradient(135deg,#f9fbff,#eef4fb);
+}
+
+.bg {
+  position:fixed;
+  border-radius:50%;
+  pointer-events:none;
+}
+
+.bg.blue {
+  width:480px;height:480px;right:-210px;top:-250px;
+  border:90px solid rgba(37,99,235,.08);
+}
+
+.bg.green {
+  width:440px;height:440px;left:-300px;bottom:-230px;
+  border:100px solid rgba(22,160,133,.10);
+}
+
+.dots {
+  position:fixed;width:90px;height:70px;opacity:.45;
+  background-image:radial-gradient(circle,#76a7ef 2.5px,transparent 3px);
+  background-size:18px 18px;
+}
+
+.card {
+  position:relative;
+  z-index:2;
+  width:min(900px,calc(100vw - 40px));
+  min-height:500px;
+  display:grid;
+  grid-template-columns:43% 57%;
+  overflow:hidden;
+  background:rgba(255,255,255,.97);
+  border:1px solid #dbe3ef;
+  border-radius:28px;
+  box-shadow:0 30px 70px rgba(32,55,91,.14),0 8px 22px rgba(32,55,91,.08);
+}
+
+.visual {
+  position:relative;
+  min-height:500px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 30%,rgba(255,255,255,.95),transparent 32%),
+    linear-gradient(165deg,#eef6ff 0%,#dbeafe 58%,#e8f7f2 100%);
+}
+
+.visual::before {
+  content:"";
+  position:absolute;
+  width:370px;height:370px;
+  border:1px solid rgba(37,99,235,.13);
+  border-radius:50%;
+}
+
+.visual::after {
+  content:"";
+  position:absolute;
+  width:500px;height:170px;
+  left:-90px;bottom:-80px;
+  border-radius:50%;
+  background:rgba(22,160,133,.13);
+}
+
+.rocket-image {
+  position:relative;
+  z-index:2;
+  width:94%;
+  max-width:410px;
+  height:auto;
+  object-fit:contain;
+  filter:drop-shadow(0 18px 18px rgba(37,99,235,.14));
+  animation:float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100% {transform:translateY(5px)}
+  50% {transform:translateY(-9px)}
+}
+
+.content {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:58px 64px 52px;
+}
+
+.badge {
+  align-self:flex-start;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:22px;
+  padding:8px 13px;
+  border-radius:999px;
+  background:var(--green-soft);
+  color:#147a67;
+  font-size:13px;
+  font-weight:700;
+}
+
+.badge-dot {
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 0 4px rgba(22,160,133,.12);
+}
+
+
+
+.description {
+  max-width:460px;
+  color:var(--muted);
+  font-size:16px;
+  line-height:1.65;
+  margin-bottom:30px;
+}
+
+.redirect {
+  width:100%;
+  max-width:470px;
+  padding:20px;
+  border:1px solid #dbe3ef;
+  border-radius:18px;
+  background:#fbfdff;
+  box-shadow:0 7px 20px rgba(34,60,95,.05);
+}
+
+.top {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  margin-bottom:16px;
+}
+
+.label {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  color:#475467;
+  font-size:14px;
+  font-weight:600;
+}
+
+.icon {
+  width:38px;height:38px;
+  display:grid;place-items:center;
+  border-radius:12px;
+  color:var(--blue);
+  background:var(--blue-soft);
+  font-size:18px;
+}
+
+.count {
+  min-width:60px;height:60px;
+  display:grid;place-items:center;
+  position:relative;
+  border-radius:50%;
+  background:conic-gradient(var(--blue) 0deg,#e4eaf2 0deg);
+}
+
+.count::before {
+  content:"";
+  position:absolute;inset:5px;
+  border-radius:50%;
+  background:#fff;
+}
+
+.count-inner {
+  position:relative;z-index:1;text-align:center;
+}
+
+.number {
+  color:var(--blue-dark);
+  font-size:22px;font-weight:800;line-height:1;
+}
+
+.unit {
+  color:#667085;font-size:9px;font-weight:700;margin-top:2px;
+}
+
+.progress {
+  height:8px;overflow:hidden;border-radius:99px;background:#e7edf5;
+}
+
+.bar {
+  width:100%;height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,var(--blue),#4f8df7);
+  transform-origin:left;
+  animation:progress 7s linear forwards;
+}
+
+@keyframes progress {
+  from {transform:scaleX(1)}
+  to {transform:scaleX(0)}
+}
+
+.status {
+  margin-top:11px;
+  color:#667085;
+  font-size:12px;
+  text-align:center;
+}
+
+
+
+.note {
+  margin-top:24px;
+  color:#98a2b3;
+  font-size:12px;
+}
+
+@media(max-width:760px) {
+  body {overflow:auto;padding:20px}
+  .card {grid-template-columns:1fr;width:min(500px,100%)}
+  .visual {min-height:310px}
+  .rocket-image {width:78%;max-width:320px}
+  .content {padding:38px 30px 35px}
+  h1 {font-size:32px}
+}
+
+@media(max-width:430px) {
+  .card {border-radius:22px}
+  .visual {min-height:270px}
+  .content {padding:30px 22px}
+}
+</style>
+</head>
+
+<body>
+
+<main class="card">
+  <section class="visual">
+    <img
+      class="rocket-image"
+      src="img/nueva_version.png"
+
+    >
+  </section>
+  <section class="content">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Nueva versión disponible
+    </div>
+
+    <h1>
+      ¡Tenemos una<br>
+      <strong>Nueva Versión!</strong>
+    </h1>
+
+    <p class="description">
+      Hemos preparado una experiencia mejorada para ti.
+      Serás redirigido automáticamente a la nueva versión
+      de la aplicación.
+    </p>
+
+    <div class="redirect">
+      <div class="top">
+        <div class="label">
+          <div class="icon">↗</div>
+          <span>Serás redirigido a la<br>nueva versión en:</span>
+        </div>
+
+        <div class="count" id="countCircle">
+          <div class="count-inner">
+            <div class="number" id="count">7</div>
+            <div class="unit">seg</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress">
+        <div class="bar"></div>
+      </div>
+
+      <div class="status" id="status">
+        Redirigiendo automáticamente...
+      </div>
+    </div>
+
+    <a class="manual" id="manual" href="#">
+      Continuar ahora →
+    </a>
+
+    <div class="note">
+      Gracias por utilizar App Listas Mercado by ZAN.
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // CAMBIA ESTA URL POR LA NUEVA DIRECCIÓN
+  const NEW_URL = "https://afkril.github.io/APP_LISTA_MERCADO_V3.0/index.html";
+
+  const total = 7;
+  let remaining = total;
+
+  const count = document.getElementById("count");
+  const circle = document.getElementById("countCircle");
+  const status = document.getElementById("status");
+  const manual = document.getElementById("manual");
+
+  manual.href = NEW_URL;
+
+  function update() {
+    count.textContent = remaining;
+
+    const elapsed = total - remaining;
+    const degrees = (elapsed / total) * 360;
+
+    circle.style.background =
+      `conic-gradient(var(--blue) ${degrees}deg, #e4eaf2 ${degrees}deg)`;
+  }
+
+  update();
+
+  const timer = setInterval(() => {
+    remaining--;
+
+    if (remaining <= 0) {
+      clearInterval(timer);
+
+      count.textContent = "✓";
+      status.textContent = "Abriendo la nueva versión...";
+      circle.style.background =
+        "conic-gradient(var(--green) 360deg, var(--green) 360deg)";
+
+      window.location.href = NEW_URL;
+      return;
+    }
+
+    update();
+  }, 1000);
+</script>
+
+</body>
+</html>
