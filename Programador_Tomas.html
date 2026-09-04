@@ -156,17 +156,20 @@
   .iconbtn:hover{ background:var(--primary-tint); }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; padding:18px; }
   .cal-dow{ font-size:11.5px; color:var(--ink-faint); text-align:center; padding-bottom:4px; font-weight:600; }
-  .cal-cell{ min-height:78px; border:1px solid var(--border); border-radius:8px; padding:6px 7px; background:var(--surface); cursor:default; }
+  .cal-cell{ min-height:96px; border:1px solid var(--border); border-radius:8px; padding:6px 7px; background:var(--surface); cursor:default; }
   .cal-cell.out{ background:var(--bg); opacity:.45; }
-  .cal-cell.today{ border-color:var(--primary-soft); box-shadow:inset 0 0 0 1px var(--primary-soft); }
+  .cal-cell.today{ border:2px solid var(--ink); }
   .cal-cell.selected{ background:var(--primary-tint); border-color:var(--primary-soft); }
   .cal-cell .d{ font-size:12.5px; color:var(--ink-soft); font-weight:600; }
   .cal-cell{ cursor:pointer; }
-  .cal-dots{ margin-top:6px; display:flex; flex-direction:column; gap:2px; }
-  .cal-tag{ font-size:10.5px; border-radius:5px; padding:2px 5px; font-weight:600; }
-  .cal-tag.vencida{ background:var(--danger-tint); color:var(--danger); }
-  .cal-tag.proxima{ background:var(--gold-tint); color:var(--gold); }
-  .cal-tag.programada{ background:var(--primary-tint); color:var(--primary-soft); }
+  .cal-dots{ margin-top:6px; display:flex; flex-direction:column; gap:3px; }
+  .cal-tag{ font-size:10.5px; border-radius:5px; padding:2px 6px; font-weight:700; color:#fff; }
+  .cal-tag.cat-desnutricion{ background:#D93B2B; }
+  .cal-tag.cat-obesidad{ background:#7B3FA0; }
+  .cal-tag.cat-sobrepeso{ background:#2F6FED; }
+  .cal-tag.cat-peso{ background:#2E8B57; }
+  .cal-tag.cat-sin{ background:#8A9284; }
+  .cal-total{ font-size:10.5px; color:var(--ink-soft); margin-top:3px; }
   .agenda-title{ padding:14px 18px 0; font-size:14px; color:var(--ink-soft); }
   .agenda-title b{ color:var(--ink); }
 
@@ -275,6 +278,21 @@
             <button class="iconbtn" id="calNext">&#8594;</button>
           </div>
           <button class="btn secondary" id="calToday">Hoy</button>
+        </div>
+        <div class="panel-head" style="padding-top:12px; padding-bottom:12px;">
+          <div class="filters">
+            <input type="text" id="fSearchCal" placeholder="Buscar por nombre o documento">
+            <select id="fContratoCal"><option value="">Todos los contratos</option></select>
+            <select id="fUnidadCal"><option value="">Todas las unidades</option></select>
+            <select id="fEstadoCal"><option value="">Todos los estados</option></select>
+          </div>
+        </div>
+        <div class="legend" id="calLegend">
+          <span class="item"><span class="dot" style="background:#D93B2B;"></span>Desnutrición</span>
+          <span class="item"><span class="dot" style="background:#7B3FA0;"></span>Obesidad</span>
+          <span class="item"><span class="dot" style="background:#2F6FED;"></span>Sobrepeso</span>
+          <span class="item"><span class="dot" style="background:#2E8B57;"></span>Peso adecuado</span>
+          <span class="item"><span class="dot" style="background:#8A9284;"></span>Sin dato</span>
         </div>
         <div class="cal-grid" id="calGrid"></div>
         <div class="agenda-title" id="agendaTitle"></div>
@@ -666,16 +684,40 @@
     const contratos = [...new Set(state.rows.map(r=>r.contrato))].sort();
     const unidades = [...new Set(state.rows.map(r=>r.unidadLabel))].sort();
     const estados = [...new Set(state.rows.map(r=>r.estado))].sort();
-    const selC = document.getElementById('fContrato');
-    const selU = document.getElementById('fUnidad');
-    const selE = document.getElementById('fEstado');
-    const prevC = selC.value, prevU = selU.value, prevE = selE.value;
-    selC.innerHTML = '<option value="">Todos los contratos</option>' + contratos.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
-    selU.innerHTML = '<option value="">Todas las unidades</option>' + unidades.map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join('');
-    selE.innerHTML = '<option value="">Todos los estados</option>' + estados.map(e=>`<option value="${escapeHtml(e)}">${escapeHtml(e)}</option>`).join('');
-    if(contratos.includes(prevC)) selC.value = prevC;
-    if(unidades.includes(prevU)) selU.value = prevU;
-    if(estados.includes(prevE)) selE.value = prevE;
+
+    function fill(id, options, allLabel){
+      const sel = document.getElementById(id);
+      const prev = sel.value;
+      sel.innerHTML = `<option value="">${allLabel}</option>` + options.map(o=>`<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
+      if(options.includes(prev)) sel.value = prev;
+    }
+    fill('fContrato', contratos, 'Todos los contratos');
+    fill('fContratoCal', contratos, 'Todos los contratos');
+    fill('fUnidad', unidades, 'Todas las unidades');
+    fill('fUnidadCal', unidades, 'Todas las unidades');
+    fill('fEstado', estados, 'Todos los estados');
+    fill('fEstadoCal', estados, 'Todos los estados');
+    syncFilterInputs();
+  }
+
+  function syncFilterInputs(){
+    const f = state.filters;
+    document.getElementById('fSearch').value = f.search;
+    document.getElementById('fSearchCal').value = f.search;
+    document.getElementById('fContrato').value = f.contrato;
+    document.getElementById('fContratoCal').value = f.contrato;
+    document.getElementById('fUnidad').value = f.unidad;
+    document.getElementById('fUnidadCal').value = f.unidad;
+    document.getElementById('fEstado').value = f.estado;
+    document.getElementById('fEstadoCal').value = f.estado;
+    document.getElementById('fUrgencia').value = f.urgencia;
+  }
+
+  function onFilterChange(field, value){
+    state.filters[field] = value;
+    syncFilterInputs();
+    renderTable();
+    if(document.getElementById('view-calendario').classList.contains('active')) renderCalendar();
   }
 
   function escapeHtml(s){
@@ -735,17 +777,34 @@
     return `En ${r.diasRestantes} d`;
   }
 
-  document.getElementById('fSearch').addEventListener('input', e=>{ state.filters.search = e.target.value; renderTable(); });
-  document.getElementById('fContrato').addEventListener('change', e=>{ state.filters.contrato = e.target.value; renderTable(); });
-  document.getElementById('fUnidad').addEventListener('change', e=>{ state.filters.unidad = e.target.value; renderTable(); });
-  document.getElementById('fEstado').addEventListener('change', e=>{ state.filters.estado = e.target.value; renderTable(); });
-  document.getElementById('fUrgencia').addEventListener('change', e=>{ state.filters.urgencia = e.target.value; renderTable(); });
+  document.getElementById('fSearch').addEventListener('input', e=> onFilterChange('search', e.target.value));
+  document.getElementById('fContrato').addEventListener('change', e=> onFilterChange('contrato', e.target.value));
+  document.getElementById('fUnidad').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
+  document.getElementById('fEstado').addEventListener('change', e=> onFilterChange('estado', e.target.value));
+  document.getElementById('fUrgencia').addEventListener('change', e=> onFilterChange('urgencia', e.target.value));
+
+  document.getElementById('fSearchCal').addEventListener('input', e=> onFilterChange('search', e.target.value));
+  document.getElementById('fContratoCal').addEventListener('change', e=> onFilterChange('contrato', e.target.value));
+  document.getElementById('fUnidadCal').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
+  document.getElementById('fEstadoCal').addEventListener('change', e=> onFilterChange('estado', e.target.value));
 
   /* ---------------------------------------------------------
      CALENDARIO
   --------------------------------------------------------- */
-  const DOW = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const DOW = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
   const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  const CATEGORY_ORDER = ['desnutricion','obesidad','sobrepeso','peso','sin'];
+  function estadoCategory(estado){
+    const n = normalize(estado);
+    if(!n || n === 'sin dato') return { key:'sin', label:'sin', cls:'cat-sin' };
+    if(n.includes('obesidad')) return { key:'obesidad', label:'obesidad', cls:'cat-obesidad' };
+    if(n.includes('sobrepeso')) return { key:'sobrepeso', label:'sobrepeso', cls:'cat-sobrepeso' };
+    if(n.includes('desnutricion')) return { key:'desnutricion', label:'desnutrición', cls:'cat-desnutricion' };
+    if(n.includes('riesgo') && n.includes('peso')) return { key:'desnutricion', label:'desnutrición', cls:'cat-desnutricion' };
+    if(n.includes('peso')) return { key:'peso', label:'peso', cls:'cat-peso' };
+    return { key:'sin', label:'sin', cls:'cat-sin' };
+  }
 
   function renderCalendar(){
     const grid = document.getElementById('calGrid');
@@ -754,12 +813,12 @@
     label.textContent = `${MONTHS[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
 
     const byDay = {};
-    state.rows.forEach(r=>{
+    filteredRows().forEach(r=>{
       const key = r.proximaToma.toISOString().slice(0,10);
       (byDay[key] = byDay[key] || []).push(r);
     });
 
-    const firstDow = monthStart.getDay();
+    const firstDow = (monthStart.getDay() + 6) % 7;
     const daysInMonth = new Date(monthStart.getFullYear(), monthStart.getMonth()+1, 0).getDate();
     const today = todayMid();
 
@@ -780,11 +839,18 @@
       if(state.calSelected && sameDay(dateObj, state.calSelected)) classes.push('selected');
 
       let tags = '';
-      const counts = { vencida:0, proxima:0, programada:0 };
-      items.forEach(it=> counts[it.urgencia]++);
-      ['vencida','proxima','programada'].forEach(k=>{
-        if(counts[k]) tags += `<div class="cal-tag ${k}">${counts[k]} ${k==='vencida'?'venc.':k==='proxima'?'próx.':'prog.'}</div>`;
-      });
+      if(items.length){
+        const counts = {};
+        items.forEach(it=>{
+          const cat = estadoCategory(it.estado);
+          counts[cat.key] = counts[cat.key] || { count:0, label:cat.label, cls:cat.cls };
+          counts[cat.key].count++;
+        });
+        CATEGORY_ORDER.forEach(k=>{
+          if(counts[k]) tags += `<div class="cal-tag ${counts[k].cls}">${counts[k].count} ${counts[k].label}</div>`;
+        });
+        tags += `<div class="cal-total">${items.length} ${items.length===1?'toma':'tomas'}</div>`;
+      }
 
       cells += `<div class="${classes.join(' ')}" data-date="${key}"><div class="d">${d}</div><div class="cal-dots">${tags}</div></div>`;
     }
@@ -818,7 +884,7 @@
     }
     const day = state.calSelected || todayMid();
     title.innerHTML = `Beneficiarios programados para <b>${fmtDate(day)}</b>`;
-    const items = state.rows.filter(r=> sameDay(r.proximaToma, day)).sort((a,b)=> a.nombreCompleto.localeCompare(b.nombreCompleto));
+    const items = filteredRows().filter(r=> sameDay(r.proximaToma, day)).sort((a,b)=> a.nombreCompleto.localeCompare(b.nombreCompleto));
     if(!items.length){
       wrap.innerHTML = `<div class="empty">No hay tomas programadas este día.</div>`;
       return;
