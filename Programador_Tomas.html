@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seguimiento Nutricional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#F5F6F1;
+    --surface:#FFFFFF;
+    --surface-alt:#EAF0E6;
+    --ink:#1B241D;
+    --ink-soft:#5B6459;
+    --ink-faint:#8A9284;
+    --primary:#1F4B3F;
+    --primary-soft:#2E6B57;
+    --primary-tint:#E3ECE5;
+    --gold:#B8842E;
+    --gold-tint:#F5EBD8;
+    --danger:#AD3B27;
+    --danger-tint:#F6E2DC;
+    --border:#DCE2D6;
+    /* Severidad estado nutricional */
+    --sev-critical:#7A1E1E; --sev-critical-tint:#F3D6D2;
+    --sev-alto:#AD3B27; --sev-alto-tint:#F6E2DC;
+    --sev-riesgo:#B8842E; --sev-riesgo-tint:#F5EBD8;
+    --sev-normal:#2E6B57; --sev-normal-tint:#DCEEE6;
+    --sev-sobrepeso:#B5651D; --sev-sobrepeso-tint:#F7E3CC;
+    --sev-obesidad:#7A3B12; --sev-obesidad-tint:#F0D8C4;
+    --sev-default:#5B6459; --sev-default-tint:#EAF0E6;
+    --shadow: 0 1px 2px rgba(27,36,29,0.06), 0 6px 20px rgba(27,36,29,0.05);
+    --radius: 10px;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Public Sans', system-ui, sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{ font-family:'Fraunces', serif; font-weight:600; color:var(--ink); margin:0; }
+  button{ font-family:inherit; }
+  input, select{ font-family:inherit; }
+
+  .app{ display:flex; min-height:100vh; }
+
+  /* Sidebar */
+  .sidebar{
+    width:230px; flex-shrink:0;
+    background:var(--primary);
+    color:#EFF3EE;
+    display:flex; flex-direction:column;
+    padding:22px 16px;
+  }
+  .brand{ display:flex; flex-direction:column; gap:2px; margin-bottom:28px; padding:0 8px; }
+  .brand .mark{ font-family:'Fraunces', serif; font-size:20px; font-weight:700; color:#fff; line-height:1.2; }
+  .brand .sub{ font-size:12px; color:#B9CBC0; letter-spacing:.01em; }
+  .nav{ display:flex; flex-direction:column; gap:4px; flex:1; }
+  .nav button{
+    display:flex; align-items:center; gap:10px;
+    background:transparent; border:none; color:#D6E3DA;
+    text-align:left; padding:10px 12px; border-radius:8px;
+    font-size:14.5px; font-weight:500; cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .nav button:hover{ background:rgba(255,255,255,0.08); color:#fff; }
+  .nav button.active{ background:#EFF3EE; color:var(--primary); font-weight:600; }
+  .nav .ic{ width:18px; text-align:center; font-size:15px; opacity:.9; }
+  .sidebar-foot{ margin-top:16px; padding:12px 10px; border-top:1px solid rgba(255,255,255,0.14); font-size:12px; color:#AFC3B5; }
+  .sidebar-foot strong{ color:#E9F0EA; display:block; font-size:13px; margin-bottom:2px; }
+
+  /* Main */
+  .main{ flex:1; min-width:0; padding:28px 34px 60px; }
+  .topline{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom:22px; flex-wrap:wrap; }
+  .topline h1{ font-size:26px; }
+  .topline p{ margin:4px 0 0; color:var(--ink-soft); font-size:14px; }
+
+  .cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:26px; }
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px; box-shadow:var(--shadow); }
+  .card .num{ font-family:'Fraunces', serif; font-size:30px; font-weight:600; line-height:1; }
+  .card .lbl{ font-size:13px; color:var(--ink-soft); margin-top:6px; }
+  .card.danger .num{ color:var(--danger); }
+  .card.gold .num{ color:var(--gold); }
+  .card.primary .num{ color:var(--primary-soft); }
+
+  .panel{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); }
+  .panel + .panel{ margin-top:20px; }
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .panel-head h2{ font-size:17px; }
+  .panel-body{ padding:18px; }
+
+  .filters{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .filters input, .filters select{
+    border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:13.5px; background:var(--surface); color:var(--ink);
+  }
+  .filters input:focus, .filters select:focus, .cfg-row input:focus{ outline:2px solid var(--primary-soft); outline-offset:1px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  thead th{ text-align:left; font-weight:600; color:var(--ink-soft); font-size:12px; text-transform:none; letter-spacing:.01em; padding:8px 10px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  tbody td{ padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  tbody tr:hover{ background:var(--bg); }
+  .name-cell .sub{ color:var(--ink-soft); font-size:12px; }
+
+  .badge{ display:inline-block; padding:3px 9px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; }
+  .badge.vencida{ background:var(--danger-tint); color:var(--danger); }
+  .badge.proxima{ background:var(--gold-tint); color:var(--gold); }
+  .badge.programada{ background:var(--primary-tint); color:var(--primary-soft); }
+  .badge.estado{ background:var(--surface-alt); color:var(--ink); font-weight:500; }
+  .badge.estado.sev-critical{ background:var(--sev-critical-tint); color:var(--sev-critical); font-weight:700; }
+  .badge.estado.sev-alto{ background:var(--sev-alto-tint); color:var(--sev-alto); font-weight:600; }
+  .badge.estado.sev-riesgo{ background:var(--sev-riesgo-tint); color:var(--sev-riesgo); }
+  .badge.estado.sev-normal{ background:var(--sev-normal-tint); color:var(--sev-normal); }
+  .badge.estado.sev-sobrepeso{ background:var(--sev-sobrepeso-tint); color:var(--sev-sobrepeso); }
+  .badge.estado.sev-obesidad{ background:var(--sev-obesidad-tint); color:var(--sev-obesidad); font-weight:700; }
+  .badge.estado.sev-default{ background:var(--sev-default-tint); color:var(--sev-default); }
+
+  .legend{ display:flex; gap:10px; flex-wrap:wrap; padding:12px 18px 0; }
+  .legend .item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-soft); }
+  .legend .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+
+  .btn{ display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:8px; border:1px solid var(--primary); background:var(--primary); color:#fff; font-size:13.5px; font-weight:600; cursor:pointer; transition:background .15s ease; }
+  .btn:hover{ background:var(--primary-soft); border-color:var(--primary-soft); }
+  .btn.secondary{ background:transparent; color:var(--primary); border:1px solid var(--border); }
+  .btn.secondary:hover{ background:var(--surface-alt); }
+  .btn.danger-outline{ background:transparent; color:var(--danger); border:1px solid var(--danger-tint); }
+  .btn.danger-outline:hover{ background:var(--danger-tint); }
+  .btn[disabled]{ opacity:.5; cursor:not-allowed; }
+
+  /* Upload view */
+  .dropzone{
+    border:1.5px dashed var(--border); border-radius:12px; padding:40px 24px; text-align:center; background:var(--surface-alt);
+    cursor:pointer; transition:border-color .15s ease, background .15s ease;
+  }
+  .dropzone:hover, .dropzone.drag{ border-color:var(--primary-soft); background:var(--primary-tint); }
+  .dropzone .big{ font-family:'Fraunces', serif; font-size:18px; margin-bottom:6px; }
+  .dropzone .small{ font-size:13px; color:var(--ink-soft); }
+  .upload-summary{ display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+  .pill{ background:var(--surface-alt); border-radius:8px; padding:10px 14px; font-size:13.5px; }
+  .pill b{ font-family:'Fraunces', serif; font-size:17px; display:block; }
+  .error-list{ margin-top:14px; max-height:260px; overflow:auto; border:1px solid var(--border); border-radius:8px; }
+  .error-list .row{ padding:9px 12px; font-size:13px; border-bottom:1px solid var(--border); color:var(--ink-soft); }
+  .error-list .row:last-child{ border-bottom:none; }
+  .error-list .row b{ color:var(--danger); font-weight:600; }
+
+  /* Calendar */
+  .cal-head{ display:flex; align-items:center; gap:12px; }
+  .cal-head .month{ font-family:'Fraunces', serif; font-size:17px; min-width:170px; text-align:center; }
+  .iconbtn{ background:var(--surface-alt); border:1px solid var(--border); width:30px; height:30px; border-radius:7px; cursor:pointer; font-size:14px; color:var(--ink); }
+  .iconbtn:hover{ background:var(--primary-tint); }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; padding:18px; }
+  .cal-dow{ font-size:11.5px; color:var(--ink-faint); text-align:center; padding-bottom:4px; font-weight:600; }
+  .cal-cell{ min-height:78px; border:1px solid var(--border); border-radius:8px; padding:6px 7px; background:var(--surface); cursor:default; }
+  .cal-cell.out{ background:var(--bg); opacity:.45; }
+  .cal-cell.today{ border-color:var(--primary-soft); box-shadow:inset 0 0 0 1px var(--primary-soft); }
+  .cal-cell.selected{ background:var(--primary-tint); border-color:var(--primary-soft); }
+  .cal-cell .d{ font-size:12.5px; color:var(--ink-soft); font-weight:600; }
+  .cal-cell{ cursor:pointer; }
+  .cal-dots{ margin-top:6px; display:flex; flex-direction:column; gap:2px; }
+  .cal-tag{ font-size:10.5px; border-radius:5px; padding:2px 5px; font-weight:600; }
+  .cal-tag.vencida{ background:var(--danger-tint); color:var(--danger); }
+  .cal-tag.proxima{ background:var(--gold-tint); color:var(--gold); }
+  .cal-tag.programada{ background:var(--primary-tint); color:var(--primary-soft); }
+  .agenda-title{ padding:14px 18px 0; font-size:14px; color:var(--ink-soft); }
+  .agenda-title b{ color:var(--ink); }
+
+  /* Config */
+  .cfg-row{ display:grid; grid-template-columns:1fr 120px 34px; gap:10px; align-items:center; margin-bottom:8px; }
+  .cfg-row input[type=text]{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; width:100%; }
+  .cfg-row input[type=number]{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; width:100%; }
+  .cfg-row .rm{ background:transparent; border:none; color:var(--ink-faint); font-size:16px; cursor:pointer; }
+  .cfg-row .rm:hover{ color:var(--danger); }
+  .cfg-labels{ display:grid; grid-template-columns:1fr 120px 34px; gap:10px; font-size:12px; color:var(--ink-soft); margin-bottom:8px; font-weight:600; }
+  .cfg-actions{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .hint{ font-size:13px; color:var(--ink-soft); margin-top:2px; }
+  .empty{ padding:40px 18px; text-align:center; color:var(--ink-soft); font-size:14px; }
+  .empty .big{ font-family:'Fraunces', serif; font-size:17px; color:var(--ink); margin-bottom:6px; }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  @media (max-width: 860px){
+    .app{ flex-direction:column; }
+    .sidebar{ width:100%; flex-direction:row; align-items:center; padding:12px 14px; overflow-x:auto; }
+    .brand{ margin-bottom:0; margin-right:12px; }
+    .brand .sub{ display:none; }
+    .nav{ flex-direction:row; }
+    .nav button span.lbl-text{ display:none; }
+    .sidebar-foot{ display:none; }
+    .main{ padding:20px 16px 50px; }
+    .cfg-row, .cfg-labels{ grid-template-columns:1fr 90px 30px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="sidebar">
+    <div class="brand">
+      <div class="mark">Seguimiento Nutricional</div>
+      <div class="sub">Peso y talla &middot; próximas tomas</div>
+    </div>
+    <nav class="nav">
+      <button data-view="tablero" class="active"><span class="ic">&#9673;</span><span class="lbl-text">Panorama</span></button>
+      <button data-view="calendario"><span class="ic">&#128197;</span><span class="lbl-text">Calendario</span></button>
+      <button data-view="cargar"><span class="ic">&#8593;</span><span class="lbl-text">Cargar reporte</span></button>
+      <button data-view="config"><span class="ic">&#9881;</span><span class="lbl-text">Configuración</span></button>
+    </nav>
+    <div class="sidebar-foot">
+      <strong id="footCount">Sin datos cargados</strong>
+      <span id="footDate">Sube un reporte para comenzar</span>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- TABLERO -->
+    <section class="view active" id="view-tablero">
+      <div class="topline">
+        <div>
+          <h1>Panorama</h1>
+          <p>Estado de las próximas tomas de peso y talla según el último reporte cargado.</p>
+        </div>
+      </div>
+
+      <div class="cards" id="summaryCards"></div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Beneficiarios</h2>
+          <div class="filters">
+            <input type="text" id="fSearch" placeholder="Buscar por nombre o documento">
+            <select id="fContrato"><option value="">Todos los contratos</option></select>
+            <select id="fUnidad"><option value="">Todas las unidades</option></select>
+            <select id="fEstado"><option value="">Todos los estados</option></select>
+            <select id="fUrgencia">
+              <option value="">Toda urgencia</option>
+              <option value="vencida">Vencidas</option>
+              <option value="proxima">Próximas (7 días)</option>
+              <option value="programada">Programadas</option>
+            </select>
+          </div>
+        </div>
+        <div class="legend" id="estadoLegend">
+          <span class="item"><span class="dot" style="background:var(--sev-critical);"></span>Desnutrición severa</span>
+          <span class="item"><span class="dot" style="background:var(--sev-alto);"></span>Desnutrición moderada/global</span>
+          <span class="item"><span class="dot" style="background:var(--sev-riesgo);"></span>Riesgo</span>
+          <span class="item"><span class="dot" style="background:var(--sev-normal);"></span>Adecuado</span>
+          <span class="item"><span class="dot" style="background:var(--sev-sobrepeso);"></span>Sobrepeso</span>
+          <span class="item"><span class="dot" style="background:var(--sev-obesidad);"></span>Obesidad</span>
+        </div>
+        <div class="panel-body" id="tableWrap"></div>
+      </div>
+    </section>
+
+    <!-- CALENDARIO -->
+    <section class="view" id="view-calendario">
+      <div class="topline">
+        <div>
+          <h1>Calendario</h1>
+          <p>Próximas fechas de toma de peso y talla, calculadas según el estado nutricional de cada beneficiario.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="cal-head">
+            <button class="iconbtn" id="calPrev">&#8592;</button>
+            <div class="month" id="calMonthLabel"></div>
+            <button class="iconbtn" id="calNext">&#8594;</button>
+          </div>
+          <button class="btn secondary" id="calToday">Hoy</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="agenda-title" id="agendaTitle"></div>
+        <div class="panel-body" id="agendaWrap"></div>
+      </div>
+    </section>
+
+    <!-- CARGAR -->
+    <section class="view" id="view-cargar">
+      <div class="topline">
+        <div>
+          <h1>Cargar reporte</h1>
+          <p>Sube el reporte de valoración nutricional (misma estructura del CUE General Por Toma) para actualizar el calendario.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-body">
+          <div class="dropzone" id="dropzone">
+            <div class="big">Arrastra el archivo .xlsx aquí</div>
+            <div class="small">o haz clic para seleccionarlo desde tu equipo</div>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" style="display:none">
+          </div>
+          <div id="uploadResult"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONFIG -->
+    <section class="view" id="view-config">
+      <div class="topline">
+        <div>
+          <h1>Configuración</h1>
+          <p>Define cada cuántos días se reprograma la próxima toma, según el estado nutricional reportado.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Plazos por estado nutricional</h2>
+        </div>
+        <div class="panel-body">
+          <div class="cfg-labels">
+            <span>Estado nutricional</span><span>Días</span><span></span>
+          </div>
+          <div id="cfgRows"></div>
+          <button class="btn secondary" id="cfgAddRow">+ Agregar estado</button>
+
+          <div class="hint" style="margin-top:18px;">Días por defecto para un estado que no esté en la lista anterior:</div>
+          <div style="max-width:160px; margin-top:6px;">
+            <input type="number" id="cfgDefault" min="1" style="border:1px solid var(--border); border-radius:8px; padding:8px 10px; width:100%;">
+          </div>
+
+          <div class="cfg-actions">
+            <button class="btn" id="cfgSave">Guardar configuración</button>
+            <button class="btn secondary" id="cfgExport">Exportar configuración</button>
+            <button class="btn secondary" id="cfgImportBtn">Importar configuración</button>
+            <input type="file" id="cfgImportFile" accept=".json" style="display:none">
+            <button class="btn danger-outline" id="cfgReset">Restaurar valores por defecto</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+(function(){
+
+  /* ---------------------------------------------------------
+     CONFIGURACIÓN POR DEFECTO
+     Los nombres de estado deben coincidir (sin distinguir
+     mayúsculas/acentos) con los valores de la columna
+     "Estado Peso Talla" del reporte. Si un estado no aparece
+     aquí, se usa cfgDefault.
+  --------------------------------------------------------- */
+  const DEFAULT_SETTINGS = {
+    defaultDias: 30,
+    statuses: [
+      { estado: 'Desnutricion aguda severa', dias: 7 },
+      { estado: 'Desnutricion Aguda Moderada', dias: 7 },
+      { estado: 'Riesgo de desnutrición aguda', dias: 15 },
+      { estado: 'DESNUTRICIÓN GLOBAL', dias: 7 },
+      { estado: 'Riesgo de peso bajo para la edad', dias: 15 },
+      { estado: 'Peso adecuado para la talla', dias: 30 },
+      { estado: 'Riesgo de Sobrepeso', dias: 30 },
+      { estado: 'Sobrepeso', dias: 30 },
+      { estado: 'Obesidad', dias: 30 }
+    ]
+  };
+
+  /* ---------------------------------------------------------
+     MAPEO DE COLUMNAS
+     Se busca por nombre de encabezado normalizado, así que el
+     orden de columnas en el reporte puede variar.
+  --------------------------------------------------------- */
+  const FIELD_MAP = {
+    contrato: ['numero contrato'],
+    codigoUnidad: ['codigo uds', 'codigo unidad de servicio', 'codigo unidad', 'cod uds', 'codigo uds unidad de servicio', 'codigo de la unidad de servicio', 'codigo de unidad de servicio'],
+    unidad: ['nombre unidad'],
+    servicio: ['nombre del servicio'],
+    tipoDocumento: ['tipo documento beneficiario'],
+    numeroDocumento: ['numero documento beneficiario'],
+    primerApellido: ['primer apellido beneficiario'],
+    segundoApellido: ['segundo apellido beneficiario'],
+    primerNombre: ['primer nombre beneficiario'],
+    segundoNombre: ['segundo nombre beneficiario'],
+    fechaNacimiento: ['fecha nacimiento'],
+    estadoPesoTalla: ['estado peso talla'],
+    estadoPesoEdad: ['estado peso edad'],
+    peso: ['peso'],
+    talla: ['talla'],
+    fechaToma: ['fecha registro toma'],
+    fechaValoracion: ['fecha valoracion nuricional', 'fecha valoracion nutricional']
+  };
+
+  function normalize(s){
+    return (s === null || s === undefined ? '' : String(s))
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase().trim().replace(/\s+/g,' ');
+  }
+
+  /* ---------------------------------------------------------
+     ESTADO DE LA APP
+  --------------------------------------------------------- */
+  const state = {
+    rows: [],           // registros válidos, con calendario calculado
+    errors: [],         // registros descartados por datos faltantes
+    lastUpload: null,
+    settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
+    filters: { search:'', contrato:'', unidad:'', estado:'', urgencia:'' },
+    calMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    calSelected: null
+  };
+
+  function todayMid(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+  function addDays(date, n){ const d = new Date(date); d.setDate(d.getDate()+n); return d; }
+  function fmtDate(d){
+    if(!d) return '—';
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    return `${dd}/${mm}/${d.getFullYear()}`;
+  }
+  function sameDay(a,b){ return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+  function parseExcelDate(v){
+    if(v === null || v === undefined || v === '') return null;
+    if(v instanceof Date && !isNaN(v)) { v.setHours(0,0,0,0); return v; }
+    if(typeof v === 'number'){
+      const d = XLSX.SSF.parse_date_code(v);
+      if(!d) return null;
+      return new Date(d.y, d.m-1, d.d);
+    }
+    const s = String(v).trim();
+    let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if(m) return new Date(+m[3], +m[2]-1, +m[1]);
+    m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if(m) return new Date(+m[1], +m[2]-1, +m[3]);
+    const parsed = new Date(s);
+    return isNaN(parsed) ? null : parsed;
+  }
+
+  function parseNumber(v){
+    if(v === null || v === undefined || v === '') return null;
+    const n = parseFloat(String(v).replace(',', '.'));
+    return isNaN(n) ? null : n;
+  }
+
+  /* ---------------------------------------------------------
+     LECTURA DEL ARCHIVO
+  --------------------------------------------------------- */
+  function handleFile(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        const wb = XLSX.read(e.target.result, { type:'array', cellDates:true });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const grid = XLSX.utils.sheet_to_json(sheet, { header:1, defval:'', raw:true });
+        processGrid(grid, file.name);
+      }catch(err){
+        renderUploadResult({ ok:false, message:'No se pudo leer el archivo. Verifica que sea un .xlsx válido con la misma estructura del reporte CUE General Por Toma.' });
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function processGrid(grid, filename){
+    if(!grid.length){
+      renderUploadResult({ ok:false, message:'El archivo no tiene filas de datos.' });
+      return;
+    }
+    const headerRow = grid[0].map(h => normalize(h));
+    const colIndex = {};
+    Object.keys(FIELD_MAP).forEach(key=>{
+      const candidates = FIELD_MAP[key];
+      let idx = -1;
+      for(const cand of candidates){
+        idx = headerRow.indexOf(cand);
+        if(idx !== -1) break;
+      }
+      colIndex[key] = idx;
+    });
+
+    const missingCols = Object.keys(colIndex).filter(k => colIndex[k] === -1 &&
+      !['fechaValoracion','estadoPesoEdad','servicio','codigoUnidad'].includes(k));
+    if(missingCols.length){
+      renderUploadResult({
+        ok:false,
+        message:'El archivo no tiene la misma estructura esperada. Faltan columnas: ' + missingCols.join(', ') + '.'
+      });
+      return;
+    }
+
+    const rows = [];
+    const errors = [];
+
+    for(let r=1; r<grid.length; r++){
+      const line = grid[r];
+      if(!line || line.every(c => c === '' || c === null || c === undefined)) continue;
+
+      const get = key => colIndex[key] === -1 ? '' : line[colIndex[key]];
+
+      const nombreCompleto = [get('primerNombre'), get('segundoNombre'), get('primerApellido'), get('segundoApellido')]
+        .map(s => (s||'').toString().trim()).filter(Boolean).join(' ');
+
+      const numeroDocumento = (get('numeroDocumento')||'').toString().trim();
+      const fechaNacimiento = parseExcelDate(get('fechaNacimiento'));
+      const fechaTomaRaw = colIndex.fechaToma !== -1 ? get('fechaToma') : get('fechaValoracion');
+      const fechaToma = parseExcelDate(fechaTomaRaw) || parseExcelDate(get('fechaValoracion'));
+      const peso = parseNumber(get('peso'));
+      const talla = parseNumber(get('talla'));
+
+      let estado = (get('estadoPesoTalla')||'').toString().trim();
+      if(!estado) estado = (get('estadoPesoEdad')||'').toString().trim();
+      if(!estado) estado = 'Sin dato';
+
+      const missing = [];
+      if(!numeroDocumento) missing.push('número de documento');
+      if(!nombreCompleto) missing.push('nombre completo');
+      if(!fechaNacimiento) missing.push('fecha de nacimiento');
+      if(!fechaToma) missing.push('fecha de toma');
+      if(peso === null) missing.push('peso');
+      if(talla === null) missing.push('talla');
+
+      if(missing.length){
+        errors.push({
+          documento: numeroDocumento || '(sin documento)',
+          nombre: nombreCompleto || '(sin nombre)',
+          faltantes: missing
+        });
+        continue;
+      }
+
+      const unidadNombre = (get('unidad')||'').toString().trim() || 'Sin unidad';
+      const codigoUnidad = (get('codigoUnidad')||'').toString().trim();
+      const unidadLabel = codigoUnidad ? `${unidadNombre} · Cód. ${codigoUnidad}` : unidadNombre;
+
+      rows.push({
+        contrato: (get('contrato')||'').toString().trim() || 'Sin contrato',
+        unidad: unidadNombre,
+        codigoUnidad,
+        unidadLabel,
+        servicio: (get('servicio')||'').toString().trim(),
+        tipoDocumento: (get('tipoDocumento')||'').toString().trim(),
+        numeroDocumento,
+        nombreCompleto,
+        fechaNacimiento,
+        estado,
+        peso, talla,
+        fechaToma
+      });
+    }
+
+    state.rows = rows;
+    state.errors = errors;
+    state.lastUpload = { filename, date: new Date(), total: grid.length-1, ok: rows.length, fail: errors.length };
+    computeSchedule();
+    renderUploadResult({ ok:true });
+    renderAll();
+    switchView('tablero');
+  }
+
+  /* ---------------------------------------------------------
+     CÁLCULO DE CALENDARIO
+  --------------------------------------------------------- */
+  function diasParaEstado(estado){
+    const norm = normalize(estado);
+    const match = state.settings.statuses.find(s => normalize(s.estado) === norm);
+    return match ? match.dias : state.settings.defaultDias;
+  }
+
+  function computeSchedule(){
+    const today = todayMid();
+    state.rows.forEach(row=>{
+      row.dias = diasParaEstado(row.estado);
+      row.proximaToma = addDays(row.fechaToma, row.dias);
+      const diff = Math.round((row.proximaToma - today) / 86400000);
+      row.diasRestantes = diff;
+      row.urgencia = diff < 0 ? 'vencida' : (diff <= 7 ? 'proxima' : 'programada');
+    });
+  }
+
+  /* ---------------------------------------------------------
+     NAVEGACIÓN
+  --------------------------------------------------------- */
+  function switchView(id){
+    document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.view===id));
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id==='view-'+id));
+    if(id==='calendario') renderCalendar();
+  }
+  document.querySelectorAll('.nav button').forEach(b=>{
+    b.addEventListener('click', ()=> switchView(b.dataset.view));
+  });
+
+  /* ---------------------------------------------------------
+     CARGA DE ARCHIVO — UI
+  --------------------------------------------------------- */
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  dropzone.addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', e=>{
+    if(e.target.files[0]) handleFile(e.target.files[0]);
+  });
+  ['dragover','dragenter'].forEach(ev=>{
+    dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.add('drag'); });
+  });
+  ['dragleave','drop'].forEach(ev=>{
+    dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.remove('drag'); });
+  });
+  dropzone.addEventListener('drop', e=>{
+    const f = e.dataTransfer.files[0];
+    if(f) handleFile(f);
+  });
+
+  function renderUploadResult(res){
+    const wrap = document.getElementById('uploadResult');
+    if(res.ok === false){
+      wrap.innerHTML = `<div class="upload-summary"><div class="pill" style="background:var(--danger-tint); color:var(--danger);">${res.message}</div></div>`;
+      return;
+    }
+    const u = state.lastUpload;
+    let html = `<div class="upload-summary">
+      <div class="pill"><b>${u.ok}</b>importados correctamente</div>
+      <div class="pill"><b>${u.fail}</b>con datos incompletos</div>
+      <div class="pill"><b>${fmtDate(u.date)}</b>fecha de carga</div>
+    </div>`;
+    if(state.errors.length){
+      html += `<div class="error-list">` + state.errors.map(er=>
+        `<div class="row"><b>${er.documento}</b> — ${er.nombre}: falta ${er.faltantes.join(', ')}</div>`
+      ).join('') + `</div>`;
+    }
+    document.getElementById('uploadResult').innerHTML = html;
+  }
+
+  /* ---------------------------------------------------------
+     TABLERO
+  --------------------------------------------------------- */
+  function filteredRows(){
+    const f = state.filters;
+    const search = normalize(f.search);
+    return state.rows.filter(r=>{
+      if(f.contrato && r.contrato !== f.contrato) return false;
+      if(f.unidad && r.unidadLabel !== f.unidad) return false;
+      if(f.estado && r.estado !== f.estado) return false;
+      if(f.urgencia && r.urgencia !== f.urgencia) return false;
+      if(search && !(normalize(r.nombreCompleto).includes(search) || normalize(r.numeroDocumento).includes(search))) return false;
+      return true;
+    }).sort((a,b)=> a.proximaToma - b.proximaToma);
+  }
+
+  function renderSummaryCards(){
+    const wrap = document.getElementById('summaryCards');
+    if(!state.rows.length){
+      wrap.innerHTML = `<div class="panel"><div class="empty"><div class="big">Aún no hay datos</div>Sube un reporte para ver el panorama de próximas tomas.</div></div>`;
+      return;
+    }
+    const vencidas = state.rows.filter(r=>r.urgencia==='vencida').length;
+    const proximas = state.rows.filter(r=>r.urgencia==='proxima').length;
+    const programadas = state.rows.filter(r=>r.urgencia==='programada').length;
+    wrap.innerHTML = `
+      <div class="card danger"><div class="num">${vencidas}</div><div class="lbl">Tomas vencidas</div></div>
+      <div class="card gold"><div class="num">${proximas}</div><div class="lbl">Próximas 7 días</div></div>
+      <div class="card primary"><div class="num">${programadas}</div><div class="lbl">Programadas</div></div>
+      <div class="card"><div class="num">${state.rows.length}</div><div class="lbl">Beneficiarios activos</div></div>
+    `;
+  }
+
+  function fillFilterOptions(){
+    const contratos = [...new Set(state.rows.map(r=>r.contrato))].sort();
+    const unidades = [...new Set(state.rows.map(r=>r.unidadLabel))].sort();
+    const estados = [...new Set(state.rows.map(r=>r.estado))].sort();
+    const selC = document.getElementById('fContrato');
+    const selU = document.getElementById('fUnidad');
+    const selE = document.getElementById('fEstado');
+    const prevC = selC.value, prevU = selU.value, prevE = selE.value;
+    selC.innerHTML = '<option value="">Todos los contratos</option>' + contratos.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    selU.innerHTML = '<option value="">Todas las unidades</option>' + unidades.map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join('');
+    selE.innerHTML = '<option value="">Todos los estados</option>' + estados.map(e=>`<option value="${escapeHtml(e)}">${escapeHtml(e)}</option>`).join('');
+    if(contratos.includes(prevC)) selC.value = prevC;
+    if(unidades.includes(prevU)) selU.value = prevU;
+    if(estados.includes(prevE)) selE.value = prevE;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function renderTable(){
+    const wrap = document.getElementById('tableWrap');
+    const rows = filteredRows();
+    if(!state.rows.length){
+      wrap.innerHTML = '';
+      return;
+    }
+    if(!rows.length){
+      wrap.innerHTML = `<div class="empty"><div class="big">Sin resultados</div>Ajusta los filtros para ver beneficiarios.</div>`;
+      return;
+    }
+    wrap.innerHTML = `<table>
+      <thead><tr>
+        <th>Beneficiario</th><th>Contrato</th><th>Unidad</th><th>Estado nutricional</th>
+        <th>Última toma</th><th>Próxima toma</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td class="name-cell">${escapeHtml(r.nombreCompleto)}<div class="sub">${escapeHtml(r.tipoDocumento)} ${escapeHtml(r.numeroDocumento)}</div></td>
+            <td>${escapeHtml(r.contrato)}</td>
+            <td>${escapeHtml(r.unidadLabel)}</td>
+            <td><span class="badge estado ${estadoSeverityClass(r.estado)}">${escapeHtml(r.estado)}</span></td>
+            <td>${fmtDate(r.fechaToma)}</td>
+            <td>${fmtDate(r.proximaToma)}</td>
+            <td><span class="badge ${r.urgencia}">${urgLabel(r)}</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  /* ---------------------------------------------------------
+     SEVERIDAD DEL ESTADO NUTRICIONAL (para color del badge)
+  --------------------------------------------------------- */
+  function estadoSeverityClass(estado){
+    const n = normalize(estado);
+    if(!n || n === 'sin dato') return 'sev-default';
+    if(n.includes('severa')) return 'sev-critical';
+    if(n.includes('obesidad')) return 'sev-obesidad';
+    if(n.includes('sobrepeso') && !n.includes('riesgo')) return 'sev-sobrepeso';
+    if(n.includes('riesgo')) return 'sev-riesgo';
+    if(n.includes('moderada') || n.includes('global')) return 'sev-alto';
+    if(n.includes('adecuado')) return 'sev-normal';
+    return 'sev-default';
+  }
+
+  function urgLabel(r){
+    if(r.urgencia==='vencida') return `Vencida hace ${Math.abs(r.diasRestantes)} d`;
+    if(r.urgencia==='proxima') return r.diasRestantes===0 ? 'Hoy' : `En ${r.diasRestantes} d`;
+    return `En ${r.diasRestantes} d`;
+  }
+
+  document.getElementById('fSearch').addEventListener('input', e=>{ state.filters.search = e.target.value; renderTable(); });
+  document.getElementById('fContrato').addEventListener('change', e=>{ state.filters.contrato = e.target.value; renderTable(); });
+  document.getElementById('fUnidad').addEventListener('change', e=>{ state.filters.unidad = e.target.value; renderTable(); });
+  document.getElementById('fEstado').addEventListener('change', e=>{ state.filters.estado = e.target.value; renderTable(); });
+  document.getElementById('fUrgencia').addEventListener('change', e=>{ state.filters.urgencia = e.target.value; renderTable(); });
+
+  /* ---------------------------------------------------------
+     CALENDARIO
+  --------------------------------------------------------- */
+  const DOW = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  function renderCalendar(){
+    const grid = document.getElementById('calGrid');
+    const label = document.getElementById('calMonthLabel');
+    const monthStart = state.calMonth;
+    label.textContent = `${MONTHS[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
+
+    const byDay = {};
+    state.rows.forEach(r=>{
+      const key = r.proximaToma.toISOString().slice(0,10);
+      (byDay[key] = byDay[key] || []).push(r);
+    });
+
+    const firstDow = monthStart.getDay();
+    const daysInMonth = new Date(monthStart.getFullYear(), monthStart.getMonth()+1, 0).getDate();
+    const today = todayMid();
+
+    let cells = DOW.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+
+    const prevMonthDays = new Date(monthStart.getFullYear(), monthStart.getMonth(), 0).getDate();
+    for(let i=0;i<firstDow;i++){
+      const dnum = prevMonthDays - firstDow + i + 1;
+      cells += `<div class="cal-cell out"><div class="d">${dnum}</div></div>`;
+    }
+
+    for(let d=1; d<=daysInMonth; d++){
+      const dateObj = new Date(monthStart.getFullYear(), monthStart.getMonth(), d);
+      const key = dateObj.toISOString().slice(0,10);
+      const items = (byDay[key] || []);
+      const classes = ['cal-cell'];
+      if(sameDay(dateObj, today)) classes.push('today');
+      if(state.calSelected && sameDay(dateObj, state.calSelected)) classes.push('selected');
+
+      let tags = '';
+      const counts = { vencida:0, proxima:0, programada:0 };
+      items.forEach(it=> counts[it.urgencia]++);
+      ['vencida','proxima','programada'].forEach(k=>{
+        if(counts[k]) tags += `<div class="cal-tag ${k}">${counts[k]} ${k==='vencida'?'venc.':k==='proxima'?'próx.':'prog.'}</div>`;
+      });
+
+      cells += `<div class="${classes.join(' ')}" data-date="${key}"><div class="d">${d}</div><div class="cal-dots">${tags}</div></div>`;
+    }
+
+    const totalCells = firstDow + daysInMonth;
+    const trailing = (7 - (totalCells % 7)) % 7;
+    for(let i=1;i<=trailing;i++){
+      cells += `<div class="cal-cell out"><div class="d">${i}</div></div>`;
+    }
+
+    grid.innerHTML = cells;
+    grid.querySelectorAll('.cal-cell:not(.out)').forEach(cell=>{
+      cell.addEventListener('click', ()=>{
+        const [y,m,d] = cell.dataset.date.split('-').map(Number);
+        state.calSelected = new Date(y, m-1, d);
+        renderCalendar();
+        renderAgenda();
+      });
+    });
+
+    renderAgenda();
+  }
+
+  function renderAgenda(){
+    const title = document.getElementById('agendaTitle');
+    const wrap = document.getElementById('agendaWrap');
+    if(!state.rows.length){
+      title.textContent = '';
+      wrap.innerHTML = `<div class="empty"><div class="big">Aún no hay datos</div>Sube un reporte para ver el calendario de próximas tomas.</div>`;
+      return;
+    }
+    const day = state.calSelected || todayMid();
+    title.innerHTML = `Beneficiarios programados para <b>${fmtDate(day)}</b>`;
+    const items = state.rows.filter(r=> sameDay(r.proximaToma, day)).sort((a,b)=> a.nombreCompleto.localeCompare(b.nombreCompleto));
+    if(!items.length){
+      wrap.innerHTML = `<div class="empty">No hay tomas programadas este día.</div>`;
+      return;
+    }
+    wrap.innerHTML = `<table><thead><tr><th>Beneficiario</th><th>Unidad</th><th>Estado nutricional</th><th></th></tr></thead><tbody>
+      ${items.map(r=>`<tr>
+        <td class="name-cell">${escapeHtml(r.nombreCompleto)}<div class="sub">${escapeHtml(r.tipoDocumento)} ${escapeHtml(r.numeroDocumento)}</div></td>
+        <td>${escapeHtml(r.unidadLabel)}</td>
+        <td><span class="badge estado ${estadoSeverityClass(r.estado)}">${escapeHtml(r.estado)}</span></td>
+        <td><span class="badge ${r.urgencia}">${urgLabel(r)}</span></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  document.getElementById('calPrev').addEventListener('click', ()=>{
+    state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()-1, 1);
+    renderCalendar();
+  });
+  document.getElementById('calNext').addEventListener('click', ()=>{
+    state.calMonth = new Date(state.calMonth.getFullYear(), state.calMonth.getMonth()+1, 1);
+    renderCalendar();
+  });
+  document.getElementById('calToday').addEventListener('click', ()=>{
+    const t = todayMid();
+    state.calMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+    state.calSelected = t;
+    renderCalendar();
+  });
+
+  /* ---------------------------------------------------------
+     CONFIGURACIÓN
+  --------------------------------------------------------- */
+  function renderConfig(){
+    const wrap = document.getElementById('cfgRows');
+    wrap.innerHTML = state.settings.statuses.map((s,i)=>`
+      <div class="cfg-row" data-i="${i}">
+        <input type="text" class="cfg-estado" value="${escapeHtml(s.estado)}">
+        <input type="number" class="cfg-dias" min="1" value="${s.dias}">
+        <button class="rm" title="Eliminar">&times;</button>
+      </div>
+    `).join('');
+    document.getElementById('cfgDefault').value = state.settings.defaultDias;
+
+    wrap.querySelectorAll('.rm').forEach(btn=>{
+      btn.addEventListener('click', e=>{
+        const i = +e.target.closest('.cfg-row').dataset.i;
+        state.settings.statuses.splice(i,1);
+        renderConfig();
+      });
+    });
+  }
+
+  document.getElementById('cfgAddRow').addEventListener('click', ()=>{
+    state.settings.statuses.push({ estado:'', dias: state.settings.defaultDias });
+    renderConfig();
+  });
+
+  function readConfigFromForm(){
+    const rows = [...document.querySelectorAll('.cfg-row')];
+    const statuses = rows.map(row=>({
+      estado: row.querySelector('.cfg-estado').value.trim(),
+      dias: Math.max(1, parseInt(row.querySelector('.cfg-dias').value,10) || 1)
+    })).filter(s=> s.estado);
+    const defaultDias = Math.max(1, parseInt(document.getElementById('cfgDefault').value,10) || 30);
+    return { statuses, defaultDias };
+  }
+
+  document.getElementById('cfgSave').addEventListener('click', ()=>{
+    state.settings = readConfigFromForm();
+    computeSchedule();
+    renderAll();
+    const btn = document.getElementById('cfgSave');
+    const original = btn.textContent;
+    btn.textContent = 'Guardado ✓';
+    setTimeout(()=> btn.textContent = original, 1400);
+  });
+
+  document.getElementById('cfgReset').addEventListener('click', ()=>{
+    state.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    renderConfig();
+  });
+
+  document.getElementById('cfgExport').addEventListener('click', ()=>{
+    const data = readConfigFromForm();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'configuracion-plazos.json'; a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('cfgImportBtn').addEventListener('click', ()=> document.getElementById('cfgImportFile').click());
+  document.getElementById('cfgImportFile').addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      try{
+        const data = JSON.parse(ev.target.result);
+        if(data && Array.isArray(data.statuses)){
+          state.settings = { statuses: data.statuses, defaultDias: data.defaultDias || 30 };
+          renderConfig();
+        }
+      }catch(err){ /* archivo inválido, se ignora */ }
+    };
+    reader.readAsText(file);
+  });
+
+  /* ---------------------------------------------------------
+     RENDER GENERAL
+  --------------------------------------------------------- */
+  function renderFoot(){
+    const foot = document.getElementById('footCount');
+    const dateEl = document.getElementById('footDate');
+    if(!state.lastUpload){
+      foot.textContent = 'Sin datos cargados';
+      dateEl.textContent = 'Sube un reporte para comenzar';
+      return;
+    }
+    foot.textContent = `${state.rows.length} beneficiarios activos`;
+    dateEl.textContent = `Cargado ${fmtDate(state.lastUpload.date)}`;
+  }
+
+  function renderAll(){
+    renderSummaryCards();
+    fillFilterOptions();
+    renderTable();
+    renderFoot();
+    if(document.getElementById('view-calendario').classList.contains('active')) renderCalendar();
+  }
+
+  renderConfig();
+  renderAll();
+
+})();
+</script>
+</body>
+</html>
