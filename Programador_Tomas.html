@@ -102,6 +102,31 @@
   }
   .filters input:focus, .filters select:focus, .cfg-row input:focus{ outline:2px solid var(--primary-soft); outline-offset:1px; }
 
+  .multiselect{ position:relative; }
+  .ms-btn{
+    border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:13.5px;
+    background:var(--surface); color:var(--ink); cursor:pointer; min-width:180px; max-width:260px;
+    display:flex; align-items:center; justify-content:space-between; gap:8px; text-align:left;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .ms-btn:after{ content:'▾'; font-size:10px; color:var(--ink-faint); flex-shrink:0; }
+  .ms-btn:hover{ border-color:var(--primary-soft); }
+  .ms-btn:focus{ outline:2px solid var(--primary-soft); outline-offset:1px; }
+  .ms-panel{
+    display:none; position:absolute; top:calc(100% + 4px); left:0; z-index:20;
+    min-width:260px; max-height:280px; overflow:auto;
+    background:var(--surface); border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow);
+    padding:8px;
+  }
+  .ms-panel.open{ display:block; }
+  .ms-actions{ display:flex; gap:12px; padding:2px 6px 8px; border-bottom:1px solid var(--border); margin-bottom:6px; }
+  .ms-link{ background:none; border:none; color:var(--primary-soft); font-size:12px; font-weight:600; cursor:pointer; padding:0; }
+  .ms-link:hover{ text-decoration:underline; }
+  .ms-option{ display:flex; align-items:center; gap:8px; padding:6px; border-radius:6px; font-size:13px; cursor:pointer; }
+  .ms-option:hover{ background:var(--surface-alt); }
+  .ms-option input{ accent-color:var(--primary-soft); }
+  .ms-empty{ padding:8px 6px; font-size:12.5px; color:var(--ink-faint); }
+
   table{ width:100%; border-collapse:collapse; font-size:13.5px; }
   thead th{ text-align:left; font-weight:600; color:var(--ink-soft); font-size:12px; text-transform:none; letter-spacing:.01em; padding:8px 10px; border-bottom:1px solid var(--border); white-space:nowrap; }
   tbody td{ padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
@@ -165,8 +190,11 @@
   .cal-dots{ margin-top:6px; display:flex; flex-direction:column; gap:3px; }
   .cal-tag{ font-size:10.5px; border-radius:5px; padding:2px 6px; font-weight:700; color:#fff; }
   .cal-tag.cat-desnutricion{ background:#D93B2B; }
+  .cal-tag.cat-riesgo-desnutricion{ background:#E8875F; }
   .cal-tag.cat-obesidad{ background:#7B3FA0; }
+  .cal-tag.cat-riesgo-obesidad{ background:#B98BCB; }
   .cal-tag.cat-sobrepeso{ background:#2F6FED; }
+  .cal-tag.cat-riesgo-sobrepeso{ background:#6FA0F5; }
   .cal-tag.cat-peso{ background:#2E8B57; }
   .cal-tag.cat-sin{ background:#8A9284; }
   .cal-total{ font-size:10.5px; color:var(--ink-soft); margin-top:3px; }
@@ -241,7 +269,10 @@
             <input type="text" id="fSearch" placeholder="Buscar por nombre o documento">
             <select id="fContrato"><option value="">Todos los contratos</option></select>
             <select id="fUnidad"><option value="">Todas las unidades</option></select>
-            <select id="fEstado"><option value="">Todos los estados</option></select>
+            <div class="multiselect" id="fEstadoWrap">
+              <button type="button" class="ms-btn" id="fEstadoBtn">Todos los estados</button>
+              <div class="ms-panel" id="fEstadoPanel"></div>
+            </div>
             <select id="fUrgencia">
               <option value="">Toda urgencia</option>
               <option value="vencida">Vencidas</option>
@@ -284,13 +315,18 @@
             <input type="text" id="fSearchCal" placeholder="Buscar por nombre o documento">
             <select id="fContratoCal"><option value="">Todos los contratos</option></select>
             <select id="fUnidadCal"><option value="">Todas las unidades</option></select>
-            <select id="fEstadoCal"><option value="">Todos los estados</option></select>
+            <div class="multiselect" id="fEstadoCalWrap">
+              <button type="button" class="ms-btn" id="fEstadoCalBtn">Todos los estados</button>
+              <div class="ms-panel" id="fEstadoCalPanel"></div>
+            </div>
           </div>
         </div>
         <div class="legend" id="calLegend">
           <span class="item"><span class="dot" style="background:#D93B2B;"></span>Desnutrición</span>
+          <span class="item"><span class="dot" style="background:#E8875F;"></span>R. desnutrición</span>
           <span class="item"><span class="dot" style="background:#7B3FA0;"></span>Obesidad</span>
           <span class="item"><span class="dot" style="background:#2F6FED;"></span>Sobrepeso</span>
+          <span class="item"><span class="dot" style="background:#6FA0F5;"></span>R. sobrepeso</span>
           <span class="item"><span class="dot" style="background:#2E8B57;"></span>Peso adecuado</span>
           <span class="item"><span class="dot" style="background:#8A9284;"></span>Sin dato</span>
         </div>
@@ -423,7 +459,7 @@
     errors: [],         // registros descartados por datos faltantes
     lastUpload: null,
     settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
-    filters: { search:'', contrato:'', unidad:'', estado:'', urgencia:'' },
+    filters: { search:'', contrato:'', unidad:'', estados:[], urgencia:'' },
     calMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     calSelected: null
   };
@@ -656,7 +692,7 @@
     return state.rows.filter(r=>{
       if(f.contrato && r.contrato !== f.contrato) return false;
       if(f.unidad && r.unidadLabel !== f.unidad) return false;
-      if(f.estado && r.estado !== f.estado) return false;
+      if(f.estados && f.estados.length && !f.estados.includes(r.estado)) return false;
       if(f.urgencia && r.urgencia !== f.urgencia) return false;
       if(search && !(normalize(r.nombreCompleto).includes(search) || normalize(r.numeroDocumento).includes(search))) return false;
       return true;
@@ -695,9 +731,64 @@
     fill('fContratoCal', contratos, 'Todos los contratos');
     fill('fUnidad', unidades, 'Todas las unidades');
     fill('fUnidadCal', unidades, 'Todas las unidades');
-    fill('fEstado', estados, 'Todos los estados');
-    fill('fEstadoCal', estados, 'Todos los estados');
+
+    // conserva solo estados que aún existen en los datos cargados
+    state.filters.estados = state.filters.estados.filter(e=> estados.includes(e));
+    fillEstadoMultiselect('fEstadoPanel', estados);
+    fillEstadoMultiselect('fEstadoCalPanel', estados);
+
     syncFilterInputs();
+  }
+
+  function fillEstadoMultiselect(panelId, estados){
+    const panel = document.getElementById(panelId);
+    if(!estados.length){
+      panel.innerHTML = `<div class="ms-empty">Sin estados disponibles</div>`;
+      return;
+    }
+    panel.innerHTML = `
+      <div class="ms-actions">
+        <button type="button" class="ms-link" data-act="all">Todos</button>
+        <button type="button" class="ms-link" data-act="none">Ninguno</button>
+      </div>
+      ${estados.map(e=>`
+        <label class="ms-option">
+          <input type="checkbox" value="${escapeHtml(e)}">
+          <span>${escapeHtml(e)}</span>
+        </label>`).join('')}
+    `;
+  }
+
+  function setupEstadoMultiselect(btnId, panelId){
+    const btn = document.getElementById(btnId);
+    const panel = document.getElementById(panelId);
+    btn.addEventListener('click', e=>{
+      e.stopPropagation();
+      document.querySelectorAll('.ms-panel.open').forEach(p=>{ if(p!==panel) p.classList.remove('open'); });
+      panel.classList.toggle('open');
+    });
+    panel.addEventListener('click', e=>{
+      e.stopPropagation();
+      const act = e.target.closest('[data-act]');
+      if(!act) return;
+      const all = [...panel.querySelectorAll('input[type=checkbox]')].map(c=>c.value);
+      onFilterChange('estados', act.dataset.act === 'all' ? all : []);
+    });
+    panel.addEventListener('change', e=>{
+      if(!e.target.matches('input[type=checkbox]')) return;
+      const checked = [...panel.querySelectorAll('input[type=checkbox]:checked')].map(c=>c.value);
+      onFilterChange('estados', checked);
+    });
+  }
+  setupEstadoMultiselect('fEstadoBtn', 'fEstadoPanel');
+  setupEstadoMultiselect('fEstadoCalBtn', 'fEstadoCalPanel');
+  document.addEventListener('click', ()=> document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open')));
+
+  function estadoBtnLabel(){
+    const sel = state.filters.estados;
+    if(!sel.length) return 'Todos los estados';
+    if(sel.length === 1) return sel[0];
+    return `${sel.length} estados seleccionados`;
   }
 
   function syncFilterInputs(){
@@ -708,9 +799,16 @@
     document.getElementById('fContratoCal').value = f.contrato;
     document.getElementById('fUnidad').value = f.unidad;
     document.getElementById('fUnidadCal').value = f.unidad;
-    document.getElementById('fEstado').value = f.estado;
-    document.getElementById('fEstadoCal').value = f.estado;
     document.getElementById('fUrgencia').value = f.urgencia;
+
+    const label = estadoBtnLabel();
+    document.getElementById('fEstadoBtn').textContent = label;
+    document.getElementById('fEstadoCalBtn').textContent = label;
+    ['fEstadoPanel','fEstadoCalPanel'].forEach(id=>{
+      document.getElementById(id).querySelectorAll('input[type=checkbox]').forEach(cb=>{
+        cb.checked = f.estados.includes(cb.value);
+      });
+    });
   }
 
   function onFilterChange(field, value){
@@ -780,13 +878,11 @@
   document.getElementById('fSearch').addEventListener('input', e=> onFilterChange('search', e.target.value));
   document.getElementById('fContrato').addEventListener('change', e=> onFilterChange('contrato', e.target.value));
   document.getElementById('fUnidad').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
-  document.getElementById('fEstado').addEventListener('change', e=> onFilterChange('estado', e.target.value));
   document.getElementById('fUrgencia').addEventListener('change', e=> onFilterChange('urgencia', e.target.value));
 
   document.getElementById('fSearchCal').addEventListener('input', e=> onFilterChange('search', e.target.value));
   document.getElementById('fContratoCal').addEventListener('change', e=> onFilterChange('contrato', e.target.value));
   document.getElementById('fUnidadCal').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
-  document.getElementById('fEstadoCal').addEventListener('change', e=> onFilterChange('estado', e.target.value));
 
   /* ---------------------------------------------------------
      CALENDARIO
@@ -794,16 +890,26 @@
   const DOW = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
   const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-  const CATEGORY_ORDER = ['desnutricion','obesidad','sobrepeso','peso','sin'];
+  const CATEGORY_ORDER = ['desnutricion','riesgo-desnutricion','obesidad','riesgo-obesidad','sobrepeso','riesgo-sobrepeso','peso','sin'];
   function estadoCategory(estado){
     const n = normalize(estado);
     if(!n || n === 'sin dato') return { key:'sin', label:'sin', cls:'cat-sin' };
-    if(n.includes('obesidad')) return { key:'obesidad', label:'obesidad', cls:'cat-obesidad' };
-    if(n.includes('sobrepeso')) return { key:'sobrepeso', label:'sobrepeso', cls:'cat-sobrepeso' };
-    if(n.includes('desnutricion')) return { key:'desnutricion', label:'desnutrición', cls:'cat-desnutricion' };
-    if(n.includes('riesgo') && n.includes('peso')) return { key:'desnutricion', label:'desnutrición', cls:'cat-desnutricion' };
-    if(n.includes('peso')) return { key:'peso', label:'peso', cls:'cat-peso' };
-    return { key:'sin', label:'sin', cls:'cat-sin' };
+
+    const esRiesgo = n.includes('riesgo');
+    let base;
+    if(n.includes('obesidad')) base = { key:'obesidad', label:'obesidad' };
+    else if(n.includes('sobrepeso')) base = { key:'sobrepeso', label:'sobrepeso' };
+    else if(n.includes('desnutricion')) base = { key:'desnutricion', label:'desnutrición' };
+    else if(esRiesgo && n.includes('peso') && n.includes('bajo')) base = { key:'desnutricion', label:'desnutrición' };
+    else if(n.includes('peso')) base = { key:'peso', label:'peso' };
+    else base = { key:'sin', label:'sin' };
+
+    // los estados "Riesgo de..." se muestran como categoría propia (abreviada "R.")
+    // para no confundirlos con el estado ya diagnosticado (p. ej. Desnutrición real)
+    if(esRiesgo && base.key !== 'sin' && base.key !== 'peso'){
+      return { key:'riesgo-'+base.key, label:'R. '+base.label, cls:'cat-riesgo-'+base.key };
+    }
+    return { key:base.key, label:base.label, cls:'cat-'+base.key };
   }
 
   function renderCalendar(){
