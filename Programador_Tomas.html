@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <style>
   :root{
     --bg:#F5F6F1;
@@ -127,7 +129,46 @@
   .ms-option input{ accent-color:var(--primary-soft); }
   .ms-empty{ padding:8px 6px; font-size:12.5px; color:var(--ink-faint); }
 
-  table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  /* Modal generar PDF */
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(27,36,29,0.45); z-index:100; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.open{ display:flex; }
+  .modal-card{ background:var(--surface); border-radius:12px; box-shadow:var(--shadow); width:100%; max-width:440px; max-height:88vh; overflow:auto; }
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); }
+  .modal-head h3{ font-size:16px; }
+  .modal-head .iconbtn{ font-size:15px; }
+  .modal-body{ padding:18px; display:flex; flex-direction:column; gap:16px; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; padding:14px 18px; border-top:1px solid var(--border); }
+  .field-group label.pd-title{ display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:8px; }
+  .filters-summary{ background:var(--surface-alt); border-radius:8px; padding:10px 12px; font-size:12.5px; color:var(--ink-soft); line-height:1.7; }
+  .filters-summary b{ color:var(--ink); }
+  .period-tabs{ display:flex; gap:6px; }
+  .ptab{ flex:1; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:12.5px; cursor:pointer; font-weight:600; }
+  .ptab:hover{ border-color:var(--primary-soft); }
+  .ptab.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
+  .pd-group-label{ display:block; font-size:12px; font-weight:600; color:var(--ink-soft); margin-bottom:6px; }
+  .pd-option{ display:flex; align-items:center; gap:8px; padding:9px 10px; border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:13px; margin-bottom:6px; }
+  .pd-option:hover{ background:var(--surface-alt); }
+  .pd-option input{ accent-color:var(--primary-soft); }
+  .btn.sm{ padding:5px 11px; font-size:12px; }
+
+  /* Modal detalle beneficiario */
+  .detail-card{ max-width:960px; }
+  .detail-card .modal-body{ padding:0; }
+  .detail-groups{ display:flex; align-items:stretch; }
+  .detail-group{ flex:1; min-width:0; padding:16px 16px 18px; }
+  .detail-group + .detail-group{ border-left:1px solid var(--border); }
+  .detail-section-title{ font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.03em; margin:0 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  .detail-grid{ display:grid; grid-template-columns:1fr; gap:12px; }
+  .detail-item .lbl{ font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.02em; margin-bottom:4px; }
+  .detail-item .val{ font-size:14px; color:var(--ink); font-weight:600; }
+  .detail-name{ font-size:12.5px; color:var(--ink-soft); margin-top:2px; }
+  @media (max-width:760px){
+    .detail-groups{ flex-direction:column; }
+    .detail-group + .detail-group{ border-left:none; border-top:1px solid var(--border); }
+  }
+
+  .table-scroll{ overflow-x:auto; margin:0 -18px; padding:0 18px; }
+  table{ width:100%; min-width:760px; border-collapse:collapse; font-size:13.5px; }
   thead th{ text-align:left; font-weight:600; color:var(--ink-soft); font-size:12px; text-transform:none; letter-spacing:.01em; padding:8px 10px; border-bottom:1px solid var(--border); white-space:nowrap; }
   tbody td{ padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
   tbody tr:hover{ background:var(--bg); }
@@ -279,6 +320,11 @@
               <option value="proxima">Próximas (7 días)</option>
               <option value="programada">Programadas</option>
             </select>
+            <select id="fVinculo">
+              <option value="">Vinculados y desvinculados</option>
+              <option value="vinculado">Solo vinculados</option>
+              <option value="desvinculado">Solo desvinculados</option>
+            </select>
           </div>
         </div>
         <div class="legend" id="estadoLegend">
@@ -308,7 +354,10 @@
             <div class="month" id="calMonthLabel"></div>
             <button class="iconbtn" id="calNext">&#8594;</button>
           </div>
-          <button class="btn secondary" id="calToday">Hoy</button>
+          <div style="display:flex; gap:10px;">
+            <button class="btn secondary" id="calToday">Hoy</button>
+            <button class="btn" id="btnGenerarPdf">&#128196; Generar PDF</button>
+          </div>
         </div>
         <div class="panel-head" style="padding-top:12px; padding-bottom:12px;">
           <div class="filters">
@@ -319,6 +368,11 @@
               <button type="button" class="ms-btn" id="fEstadoCalBtn">Todos los estados</button>
               <div class="ms-panel" id="fEstadoCalPanel"></div>
             </div>
+            <select id="fVinculoCal">
+              <option value="">Vinculados y desvinculados</option>
+              <option value="vinculado">Solo vinculados</option>
+              <option value="desvinculado">Solo desvinculados</option>
+            </select>
           </div>
         </div>
         <div class="legend" id="calLegend">
@@ -395,6 +449,49 @@
   </div>
 </div>
 
+<!-- MODAL: Generar PDF -->
+<div class="modal-overlay" id="pdfModalOverlay">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Generar PDF de tomas programadas</h3>
+      <button class="iconbtn" id="pdfModalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label class="pd-title">Filtros aplicados</label>
+        <div class="filters-summary" id="pdfFiltersSummary"></div>
+      </div>
+      <div class="field-group">
+        <label class="pd-title">Periodo dentro de <span id="pdfMonthLabel"></span></label>
+        <div class="period-tabs" id="pdfPeriodTabs">
+          <button type="button" class="ptab" data-period="semana">Semanal</button>
+          <button type="button" class="ptab" data-period="quincena">Quincenal</button>
+          <button type="button" class="ptab active" data-period="mes">Mes completo</button>
+        </div>
+      </div>
+      <div class="field-group" id="pdfSubOptions"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" id="pdfCancelBtn">Cancelar</button>
+      <button class="btn" id="pdfGenerateBtn">Generar PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Detalle del beneficiario -->
+<div class="modal-overlay" id="detailModalOverlay">
+  <div class="modal-card detail-card">
+    <div class="modal-head">
+      <div>
+        <h3 id="detailName">Beneficiario</h3>
+        <div class="detail-name" id="detailDoc"></div>
+      </div>
+      <button class="iconbtn" id="detailModalClose">&times;</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+  </div>
+</div>
+
 <script>
 (function(){
 
@@ -406,17 +503,17 @@
      aquí, se usa cfgDefault.
   --------------------------------------------------------- */
   const DEFAULT_SETTINGS = {
-    defaultDias: 90,
+    defaultDias: 30,
     statuses: [
-      { estado: 'Desnutricion aguda severa', dias: 15 },
-      { estado: 'Desnutricion Aguda Moderada', dias: 15 },
+      { estado: 'Desnutricion aguda severa', dias: 7 },
+      { estado: 'Desnutricion Aguda Moderada', dias: 7 },
       { estado: 'Riesgo de desnutrición aguda', dias: 15 },
-      { estado: 'DESNUTRICIÓN GLOBAL', dias: 15 },
+      { estado: 'DESNUTRICIÓN GLOBAL', dias: 7 },
       { estado: 'Riesgo de peso bajo para la edad', dias: 15 },
-      { estado: 'Peso adecuado para la talla', dias: 90 },
-      { estado: 'Riesgo de Sobrepeso', dias: 90 },
-      { estado: 'Sobrepeso', dias: 90 },
-      { estado: 'Obesidad', dias: 90 }
+      { estado: 'Peso adecuado para la talla', dias: 30 },
+      { estado: 'Riesgo de Sobrepeso', dias: 30 },
+      { estado: 'Sobrepeso', dias: 30 },
+      { estado: 'Obesidad', dias: 30 }
     ]
   };
 
@@ -437,8 +534,11 @@
     primerNombre: ['primer nombre beneficiario'],
     segundoNombre: ['segundo nombre beneficiario'],
     fechaNacimiento: ['fecha nacimiento'],
+    estadoTallaEdad: ['estado talla edad'],
     estadoPesoTalla: ['estado peso talla'],
     estadoPesoEdad: ['estado peso edad'],
+    estadoIMC: ['estado imc'],
+    estadoActivo: ['estado'],
     peso: ['peso'],
     talla: ['talla'],
     fechaToma: ['fecha registro toma'],
@@ -459,7 +559,7 @@
     errors: [],         // registros descartados por datos faltantes
     lastUpload: null,
     settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
-    filters: { search:'', contrato:'', unidad:'', estados:[], urgencia:'' },
+    filters: { search:'', contrato:'', unidad:'', estados:[], urgencia:'', vinculo:'' },
     calMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     calSelected: null
   };
@@ -473,6 +573,23 @@
     return `${dd}/${mm}/${d.getFullYear()}`;
   }
   function sameDay(a,b){ return a && b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+  function calcAge(birth, ref){
+    ref = ref || todayMid();
+    let years = ref.getFullYear() - birth.getFullYear();
+    let months = ref.getMonth() - birth.getMonth();
+    let days = ref.getDate() - birth.getDate();
+    if(days < 0){
+      months--;
+      const prevMonthDays = new Date(ref.getFullYear(), ref.getMonth(), 0).getDate();
+      days += prevMonthDays;
+    }
+    if(months < 0){
+      years--;
+      months += 12;
+    }
+    return { years, months, days };
+  }
 
   function parseExcelDate(v){
     if(v === null || v === undefined || v === '') return null;
@@ -533,7 +650,7 @@
     });
 
     const missingCols = Object.keys(colIndex).filter(k => colIndex[k] === -1 &&
-      !['fechaValoracion','estadoPesoEdad','servicio','codigoUnidad'].includes(k));
+      !['fechaValoracion','estadoPesoEdad','servicio','codigoUnidad','estadoTallaEdad','estadoIMC','estadoActivo'].includes(k));
     if(missingCols.length){
       renderUploadResult({
         ok:false,
@@ -564,6 +681,12 @@
       let estado = (get('estadoPesoTalla')||'').toString().trim();
       if(!estado) estado = (get('estadoPesoEdad')||'').toString().trim();
       if(!estado) estado = 'Sin dato';
+
+      const estadoTallaEdad = (get('estadoTallaEdad')||'').toString().trim();
+      const estadoPesoEdadVal = (get('estadoPesoEdad')||'').toString().trim();
+      const estadoPesoTallaVal = (get('estadoPesoTalla')||'').toString().trim();
+      const estadoIMC = (get('estadoIMC')||'').toString().trim();
+      const estadoActivo = (get('estadoActivo')||'').toString().trim() || 'Activo';
 
       const missing = [];
       if(!numeroDocumento) missing.push('número de documento');
@@ -597,6 +720,11 @@
         nombreCompleto,
         fechaNacimiento,
         estado,
+        estadoTallaEdad,
+        estadoPesoEdad: estadoPesoEdadVal,
+        estadoPesoTalla: estadoPesoTallaVal,
+        estadoIMC,
+        estadoActivo,
         peso, talla,
         fechaToma
       });
@@ -686,6 +814,11 @@
   /* ---------------------------------------------------------
      TABLERO
   --------------------------------------------------------- */
+  function esVinculado(r){
+    const n = normalize(r.estadoActivo);
+    return !(n.includes('retir') || n.includes('inactiv') || n.includes('desvincul'));
+  }
+
   function filteredRows(){
     const f = state.filters;
     const search = normalize(f.search);
@@ -694,6 +827,8 @@
       if(f.unidad && r.unidadLabel !== f.unidad) return false;
       if(f.estados && f.estados.length && !f.estados.includes(r.estado)) return false;
       if(f.urgencia && r.urgencia !== f.urgencia) return false;
+      if(f.vinculo === 'vinculado' && !esVinculado(r)) return false;
+      if(f.vinculo === 'desvinculado' && esVinculado(r)) return false;
       if(search && !(normalize(r.nombreCompleto).includes(search) || normalize(r.numeroDocumento).includes(search))) return false;
       return true;
     }).sort((a,b)=> a.proximaToma - b.proximaToma);
@@ -800,6 +935,8 @@
     document.getElementById('fUnidad').value = f.unidad;
     document.getElementById('fUnidadCal').value = f.unidad;
     document.getElementById('fUrgencia').value = f.urgencia;
+    document.getElementById('fVinculo').value = f.vinculo;
+    document.getElementById('fVinculoCal').value = f.vinculo;
 
     const label = estadoBtnLabel();
     document.getElementById('fEstadoBtn').textContent = label;
@@ -833,10 +970,10 @@
       wrap.innerHTML = `<div class="empty"><div class="big">Sin resultados</div>Ajusta los filtros para ver beneficiarios.</div>`;
       return;
     }
-    wrap.innerHTML = `<table>
+    wrap.innerHTML = `<div class="table-scroll"><table>
       <thead><tr>
         <th>Beneficiario</th><th>Contrato</th><th>Unidad</th><th>Estado nutricional</th>
-        <th>Última toma</th><th>Próxima toma</th><th></th>
+        <th>Última toma</th><th>Próxima toma</th><th></th><th></th>
       </tr></thead>
       <tbody>
         ${rows.map(r=>`
@@ -848,10 +985,11 @@
             <td>${fmtDate(r.fechaToma)}</td>
             <td>${fmtDate(r.proximaToma)}</td>
             <td><span class="badge ${r.urgencia}">${urgLabel(r)}</span></td>
+            <td><button type="button" class="btn secondary sm btn-ver-detalle" data-doc="${escapeHtml(r.numeroDocumento)}">Ver detalles</button></td>
           </tr>
         `).join('')}
       </tbody>
-    </table>`;
+    </table></div>`;
   }
 
   /* ---------------------------------------------------------
@@ -879,10 +1017,12 @@
   document.getElementById('fContrato').addEventListener('change', e=> onFilterChange('contrato', e.target.value));
   document.getElementById('fUnidad').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
   document.getElementById('fUrgencia').addEventListener('change', e=> onFilterChange('urgencia', e.target.value));
+  document.getElementById('fVinculo').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
 
   document.getElementById('fSearchCal').addEventListener('input', e=> onFilterChange('search', e.target.value));
   document.getElementById('fContratoCal').addEventListener('change', e=> onFilterChange('contrato', e.target.value));
   document.getElementById('fUnidadCal').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
+  document.getElementById('fVinculoCal').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
 
   /* ---------------------------------------------------------
      CALENDARIO
@@ -995,12 +1135,13 @@
       wrap.innerHTML = `<div class="empty">No hay tomas programadas este día.</div>`;
       return;
     }
-    wrap.innerHTML = `<table><thead><tr><th>Beneficiario</th><th>Unidad</th><th>Estado nutricional</th><th></th></tr></thead><tbody>
+    wrap.innerHTML = `<table><thead><tr><th>Beneficiario</th><th>Unidad</th><th>Estado nutricional</th><th></th><th></th></tr></thead><tbody>
       ${items.map(r=>`<tr>
         <td class="name-cell">${escapeHtml(r.nombreCompleto)}<div class="sub">${escapeHtml(r.tipoDocumento)} ${escapeHtml(r.numeroDocumento)}</div></td>
         <td>${escapeHtml(r.unidadLabel)}</td>
         <td><span class="badge estado ${estadoSeverityClass(r.estado)}">${escapeHtml(r.estado)}</span></td>
         <td><span class="badge ${r.urgencia}">${urgLabel(r)}</span></td>
+        <td><button type="button" class="btn secondary sm btn-ver-detalle" data-doc="${escapeHtml(r.numeroDocumento)}">Ver detalles</button></td>
       </tr>`).join('')}
     </tbody></table>`;
   }
@@ -1097,6 +1238,373 @@
       }catch(err){ /* archivo inválido, se ignora */ }
     };
     reader.readAsText(file);
+  });
+
+  /* ---------------------------------------------------------
+     GENERAR PDF (semanal / quincenal / mensual)
+  --------------------------------------------------------- */
+  const pdfState = { period: 'mes', weekIdx: 0, quincena: 1 };
+
+  const SEVERITY_PDF_COLORS = {
+    'sev-critical':  { bg:[243,214,210], text:[122,30,30] },
+    'sev-alto':      { bg:[246,226,220], text:[173,59,39] },
+    'sev-riesgo':    { bg:[245,235,216], text:[184,132,46] },
+    'sev-normal':    { bg:[220,238,230], text:[46,107,87] },
+    'sev-sobrepeso': { bg:[247,227,204], text:[181,101,29] },
+    'sev-obesidad':  { bg:[240,216,196], text:[122,59,18] },
+    'sev-default':   { bg:[234,240,230], text:[91,100,89] }
+  };
+  const URGENCIA_PDF_COLORS = {
+    vencida:    { bg:[246,226,220], text:[173,59,39] },
+    proxima:    { bg:[245,235,216], text:[184,132,46] },
+    programada: { bg:[227,236,229], text:[46,107,87] }
+  };
+  const URGENCIA_LABELS = { vencida:'Vencida', proxima:'Próxima', programada:'Programada' };
+
+  function fmtDateShort(d){
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  }
+
+  function computeWeekRanges(monthStart){
+    const y = monthStart.getFullYear(), m = monthStart.getMonth();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    const weeks = [];
+    let current = [];
+    for(let d=1; d<=daysInMonth; d++){
+      const date = new Date(y, m, d);
+      current.push(date);
+      const dow = (date.getDay() + 6) % 7; // 0=Lun ... 6=Dom
+      if(dow === 6 || d === daysInMonth){
+        weeks.push({ start: current[0], end: current[current.length-1] });
+        current = [];
+      }
+    }
+    return weeks;
+  }
+
+  function buildFiltersSummaryHtml(){
+    const f = state.filters;
+    const parts = [];
+    parts.push(`<b>Contrato:</b> ${escapeHtml(f.contrato || 'Todos')}`);
+    parts.push(`<b>Unidad:</b> ${escapeHtml(f.unidad || 'Todas')}`);
+    parts.push(`<b>Estado nutricional:</b> ${f.estados.length ? escapeHtml(f.estados.join(', ')) : 'Todos'}`);
+    if(f.vinculo) parts.push(`<b>Vínculo:</b> ${f.vinculo === 'vinculado' ? 'Solo vinculados' : 'Solo desvinculados'}`);
+    if(f.search) parts.push(`<b>Búsqueda:</b> "${escapeHtml(f.search)}"`);
+    return parts.join('<br>');
+  }
+
+  function renderPdfSubOptions(){
+    const wrap = document.getElementById('pdfSubOptions');
+    const y = state.calMonth.getFullYear(), m = state.calMonth.getMonth();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+
+    if(pdfState.period === 'mes'){
+      wrap.innerHTML = `<div class="hint">Se incluirá todo el mes de ${MONTHS[m]} de ${y}.</div>`;
+      return;
+    }
+    if(pdfState.period === 'quincena'){
+      const opts = [
+        { id:1, label:`Quincena 1: 01 – 15 de ${MONTHS[m].toLowerCase()}` },
+        { id:2, label:`Quincena 2: 16 – ${daysInMonth} de ${MONTHS[m].toLowerCase()}` }
+      ];
+      wrap.innerHTML = `<label class="pd-group-label">Elige la quincena</label>` + opts.map(o=>`
+        <label class="pd-option">
+          <input type="radio" name="pdQuincena" value="${o.id}" ${pdfState.quincena===o.id?'checked':''}>
+          <span>${o.label}</span>
+        </label>`).join('');
+      wrap.querySelectorAll('input[name=pdQuincena]').forEach(inp=>
+        inp.addEventListener('change', e=> pdfState.quincena = +e.target.value));
+      return;
+    }
+    // semana
+    const weeks = computeWeekRanges(state.calMonth);
+    if(pdfState.weekIdx >= weeks.length) pdfState.weekIdx = 0;
+    wrap.innerHTML = `<label class="pd-group-label">Elige la semana</label>` + weeks.map((w,i)=>`
+      <label class="pd-option">
+        <input type="radio" name="pdSemana" value="${i}" ${pdfState.weekIdx===i?'checked':''}>
+        <span>Semana ${i+1}: ${fmtDateShort(w.start)} – ${fmtDateShort(w.end)}</span>
+      </label>`).join('');
+    wrap.querySelectorAll('input[name=pdSemana]').forEach(inp=>
+      inp.addEventListener('change', e=> pdfState.weekIdx = +e.target.value));
+  }
+
+  function openPdfModal(){
+    document.getElementById('pdfMonthLabel').textContent = `${MONTHS[state.calMonth.getMonth()]} ${state.calMonth.getFullYear()}`;
+    document.getElementById('pdfFiltersSummary').innerHTML = buildFiltersSummaryHtml();
+    renderPdfSubOptions();
+    document.getElementById('pdfModalOverlay').classList.add('open');
+  }
+  function closePdfModal(){
+    document.getElementById('pdfModalOverlay').classList.remove('open');
+  }
+
+  document.getElementById('btnGenerarPdf').addEventListener('click', openPdfModal);
+  document.getElementById('pdfModalClose').addEventListener('click', closePdfModal);
+  document.getElementById('pdfCancelBtn').addEventListener('click', closePdfModal);
+  document.getElementById('pdfModalOverlay').addEventListener('click', e=>{
+    if(e.target.id === 'pdfModalOverlay') closePdfModal();
+  });
+  document.querySelectorAll('.ptab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.ptab').forEach(t=> t.classList.remove('active'));
+      tab.classList.add('active');
+      pdfState.period = tab.dataset.period;
+      renderPdfSubOptions();
+    });
+  });
+
+  function getPdfDateRange(){
+    const y = state.calMonth.getFullYear(), m = state.calMonth.getMonth();
+    const daysInMonth = new Date(y, m+1, 0).getDate();
+    if(pdfState.period === 'mes'){
+      return { start:new Date(y,m,1), end:new Date(y,m,daysInMonth), label:`${MONTHS[m]} de ${y}` };
+    }
+    if(pdfState.period === 'quincena'){
+      if(pdfState.quincena === 1) return { start:new Date(y,m,1), end:new Date(y,m,15), label:`Quincena 1 · ${MONTHS[m]} de ${y}` };
+      return { start:new Date(y,m,16), end:new Date(y,m,daysInMonth), label:`Quincena 2 · ${MONTHS[m]} de ${y}` };
+    }
+    const weeks = computeWeekRanges(state.calMonth);
+    const w = weeks[pdfState.weekIdx] || weeks[0];
+    return { start:w.start, end:w.end, label:`Semana del ${fmtDate(w.start)} al ${fmtDate(w.end)}` };
+  }
+
+  document.getElementById('pdfGenerateBtn').addEventListener('click', ()=>{
+    const range = getPdfDateRange();
+    const rows = filteredRows().filter(r=> r.proximaToma >= range.start && r.proximaToma <= range.end);
+    generatePdfReport(rows, range);
+  });
+
+  function generatePdfReport(rows, range){
+    if(!rows.length){
+      alert('No hay beneficiarios programados con los filtros y el periodo seleccionados.');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'landscape', unit:'pt', format:'letter' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 34;
+
+    // ---- Encabezado ----
+    doc.setFillColor(31,75,63);
+    doc.rect(0,0,pageWidth,64,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(16);
+    doc.text('Seguimiento Nutricional', margin, 28);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10.5);
+    doc.text('Tomas de peso y talla programadas', margin, 44);
+    doc.setFontSize(9.5);
+    doc.text(`Generado el ${fmtDate(new Date())}`, pageWidth-margin, 24, { align:'right' });
+    doc.setFont('helvetica','bold');
+    doc.text(range.label, pageWidth-margin, 40, { align:'right' });
+
+    let y = 82;
+    doc.setTextColor(27,36,29);
+    doc.setFontSize(10);
+    doc.setFont('helvetica','bold');
+    doc.text('Filtros aplicados', margin, y);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    y += 15;
+    const f = state.filters;
+    const filtroLineas = [
+      `Contrato: ${f.contrato || 'Todos'}`,
+      `Unidad: ${f.unidad || 'Todas'}`,
+      `Estado nutricional: ${f.estados.length ? f.estados.join(', ') : 'Todos'}`
+    ];
+    if(f.search) filtroLineas.push(`Búsqueda: "${f.search}"`);
+    filtroLineas.forEach(line=>{ doc.text(line, margin, y); y += 13; });
+
+    // ---- Tarjetas resumen ----
+    const vencidas = rows.filter(r=>r.urgencia==='vencida').length;
+    const proximas = rows.filter(r=>r.urgencia==='proxima').length;
+    const programadas = rows.filter(r=>r.urgencia==='programada').length;
+    const cards = [
+      { label:'Total tomas', value: rows.length, color:[31,75,63] },
+      { label:'Vencidas', value: vencidas, color:[173,59,39] },
+      { label:'Próximas 7 días', value: proximas, color:[184,132,46] },
+      { label:'Programadas', value: programadas, color:[46,107,87] }
+    ];
+    const cw = 92, ch = 44, gap = 8;
+    const cardsTotalW = cards.length * cw + (cards.length-1) * gap;
+    let cx = pageWidth - margin - cardsTotalW;
+    const cardsY = 70;
+    cards.forEach(c=>{
+      doc.setDrawColor(220,226,214);
+      doc.setFillColor(245,246,241);
+      doc.roundedRect(cx, cardsY, cw, ch, 5, 5, 'FD');
+      doc.setTextColor(c.color[0],c.color[1],c.color[2]);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(16);
+      doc.text(String(c.value), cx+10, cardsY+22);
+      doc.setTextColor(91,100,89);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7.5);
+      doc.text(c.label, cx+10, cardsY+34, { maxWidth: cw-16 });
+      cx += cw + gap;
+    });
+
+    y = Math.max(y, cardsY + ch) + 18;
+
+    // ---- Tabla agrupada por día ----
+    const byDay = {};
+    rows.forEach(r=>{
+      const key = r.proximaToma.toISOString().slice(0,10);
+      (byDay[key] = byDay[key] || []).push(r);
+    });
+    const dayKeys = Object.keys(byDay).sort();
+
+    const body = [];
+    dayKeys.forEach(key=>{
+      const items = byDay[key].sort((a,b)=> a.nombreCompleto.localeCompare(b.nombreCompleto));
+      const [yy,mm,dd] = key.split('-').map(Number);
+      const dateObj = new Date(yy, mm-1, dd);
+      let dayLabel = dateObj.toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long' });
+      dayLabel = dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1);
+      body.push([{
+        content: `${dayLabel}   ·   ${items.length} ${items.length===1?'toma':'tomas'}`,
+        colSpan: 7,
+        styles: { fillColor:[227,236,229], textColor:[31,75,63], fontStyle:'bold', fontSize:9.5, halign:'left' }
+      }]);
+      items.forEach(r=>{
+        body.push([
+          r.nombreCompleto,
+          `${r.tipoDocumento} ${r.numeroDocumento}`,
+          r.contrato,
+          r.unidadLabel,
+          r.estado || 'Sin dato',
+          URGENCIA_LABELS[r.urgencia] || r.urgencia,
+          fmtDate(r.proximaToma)
+        ]);
+      });
+    });
+
+    doc.autoTable({
+      startY: y,
+      head: [['Beneficiario','Documento','Contrato','Unidad','Estado nutricional','Urgencia','Próxima toma']],
+      body,
+      margin: { top:40, left: margin, right: margin, bottom: 40 },
+      styles: { font:'helvetica', fontSize:8.5, cellPadding:5, textColor:[27,36,29], lineColor:[220,226,214], lineWidth:0.5, overflow:'linebreak' },
+      headStyles: { fillColor:[31,75,63], textColor:255, fontStyle:'bold', fontSize:8.5 },
+      alternateRowStyles: { fillColor:[250,250,248] },
+      columnStyles: {
+        0:{ cellWidth:135 }, 1:{ cellWidth:95 }, 2:{ cellWidth:60 }, 3:{ cellWidth:135 },
+        4:{ cellWidth:140 }, 5:{ cellWidth:65 }, 6:{ cellWidth:70 }
+      },
+      didParseCell: (data)=>{
+        if(data.section !== 'body') return;
+        if(data.row.raw.length === 1) return; // fila de encabezado de día
+        if(data.column.index === 4){
+          const col = SEVERITY_PDF_COLORS[estadoSeverityClass(data.cell.raw)] || SEVERITY_PDF_COLORS['sev-default'];
+          data.cell.styles.fillColor = col.bg;
+          data.cell.styles.textColor = col.text;
+          data.cell.styles.fontStyle = 'bold';
+        }
+        if(data.column.index === 5){
+          const urgKey = Object.keys(URGENCIA_LABELS).find(k=> URGENCIA_LABELS[k] === data.cell.raw);
+          const col = URGENCIA_PDF_COLORS[urgKey] || URGENCIA_PDF_COLORS.programada;
+          data.cell.styles.fillColor = col.bg;
+          data.cell.styles.textColor = col.text;
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+    });
+
+    // ---- Pie de página ----
+    const totalPages = doc.internal.getNumberOfPages();
+    for(let i=1; i<=totalPages; i++){
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(139,146,132);
+      doc.text(`Página ${i} de ${totalPages}`, pageWidth-margin, doc.internal.pageSize.getHeight()-16, { align:'right' });
+      doc.text('Seguimiento Nutricional', margin, doc.internal.pageSize.getHeight()-16);
+    }
+
+    const slug = range.label.toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    doc.save(`tomas-programadas-${slug}.pdf`);
+    closePdfModal();
+  }
+
+  /* ---------------------------------------------------------
+     DETALLE DEL BENEFICIARIO
+  --------------------------------------------------------- */
+  function openDetailModal(documento){
+    const r = state.rows.find(x=> x.numeroDocumento === documento);
+    if(!r) return;
+
+    document.getElementById('detailName').textContent = r.nombreCompleto;
+    document.getElementById('detailDoc').textContent = `${r.tipoDocumento} ${r.numeroDocumento}`;
+
+    const edad = r.fechaNacimiento ? calcAge(r.fechaNacimiento) : null;
+    const edadTxt = edad ? `${edad.years} años, ${edad.months} meses, ${edad.days} días` : '—';
+    const esRetirado = !esVinculado(r);
+    const activoCls = esRetirado ? 'sev-alto' : 'sev-normal';
+
+    function itemVal(label, val){
+      return `<div class="detail-item"><div class="lbl">${label}</div><div class="val">${val && val !== '' ? escapeHtml(String(val)) : '—'}</div></div>`;
+    }
+    function itemBadge(label, val, cls){
+      if(!val) return `<div class="detail-item"><div class="lbl">${label}</div><div class="val">—</div></div>`;
+      return `<div class="detail-item"><div class="lbl">${label}</div><span class="badge estado ${cls}">${escapeHtml(val)}</span></div>`;
+    }
+
+    document.getElementById('detailBody').innerHTML = `
+      <div class="detail-groups">
+        <div class="detail-group">
+          <div class="detail-section-title">Identificación</div>
+          <div class="detail-grid">
+            ${itemVal('Contrato', r.contrato)}
+            ${itemVal('Unidad', r.unidadLabel)}
+            ${itemVal('Servicio', r.servicio)}
+            ${itemBadge('Estado del beneficiario', r.estadoActivo || 'Activo', activoCls)}
+          </div>
+        </div>
+
+        <div class="detail-group">
+          <div class="detail-section-title">Edad y antropometría</div>
+          <div class="detail-grid">
+            ${itemVal('Fecha de nacimiento', fmtDate(r.fechaNacimiento))}
+            ${itemVal('Edad', edadTxt)}
+            ${itemVal('Peso', r.peso!=null ? `${r.peso} kg` : '—')}
+            ${itemVal('Talla', r.talla!=null ? `${r.talla} cm` : '—')}
+          </div>
+        </div>
+
+        <div class="detail-group">
+          <div class="detail-section-title">Valoración nutricional</div>
+          <div class="detail-grid">
+            ${itemBadge('Estado Talla / Edad', r.estadoTallaEdad, estadoSeverityClass(r.estadoTallaEdad))}
+            ${itemBadge('Estado Peso / Edad', r.estadoPesoEdad, estadoSeverityClass(r.estadoPesoEdad))}
+            ${itemBadge('Estado Peso / Talla', r.estadoPesoTalla, estadoSeverityClass(r.estadoPesoTalla))}
+            ${itemBadge('Estado IMC', r.estadoIMC, estadoSeverityClass(r.estadoIMC))}
+          </div>
+        </div>
+
+        <div class="detail-group">
+          <div class="detail-section-title">Próxima toma</div>
+          <div class="detail-grid">
+            ${itemVal('Última toma', fmtDate(r.fechaToma))}
+            ${itemVal('Próxima toma', fmtDate(r.proximaToma))}
+            <div class="detail-item"><div class="lbl">Urgencia</div><span class="badge ${r.urgencia}">${urgLabel(r)}</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('detailModalOverlay').classList.add('open');
+  }
+  function closeDetailModal(){
+    document.getElementById('detailModalOverlay').classList.remove('open');
+  }
+  document.getElementById('detailModalClose').addEventListener('click', closeDetailModal);
+  document.getElementById('detailModalOverlay').addEventListener('click', e=>{
+    if(e.target.id === 'detailModalOverlay') closeDetailModal();
+  });
+  document.addEventListener('click', e=>{
+    const btn = e.target.closest('.btn-ver-detalle');
+    if(btn) openDetailModal(btn.dataset.doc);
   });
 
   /* ---------------------------------------------------------
