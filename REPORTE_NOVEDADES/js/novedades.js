@@ -13,6 +13,25 @@ const itemsPerPage = 10;
 
 let todosLosDatosNovelties = [], todosLosDatosArchivados = [];
 
+// Paleta de respaldo para contratos sin color asignado en Ajustes
+const CONTRATO_TAG_FALLBACK_COLORS = ['#D97706', '#2563EB', '#059669', '#E91E63', '#9C27B0', '#FF5722'];
+
+// Devuelve el HTML de la etiqueta de contrato, coloreada según el contrato
+// (usa el color configurado en Ajustes > Contratos; si no tiene, asigna uno
+// estable de la paleta de respaldo según el código de contrato)
+function getContratoTagHTML(contractCode) {
+    const code = contractCode || 'N/A';
+    const coloresMap = window.COLORES_CONTRATOS || {};
+    let color = coloresMap[code];
+    if (!color) {
+        let hash = 0;
+        const str = String(code);
+        for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+        color = CONTRATO_TAG_FALLBACK_COLORS[hash % CONTRATO_TAG_FALLBACK_COLORS.length];
+    }
+    return `<span class="contrato-tag" style="background:${color}">#${code}</span>`;
+}
+
 function toggleBatchMenu() {
             const menu = document.getElementById('batchMenu');
             if (menu) {
@@ -590,7 +609,7 @@ function renderTable(novelties) {
                         <div class="uds-contrato-cell">
                             <div class="uds-name">${n.udsName || '-'}</div>
                             <div class="uds-contrato-row">
-                                <span class="contrato-tag">#${n.contract || 'N/A'}</span>
+                                ${getContratoTagHTML(n.contract)}
                                 ${duplicadoHTML}
                             </div>
                         </div>
@@ -907,7 +926,7 @@ function renderArchivedTable(novelties) {
                         <div class="uds-contrato-cell">
                             <div class="uds-name">${n.udsName || '-'}</div>
                             <div class="uds-contrato-row">
-                                <span class="contrato-tag">#${n.contract || 'N/A'}</span>
+                                ${getContratoTagHTML(n.contract)}
                             </div>
                         </div>
                     </td>
@@ -2033,11 +2052,24 @@ function deleteArchivedNovelty(id) {
             const novelty = archivedNovelties.find(n => n.id === id);
             if (!novelty) return;
 
+            const path = AsociacionesModule.getRef('archived');
+
             PapeleraModule.moverAPapelera(novelty, id, 'archivadas')
-                .then(() => database.ref(`${AsociacionesModule.getRef('archived')}/${id}`).remove())
+                .then(() => database.ref(`${path}/${id}`).remove())
                 .then(() => {
+                    // Update optimista: se quita el registro de inmediato de la
+                    // lista en memoria y del caché local (IndexedDB), en vez de
+                    // depender de una relectura por red que puede tardar y
+                    // devolver el caché viejo (el registro "resucitaba" así).
+                    archivedNovelties = archivedNovelties.filter(n => n.id !== id);
+                    filterArchivedNovelties();
+                    if (typeof OfflineModule !== 'undefined' && OfflineModule.patchCache) {
+                        OfflineModule.patchCache(`archived:${path}`, (data) => {
+                            delete data[id];
+                            return data;
+                        });
+                    }
                     showToast('🗑️ Registro movido a la Papelera de Reciclaje', 'success');
-                    loadArchivedNovelties();
                     loadResumenStats();
                     if (typeof updatePapeleraBadge === 'function') updatePapeleraBadge();
                 })
@@ -2073,13 +2105,17 @@ function eliminarTodosArchivados() {
 
             const itemsAMover = archivedNovelties.slice();
             const promesas = itemsAMover.map(n => PapeleraModule.moverAPapelera(n, n.id, 'archivadas'));
+            const path = AsociacionesModule.getRef('archived');
 
             Promise.all(promesas)
-                .then(() => database.ref(AsociacionesModule.getRef('archived')).remove())
+                .then(() => database.ref(path).remove())
                 .then(() => {
                     showToast(`🗑️ ${count} archivados movidos a la Papelera de Reciclaje`, 'success');
                     archivedNovelties = [];
                     filterArchivedNovelties();
+                    if (typeof OfflineModule !== 'undefined' && OfflineModule.patchCache) {
+                        OfflineModule.patchCache(`archived:${path}`, () => ({}));
+                    }
                     loadResumenStats();
                     if (typeof updatePapeleraBadge === 'function') updatePapeleraBadge();
                 })

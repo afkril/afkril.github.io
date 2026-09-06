@@ -109,11 +109,15 @@ const OfflineModule = (() => {
             }, timeoutMs);
 
             fetchFn().then(async (snapshot) => {
-                if (settled) return; // ya se resolvió por timeout, ignorar respuesta tardía
-                settled = true;
-                clearTimeout(timeout);
+                // Aunque ya se haya resuelto por timeout (dato viejo mostrado),
+                // el dato fresco que acaba de llegar SIEMPRE se guarda en caché.
+                // Si no hiciéramos esto, un registro borrado que tardó >6s en
+                // confirmarse quedaría "pegado" en el caché local para siempre.
                 const data = snapshot.val();
                 await _saveToCache(cacheKey, data);
+                if (settled) return; // la promesa ya se resolvió por timeout, no hay más que hacer
+                settled = true;
+                clearTimeout(timeout);
                 resolve(snapshot);
             }).catch(async (err) => {
                 if (settled) return;
@@ -124,6 +128,24 @@ const OfflineModule = (() => {
                 resolve({ val: () => (cached ? cached.data : null), fromCache: true, cachedAt: cached ? cached.timestamp : null });
             });
         });
+    }
+
+    // Actualiza puntualmente una entrada de caché ya guardada, sin
+    // esperar una relectura de red. Se usa tras un delete/move/update
+    // para que la UI y el caché local queden consistentes al instante
+    // (evita que un registro borrado "reaparezca" desde el caché viejo
+    // si la siguiente lectura de red tarda más de lo esperado).
+    // mutatorFn recibe el objeto { idHijo: dataHijo, ... } (o {} si no
+    // había nada cacheado aún) y debe devolver el objeto ya modificado.
+    async function patchCache(cacheKey, mutatorFn) {
+        try {
+            const cached = await _readFromCache(cacheKey);
+            const current = (cached && cached.data) ? cached.data : {};
+            const updated = mutatorFn({ ...current });
+            await _saveToCache(cacheKey, updated);
+        } catch (e) {
+            console.warn('[Offline] No se pudo actualizar cache para', cacheKey, e);
+        }
     }
 
     // ── Cola de envíos pendientes (formulario de novedades) ─────
@@ -337,6 +359,7 @@ const OfflineModule = (() => {
         init,
         isOnline,
         cachedRead,
+        patchCache,
         queueSubmission,
         trySync,
         getPendingCount,

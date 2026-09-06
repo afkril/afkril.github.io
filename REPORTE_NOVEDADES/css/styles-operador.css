@@ -857,9 +857,15 @@
 
 
         .contrato-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 10px;
+            border-radius: 999px;
             font-size: 11px;
             font-weight: 700;
-            color: #d97706;
+            color: #ffffff;
+            line-height: 1.6;
+            white-space: nowrap;
         }
 
 
@@ -883,8 +889,6 @@
         body.dark-mode .beneficiario-nombre { color: #e2e8f0; }
 
         body.dark-mode .mov-line { color: #cbd5e1; }
-
-        body.dark-mode .contrato-tag { color: #fbbf24; }
 
 
         .badge {
