@@ -532,6 +532,10 @@
      "Estado Peso Talla" del reporte. Si un estado no aparece
      aquí, se usa cfgDefault.
   --------------------------------------------------------- */
+  // Cantidad de tomas futuras ("a programar") que se proyectan hacia adelante
+  // para el calendario y el reporte PDF, a partir de hoy.
+  const CANTIDAD_TOMAS_FUTURAS = 4;
+
   const DEFAULT_SETTINGS = {
     defaultDias: 30,
     statuses: [
@@ -783,6 +787,29 @@
     return match ? match.dias : state.settings.defaultDias;
   }
 
+  // Genera la secuencia de tomas proyectadas de un beneficiario a partir de su
+  // última toma cargada, avanzando de a "dias" (según su periodicidad). Incluye
+  // TODAS las tomas que ya deberían haberse cargado y no se han cargado (quedan
+  // "vencidas", sin importar si caen en un mes anterior), y además las próximas
+  // "cantidadFuturas" tomas a programar desde hoy en adelante (que pueden caer
+  // en el mes actual o, si aplica, en el mes siguiente).
+  function generarTomasProyectadas(row, today, cantidadFuturas){
+    const dias = row.dias > 0 ? row.dias : 1; // evita bucles infinitos si la config quedó en 0
+    const ocurrencias = [];
+    let cursor = addDays(row.fechaToma, dias);
+    let futurasCount = 0;
+    let guard = 0;
+    while(futurasCount < cantidadFuturas && guard < 1000){
+      guard++;
+      const diff = Math.round((cursor - today) / 86400000);
+      const urgencia = diff < 0 ? 'vencida' : (diff <= 7 ? 'proxima' : 'programada');
+      ocurrencias.push({ fecha:new Date(cursor), urgencia, diasRestantes:diff });
+      if(urgencia !== 'vencida') futurasCount++;
+      cursor = addDays(cursor, dias);
+    }
+    return ocurrencias;
+  }
+
   function computeSchedule(){
     const today = todayMid();
     state.rows.forEach(row=>{
@@ -793,6 +820,28 @@
       row.urgencia = diff < 0 ? 'vencida' : (diff <= 7 ? 'proxima' : 'programada');
     });
     state.latestRows = latestTomaPerBeneficiario(state.rows);
+    state.latestRows.forEach(row=>{
+      row.proyecciones = generarTomasProyectadas(row, today, CANTIDAD_TOMAS_FUTURAS);
+    });
+  }
+
+  // Para el calendario y el reporte PDF: expande cada beneficiario (ya filtrado)
+  // en una fila "virtual" por cada toma proyectada (vencidas pendientes + las
+  // próximas a programar), reutilizando el resto de sus datos. Así el resto del
+  // código de calendario/PDF no necesita saber que ahora hay varias fechas por
+  // beneficiario en vez de una sola.
+  function filteredProjectedRows(){
+    const out = [];
+    filteredLatestRows().forEach(row=>{
+      (row.proyecciones || []).forEach(p=>{
+        out.push(Object.assign({}, row, {
+          proximaToma: p.fecha,
+          urgencia: p.urgencia,
+          diasRestantes: p.diasRestantes
+        }));
+      });
+    });
+    return out;
   }
 
   /* ---------------------------------------------------------
@@ -1120,7 +1169,7 @@
     label.textContent = `${MONTHS[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
 
     const byDay = {};
-    filteredLatestRows().forEach(r=>{
+    filteredProjectedRows().forEach(r=>{
       const key = r.proximaToma.toISOString().slice(0,10);
       (byDay[key] = byDay[key] || []).push(r);
     });
@@ -1191,7 +1240,7 @@
     }
     const day = state.calSelected || todayMid();
     title.innerHTML = `Beneficiarios programados para <b>${fmtDate(day)}</b>`;
-    const items = filteredLatestRows().filter(r=> sameDay(r.proximaToma, day)).sort((a,b)=> a.nombreCompleto.localeCompare(b.nombreCompleto));
+    const items = filteredProjectedRows().filter(r=> sameDay(r.proximaToma, day)).sort((a,b)=> a.nombreCompleto.localeCompare(b.nombreCompleto));
     if(!items.length){
       wrap.innerHTML = `<div class="empty">No hay tomas programadas este día.</div>`;
       return;
@@ -1431,7 +1480,7 @@
 
   document.getElementById('pdfGenerateBtn').addEventListener('click', ()=>{
     const range = getPdfDateRange();
-    const rows = filteredLatestRows().filter(r=> r.proximaToma >= range.start && r.proximaToma <= range.end);
+    const rows = filteredProjectedRows().filter(r=> r.proximaToma >= range.start && r.proximaToma <= range.end);
     generatePdfReport(rows, range);
   });
 
