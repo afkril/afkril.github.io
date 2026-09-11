@@ -537,13 +537,14 @@
     statuses: [
       { estado: 'Desnutricion aguda severa', dias: 7 },
       { estado: 'Desnutricion Aguda Moderada', dias: 7 },
+	  { estado: 'DESNUTRICIÓN GLOBAL', dias: 7 },
       { estado: 'Riesgo de desnutrición aguda', dias: 15 },
-      { estado: 'DESNUTRICIÓN GLOBAL', dias: 7 },
       { estado: 'Riesgo de peso bajo para la edad', dias: 15 },
-      { estado: 'Peso adecuado para la talla', dias: 30 },
-      { estado: 'Riesgo de Sobrepeso', dias: 30 },
-      { estado: 'Sobrepeso', dias: 30 },
-      { estado: 'Obesidad', dias: 30 }
+      { estado: 'Peso adecuado para la talla', dias: 60 },
+      { estado: 'Riesgo de Sobrepeso', dias: 60 },
+      { estado: 'Sobrepeso', dias: 60 },
+      { estado: 'Obesidad', dias: 60 },
+	  { estado: 'Sin Dato', dias: 60 }
     ]
   };
 
@@ -585,7 +586,8 @@
      ESTADO DE LA APP
   --------------------------------------------------------- */
   const state = {
-    rows: [],           // registros válidos, con calendario calculado
+    rows: [],           // registros válidos, con calendario calculado (todas las tomas)
+    latestRows: [],      // solo la toma más reciente de cada beneficiario
     errors: [],         // registros descartados por datos faltantes
     lastUpload: null,
     settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
@@ -703,8 +705,11 @@
 
       const numeroDocumento = (get('numeroDocumento')||'').toString().trim();
       const fechaNacimiento = parseExcelDate(get('fechaNacimiento'));
-      const fechaTomaRaw = colIndex.fechaToma !== -1 ? get('fechaToma') : get('fechaValoracion');
-      const fechaToma = parseExcelDate(fechaTomaRaw) || parseExcelDate(get('fechaValoracion'));
+      // La fecha real de la toma nutricional es "fecha valoracion nutricional" (columna T).
+      // "fecha registro toma" (columna AG) es solo la fecha en que se registró el dato en el
+      // sistema, y se usa únicamente como respaldo si no hay fecha de valoración.
+      const fechaValoracionRaw = colIndex.fechaValoracion !== -1 ? get('fechaValoracion') : get('fechaToma');
+      const fechaToma = parseExcelDate(fechaValoracionRaw) || parseExcelDate(get('fechaToma'));
       const peso = parseNumber(get('peso'));
       const talla = parseNumber(get('talla'));
 
@@ -787,6 +792,7 @@
       row.diasRestantes = diff;
       row.urgencia = diff < 0 ? 'vencida' : (diff <= 7 ? 'proxima' : 'programada');
     });
+    state.latestRows = latestTomaPerBeneficiario(state.rows);
   }
 
   /* ---------------------------------------------------------
@@ -849,10 +855,10 @@
     return !(n.includes('retir') || n.includes('inactiv') || n.includes('desvincul'));
   }
 
-  function filteredRows(){
+  function applyFilters(rows){
     const f = state.filters;
     const search = normalize(f.search);
-    return state.rows.filter(r=>{
+    return rows.filter(r=>{
       if(f.contrato && r.contrato !== f.contrato) return false;
       if(f.unidad && r.unidadLabel !== f.unidad) return false;
       if(f.estados && f.estados.length && !f.estados.includes(r.estado)) return false;
@@ -862,6 +868,31 @@
       if(search && !(normalize(r.nombreCompleto).includes(search) || normalize(r.numeroDocumento).includes(search))) return false;
       return true;
     }).sort((a,b)=> a.proximaToma - b.proximaToma);
+  }
+
+  function filteredRows(){
+    return applyFilters(state.rows);
+  }
+
+  // Solo la toma más reciente (mayor fecha de valoración nutricional / columna T)
+  // de cada beneficiario. IMPORTANTE: la deduplicación se hace ANTES de aplicar
+  // los filtros de estado/urgencia/etc., para que un filtro de estado se evalúe
+  // sobre el estado nutricional ACTUAL del beneficiario y no sobre una toma vieja
+  // que por casualidad coincidía con el filtro.
+  function filteredLatestRows(){
+    return applyFilters(state.latestRows);
+  }
+
+  // Para el calendario: cuando un beneficiario tiene varias tomas cargadas en el
+  // archivo, solo se debe considerar la más reciente (mayor fecha de valoración
+  // nutricional / columna T), ya que esa es la que define la próxima toma real.
+  function latestTomaPerBeneficiario(rows){
+    const map = new Map();
+    rows.forEach(r=>{
+      const prev = map.get(r.numeroDocumento);
+      if(!prev || r.fechaToma > prev.fechaToma) map.set(r.numeroDocumento, r);
+    });
+    return [...map.values()];
   }
 
   function renderSummaryCards(){
@@ -1089,7 +1120,7 @@
     label.textContent = `${MONTHS[monthStart.getMonth()]} ${monthStart.getFullYear()}`;
 
     const byDay = {};
-    filteredRows().forEach(r=>{
+    filteredLatestRows().forEach(r=>{
       const key = r.proximaToma.toISOString().slice(0,10);
       (byDay[key] = byDay[key] || []).push(r);
     });
@@ -1160,7 +1191,7 @@
     }
     const day = state.calSelected || todayMid();
     title.innerHTML = `Beneficiarios programados para <b>${fmtDate(day)}</b>`;
-    const items = filteredRows().filter(r=> sameDay(r.proximaToma, day)).sort((a,b)=> a.nombreCompleto.localeCompare(b.nombreCompleto));
+    const items = filteredLatestRows().filter(r=> sameDay(r.proximaToma, day)).sort((a,b)=> a.nombreCompleto.localeCompare(b.nombreCompleto));
     if(!items.length){
       wrap.innerHTML = `<div class="empty">No hay tomas programadas este día.</div>`;
       return;
@@ -1400,7 +1431,7 @@
 
   document.getElementById('pdfGenerateBtn').addEventListener('click', ()=>{
     const range = getPdfDateRange();
-    const rows = filteredRows().filter(r=> r.proximaToma >= range.start && r.proximaToma <= range.end);
+    const rows = filteredLatestRows().filter(r=> r.proximaToma >= range.start && r.proximaToma <= range.end);
     generatePdfReport(rows, range);
   });
 
@@ -1562,7 +1593,9 @@
      DETALLE DEL BENEFICIARIO
   --------------------------------------------------------- */
   function openDetailModal(documento){
-    const r = state.rows.find(x=> x.numeroDocumento === documento);
+    // Un beneficiario puede tener varias tomas cargadas en el archivo; se debe
+    // mostrar la más reciente según fecha de valoración nutricional (columna T).
+    const r = state.latestRows.find(x=> x.numeroDocumento === documento);
     if(!r) return;
 
     document.getElementById('detailName').textContent = r.nombreCompleto;
