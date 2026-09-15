@@ -13,7 +13,8 @@ const AjustesModule = (() => {
     let _regionalesTemp = {};
     let _currentStep = 1;
     let _idEditadoManualmente = false;
-    const TOTAL_STEPS = 5;
+    let _accesosTemp = { password_admin: 'ZAN', password_formulario: '' };
+    const TOTAL_STEPS = 4;
 
     const REGIONALES  = ['Regional Neiva', 'Regional Gaitana'];
     const MODALIDADES = ['HCB', 'FAMI', 'HI', 'CDI', 'FAMIBIENVENIR'];
@@ -133,19 +134,16 @@ const AjustesModule = (() => {
         _modalidadesTemp = {}; _regionalesTemp = {};
         _currentStep = 1;
         _idEditadoManualmente = false;
+        _accesosTemp = { password_admin: 'ZAN', password_formulario: '' };
 
         // Resetear inputs
-        ['ajustesInputId','ajustesInputNombre','ajustesInputSubtitulo','ajustesInputLogo','ajustesInputGoogle',
-         'ajustesInputPasswordFormulario','ajustesInputPasswordAdmin'].forEach(id => {
+        ['ajustesInputId','ajustesInputNombre','ajustesInputSubtitulo','ajustesInputLogo','ajustesInputGoogle'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
         // El campo ID puede haber quedado bloqueado por una edición anterior: liberarlo
         const idField = document.getElementById('ajustesInputId');
         if (idField) idField.disabled = false;
-
-        // Resetear strength bars
-        resetStrength('strengthForm'); resetStrength('strengthAdmin');
 
         document.getElementById('wizardTitulo').textContent = 'Nueva organización';
         _mostrarVistaWizard();
@@ -166,6 +164,12 @@ const AjustesModule = (() => {
             _regionalesTemp   = { ...(datos.regionales_contratos || {}) };
             _currentStep = 1;
             _idEditadoManualmente = true;
+            // Las claves de acceso ya no se editan desde este wizard; se conservan
+            // tal como están guardadas para no perderlas al guardar la organización.
+            _accesosTemp = {
+                password_admin:      datos.password_admin || 'ZAN',
+                password_formulario: datos.password_formulario || ''
+            };
 
             document.getElementById('ajustesInputId').value = id;
             document.getElementById('ajustesInputId').disabled = true;
@@ -173,11 +177,6 @@ const AjustesModule = (() => {
             document.getElementById('ajustesInputSubtitulo').value = datos.subtitulo || '';
             document.getElementById('ajustesInputLogo').value = datos.logo_url || '';
             document.getElementById('ajustesInputGoogle').value = datos.google_url || '';
-            document.getElementById('ajustesInputPasswordAdmin').value = datos.password_admin || 'ZAN';
-            document.getElementById('ajustesInputPasswordFormulario').value = datos.password_formulario || '';
-
-            checkStrength(document.getElementById('ajustesInputPasswordFormulario'), 'strengthForm');
-            checkStrength(document.getElementById('ajustesInputPasswordAdmin'), 'strengthAdmin');
 
             document.getElementById('wizardTitulo').textContent = 'Editar: ' + (datos.nombre || id);
             _mostrarVistaWizard();
@@ -233,7 +232,7 @@ const AjustesModule = (() => {
 
     function updateWizardUI() {
         // Título de paso
-        const titles = ['Información', 'Accesos', 'Contratos', 'UDS', 'Finalizar'];
+        const titles = ['Información', 'Contratos', 'UDS', 'Finalizar'];
         document.getElementById('wizardSubtitulo').textContent = `Paso ${_currentStep} de ${TOTAL_STEPS}: ${titles[_currentStep - 1]}`;
 
         // Wizard dots
@@ -267,12 +266,12 @@ const AjustesModule = (() => {
         if (btnAtras) btnAtras.style.visibility = _currentStep === 1 ? 'hidden' : 'visible';
         if (btnCont) btnCont.textContent = _currentStep === TOTAL_STEPS ? '💾 Guardar Organización' : 'Continuar →';
 
-        // Si es paso 3, renderizar contratos
-        if (_currentStep === 3) renderContratos();
-        // Si es paso 4, poblar select de contratos
-        if (_currentStep === 4) poblarSelectContratosUDS();
-        // Si es paso 5, generar resumen
-        if (_currentStep === 5) generarResumen();
+        // Si es paso 2, renderizar contratos
+        if (_currentStep === 2) renderContratos();
+        // Si es paso 3, poblar select de contratos
+        if (_currentStep === 3) poblarSelectContratosUDS();
+        // Si es paso 4, generar resumen
+        if (_currentStep === 4) generarResumen();
     }
 
     // ═══════════════════════════════════════════
@@ -514,7 +513,57 @@ const AjustesModule = (() => {
             return;
         }
         wrapper.style.display = 'block';
+        poblarSelectContratoOrigenUDS(codigo);
         renderTablaUDS(codigo);
+    }
+
+    // ── Copiar UDS de otro contrato ────────────────────────────
+    function poblarSelectContratoOrigenUDS(codigoDestino) {
+        const sel = document.getElementById('ajustesSelectContratoOrigenUDS');
+        if (!sel) return;
+        const current = sel.value;
+        sel.innerHTML = '<option value="">— Selecciona contrato origen —</option>' +
+            Object.entries(_contratosTemp)
+                .filter(([codigo]) => codigo !== codigoDestino)
+                .map(([codigo, label]) => {
+                    const numUDS = (_unidadesTemp[codigo] || []).length;
+                    return `<option value="${codigo}">📄 ${label || codigo} (${numUDS} UDS)</option>`;
+                }).join('');
+        if (current && _contratosTemp[current] && current !== codigoDestino) sel.value = current;
+    }
+
+    function copiarUnidadesDesdeContrato() {
+        const destino = document.getElementById('ajustesSelectContratoUDS')?.value;
+        const origen  = document.getElementById('ajustesSelectContratoOrigenUDS')?.value;
+
+        if (!destino || !_contratosTemp[destino]) { showToast('Selecciona primero el contrato de destino', 'warning'); return; }
+        if (!origen || !_contratosTemp[origen]) { showToast('Selecciona el contrato del que quieres copiar', 'warning'); return; }
+        if (origen === destino) { showToast('Elige un contrato distinto al de destino', 'warning'); return; }
+
+        const unidadesOrigen = _unidadesTemp[origen] || [];
+        if (unidadesOrigen.length === 0) { showToast('El contrato origen no tiene UDS para copiar', 'warning'); return; }
+
+        if (!_unidadesTemp[destino]) _unidadesTemp[destino] = [];
+        const codigosExistentes = new Set(_unidadesTemp[destino].map(u => u.codigo));
+
+        let copiadas = 0;
+        unidadesOrigen.forEach(u => {
+            if (!codigosExistentes.has(u.codigo)) {
+                _unidadesTemp[destino].push({ nombre: u.nombre, codigo: u.codigo });
+                codigosExistentes.add(u.codigo);
+                copiadas++;
+            }
+        });
+
+        renderTablaUDS(destino);
+        poblarSelectContratoOrigenUDS(destino);
+
+        if (copiadas === 0) {
+            showToast('Todas las UDS de ese contrato ya estaban agregadas', 'warning');
+        } else {
+            const omitidas = unidadesOrigen.length - copiadas;
+            showToast(`✅ ${copiadas} UDS copiada(s)${omitidas > 0 ? ' · ' + omitidas + ' ya existían' : ''}`, 'success');
+        }
     }
 
     function renderTablaUDS(codigo) {
@@ -576,8 +625,6 @@ const AjustesModule = (() => {
         const detalle = document.getElementById('resumenDetalle');
         const id = document.getElementById('ajustesInputId')?.value || '—';
         const ciudad = document.getElementById('ajustesInputSubtitulo')?.value || '—';
-        const passForm = document.getElementById('ajustesInputPasswordFormulario')?.value ? 'Configurado ✅' : 'Sin clave (acceso libre)';
-        const passAdmin = document.getElementById('ajustesInputPasswordAdmin')?.value ? 'Configurado ✅' : 'Sin clave';
 
         let contratosText = Object.entries(_contratosTemp).map(([cod, label]) => {
             const reg = _regionalesTemp[cod] || '—';
@@ -588,9 +635,7 @@ const AjustesModule = (() => {
         detalle.innerHTML = `
             <strong style="color:var(--kimi-color-text-primary,#0f172a)">ID:</strong> ${id}<br>
             <strong style="color:var(--kimi-color-text-primary,#0f172a)">Ciudad:</strong> ${ciudad}<br>
-            <strong style="color:var(--kimi-color-text-primary,#0f172a)">Contratos:</strong> ${contratosText}<br>
-            <strong style="color:var(--kimi-color-text-primary,#0f172a)">Acceso formulario:</strong> ${passForm}<br>
-            <strong style="color:var(--kimi-color-text-primary,#0f172a)">Acceso admin:</strong> ${passAdmin}
+            <strong style="color:var(--kimi-color-text-primary,#0f172a)">Contratos:</strong> ${contratosText}
         `;
     }
 
@@ -608,13 +653,12 @@ const AjustesModule = (() => {
         if (!id)     { showToast('El ID es obligatorio', 'warning'); _currentStep = 1; updateWizardUI(); return; }
         if (!nombre) { showToast('El nombre es obligatorio', 'warning'); _currentStep = 1; updateWizardUI(); return; }
 
-        const passwordAdmin      = document.getElementById('ajustesInputPasswordAdmin')?.value?.trim();
-        const passwordFormulario  = document.getElementById('ajustesInputPasswordFormulario')?.value?.trim();
-
         const datos = {
             nombre, subtitulo, logo_url, google_url,
-            password_admin:      passwordAdmin || 'ZAN',
-            password_formulario: passwordFormulario || '',
+            // Las claves de acceso ya no se editan desde este wizard; se conservan
+            // las que ya tenía la organización (o los valores por defecto si es nueva).
+            password_admin:      _accesosTemp.password_admin || 'ZAN',
+            password_formulario: _accesosTemp.password_formulario || '',
             contratos:               _contratosTemp,
             colores_contratos:       _coloresTemp,
             modalidades_contratos:   _modalidadesTemp,
@@ -754,7 +798,7 @@ const AjustesModule = (() => {
         volverALista, cargarListaAsociaciones,
         agregarContrato, quitarContrato, irAUnidades,
         toggleColorPicker, elegirColorContrato, cerrarColorPicker,
-        cambiarContratoUDS, agregarUnidad, quitarUnidad,
+        cambiarContratoUDS, agregarUnidad, quitarUnidad, copiarUnidadesDesdeContrato,
         guardarAsociacion, confirmarEliminarAsociacion,
         cerrarFormularioAsociacion, cambiarPassword,
         togglePass, genPass, checkStrength

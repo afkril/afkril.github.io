@@ -780,11 +780,11 @@ function refreshNoveltyModal() {
     if (!currentNoveltyData) return;
 
     const cardsView = document.getElementById('cardsView');
-    const activeTab = cardsView?.querySelector('.novelty-tab-btn.active')?.dataset.tab || 'general';
+    const activeTab = cardsView?.querySelector('.novelty-tab-btn.active')?.dataset.tab;
 
     viewNoveltyDetails(currentNoveltyData, currentNoveltyIsArchived);
 
-    if (activeTab !== 'general') {
+    if (activeTab) {
         switchNoveltyTab(activeTab);
     }
 }
@@ -1033,6 +1033,15 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
         tipoClase = 'ambos';
     }
     /* ---------------------------------------------------------
+       PRIMERA PESTAÑA DISPONIBLE (reemplaza a "Información")
+    --------------------------------------------------------- */
+    const primeraTab =
+        tieneRetiro
+            ? 'retiro'
+            : tieneIngreso
+                ? 'ingreso'
+                : 'comunicacion';
+    /* ---------------------------------------------------------
        PERSONA PRINCIPAL
     --------------------------------------------------------- */
     let personaNombre = 'Beneficiario';
@@ -1072,6 +1081,8 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                         Código: <strong>${udsCode || '-'}</strong>
                         <span>•</span>
                         Contrato: <strong>${contract}</strong>
+                        <span>•</span>
+                        Fecha Reporte: <strong>${fechaRegistro}</strong>
                     </div>
 
                 </div>
@@ -1144,22 +1155,11 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
         <div class="novelty-tab-buttons"
              role="tablist">
 
-            <button
-                class="novelty-tab-btn active"
-                data-tab="general"
-                onclick="switchNoveltyTab('general')">
-
-                <span class="tab-icon">📋</span>
-                <span>Información</span>
-
-            </button>
-
-
             ${
                 tieneRetiro
                 ? `
                     <button
-                        class="novelty-tab-btn"
+                        class="novelty-tab-btn ${primeraTab === 'retiro' ? 'active' : ''}"
                         data-tab="retiro"
                         onclick="switchNoveltyTab('retiro')">
 
@@ -1176,7 +1176,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                 tieneIngreso
                 ? `
                     <button
-                        class="novelty-tab-btn"
+                        class="novelty-tab-btn ${primeraTab === 'ingreso' ? 'active' : ''}"
                         data-tab="ingreso"
                         onclick="switchNoveltyTab('ingreso')">
 
@@ -1224,7 +1224,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
 
 
             <button
-                class="novelty-tab-btn"
+                class="novelty-tab-btn ${primeraTab === 'comunicacion' ? 'active' : ''}"
                 data-tab="comunicacion"
                 onclick="switchNoveltyTab('comunicacion')">
 
@@ -1244,26 +1244,6 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
 
 
             <!-- =================================================
-                 INFORMACIÓN GENERAL
-            ================================================== -->
-
-            <div
-                class="novelty-tab-panel active"
-                data-panel="general">
-
-                ${renderGeneralTab(
-                    novelty,
-                    udsName,
-                    udsCode,
-                    contract,
-                    fechaRegistro,
-                    tipo
-                )}
-
-            </div>
-
-
-            <!-- =================================================
                  RETIRO
             ================================================== -->
 
@@ -1271,7 +1251,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                 tieneRetiro
                 ? `
                     <div
-                        class="novelty-tab-panel"
+                        class="novelty-tab-panel ${primeraTab === 'retiro' ? 'active' : ''}"
                         data-panel="retiro">
 
                         ${renderRetiroTab(novelty)}
@@ -1290,7 +1270,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                 tieneIngreso
                 ? `
                     <div
-                        class="novelty-tab-panel"
+                        class="novelty-tab-panel ${primeraTab === 'ingreso' ? 'active' : ''}"
                         data-panel="ingreso">
 
                         ${renderIngresoTab(novelty)}
@@ -1347,7 +1327,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
             ================================================== -->
 
             <div
-                class="novelty-tab-panel"
+                class="novelty-tab-panel ${primeraTab === 'comunicacion' ? 'active' : ''}"
                 data-panel="comunicacion">
 
                 ${
@@ -1371,110 +1351,6 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
     return html;
 }
 
-function renderGeneralTab(
-    novelty,
-    udsName,
-    udsCode,
-    contract,
-    fechaRegistro,
-    tipo
-) {
-
-    const estado =
-        novelty.cuentameStatus === 'cargado'
-            ? 'Cargado al CUÉNTAME'
-            : 'Pendiente';
-
-    return `
-
-        <div class="novelty-section-title">
-
-            <div>
-                <span class="section-kicker">
-                    RESUMEN DEL REPORTE
-                </span>
-
-                <h3>
-                    Información General
-                </h3>
-            </div>
-
-            <span class="novelty-section-icon">
-                📋
-            </span>
-
-        </div>
-
-
-        <div class="novelty-data-grid grid-3col">
-
-            <div class="novelty-data-card">
-                <span>📄 Contrato</span>
-                <strong>${contract}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span>🏫 UDS</span>
-                <strong>${udsName}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span>🔢 Código UDS</span>
-                <strong>${udsCode || '-'}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span>🌎 Regional</span>
-                <strong>${novelty.regional || '-'}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span>📅 Fecha del reporte</span>
-                <strong>${fechaRegistro}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span>🏷️ Tipo de novedad</span>
-                <strong class="type-text ${tipo.toLowerCase()}">
-                    ${tipo}
-                </strong>
-            </div>
-            <!--<div class="novelty-data-card">
-                <span>📊 Estado CUÉNTAME</span>
-                <strong>${estado}</strong>
-            </div>
-            <div class="novelty-data-card">
-                <span>🆔 ID del reporte</span>
-                <strong>${novelty.id || '-'}</strong>
-            </div><-->
-        </div>
-        <div class="novelty-action-summary">
-            <div class="action-summary-icon">
-                ${
-                    novelty.cuentameStatus === 'cargado'
-                        ? '✓'
-                        : '!'
-                }
-            </div>
-            <div>
-                <span class="action-summary-title">
-                    ${
-                        novelty.cuentameStatus === 'cargado'
-                            ? 'Novedad procesada'
-                            : 'Novedad pendiente'
-                    }
-                </span>
-                <p>
-                    ${
-                        novelty.cuentameStatus === 'cargado'
-                            ? 'Este reporte ya fue marcado como cargado al CUÉNTAME.'
-                            : 'Este reporte requiere revisión administrativa.'
-                    }
-                </p>
-            </div>
-        </div>
-    `;
-}
 function renderRetiroTab(novelty) {
     const r = novelty.retiro || novelty;
     const nombre =

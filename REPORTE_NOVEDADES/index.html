@@ -1918,7 +1918,7 @@
         <div id="vistaWizard" class="config-center-view">
           <div class="config-center-back" onclick="AjustesModule.volverALista()">← Volver a organizaciones</div>
           <h2 class="config-center-view-title" id="wizardTitulo">Nueva organización</h2>
-          <p class="config-center-view-desc" id="wizardSubtitulo">Paso 1 de 5: Información</p>
+          <p class="config-center-view-desc" id="wizardSubtitulo">Paso 1 de 4: Información</p>
 
           <!-- Wizard -->
           <div class="config-center-wizard" id="configCenterWizard">
@@ -1927,19 +1927,15 @@
               <div class="cw-connector done"></div>
             </div>
             <div class="cw-step-wrap active" data-step="2">
-              <div class="cw-step"><div class="cw-step-dot active">2</div><span class="cw-step-label">Accesos</span></div>
+              <div class="cw-step"><div class="cw-step-dot active">2</div><span class="cw-step-label">Contratos</span></div>
               <div class="cw-connector"></div>
             </div>
             <div class="cw-step-wrap" data-step="3">
-              <div class="cw-step"><div class="cw-step-dot">3</div><span class="cw-step-label">Contratos</span></div>
+              <div class="cw-step"><div class="cw-step-dot">3</div><span class="cw-step-label">UDS</span></div>
               <div class="cw-connector"></div>
             </div>
             <div class="cw-step-wrap" data-step="4">
-              <div class="cw-step"><div class="cw-step-dot">4</div><span class="cw-step-label">UDS</span></div>
-              <div class="cw-connector"></div>
-            </div>
-            <div class="cw-step-wrap" data-step="5">
-              <div class="cw-step"><div class="cw-step-dot">5</div><span class="cw-step-label">Finalizar</span></div>
+              <div class="cw-step"><div class="cw-step-dot">4</div><span class="cw-step-label">Finalizar</span></div>
             </div>
           </div>
 
@@ -1959,58 +1955,7 @@
             </div>
           </div>
 
-          <!-- ══ PASO 2: ACCESOS ══ -->
-          <div class="cw-panel active" id="cwPanel2">
-            <div class="cw-alert"><span>ℹ️</span> Configura las claves de acceso que utilizarán los usuarios para ingresar al sistema.</div>
-            <div class="cw-grid-2">
-              <!-- Formulario -->
-              <div class="cw-card cw-card-green">
-                <div class="cw-card-head">
-                  <div class="cw-card-icon">👤</div>
-                  <div><div class="cw-card-title" style="color:#059669">Acceso al formulario</div><div class="cw-card-sub">Usuarios que reportan novedades</div></div>
-                </div>
-                <div class="config-field"><label>Descripción</label><textarea id="ajustesDescFormulario" rows="2" placeholder="Permite el ingreso al formulario para reportar novedades.">Permite el ingreso al formulario para reportar novedades.</textarea></div>
-                <div class="config-field">
-                  <label>Contraseña</label>
-                  <div class="config-input-row">
-                    <input type="password" id="ajustesInputPasswordFormulario" placeholder="Sin clave = acceso libre" autocomplete="new-password" oninput="AjustesModule.checkStrength(this, 'strengthForm')">
-                    <button type="button" onclick="AjustesModule.togglePass('ajustesInputPasswordFormulario', this)">👁️</button>
-                    <button type="button" onclick="AjustesModule.genPass('ajustesInputPasswordFormulario', 'strengthForm')">🔄 Generar</button>
-                  </div>
-                  <div class="strength-bar" id="strengthForm">
-                    <div class="strength-segment"></div><div class="strength-segment"></div><div class="strength-segment"></div>
-                    <div class="strength-segment"></div><div class="strength-segment"></div><div class="strength-segment"></div>
-                    <span class="strength-label">—</span>
-                  </div>
-                </div>
-                <div class="cw-note cw-note-green"><span>🛡️</span> Comparte esta contraseña únicamente con los usuarios que deben reportar novedades.</div>
-              </div>
-              <!-- Admin -->
-              <div class="cw-card cw-card-orange">
-                <div class="cw-card-head">
-                  <div class="cw-card-icon">🛡️</div>
-                  <div><div class="cw-card-title" style="color:#d97706">Acceso administrativo</div><div class="cw-card-sub">Panel de administración de novedades</div></div>
-                </div>
-                <div class="config-field"><label>Descripción</label><textarea id="ajustesDescAdmin" rows="2" placeholder="Permite el acceso al panel administrativo del sistema.">Permite el acceso al panel administrativo del sistema.</textarea></div>
-                <div class="config-field">
-                  <label>Contraseña</label>
-                  <div class="config-input-row">
-                    <input type="password" id="ajustesInputPasswordAdmin" placeholder="Contraseña administrador" autocomplete="new-password" oninput="AjustesModule.checkStrength(this, 'strengthAdmin')">
-                    <button type="button" onclick="AjustesModule.togglePass('ajustesInputPasswordAdmin', this)">👁️</button>
-                    <button type="button" onclick="AjustesModule.genPass('ajustesInputPasswordAdmin', 'strengthAdmin')">🔄 Generar</button>
-                  </div>
-                  <div class="strength-bar" id="strengthAdmin">
-                    <div class="strength-segment"></div><div class="strength-segment"></div><div class="strength-segment"></div>
-                    <div class="strength-segment"></div><div class="strength-segment"></div><div class="strength-segment"></div>
-                    <span class="strength-label">—</span>
-                  </div>
-                </div>
-                <div class="cw-note cw-note-orange"><span>🔒</span> Esta contraseña es de uso exclusivo para administradores del sistema.</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ══ PASO 3: CONTRATOS ══ -->
+          <!-- ══ PASO 2: CONTRATOS ══ -->
           <div class="cw-panel" id="cwPanel3">
             <div class="cw-alert"><span>ℹ️</span> Agrega los contratos asociados a esta organización. Cada contrato puede tener un color, regional y modalidad.</div>
             <div class="cw-card" style="margin-bottom:14px">
@@ -2033,7 +1978,7 @@
             </div>
           </div>
 
-          <!-- ══ PASO 4: UDS ══ -->
+          <!-- ══ PASO 3: UDS ══ -->
           <div class="cw-panel" id="cwPanel4">
             <div class="cw-alert"><span>ℹ️</span> Administra las Unidades de Desarrollo Social (UDS) para cada contrato.</div>
             <div class="config-field" style="max-width:420px">
@@ -2041,6 +1986,13 @@
               <select id="ajustesSelectContratoUDS" onchange="AjustesModule.cambiarContratoUDS()"><option value="">— Selecciona un contrato —</option></select>
             </div>
             <div class="cw-card" id="panelUDSWrapper" style="display:none">
+              <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:flex-end;padding:12px;border:1.5px dashed #cbd5e1;border-radius:10px;background:#f8fafc">
+                <div class="config-field" style="flex:1;min-width:200px;margin-bottom:0">
+                  <label style="font-size:10px">Copiar UDS desde otro contrato</label>
+                  <select id="ajustesSelectContratoOrigenUDS"><option value="">— Selecciona contrato origen —</option></select>
+                </div>
+                <button class="config-center-btn-secondary" style="padding:9px 16px" onclick="AjustesModule.copiarUnidadesDesdeContrato()">📋 Copiar UDS</button>
+              </div>
               <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
                 <input type="text" id="ajustesNombreUDS" placeholder="Nombre UDS" style="flex:1;min-width:150px;padding:9px 12px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:13px">
                 <input type="text" id="ajustesCodigoUDS" placeholder="Código UDS" style="width:140px;padding:9px 12px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:13px">
@@ -2053,7 +2005,7 @@
             </div>
           </div>
 
-          <!-- ══ PASO 5: FINALIZAR ══ -->
+          <!-- ══ PASO 4: FINALIZAR ══ -->
           <div class="cw-panel" id="cwPanel5">
             <div class="cw-alert cw-alert-success"><span>✅</span> Revisa la información antes de guardar la organización.</div>
             <div class="summary-grid" id="resumenFinal">
