@@ -1,4 +1,4 @@
-        // ==================== MÓDULO ACTAS F3.MT1.PP ====================
+// ==================== MÓDULO ACTAS F3.MT1.PP ====================
 
         const CAT_LABEL = {
             granos: 'Grano',
@@ -1864,6 +1864,43 @@ document.addEventListener('keydown', function(e) {
             }
         }
 
+        // ── Limpieza silenciosa de entregas al crear un nuevo directorio ──
+        // A diferencia de limpiarEntregasSemanal() (que pide confirmación y sólo
+        // actúa si ya hay una lista generada en currentData), esta versión se usa
+        // en el flujo automático de "crear nuevo directorio": borra CUALQUIER
+        // cantidad de entrega que haya quedado en localStorage para la regional
+        // activa (venga o no de currentData), para que la nueva lista de mercado
+        // arranque siempre limpia y no arrastre datos de otro contrato/semana.
+        function tabLimpiarEntregasSilencioso() {
+            var regional = (typeof currentRegional !== 'undefined') ? currentRegional : '';
+            var prefix = ENTREGA_KEY_PREFIX + regional + '_';
+            var keysABorrar = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                var k = localStorage.key(i);
+                if (k && k.indexOf(prefix) === 0) keysABorrar.push(k);
+            }
+            keysABorrar.forEach(function(k) { localStorage.removeItem(k); });
+
+            document.querySelectorAll('.input-entrega').forEach(function(input) {
+                input.value = '';
+                input.classList.remove('saved');
+            });
+        }
+
+        // ── Ir a "Minutas Semanales" (Generar Lista de Mercado) y regenerarla ──
+        // Se dispara justo después de crear un nuevo directorio (ya sea copiando
+        // UDS/datos fijos, copiando configuración de productos y semana, o ambos):
+        // cambia a la sección de la calculadora semanal y genera la lista usando
+        // la configuración ya aplicada (semana, días, cupos/niños, modo de
+        // leche/yogurt y, si se copiaron, los gramajes de entrega). El borrado de
+        // entregas viejas ya se hizo ANTES de cargar esa configuración (ver
+        // tabConfirmarNuevoDirectorio), por eso aquí ya no se vuelve a limpiar:
+        // hacerlo aquí borraría los valores de Entrega recién cargados.
+        function tabIrAGenerarListaMercadoDesdeDirectorio() {
+            if (typeof showSection === 'function') showSection('calculator');
+            if (typeof generar === 'function') generar();
+        }
+
         function tabLoadDirectoriosGuardados() {
             try { return JSON.parse(localStorage.getItem(TAB_DIR_STORAGE_KEY) || '{}'); } catch(e) { return {}; }
         }
@@ -2137,8 +2174,8 @@ document.addEventListener('keydown', function(e) {
         var MESES_NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
         function tabGuardarDirectorio(overwrite) {
-            if (directorioUDS.length === 0) { showToast('El directorio está vacío','warning'); return; }
             if (overwrite) {
+                if (directorioUDS.length === 0) { showToast('El directorio está vacío','warning'); return; }
                 var nombre = document.getElementById('tab-dir-select').value;
                 if (!nombre) { showToast('No hay directorio cargado para sobreescribir','warning'); return; }
                 var dirs = tabLoadDirectoriosGuardados();
@@ -2169,30 +2206,100 @@ document.addEventListener('keydown', function(e) {
                 }
                 return;
             }
-            // Mostrar modal de guardado estructurado
-            tabMostrarModalGuardar();
+            // Mostrar modal de creación de directorio nuevo (permite empezar vacío,
+            // o copiar UDS/config de otro directorio ya guardado)
+            tabAbrirModalNuevoDirectorio();
         }
 
-        function tabMostrarModalGuardar() {
+        // Arma <optgroup>/<option> con los directorios guardados, agrupados por
+        // mes, para reutilizar en cualquier <select> de "elegir directorio fuente".
+        function tabConstruirOptionsDirectorios(dirs) {
+            var ordenMeses = MESES_NOMBRES.concat(['Sin mes']);
+            var porMes = {};
+            Object.keys(dirs).forEach(function(name) {
+                var d = dirs[name];
+                var mes = d.mes || (function(){
+                    var m = MESES_NOMBRES.find(function(mn){ return name.indexOf(mn) !== -1; });
+                    return m || 'Sin mes';
+                })();
+                if (!porMes[mes]) porMes[mes] = [];
+                porMes[mes].push(name);
+            });
+            var mesesOrdenados = Object.keys(porMes).sort(function(a,b){
+                return ordenMeses.indexOf(a) - ordenMeses.indexOf(b);
+            });
+            var html = '';
+            mesesOrdenados.forEach(function(mes) {
+                html += '<optgroup label="' + escHtml(mes) + '">';
+                porMes[mes].sort(function(a,b){ return a.localeCompare(b); }).forEach(function(name) {
+                    html += '<option value="' + escHtml(name) + '">' + escHtml(name) + '</option>';
+                });
+                html += '</optgroup>';
+            });
+            return html;
+        }
+
+        // Aplica los "datos fijos" (regional, centro zonal, modalidad, servicio,
+        // municipio, fecha, datos de quien entrega, fuente y modo leche/yogurt) a
+        // los campos del panel. Se reutiliza al cargar un directorio guardado y al
+        // crear uno nuevo copiando datos de otro.
+        function tabAplicarDatosFijos(f) {
+            if (!f) return;
+            if (f.regional)       document.getElementById('tab-dir-regional').value       = f.regional;
+            if (f.centrozonal)    document.getElementById('tab-dir-centrozonal').value    = f.centrozonal;
+            if (f.modalidad)      document.getElementById('tab-dir-modalidad').value      = f.modalidad;
+            if (f.servicio)       document.getElementById('tab-dir-servicio').value       = f.servicio;
+            if (f.municipio)      document.getElementById('tab-dir-municipio').value      = f.municipio;
+            if (f.fechaSolicitud) document.getElementById('tab-dir-fecha').value          = f.fechaSolicitud;
+            if (f.entregaNombre)  document.getElementById('tab-dir-entrega-nombre').value = f.entregaNombre;
+            if (f.entregaDoc)     document.getElementById('tab-dir-entrega-doc').value    = f.entregaDoc;
+            if (f.entregaEntidad) document.getElementById('tab-dir-entrega-entidad').value= f.entregaEntidad;
+            if (f.entregaNit)     document.getElementById('tab-dir-entrega-nit').value    = f.entregaNit;
+            if (f.fuente)    { var el = document.getElementById('tab-dir-fuente');    if (el) el.value = f.fuente; }
+            if (f.lecheModo) { var el2 = document.getElementById('tab-dir-leche-modo'); if (el2) el2.value = f.lecheModo; }
+            if (f.yogurtModo) { var el3 = document.getElementById('tab-dir-yogurt-modo'); if (el3) el3.value = f.yogurtModo; }
+            if (f.lecheModo) {
+                var elS = document.getElementById('leche-modo-semanal'); if (elS) elS.value = f.lecheModo;
+                var elM = document.getElementById('leche-modo-mensual'); if (elM) elM.value = f.lecheModo;
+            }
+            if (f.yogurtModo) {
+                var elYS = document.getElementById('yogurt-modo-semanal'); if (elYS) elYS.value = f.yogurtModo;
+                var elYM = document.getElementById('yogurt-modo-mensual'); if (elYM) elYM.value = f.yogurtModo;
+            }
+        }
+
+        // ── Modal: Crear Nuevo Directorio ──
+        // El directorio nuevo se identifica con Contrato + Semana + Mes y puede
+        // quedar vacío, o copiar de forma INDEPENDIENTE:
+        //  1) el directorio base (UDS + datos fijos) de otro contrato/semana guardado
+        //  2) la configuración de productos (valores de "Entrega") y la semana/días
+        //     marcados de OTRO directorio guardado (puede ser distinto al de (1))
+        // Si se deja la opción por defecto en cualquiera de los dos selects, se usa
+        // lo que ya está activo en la app en ese momento (no se copia nada).
+        function tabAbrirModalNuevoDirectorio() {
             var hoy = new Date();
             var mesActual = MESES_NOMBRES[hoy.getMonth()];
             var semanaEl = document.querySelector('[data-week].active, .week-selector-btn.active');
             var semanaNum = semanaEl ? (semanaEl.dataset.week || '1') : '1';
+            var dirs = tabLoadDirectoriosGuardados();
+            var optionsDirs = tabConstruirOptionsDirectorios(dirs);
+            var hayEnEdicion = directorioUDS.length > 0;
 
             var modal = document.createElement('div');
-            modal.id = 'modal-guardar-dir';
-            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+            modal.id = 'modal-nuevo-dir';
+            modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:1rem;';
             modal.innerHTML = `
-              <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;min-width:320px;max-width:420px;width:90%;box-shadow:0 25px 50px rgba(0,0,0,0.5);">
-                <div style="font-weight:700;font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">💾 Guardar Directorio</div>
+              <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:1rem;padding:1.5rem;min-width:320px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 25px 50px rgba(0,0,0,0.5);">
+                <div style="font-weight:700;font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">🆕 Crear Nuevo Directorio</div>
+
                 <div style="margin-bottom:0.75rem;">
                   <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Número de Contrato</label>
-                  <input id="mgd-contrato" type="text" placeholder="Ej: 41006652024" style="width:100%;padding:0.5rem 0.75rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);font-size:0.85rem;font-family:inherit;outline:none;">
+                  <input id="mnd-contrato" type="text" placeholder="Ej: 41006652024" style="width:100%;padding:0.5rem 0.75rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);font-size:0.85rem;font-family:inherit;outline:none;">
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.75rem;">
                   <div>
                     <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Semana</label>
-                    <select id="mgd-semana" style="width:100%;padding:0.5rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;">
+                    <select id="mnd-semana" style="width:100%;padding:0.5rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;">
                       <option value="Semana 1" ${semanaNum=='1'?'selected':''}>Semana 1</option>
                       <option value="Semana 2" ${semanaNum=='2'?'selected':''}>Semana 2</option>
                       <option value="Semana 3" ${semanaNum=='3'?'selected':''}>Semana 3</option>
@@ -2202,75 +2309,152 @@ document.addEventListener('keydown', function(e) {
                   </div>
                   <div>
                     <label style="font-size:0.65rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;display:block;margin-bottom:0.25rem;">Mes</label>
-                    <select id="mgd-mes" style="width:100%;padding:0.5rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;">
+                    <select id="mnd-mes" style="width:100%;padding:0.5rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);font-size:0.82rem;font-family:inherit;outline:none;">
                       ${MESES_NOMBRES.map(function(m){ return '<option value="'+m+'"'+(m===mesActual?' selected':'')+'>'+m+'</option>'; }).join('')}
                     </select>
                   </div>
                 </div>
-                <div id="mgd-preview" style="font-size:0.75rem;color:#818cf8;margin-bottom:1rem;padding:0.4rem 0.6rem;background:rgba(99,102,241,0.08);border-radius:0.375rem;border:1px solid rgba(99,102,241,0.2);"></div>
-                <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
-                  <button onclick="document.getElementById('modal-guardar-dir').remove()" style="padding:0.45rem 1rem;background:transparent;border:1px solid var(--border);color:var(--text-secondary);border-radius:0.375rem;cursor:pointer;font-family:inherit;font-size:0.82rem;">Cancelar</button>
-                  <button onclick="tabConfirmarGuardarModal()" style="padding:0.45rem 1.2rem;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:0.375rem;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;">💾 Guardar</button>
+                <div id="mnd-preview" style="font-size:0.75rem;color:#818cf8;margin-bottom:1rem;padding:0.4rem 0.6rem;background:rgba(99,102,241,0.08);border-radius:0.375rem;border:1px solid rgba(99,102,241,0.2);"></div>
+
+                <div style="border-top:1px dashed var(--border);margin:0.9rem 0;"></div>
+
+                <div style="margin-bottom:0.85rem;">
+                  <label style="font-size:0.65rem;font-weight:600;color:#818cf8;text-transform:uppercase;display:block;margin-bottom:0.3rem;">📂 Copiar directorio (UDS y datos fijos) de</label>
+                  <select id="mnd-fuente-uds" style="width:100%;padding:0.5rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
+                    <option value="">🆕 Vacío (sin copiar)</option>
+                    ${hayEnEdicion ? '<option value="__actual__">📝 El que estoy editando ahora (' + directorioUDS.length + ' UDS)</option>' : ''}
+                    ${optionsDirs}
+                  </select>
+                  <div style="font-size:0.62rem;color:var(--text-secondary);margin-top:0.25rem;">Trae las UDS y los datos fijos (regional, modalidad, proveedor, etc.) de ese contrato/semana.</div>
+                </div>
+
+                <div style="margin-bottom:0.5rem;">
+                  <label style="font-size:0.65rem;font-weight:600;color:#10b981;text-transform:uppercase;display:block;margin-bottom:0.3rem;">🥗 Copiar configuración de productos y semana de</label>
+                  <select id="mnd-fuente-config" style="width:100%;padding:0.5rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
+                    <option value="">📋 Usar la configuración actual de la app</option>
+                    ${optionsDirs}
+                  </select>
+                  <div style="font-size:0.62rem;color:var(--text-secondary);margin-top:0.25rem;">Trae la semana, los días marcados y los valores digitados en "Entrega" de ese contrato/semana (puede ser distinto al de arriba).</div>
+                </div>
+
+                <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem;">
+                  <button onclick="document.getElementById('modal-nuevo-dir').remove()" style="padding:0.45rem 1rem;background:transparent;border:1px solid var(--border);color:var(--text-secondary);border-radius:0.375rem;cursor:pointer;font-family:inherit;font-size:0.82rem;">Cancelar</button>
+                  <button onclick="tabConfirmarNuevoDirectorio()" style="padding:0.45rem 1.2rem;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:0.375rem;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;">🆕 Crear</button>
                 </div>
               </div>`;
             document.body.appendChild(modal);
 
             function actualizarPreview() {
-                var c = document.getElementById('mgd-contrato').value.trim() || '___';
-                var s = document.getElementById('mgd-semana').value;
-                var m = document.getElementById('mgd-mes').value;
-                document.getElementById('mgd-preview').textContent = '📂 ' + c + ' ' + s + ' ' + m;
+                var c = document.getElementById('mnd-contrato').value.trim() || '___';
+                var s = document.getElementById('mnd-semana').value;
+                var m = document.getElementById('mnd-mes').value;
+                document.getElementById('mnd-preview').textContent = '📂 ' + c + ' ' + s + ' ' + m;
             }
-            document.getElementById('mgd-contrato').addEventListener('input', actualizarPreview);
-            document.getElementById('mgd-semana').addEventListener('change', actualizarPreview);
-            document.getElementById('mgd-mes').addEventListener('change', actualizarPreview);
+            document.getElementById('mnd-contrato').addEventListener('input', actualizarPreview);
+            document.getElementById('mnd-semana').addEventListener('change', actualizarPreview);
+            document.getElementById('mnd-mes').addEventListener('change', actualizarPreview);
             actualizarPreview();
-            document.getElementById('mgd-contrato').focus();
+            document.getElementById('mnd-contrato').focus();
         }
 
-        function tabConfirmarGuardarModal() {
-            var contrato = document.getElementById('mgd-contrato').value.trim();
-            var semana = document.getElementById('mgd-semana').value;
-            var mes = document.getElementById('mgd-mes').value;
+        function tabConfirmarNuevoDirectorio() {
+            var contrato = document.getElementById('mnd-contrato').value.trim();
+            var semana = document.getElementById('mnd-semana').value;
+            var mes = document.getElementById('mnd-mes').value;
             if (!contrato) { showToast('Ingrese el número de contrato','warning'); return; }
             var nombre = contrato + ' ' + semana + ' ' + mes;
             var dirs = tabLoadDirectoriosGuardados();
             if (dirs[nombre] && !confirm('Ya existe un directorio con este nombre. ¿Sobreescribir?')) return;
+
+            var fuenteUds = document.getElementById('mnd-fuente-uds').value;
+            var fuenteConfig = document.getElementById('mnd-fuente-config').value;
+
+            // 1) Resolver UDS + datos fijos: vacío, el que está en edición, o copiado
+            var nuevasUds, nuevosDatosFijos;
+            if (fuenteUds === '__actual__') {
+                nuevasUds = JSON.parse(JSON.stringify(directorioUDS));
+                nuevosDatosFijos = tabGetParamsFijos();
+            } else if (fuenteUds && dirs[fuenteUds]) {
+                nuevasUds = JSON.parse(JSON.stringify(dirs[fuenteUds].uds || []));
+                nuevosDatosFijos = dirs[fuenteUds].datosFijos ? JSON.parse(JSON.stringify(dirs[fuenteUds].datosFijos)) : tabGetParamsFijos();
+            } else {
+                nuevasUds = [];
+                nuevosDatosFijos = tabGetParamsFijos();
+            }
+
+            // 2) Resolver configuración de productos (Entrega) + semana/días: la
+            // actual de la app, o copiada de otro directorio guardado
+            var nuevoConfigSemanal, nuevosGramajes;
+            if (fuenteConfig && dirs[fuenteConfig]) {
+                var compat = tabObtenerConfigSemanalCompat(dirs[fuenteConfig]);
+                nuevoConfigSemanal = compat.configSemanal;
+                nuevosGramajes = compat.gramajesEntrega;
+            } else {
+                nuevoConfigSemanal = tabGetConfigGeneracionSemanal();
+                nuevosGramajes = tabGetGramajesEntrega();
+            }
+
             dirs[nombre] = {
                 nombre: nombre,
                 contrato: contrato,
                 semana: semana,
                 mes: mes,
                 fecha: new Date().toISOString(),
-                uds: JSON.parse(JSON.stringify(directorioUDS)),
-                datosFijos: tabGetParamsFijos(),
+                uds: nuevasUds,
+                datosFijos: nuevosDatosFijos,
                 contextoSemana: tabGetContextoSemana(),
-                configSemanal: tabGetConfigGeneracionSemanal(),
-                gramajesEntrega: tabGetGramajesEntrega()
+                configSemanal: nuevoConfigSemanal,
+                gramajesEntrega: nuevosGramajes
             };
             tabSaveDirectoriosGuardados(dirs);
+
+            // Dejar este directorio como el activo/cargado en la app.
+            // IMPORTANTE: limpiar primero cualquier cantidad de "Entrega" que
+            // haya quedado de la regional activa (de un directorio/contrato
+            // anterior) ANTES de aplicar/cargar la configuración del nuevo
+            // directorio; así, si se copió configuración de productos y semana
+            // (con sus gramajes de entrega), esos valores copiados quedan
+            // cargados limpios y no se pisan ni se borran después.
+            tabLimpiarEntregasSilencioso();
+            directorioUDS = JSON.parse(JSON.stringify(nuevasUds));
+            tabAplicarDatosFijos(nuevosDatosFijos);
+            if (fuenteConfig && dirs[fuenteConfig]) {
+                // Sólo se reaplican semana/días/gramajes cuando el usuario eligió
+                // explícitamente copiarlos de otro directorio; si dejó la opción
+                // por defecto, se respeta lo que ya estaba activo en la app.
+                tabAplicarConfigSemanalGuardada(nuevoConfigSemanal, nuevosGramajes);
+            }
+
             tabRefreshSelect();
             document.getElementById('tab-dir-select').value = nombre;
             document.getElementById('tab-btn-save-modified').style.display = 'inline-block';
-            // El directorio recién creado pasa a ser el "cargado": actualizar la etiqueta visible
-            // para que no siga mostrando el nombre del directorio anterior.
             var lblNuevo = document.getElementById('tab-dir-loaded-label');
             if (lblNuevo) { lblNuevo.textContent = '📂 ' + nombre; lblNuevo.style.display = 'block'; lblNuevo.title = nombre; }
+            tabRenderizarDirectorio();
             sincronizarConPanelFlotante();
-            document.getElementById('modal-guardar-dir').remove();
-            showToast('✅ Directorio "' + nombre + '" guardado (' + directorioUDS.length + ' UDS)', 'success');
+            document.getElementById('modal-nuevo-dir').remove();
+            showToast('✅ Directorio "' + nombre + '" creado (' + nuevasUds.length + ' UDS)', 'success');
 
             // Registrar en auditoría (no bloqueante)
             if (typeof registrarAuditoria === 'function') {
-                var regionalDir = (dirs[nombre].datosFijos && dirs[nombre].datosFijos.regional) || (typeof currentRegional !== 'undefined' ? currentRegional : '');
+                var regionalDir = (nuevosDatosFijos && nuevosDatosFijos.regional) || (typeof currentRegional !== 'undefined' ? currentRegional : '');
                 registrarAuditoria('CREAR_DIRECTORIO', regionalDir, 'directorio', {
                     nombreDirectorio: nombre,
                     contrato: contrato,
                     semana: semana,
                     mes: mes,
-                    totalUDS: directorioUDS.length
+                    totalUDS: nuevasUds.length,
+                    copiadoDeDirectorio: (fuenteUds === '__actual__') ? '(en edición)' : (fuenteUds || null),
+                    configCopiadaDe: fuenteConfig || null
                 }).catch(function(e) { console.error('Error en auditoría:', e); });
             }
+
+            // Apenas queda guardado el nuevo directorio (haya copiado UDS/datos
+            // fijos, configuración de productos y semana, o ninguno de los dos),
+            // pasar automáticamente a "Minutas Semanales" y regenerar la lista de
+            // mercado limpia, según la semana/días/cupos y modo de leche/yogurt
+            // que haya quedado configurado.
+            tabIrAGenerarListaMercadoDesdeDirectorio();
         }
 
         // ── Compatibilidad con directorios guardados desde la versión 1 ──
@@ -3824,4 +4008,3 @@ document.addEventListener('keydown', function(e) {
                 showToast('Error al guardar la clave: ' + e.message, 'error');
             }
         }
-
