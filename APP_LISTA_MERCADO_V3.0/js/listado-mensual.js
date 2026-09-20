@@ -150,14 +150,19 @@
                 (ORDER_CATEGORIES[a[1].c] || 99) - (ORDER_CATEGORIES[b[1].c] || 99)
             );
             
+            // Botón de intercambio + badge (js/intercambios-listado.js). Si el módulo no
+            // estuviera cargado, la tabla se dibuja igual que antes.
+            const swapUI  = (typeof intercambioControlesHtml === 'function') ? intercambioControlesHtml : () => '';
+            const swapRow = (typeof intercambioClaseFila === 'function') ? intercambioClaseFila : () => '';
+
             let tbodyHtml = '';
             sorted.forEach(([name, item], index) => {
                 const idBase = `${currentRegional}_monthly_${name.replace(/\s/g, '')}`;
                 const displayName = name.length > 18 ? name.substring(0, 16) + '...' : name;
                 const nameEscaped = name.replace(/'/g, "\\'");
                 
-                tbodyHtml += `<tr style="animation-delay: ${index * 30}ms">
-                    <td title="${name}"><div class="product-name"><div class="category-badge badge-${item.c}"></div>${displayName}</div></td>
+                tbodyHtml += `<tr class="${swapRow(name)}" style="animation-delay: ${index * 30}ms">
+                    <td title="${name}"><div class="product-name"><div class="category-badge badge-${item.c}"></div><span class="pn-text">${displayName}</span>${swapUI(name)}</div></td>
                     <td style="text-align: center;"><span class="amount-badge">${item.u}</span></td>`;
                 
                 // TotalSug = SUMA DIRECTA de los valores comerciales mostrados en cada semana

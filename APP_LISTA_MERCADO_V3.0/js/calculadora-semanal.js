@@ -77,6 +77,11 @@
                 (ORDER_CATEGORIES[a[1].c] || 99) - (ORDER_CATEGORIES[b[1].c] || 99)
             );
 
+            // Botón de intercambio + badge (js/intercambios-listado.js). Si el módulo no
+            // estuviera cargado, la tabla se dibuja igual que antes.
+            const swapUI  = (typeof intercambioControlesHtml === 'function') ? intercambioControlesHtml : () => '';
+            const swapRow = (typeof intercambioClaseFila === 'function') ? intercambioClaseFila : () => '';
+
             let html = `<table><thead><tr><th>Producto</th><th>xNiño</th><th>Total</th><th>Sugerido</th><th>Entrega</th><th class="no-print">Detalles</th></tr></thead><tbody>`;
 
             sorted.forEach(([name, item], index) => {
@@ -84,8 +89,8 @@
                 const valorPrevio = localStorage.getItem(`${ENTREGA_KEY_PREFIX}${idRef}`) || "";
                 const nameEscaped = name.replace(/'/g, "\\'");
                 
-                html += `<tr style="animation-delay: ${index * 50}ms">
-                    <td><div class="product-name"><div class="category-badge badge-${item.c}"></div>${name}</div></td>
+                html += `<tr class="${swapRow(name)}" style="animation-delay: ${index * 50}ms">
+                    <td><div class="product-name"><div class="category-badge badge-${item.c}"></div><span class="pn-text">${name}</span>${swapUI(name)}</div></td>
                     <td><span class="amount-badge">${item.qIndividual.toFixed(2)} ${item.u}</span></td>
                     <td><strong>${item.qTotal.toFixed(2)} ${item.u}</strong></td>
                     <td><span class="suggested-amount">${(name.toLowerCase().trim()==='leche' ? formatLecheConModo(item.qTotal, (document.getElementById('leche-modo-semanal')||{}).value||'ml') : (name.toLowerCase().trim()==='yogurt' ? formatYogurtConModo(item.qTotal, (document.getElementById('yogurt-modo-semanal')||{}).value||'und150') : redondearComercial(item.qTotal, item.u, name)))}</span></td>

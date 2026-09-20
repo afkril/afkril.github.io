@@ -372,6 +372,246 @@
         var directorioUDS = [];
 
         // =============================================
+        // INTERCAMBIOS DE PRODUCTOS (columna CUMPLE del acta)
+        // =============================================
+        // Estructura: arreglo de filas, cada una es UN intercambio:
+        //   [{ producto:"Mango", intercambio:"Naranja" }, { producto:"Mango", intercambio:"Manzana" }, ...]
+        // Los intercambios pertenecen a cada DIRECTORIO GUARDADO (contrato + semana + mes):
+        //  - Al abrir un directorio se cargan sus intercambios (campo "intercambios").
+        //  - Sin directorio abierto (o directorio recién creado) la configuración está limpia.
+        //  - Mientras hay un directorio abierto, cada cambio se guarda en ese directorio.
+        var _actaIntercambiosRows = [];      // filas del directorio abierto (en memoria)
+        var _intercambiosDirNombre = null;   // nombre del directorio abierto (null = ninguno)
+        var _intercambiosSaveTimer = null;   // debounce del guardado mientras se escribe
+        var _intercambiosHayCambios = false; // hubo cambios desde que se abrió el modal
+
+        // Filas sin producto ni texto no se guardan (la fila en blanco es sólo de la interfaz).
+        function _intercambiosFilasLimpias() {
+            return _actaIntercambiosRows
+                .filter(function(r) { return (r.producto || '').trim() || (r.intercambio || '').trim(); })
+                .map(function(r) { return { producto: r.producto || '', intercambio: r.intercambio || '' }; });
+        }
+
+        // Escribe los intercambios en el directorio abierto (sólo ese campo; el resto del
+        // directorio queda intacto). tabSaveDirectoriosGuardados también sincroniza con Firebase.
+        function _intercambiosPersistir() {
+            if (_intercambiosSaveTimer) { clearTimeout(_intercambiosSaveTimer); _intercambiosSaveTimer = null; }
+            if (!_intercambiosDirNombre) return;
+            var dirs = tabLoadDirectoriosGuardados();
+            var d = dirs[_intercambiosDirNombre];
+            if (!d) return;
+            d.intercambios = _intercambiosFilasLimpias();
+            tabSaveDirectoriosGuardados(dirs);
+        }
+
+        // Guardado diferido para no sincronizar en cada tecla mientras se escribe.
+        function guardarIntercambios() {
+            _intercambiosHayCambios = true;
+            _intercambiosNotificarUI();
+            if (!_intercambiosDirNombre) return;
+            if (_intercambiosSaveTimer) clearTimeout(_intercambiosSaveTimer);
+            _intercambiosSaveTimer = setTimeout(_intercambiosPersistir, 500);
+        }
+
+        // Cambia el directorio activo: guarda lo pendiente en el anterior y carga los
+        // intercambios del nuevo. nombre=null / filas=[] deja la configuración limpia.
+        function intercambiosCambiarDirectorio(nombre, filas) {
+            if (_intercambiosSaveTimer) _intercambiosPersistir();
+            _intercambiosDirNombre = nombre || null;
+            _actaIntercambiosRows = Array.isArray(filas)
+                ? filas.map(function(r) { return { producto: r.producto || '', intercambio: r.intercambio || '' }; })
+                : [];
+            _intercambiosHayCambios = false;
+            _intercambiosNotificarUI();
+        }
+
+        // Avisa a las listas de mercado (semanal/mensual) para que actualicen el badge
+        // "Intercambiado" de cada fila (js/intercambios-listado.js). Sin el módulo, no hace nada.
+        function _intercambiosNotificarUI() {
+            if (typeof intercambiosRefrescarMarcas === 'function') {
+                try { intercambiosRefrescarMarcas(); } catch (e) { console.error('intercambiosRefrescarMarcas:', e); }
+            }
+        }
+
+
+        // Obtiene la fuente/leche/yogurt actualmente configurados (usa los campos
+        // del directorio "tab-dir-*" si existen; si no, cae a los del modal "am-*").
+        function _intercambiosGetFuenteParams() {
+            var elFuente = document.getElementById('tab-dir-fuente') || document.getElementById('acta-modal-fuente-val');
+            var elLeche  = document.getElementById('tab-dir-leche-modo') || document.getElementById('am-leche-modo');
+            var elYogurt = document.getElementById('tab-dir-yogurt-modo') || document.getElementById('am-yogurt-modo');
+            return {
+                fuente:    elFuente ? elFuente.value : 'semanal',
+                lecheModo: elLeche  ? elLeche.value  : 'ml',
+                yogurtModo:elYogurt ? elYogurt.value : 'und150'
+            };
+        }
+
+        function abrirModalIntercambios() {
+            _intercambiosHayCambios = false;
+            renderModalIntercambios();
+            var overlay = document.getElementById('intercambios-modal-overlay');
+            var panel = document.getElementById('intercambios-modal-panel');
+            if (overlay) overlay.style.display = 'block';
+            if (panel) panel.style.display = 'block';
+        }
+
+        function cerrarModalIntercambios() {
+            var overlay = document.getElementById('intercambios-modal-overlay');
+            var panel = document.getElementById('intercambios-modal-panel');
+            var estabaAbierto = panel && panel.style.display !== 'none';
+            if (overlay) overlay.style.display = 'none';
+            if (panel) panel.style.display = 'none';
+            if (!estabaAbierto) return;
+            // Asegura que lo digitado quede guardado en el directorio antes de cerrar
+            if (_intercambiosDirNombre) {
+                _intercambiosPersistir();
+                if (_intercambiosHayCambios) showToast('Intercambios guardados en "' + _intercambiosDirNombre + '"', 'success');
+            } else if (_intercambiosHayCambios && _intercambiosFilasLimpias().length) {
+                showToast('No hay un directorio abierto: estos intercambios no se guardarán. Abra un directorio guardado.', 'warning');
+            }
+            _intercambiosHayCambios = false;
+        }
+
+        // Muestra en el modal a qué directorio (semana) pertenecen los intercambios
+        function _intercambiosActualizarInfoDir() {
+            var el = document.getElementById('intercambios-dir-info');
+            if (!el) return;
+            if (_intercambiosDirNombre) {
+                el.style.cssText = 'font-size:0.72rem;margin-bottom:0.75rem;padding:0.4rem 0.6rem;border-radius:0.375rem;' +
+                    'color:#818cf8;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);';
+                el.innerHTML = '📂 <b>' + escHtml(_intercambiosDirNombre) + '</b> — los cambios se guardan automáticamente en este directorio.';
+            } else {
+                el.style.cssText = 'font-size:0.72rem;margin-bottom:0.75rem;padding:0.4rem 0.6rem;border-radius:0.375rem;' +
+                    'color:#f59e0b;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);';
+                el.innerHTML = '⚠️ No hay un directorio abierto: los intercambios sólo valen para esta sesión y <b>no se guardan</b>. ' +
+                    'Abra un directorio guardado para dejarlos asociados a esa semana.';
+            }
+        }
+
+        // Construye las <option> del selector de producto, marcando como
+        // seleccionada la que coincida con "seleccionado".
+        function _intercambiosOpcionesProducto(items, seleccionado) {
+            var html = '<option value="">— Seleccionar producto —</option>';
+            var encontrado = false;
+            items.forEach(function(it) {
+                var sel = (it.nombre === seleccionado) ? ' selected' : '';
+                if (sel) encontrado = true;
+                html += '<option value="' + escHtml(it.nombre) + '"' + sel + '>' + escHtml(it.nombre) + '</option>';
+            });
+            // Si el producto guardado no está en la lista generada actualmente, se muestra igual
+            // (así el intercambio guardado no "desaparece" de la vista)
+            if (seleccionado && !encontrado) {
+                html += '<option value="' + escHtml(seleccionado) + '" selected>' + escHtml(seleccionado) + ' (no está en la lista actual)</option>';
+            }
+            return html;
+        }
+
+        function renderModalIntercambios() {
+            var cont = document.getElementById('intercambios-lista');
+            if (!cont) return;
+            _intercambiosActualizarInfoDir();
+            var fp = _intercambiosGetFuenteParams();
+            var items = obtenerItemsActa(fp.fuente, null, fp.lecheModo, fp.yogurtModo);
+            if (!items || items.length === 0) {
+                cont.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--text-secondary);font-size:0.8rem;">' +
+                    'No hay productos en la lista ' + (fp.fuente === 'mensual' ? 'mensual' : 'semanal') + ' generada.<br>Genere primero la lista de productos.</div>';
+                return;
+            }
+            // Siempre debe haber al menos una fila visible para poder empezar a escribir.
+            if (_actaIntercambiosRows.length === 0) _actaIntercambiosRows.push({ producto:'', intercambio:'' });
+
+            var filasHtml = _actaIntercambiosRows.map(function(row, idx) {
+                return '<div style="display:flex;gap:0.4rem;align-items:center;padding:0.5rem 0.6rem;' +
+                    'background:var(--bg-dark);border:1px solid var(--border);border-radius:0.5rem;flex-wrap:wrap;">' +
+                    '<select onchange="cambiarProductoIntercambio(' + idx + ',this.value)" ' +
+                        'style="flex:1.2;min-width:130px;padding:0.4rem 0.5rem;background:var(--bg-card);border:1px solid var(--border);' +
+                        'border-radius:0.35rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">' +
+                        _intercambiosOpcionesProducto(items, row.producto) +
+                    '</select>' +
+                    '<span style="color:#f59e0b;font-size:0.9rem;font-weight:700;">↔</span>' +
+                    '<input type="text" value="' + escHtml(row.intercambio || '') + '" placeholder="Intercambiado por... (ej: Naranja)" ' +
+                        'oninput="cambiarTextoIntercambio(' + idx + ',this.value)" ' +
+                        'style="flex:1.2;min-width:130px;padding:0.4rem 0.55rem;background:var(--bg-card);border:1px solid var(--border);' +
+                        'border-radius:0.35rem;color:var(--text-primary);font-size:0.78rem;font-family:inherit;outline:none;">' +
+                    '<button type="button" onclick="quitarFilaIntercambio(' + idx + ')" title="Quitar este intercambio" ' +
+                        'style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);color:#ef4444;' +
+                        'border-radius:0.35rem;cursor:pointer;font-size:0.8rem;padding:0.35rem 0.55rem;flex-shrink:0;">✕</button>' +
+                '</div>';
+            }).join('');
+
+            cont.innerHTML = filasHtml +
+                '<button type="button" onclick="agregarFilaIntercambio()" style="margin-top:0.15rem;padding:0.55rem;' +
+                    'background:rgba(245,158,11,0.1);border:1px dashed rgba(245,158,11,0.45);color:#f59e0b;' +
+                    'border-radius:0.5rem;cursor:pointer;font-size:0.78rem;font-weight:700;width:100%;">' +
+                    '+ Agregar nuevo intercambio</button>';
+        }
+
+        function cambiarProductoIntercambio(idx, valor) {
+            if (!_actaIntercambiosRows[idx]) return;
+            _actaIntercambiosRows[idx].producto = valor;
+            guardarIntercambios();
+        }
+
+        function cambiarTextoIntercambio(idx, valor) {
+            if (!_actaIntercambiosRows[idx]) return;
+            _actaIntercambiosRows[idx].intercambio = valor;
+            guardarIntercambios();
+        }
+
+        function agregarFilaIntercambio() {
+            _actaIntercambiosRows.push({ producto:'', intercambio:'' });
+            guardarIntercambios();
+            renderModalIntercambios();
+        }
+
+        function quitarFilaIntercambio(idx) {
+            _actaIntercambiosRows.splice(idx, 1);
+            if (_actaIntercambiosRows.length === 0) _actaIntercambiosRows.push({ producto:'', intercambio:'' });
+            guardarIntercambios();
+            _intercambiosPersistir();
+            renderModalIntercambios();
+        }
+
+        async function limpiarTodosIntercambios() {
+            try {
+                await mostrarConfirm('Se quitarán todos los intercambios de productos registrados.', {
+                    titulo: '¿Quitar todos los intercambios?', icono: '🔄', btnOk: 'Sí, quitar todos'
+                });
+            } catch { return; }
+            _actaIntercambiosRows = [{ producto:'', intercambio:'' }];
+            guardarIntercambios();
+            _intercambiosPersistir();
+            renderModalIntercambios();
+            showToast('Intercambios eliminados', 'success');
+        }
+
+        // Aplica los intercambios registrados a un arreglo de items (por nombre de
+        // producto), agregando item.intercambio con el texto a escribir en la
+        // columna CUMPLE (J) del acta en lugar de la "X". No modifica items sin
+        // intercambio registrado. Ignora filas incompletas (sin producto o sin texto).
+        function aplicarIntercambios(items) {
+            if (!items) return items;
+            var mapa = {};
+            _actaIntercambiosRows.forEach(function(row) {
+                var prod = (row.producto || '').trim();
+                var val  = (row.intercambio || '').trim();
+                if (!prod || !val) return;
+                if (!mapa[prod]) mapa[prod] = [];
+                mapa[prod].push(val);
+            });
+            items.forEach(function(item) {
+                var lista = mapa[(item.nombre || '').trim()];
+                if (lista && lista.length) {
+                    item.intercambio = lista.length === 1
+                        ? ('Se da ' + lista[0])
+                        : ('Se da ' + lista.join(' / '));
+                }
+            });
+            return items;
+        }
+
+        // =============================================
         // MODAL ACTA (individual)
         // =============================================
         function abrirModalActa(fuente) {
@@ -550,6 +790,11 @@
                     });
                 });
             }
+            // Aplica los intercambios de productos registrados (si los hay) para que
+            // se reflejen en la columna CUMPLE del acta en vez de la "X". Se hace acá,
+            // de forma centralizada, para que todas las vías de generación (modal
+            // individual, directorio uno-por-uno, unificado, etc.) queden cubiertas.
+            aplicarIntercambios(items);
             return items;
         }
 
@@ -900,11 +1145,19 @@ function construirActaSheetXML(sheetXmlOriginal, items, params, layoutCfg) {
                         // G = CANTIDAD SOLICITADA: si hay entrega digitada usar esa, sino usar sugerida
                         var cantParaActa = (item.cantEntregaDigitada && item.cantEntregaDigitada.trim()) ? item.cantEntregaDigitada.trim() : item.cantSolicitada;
                         sheetXml = setCellInline(sheetXml, 'G' + rn, cantParaActa || '');
-                        // H = Fecha Recepción (blank)
+                        // H = Fecha Recepción: se ajusta la hoja para que use la MISMA fecha
+                        // que la columna B (antes quedaba en blanco).
+                        sheetXml = setCellInline(sheetXml, 'H' + rn, fechaFmt);
                         // I = CANTIDAD RECIBIDA: mismo valor que G
                         sheetXml = setCellInline(sheetXml, 'I' + rn, cantParaActa || '');
-                        // J = Cumple → "X" si la config lo indica; si no, se deja en blanco
-                        if (marcarCumpleX) sheetXml = setCellOrInsert(sheetXml, 'J' + rn, 'X');
+                        // J = Cumple → si el producto tiene un intercambio registrado, se
+                        // escribe ese texto (ej. "Se da Naranja") en vez de la "X".
+                        // Si no hay intercambio, se comporta igual que antes: "X" según config.
+                        if (item.intercambio) {
+                            sheetXml = setCellOrInsert(sheetXml, 'J' + rn, item.intercambio);
+                        } else if (marcarCumpleX) {
+                            sheetXml = setCellOrInsert(sheetXml, 'J' + rn, 'X');
+                        }
                     }
                 }
 
@@ -1864,43 +2117,6 @@ document.addEventListener('keydown', function(e) {
             }
         }
 
-        // ── Limpieza silenciosa de entregas al crear un nuevo directorio ──
-        // A diferencia de limpiarEntregasSemanal() (que pide confirmación y sólo
-        // actúa si ya hay una lista generada en currentData), esta versión se usa
-        // en el flujo automático de "crear nuevo directorio": borra CUALQUIER
-        // cantidad de entrega que haya quedado en localStorage para la regional
-        // activa (venga o no de currentData), para que la nueva lista de mercado
-        // arranque siempre limpia y no arrastre datos de otro contrato/semana.
-        function tabLimpiarEntregasSilencioso() {
-            var regional = (typeof currentRegional !== 'undefined') ? currentRegional : '';
-            var prefix = ENTREGA_KEY_PREFIX + regional + '_';
-            var keysABorrar = [];
-            for (var i = 0; i < localStorage.length; i++) {
-                var k = localStorage.key(i);
-                if (k && k.indexOf(prefix) === 0) keysABorrar.push(k);
-            }
-            keysABorrar.forEach(function(k) { localStorage.removeItem(k); });
-
-            document.querySelectorAll('.input-entrega').forEach(function(input) {
-                input.value = '';
-                input.classList.remove('saved');
-            });
-        }
-
-        // ── Ir a "Minutas Semanales" (Generar Lista de Mercado) y regenerarla ──
-        // Se dispara justo después de crear un nuevo directorio (ya sea copiando
-        // UDS/datos fijos, copiando configuración de productos y semana, o ambos):
-        // cambia a la sección de la calculadora semanal y genera la lista usando
-        // la configuración ya aplicada (semana, días, cupos/niños, modo de
-        // leche/yogurt y, si se copiaron, los gramajes de entrega). El borrado de
-        // entregas viejas ya se hizo ANTES de cargar esa configuración (ver
-        // tabConfirmarNuevoDirectorio), por eso aquí ya no se vuelve a limpiar:
-        // hacerlo aquí borraría los valores de Entrega recién cargados.
-        function tabIrAGenerarListaMercadoDesdeDirectorio() {
-            if (typeof showSection === 'function') showSection('calculator');
-            if (typeof generar === 'function') generar();
-        }
-
         function tabLoadDirectoriosGuardados() {
             try { return JSON.parse(localStorage.getItem(TAB_DIR_STORAGE_KEY) || '{}'); } catch(e) { return {}; }
         }
@@ -2129,6 +2345,7 @@ document.addEventListener('keydown', function(e) {
             var dirs = tabLoadDirectoriosGuardados();
             delete dirs[nombre];
             tabSaveDirectoriosGuardados(dirs);
+            if (_intercambiosDirNombre === nombre) intercambiosCambiarDirectorio(null, []);
             tabRefreshSelect();
             // If it was the loaded one, clear label
             var lbl = document.getElementById('tab-dir-loaded-label');
@@ -2156,6 +2373,7 @@ document.addEventListener('keydown', function(e) {
             var totalUDSElim = (dirs[nombre] && dirs[nombre].uds && dirs[nombre].uds.length) || 0;
             delete dirs[nombre];
             tabSaveDirectoriosGuardados(dirs);
+            if (_intercambiosDirNombre === nombre) intercambiosCambiarDirectorio(null, []);
             tabRefreshSelect();
             document.getElementById('tab-btn-save-modified').style.display = 'none';
             var lbl = document.getElementById('tab-dir-loaded-label');
@@ -2187,6 +2405,7 @@ document.addEventListener('keydown', function(e) {
                     contextoSemana: tabGetContextoSemana(),
                     configSemanal: tabGetConfigGeneracionSemanal(),
                     gramajesEntrega: tabGetGramajesEntrega(),
+                    intercambios: _intercambiosFilasLimpias(),
                     mes: dirs[nombre] ? dirs[nombre].mes : '',
                     semana: dirs[nombre] ? dirs[nombre].semana : '',
                     contrato: dirs[nombre] ? dirs[nombre].contrato : ''
@@ -2404,18 +2623,13 @@ document.addEventListener('keydown', function(e) {
                 datosFijos: nuevosDatosFijos,
                 contextoSemana: tabGetContextoSemana(),
                 configSemanal: nuevoConfigSemanal,
-                gramajesEntrega: nuevosGramajes
+                gramajesEntrega: nuevosGramajes,
+                intercambios: []   // un directorio nuevo siempre empieza sin intercambios
             };
             tabSaveDirectoriosGuardados(dirs);
 
-            // Dejar este directorio como el activo/cargado en la app.
-            // IMPORTANTE: limpiar primero cualquier cantidad de "Entrega" que
-            // haya quedado de la regional activa (de un directorio/contrato
-            // anterior) ANTES de aplicar/cargar la configuración del nuevo
-            // directorio; así, si se copió configuración de productos y semana
-            // (con sus gramajes de entrega), esos valores copiados quedan
-            // cargados limpios y no se pisan ni se borran después.
-            tabLimpiarEntregasSilencioso();
+            // Dejar este directorio como el activo/cargado en la app
+            intercambiosCambiarDirectorio(nombre, []);
             directorioUDS = JSON.parse(JSON.stringify(nuevasUds));
             tabAplicarDatosFijos(nuevosDatosFijos);
             if (fuenteConfig && dirs[fuenteConfig]) {
@@ -2448,13 +2662,6 @@ document.addEventListener('keydown', function(e) {
                     configCopiadaDe: fuenteConfig || null
                 }).catch(function(e) { console.error('Error en auditoría:', e); });
             }
-
-            // Apenas queda guardado el nuevo directorio (haya copiado UDS/datos
-            // fijos, configuración de productos y semana, o ninguno de los dos),
-            // pasar automáticamente a "Minutas Semanales" y regenerar la lista de
-            // mercado limpia, según la semana/días/cupos y modo de leche/yogurt
-            // que haya quedado configurado.
-            tabIrAGenerarListaMercadoDesdeDirectorio();
         }
 
         // ── Compatibilidad con directorios guardados desde la versión 1 ──
@@ -2504,6 +2711,9 @@ document.addEventListener('keydown', function(e) {
             if (!d) { showToast('Directorio no encontrado','error'); return; }
             // Load UDS
             directorioUDS = JSON.parse(JSON.stringify(d.uds || []));
+            // Intercambios de productos guardados en ESTE directorio (semana). Si el
+            // directorio no tiene, la configuración de intercambios queda limpia.
+            intercambiosCambiarDirectorio(nombre, d.intercambios);
             // Load datos fijos
             if (d.datosFijos) {
                 var f = d.datosFijos;
@@ -3080,6 +3290,12 @@ document.addEventListener('keydown', function(e) {
                     rows.push(['📦 GRAMAJES DE ENTREGA (JSON — no editar a mano)']);
                     rows.push([JSON.stringify(_configCompatExp.gramajesEntrega)]);
                 }
+                // Intercambios de productos de este directorio (JSON, igual que los gramajes)
+                if (Array.isArray(d.intercambios) && d.intercambios.length) {
+                    rows.push([]);
+                    rows.push(['🔄 INTERCAMBIOS DE PRODUCTOS (JSON — no editar a mano)']);
+                    rows.push([JSON.stringify(d.intercambios)]);
+                }
                 var ws = XLSX.utils.aoa_to_sheet(rows);
                 ws['!cols'] = [{wch:4},{wch:28},{wch:14},{wch:22},{wch:28},{wch:10},{wch:14},{wch:10}];
                 XLSX.utils.book_append_sheet(wb, ws, sheetName);
@@ -3159,7 +3375,8 @@ document.addEventListener('keydown', function(e) {
                         var datosFijosDir = datosFijosGlobal ? JSON.parse(JSON.stringify(datosFijosGlobal)) : {};
                         var configSemanalDir = null;
                         var gramajesEntregaDir = null;
-                        var seccionActual = null; // null | 'fijos' | 'config' | 'gramajes'
+                        var intercambiosDir = null;
+                        var seccionActual = null; // null | 'fijos' | 'config' | 'gramajes' | 'intercambios'
                         for (var ri2=headerIdx+1; ri2<rows.length; ri2++) {
                             var row = rows[ri2];
                             var col0 = String(row[0]||'').trim();
@@ -3167,6 +3384,7 @@ document.addEventListener('keydown', function(e) {
                             if (col0.indexOf('DATOS FIJOS') !== -1 || col0.indexOf('QUIEN ENTREGA') !== -1) { seccionActual='fijos'; continue; }
                             if (col0.indexOf('CONFIGURACIÓN DE GENERACIÓN SEMANAL') !== -1) { seccionActual='config'; configSemanalDir = configSemanalDir || {}; continue; }
                             if (col0.indexOf('GRAMAJES DE ENTREGA') !== -1) { seccionActual='gramajes'; continue; }
+                            if (col0.indexOf('INTERCAMBIOS DE PRODUCTOS') !== -1) { seccionActual='intercambios'; continue; }
                             if (seccionActual === 'fijos') {
                                 var fixedFieldMap = {
                                     'Regional':'regional','Centro Zonal':'centrozonal','Modalidad':'modalidad','Servicio':'servicio',
@@ -3199,6 +3417,16 @@ document.addEventListener('keydown', function(e) {
                                     try { gramajesEntregaDir = JSON.parse(col0); } catch(e) { gramajesEntregaDir = null; }
                                 }
                                 seccionActual = null; // el JSON ocupa una sola fila
+                                continue;
+                            }
+                            if (seccionActual === 'intercambios') {
+                                if (col0) {
+                                    try {
+                                        var _ic = JSON.parse(col0);
+                                        intercambiosDir = Array.isArray(_ic) ? _ic : null;
+                                    } catch(e) { intercambiosDir = null; }
+                                }
+                                seccionActual = null;
                                 continue;
                             }
                             // UDS row: col0 is number (if headerOffset=1) or responsable (if headerOffset=0)
@@ -3241,12 +3469,19 @@ document.addEventListener('keydown', function(e) {
                             uds: uds,
                             datosFijos: datosFijosDir,
                             configSemanal: configSemanalDir,
-                            gramajesEntrega: gramajesEntregaDir
+                            gramajesEntrega: gramajesEntregaDir,
+                            // Si el Excel no trae intercambios (archivo anterior), se conservan los
+                            // que ya tuviera un directorio con el mismo nombre.
+                            intercambios: intercambiosDir || (dirs[nomFull] && dirs[nomFull].intercambios) || []
                         };
                         imported++;
                     });
 
                     tabSaveDirectoriosGuardados(dirs);
+                    // Si se reimportó el directorio que está abierto, refrescar sus intercambios en memoria
+                    if (_intercambiosDirNombre && dirs[_intercambiosDirNombre]) {
+                        intercambiosCambiarDirectorio(_intercambiosDirNombre, dirs[_intercambiosDirNombre].intercambios);
+                    }
                     tabRefreshSelect();
                     showToast('✅ ' + imported + ' directorio(s) importado(s) desde Excel', 'success');
                 } catch(err) {
@@ -3618,6 +3853,7 @@ document.addEventListener('keydown', function(e) {
             document.getElementById('userProfile').style.display = 'none';
             document.getElementById('userProfile').classList.remove('open');
             // Limpiar todos los datos en memoria al cerrar sesión
+            try { intercambiosCambiarDirectorio(null, []); } catch(e) {}
             try { tabSaveDirectoriosGuardados({}); tabRefreshSelect(); } catch(e) {}
             try { savedLists = []; updateSavedCount(); showSavedLists(); } catch(e) {}
             try { provSaveAllLocal([]); provRenderizar(); } catch(e) {}
