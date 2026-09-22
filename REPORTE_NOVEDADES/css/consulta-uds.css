@@ -325,3 +325,154 @@
     .cuds-form-center { padding: 20px; margin-top: 2vh; }
     .cuds-sidebar-brand-text small { display: none; }
 }
+
+/* ════════════════════════════════════════════════════════════
+   ACCIONES ESPECIALES — Ficha lateral del participante y
+   modales de "Reportar retiro" / "Reingreso" desde Consulta UDS
+   ════════════════════════════════════════════════════════════ */
+
+.cuds-row-clickable { cursor: pointer; transition: background .12s ease; }
+.cuds-row-clickable:hover { background: #eef2ff; }
+.dark-mode .cuds-row-clickable:hover { background: #1e293b; }
+
+/* ── Ficha lateral (panel deslizante desde la derecha) ── */
+.cuds-ficha-overlay {
+    position: fixed; inset: 0; z-index: 10050;
+    background: rgba(15, 23, 42, 0.45);
+    display: none; align-items: stretch; justify-content: flex-end;
+}
+.cuds-ficha-overlay.is-open { display: flex; }
+
+.cuds-ficha-panel {
+    width: min(420px, 100%); height: 100%; background: #fff;
+    box-shadow: -12px 0 32px rgba(0,0,0,0.18);
+    display: flex; flex-direction: column;
+    transform: translateX(24px); opacity: 0;
+    animation: cudsFichaIn .18s ease forwards;
+    overflow: hidden;
+}
+.dark-mode .cuds-ficha-panel { background: #0f172a; color: #e2e8f0; }
+@keyframes cudsFichaIn { to { transform: translateX(0); opacity: 1; } }
+
+.cuds-ficha-scroll { flex: 1; overflow-y: auto; padding: 22px 22px 28px; }
+
+.cuds-ficha-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px; border-bottom: 1px solid #e2e8f0;
+}
+.dark-mode .cuds-ficha-header { border-color: #1e293b; }
+.cuds-ficha-header h3 { margin: 0; font-size: 1.02rem; font-weight: 800; color: #1e293b; }
+.dark-mode .cuds-ficha-header h3 { color: #e2e8f0; }
+.cuds-ficha-close {
+    border: none; background: transparent; font-size: 1.3rem; cursor: pointer;
+    color: #64748b; line-height: 1; padding: 4px 8px; border-radius: 8px;
+}
+.cuds-ficha-close:hover { background: #f1f5f9; color: #1e293b; }
+.dark-mode .cuds-ficha-close:hover { background: #1e293b; color: #e2e8f0; }
+
+.cuds-ficha-persona { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.cuds-ficha-avatar {
+    flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%;
+    background: #e0e7ff; display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+}
+.cuds-ficha-persona-info h4 { margin: 0 0 2px; font-size: 1rem; font-weight: 800; color: #1e293b; }
+.dark-mode .cuds-ficha-persona-info h4 { color: #e2e8f0; }
+.cuds-ficha-persona-info div { font-size: 0.8rem; color: #64748b; margin-bottom: 6px; }
+
+.cuds-ficha-botones { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.cuds-ficha-btn-sec {
+    flex: 1; min-width: 110px; padding: 9px 10px; border-radius: 10px;
+    border: 1px solid #dbeafe; background: #f8fafc; color: #1e40af;
+    font-size: 0.76rem; font-weight: 700; cursor: pointer; text-align: center;
+}
+.cuds-ficha-btn-sec:hover { background: #eff6ff; }
+.dark-mode .cuds-ficha-btn-sec { background: #1e293b; border-color: #334155; color: #93c5fd; }
+
+.cuds-ficha-btn-accion {
+    flex: 1; min-width: 130px; padding: 9px 10px; border-radius: 10px;
+    border: none; font-size: 0.76rem; font-weight: 800; cursor: pointer; text-align: center;
+    color: #fff;
+}
+.cuds-ficha-btn-accion--retiro { background: #dc2626; }
+.cuds-ficha-btn-accion--retiro:hover { background: #b91c1c; }
+.cuds-ficha-btn-accion--reingreso { background: #16a34a; }
+.cuds-ficha-btn-accion--reingreso:hover { background: #15803d; }
+
+.cuds-ficha-section { margin-bottom: 20px; }
+.cuds-ficha-section h5 {
+    font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .03em;
+    color: #64748b; margin: 0 0 10px;
+}
+.cuds-ficha-row { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 0.86rem; }
+.cuds-ficha-row-icon { flex-shrink: 0; width: 18px; text-align: center; }
+.cuds-ficha-row-label { color: #64748b; min-width: 120px; }
+.cuds-ficha-row-value { font-weight: 700; color: #1e293b; }
+.dark-mode .cuds-ficha-row-value { color: #e2e8f0; }
+
+.cuds-ficha-hist-item { display: flex; gap: 10px; padding: 0 0 16px; position: relative; }
+.cuds-ficha-hist-item:last-child { padding-bottom: 0; }
+.cuds-ficha-hist-item::before {
+    content: ''; position: absolute; left: 4px; top: 14px; bottom: -2px; width: 2px; background: #e2e8f0;
+}
+.cuds-ficha-hist-item:last-child::before { display: none; }
+.cuds-ficha-hist-dot {
+    flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; margin-top: 4px;
+    background: #6366f1; z-index: 1;
+}
+.cuds-ficha-hist-item--retiro .cuds-ficha-hist-dot { background: #dc2626; }
+.cuds-ficha-hist-item--ingreso .cuds-ficha-hist-dot { background: #16a34a; }
+.cuds-ficha-hist-fecha { font-size: 0.72rem; color: #64748b; font-weight: 700; }
+.cuds-ficha-hist-tipo { font-size: 0.86rem; font-weight: 700; color: #1e293b; }
+.dark-mode .cuds-ficha-hist-tipo { color: #e2e8f0; }
+
+.cuds-ficha-doc-item, .cuds-ficha-doc-empty {
+    font-size: 0.84rem; padding: 10px 12px; border-radius: 10px; background: #f8fafc;
+}
+.cuds-ficha-doc-empty { color: #94a3b8; font-style: italic; }
+.dark-mode .cuds-ficha-doc-item, .dark-mode .cuds-ficha-doc-empty { background: #1e293b; }
+
+/* ── Modales compactos de acción (Retiro / Reingreso) ── */
+.cuds-accion-overlay {
+    position: fixed; inset: 0; z-index: 10060;
+    background: rgba(15, 23, 42, 0.5);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.cuds-accion-overlay.is-open { display: flex; }
+.cuds-accion-box {
+    width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto;
+    background: #fff; border-radius: 18px; padding: 24px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+}
+.dark-mode .cuds-accion-box { background: #0f172a; color: #e2e8f0; }
+.cuds-accion-titulo { font-size: 1.05rem; font-weight: 800; margin: 0 0 4px; color: #1e293b; }
+.dark-mode .cuds-accion-titulo { color: #e2e8f0; }
+.cuds-accion-sub { font-size: 0.82rem; color: #64748b; margin: 0 0 16px; }
+
+.cuds-accion-resumen {
+    background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px;
+    font-size: 0.84rem;
+}
+.dark-mode .cuds-accion-resumen { background: #1e293b; }
+.cuds-accion-resumen div { padding: 2px 0; }
+.cuds-accion-resumen b { color: #1e293b; }
+.dark-mode .cuds-accion-resumen b { color: #e2e8f0; }
+
+.cuds-accion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cuds-accion-grid .cuds-field-full { grid-column: 1 / -1; }
+
+.cuds-accion-botones { display: flex; gap: 10px; margin-top: 20px; }
+.cuds-btn-cancelar {
+    flex: 1; padding: 11px; border-radius: 10px; border: 1px solid #e2e8f0;
+    background: #fff; color: #475569; font-weight: 700; cursor: pointer;
+}
+.dark-mode .cuds-btn-cancelar { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+.cuds-btn-cancelar:hover { background: #f8fafc; }
+
+/* Reutiliza .cuds-btn-primary para el botón de confirmar */
+.cuds-accion-botones .cuds-btn-primary { flex: 1.4; }
+
+@media (max-width: 560px) {
+    .cuds-accion-grid { grid-template-columns: 1fr; }
+    .cuds-ficha-panel { width: 100%; }
+}

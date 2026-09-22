@@ -999,6 +999,216 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         FICHA LATERAL DEL PARTICIPANTE (Consulta UDS)
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="consultaUdsFicha" class="cuds-ficha-overlay" onclick="if(event.target===this) ConsultaUDSModule.cerrarFicha()">
+        <div class="cuds-ficha-panel" onclick="event.stopPropagation()">
+            <div class="cuds-ficha-header">
+                <h3>Ficha del participante</h3>
+                <button type="button" class="cuds-ficha-close" onclick="ConsultaUDSModule.cerrarFicha()">✕</button>
+            </div>
+            <div class="cuds-ficha-scroll">
+
+                <div class="cuds-ficha-persona">
+                    <div class="cuds-ficha-avatar">👤</div>
+                    <div class="cuds-ficha-persona-info">
+                        <h4 id="consultaUdsFichaNombre">—</h4>
+                        <div id="consultaUdsFichaDoc">—</div>
+                        <span class="cuds-badge cuds-estado-activo" id="consultaUdsFichaEstadoBadge">—</span>
+                    </div>
+                </div>
+
+                <div class="cuds-ficha-botones">
+                    <button type="button" class="cuds-ficha-btn-sec" onclick="ConsultaUDSModule.scrollDocumentosFicha()">📄 Ver documentos</button>
+                    <button type="button" class="cuds-ficha-btn-sec" onclick="ConsultaUDSModule.scrollHistorialFicha()">🔁 Ver historial</button>
+                    <button type="button" class="cuds-ficha-btn-accion" id="consultaUdsFichaBtnAccion">—</button>
+                </div>
+
+                <div class="cuds-ficha-section">
+                    <h5>Información general</h5>
+                    <div class="cuds-ficha-row">
+                        <span class="cuds-ficha-row-icon">🏫</span>
+                        <span class="cuds-ficha-row-label">UDS</span>
+                        <span class="cuds-ficha-row-value" id="consultaUdsFichaUDS">—</span>
+                    </div>
+                    <div class="cuds-ficha-row">
+                        <span class="cuds-ficha-row-icon">📄</span>
+                        <span class="cuds-ficha-row-label">Contrato</span>
+                        <span class="cuds-ficha-row-value" id="consultaUdsFichaContrato">—</span>
+                    </div>
+                    <div class="cuds-ficha-row">
+                        <span class="cuds-ficha-row-icon">📅</span>
+                        <span class="cuds-ficha-row-label" id="consultaUdsFichaFechaLabel">Fecha vinculación</span>
+                        <span class="cuds-ficha-row-value" id="consultaUdsFichaFecha">—</span>
+                    </div>
+                    <div class="cuds-ficha-row">
+                        <span class="cuds-ficha-row-icon">📷</span>
+                        <span class="cuds-ficha-row-label">Estado de carga</span>
+                        <span class="cuds-badge cuds-carga-pendiente" id="consultaUdsFichaCarga">—</span>
+                    </div>
+                </div>
+
+                <div class="cuds-ficha-section">
+                    <h5>Datos de contacto</h5>
+                    <div class="cuds-ficha-row">
+                        <span class="cuds-ficha-row-icon">📞</span>
+                        <span class="cuds-ficha-row-label">Teléfono</span>
+                        <span class="cuds-ficha-row-value" id="consultaUdsFichaTelefono">—</span>
+                    </div>
+                    <div class="cuds-ficha-row">
+                        <span class="cuds-ficha-row-icon">📍</span>
+                        <span class="cuds-ficha-row-label">Dirección</span>
+                        <span class="cuds-ficha-row-value" id="consultaUdsFichaDireccion">—</span>
+                    </div>
+                    <div class="cuds-ficha-row">
+                        <span class="cuds-ficha-row-icon">✉️</span>
+                        <span class="cuds-ficha-row-label">Correo</span>
+                        <span class="cuds-ficha-row-value" id="consultaUdsFichaCorreo">—</span>
+                    </div>
+                </div>
+
+                <div class="cuds-ficha-section" id="consultaUdsFichaHistorialSection">
+                    <h5>Historial de movimientos</h5>
+                    <div id="consultaUdsFichaHistorial"></div>
+                </div>
+
+                <div class="cuds-ficha-section" id="consultaUdsFichaDocsSection">
+                    <h5>Documentos y soportes</h5>
+                    <div id="consultaUdsFichaDocumentos"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL: REPORTAR RETIRO (compacto, desde Consulta UDS)
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="consultaUdsModalRetiro" class="cuds-accion-overlay" onclick="if(event.target===this) ConsultaUDSModule.cerrarModalRetiro()">
+        <div class="cuds-accion-box" onclick="event.stopPropagation()">
+            <h3 class="cuds-accion-titulo">🚪 Reportar retiro</h3>
+            <p class="cuds-accion-sub">Se enviará como una novedad de retiro para este participante.</p>
+
+            <div class="cuds-accion-resumen">
+                <div><b>Nombre:</b> <span id="cudsRetiroNombre">—</span></div>
+                <div><b>Documento:</b> <span id="cudsRetiroDocumento">—</span></div>
+                <div><b>UDS:</b> <span id="cudsRetiroUDS">—</span></div>
+            </div>
+
+            <label class="cuds-label" for="cudsRetiroFecha">Fecha de retiro</label>
+            <input type="date" id="cudsRetiroFecha" class="cuds-input">
+
+            <label class="cuds-label" for="cudsRetiroCorreo" style="margin-top:12px;display:block;">Correo para seguimiento</label>
+            <input type="email" id="cudsRetiroCorreo" class="cuds-input" placeholder="correo@ejemplo.com">
+
+            <div class="cuds-error" id="cudsRetiroError"></div>
+
+            <div class="cuds-accion-botones">
+                <button type="button" class="cuds-btn-cancelar" onclick="ConsultaUDSModule.cerrarModalRetiro()">Cancelar</button>
+                <button type="button" class="cuds-btn-primary" id="cudsRetiroBtnConfirmar" onclick="ConsultaUDSModule.confirmarRetiro()">Confirmar retiro</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MODAL: REINGRESO (desde Consulta UDS)
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="consultaUdsModalReingreso" class="cuds-accion-overlay" onclick="if(event.target===this) ConsultaUDSModule.cerrarModalReingreso()">
+        <div class="cuds-accion-box" onclick="event.stopPropagation()">
+            <h3 class="cuds-accion-titulo">🔄 Reingreso</h3>
+            <p class="cuds-accion-sub">Se enviará como una nueva novedad de ingreso para este participante ya existente.</p>
+
+            <div class="cuds-accion-resumen">
+                <div><b>Nombre:</b> <span id="cudsReingresoNombre">—</span></div>
+                <div><b>Documento:</b> <span id="cudsReingresoDocumento">—</span></div>
+                <div><b>UDS:</b> <span id="cudsReingresoUDS">—</span></div>
+            </div>
+
+            <div class="cuds-accion-grid">
+                <div>
+                    <label class="cuds-label" for="cudsReingresoFecha">Fecha de reingreso</label>
+                    <input type="date" id="cudsReingresoFecha" class="cuds-input">
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoDOB">Fecha de nacimiento</label>
+                    <input type="date" id="cudsReingresoDOB" class="cuds-input">
+                </div>
+
+                <div class="cuds-field-full">
+                    <label class="cuds-label">Género</label><br>
+                    <label style="margin-right:14px;font-weight:500;"><input type="radio" name="cudsReingresoGenero" value="M"> Masculino</label>
+                    <label style="font-weight:500;"><input type="radio" name="cudsReingresoGenero" value="F"> Femenino</label>
+                </div>
+
+                <div class="cuds-field-full">
+                    <label class="cuds-label" for="cudsReingresoDireccion">Dirección</label>
+                    <input type="text" id="cudsReingresoDireccion" class="cuds-input" placeholder="Dirección completa">
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoTelefono">Teléfono</label>
+                    <input type="text" id="cudsReingresoTelefono" class="cuds-input" placeholder="Teléfono de contacto">
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoComuna">Comuna</label>
+                    <input type="text" id="cudsReingresoComuna" class="cuds-input">
+                </div>
+                <div class="cuds-field-full">
+                    <label class="cuds-label" for="cudsReingresoBarrio">Barrio</label>
+                    <input type="text" id="cudsReingresoBarrio" class="cuds-input" placeholder="Nombre del barrio">
+                </div>
+
+                <div>
+                    <label class="cuds-label" for="cudsReingresoAcudienteNombre">Nombre acudiente</label>
+                    <input type="text" id="cudsReingresoAcudienteNombre" class="cuds-input">
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoAcudienteDoc">Documento acudiente</label>
+                    <input type="text" id="cudsReingresoAcudienteDoc" class="cuds-input">
+                </div>
+                <div class="cuds-field-full">
+                    <label class="cuds-label" for="cudsReingresoAcudienteDOB">Fecha nacimiento acudiente</label>
+                    <input type="date" id="cudsReingresoAcudienteDOB" class="cuds-input">
+                </div>
+
+                <div class="cuds-field-full" style="border-top:1px dashed #e2e8f0; margin-top:6px; padding-top:14px;">
+                    <strong style="font-size:0.82rem;color:#64748b;">Valoración nutricional</strong>
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoFechaValoracion">Fecha de valoración</label>
+                    <input type="date" id="cudsReingresoFechaValoracion" class="cuds-input">
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoPeso">Peso (kg)</label>
+                    <input type="number" step="0.1" id="cudsReingresoPeso" class="cuds-input" placeholder="Ej: 12.5">
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoTalla">Talla (cm)</label>
+                    <input type="number" step="0.1" id="cudsReingresoTalla" class="cuds-input" placeholder="Ej: 85.0">
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoPerimetro">Perímetro braquial (cm)</label>
+                    <input type="number" step="0.1" id="cudsReingresoPerimetro" class="cuds-input">
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoRegimen">Régimen</label>
+                    <input type="text" id="cudsReingresoRegimen" class="cuds-input">
+                </div>
+                <div>
+                    <label class="cuds-label" for="cudsReingresoEPS">EPS</label>
+                    <input type="text" id="cudsReingresoEPS" class="cuds-input" placeholder="Nombre de la EPS">
+                </div>
+            </div>
+
+            <div class="cuds-error" id="cudsReingresoError"></div>
+
+            <div class="cuds-accion-botones">
+                <button type="button" class="cuds-btn-cancelar" onclick="ConsultaUDSModule.cerrarModalReingreso()">Cancelar</button>
+                <button type="button" class="cuds-btn-primary" id="cudsReingresoBtnConfirmar" onclick="ConsultaUDSModule.confirmarReingreso()">Confirmar reingreso</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE DUPLICADOS DESDE NOVEDADES ACTIVAS -->
     <div id="dupModalOverlay" class="dup-modal-overlay" onclick="DuplicadosModule.cerrarModalCaso()">
         <div class="dup-modal-box" onclick="event.stopPropagation()">
