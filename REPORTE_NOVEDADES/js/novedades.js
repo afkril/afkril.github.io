@@ -2130,6 +2130,7 @@ function generatePlainTextFive(novelty, isArchived, udsName, udsCode) {
         text += `  - Fecha Retiro:   ${formatDateDMY(r.retiroDate || novelty.retiroDate || '-')}\n`;
         text += `  - Género:         ${r.gender === 'M' ? 'Masculino' : r.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
         text += `  - Ram Diligenciado: ${r.ramFileName ? '📎 ' + r.ramFileName : 'No adjuntado'}\n`;
+        text += `  - Formato Retiro Voluntario: ${r.formatoFileName ? '📎 ' + r.formatoFileName : 'No adjuntado'}\n`;
     }
 
     if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
@@ -3111,6 +3112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const checkIngreso = document.getElementById('checkIngreso');
                     const fileInput = document.querySelector('input[name="soporte_documento"]');
                     const ramFileInput = document.querySelector('input[name="retiro_ram_diligenciado"]');
+                    const formatoFileInput = document.querySelector('input[name="retiro_formato_voluntario"]');
                     
                     if (!contract || !uds || !checkRetiro || !checkIngreso) {
                         showToast("Error: Elementos del formulario no encontrados", "error");
@@ -3202,6 +3204,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             document.getElementById('sectionRetiro')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             return;
                         }
+
+                        // Formato de Retiro Voluntario obligatorio
+                        if (!formatoFileInput || !formatoFileInput.files || formatoFileInput.files.length === 0) {
+                            showToast("❌ Debe adjuntar el FORMATO DE RETIRO VOLUNTARIO", "error");
+                            formatoFileInput?.closest('.dropzone')?.classList.add('input-error');
+                            document.getElementById('sectionRetiro')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            return;
+                        }
+                        formatoFileInput?.closest('.dropzone')?.classList.remove('input-error');
                     }
 
                     // ============================================
@@ -3756,6 +3767,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             if (noveltyData.retiro) {
                                 noveltyData.retiro.ramFileName = ramFile.name;
+                            }
+                        }
+
+                        // 1c. Procesar Formato de Retiro Voluntario (obligatorio en retiro)
+                        if (formatoFileInput?.files?.length > 0) {
+                            let formatoFile = formatoFileInput.files[0];
+
+                            if (formatoFile.size > 8 * 1024 * 1024) {
+                                throw new Error("El archivo del Formato de Retiro Voluntario excede 8MB. Use un archivo más pequeño.");
+                            }
+
+                            formatoFile = await comprimirImagenSiAplica(formatoFile);
+
+                            const formatoBase64 = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = e => resolve(e.target.result.split(',')[1]);
+                                reader.onerror = () => reject(new Error("Error al leer el Formato de Retiro Voluntario"));
+                                reader.readAsDataURL(formatoFile);
+                            });
+
+                            googleData.retiro_formato_base64 = formatoBase64;
+                            googleData.retiro_formato_type = formatoFile.type;
+                            googleData.retiro_formato_name = formatoFile.name;
+
+                            if (noveltyData.retiro) {
+                                noveltyData.retiro.formatoFileName = formatoFile.name;
                             }
                         }
 
