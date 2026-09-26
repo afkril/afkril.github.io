@@ -83,3 +83,125 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
+
+// ════════════════════════════════════════════════════════════
+// BARRA DE PROGRESO DE ENVÍO (usada por el formulario de novedades
+// y por las acciones especiales de Consulta UDS). Se controla con
+// un único "estado" reportado por OfflineModule.submitNovedad():
+//   preparando -> guardando -> correo -> correo-ok | correo-error | listo
+//   (o "encolado" si no hubo confirmación a tiempo y quedó en cola)
+// ════════════════════════════════════════════════════════════
+const EnvioProgresoUI = (() => {
+
+    const ORDEN = ['preparando', 'guardando', 'correo'];
+
+    function mostrar() {
+        document.getElementById('epOverlay')?.classList.add('is-open');
+        setEstado('preparando');
+    }
+
+    function ocultar(delay = 400) {
+        setTimeout(() => document.getElementById('epOverlay')?.classList.remove('is-open'), delay);
+    }
+
+    function setEstado(estado) {
+        const overlay = document.getElementById('epOverlay');
+        if (!overlay) return;
+
+        const pasoEquivalente = (estado === 'correo-ok' || estado === 'correo-error' || estado === 'listo') ? 'correo' : estado;
+        const idxActual = ORDEN.indexOf(pasoEquivalente === 'encolado' ? 'guardando' : pasoEquivalente);
+
+        ORDEN.forEach((p, i) => {
+            const li = document.getElementById('epPaso-' + p);
+            if (!li) return;
+            li.classList.remove('is-active', 'is-done', 'is-error');
+            if (estado === 'correo-error' && p === 'correo') { li.classList.add('is-error'); return; }
+            if (i < idxActual || estado === 'correo-ok' || estado === 'listo') li.classList.add('is-done');
+            else if (i === idxActual) li.classList.add('is-active');
+        });
+
+        const fill = document.getElementById('epBarraFill');
+        const pct = { preparando: 15, guardando: 55, encolado: 70, correo: 85, 'correo-ok': 100, 'correo-error': 100, listo: 100 }[estado] || 10;
+        if (fill) fill.style.width = pct + '%';
+
+        const titulo = document.getElementById('epTitulo');
+        if (titulo) {
+            titulo.textContent = {
+                preparando: 'Preparando información…',
+                guardando: 'Guardando en el sistema…',
+                encolado: 'Conexión inestable: guardado en este dispositivo…',
+                correo: 'Guardado ✅ — enviando notificación por correo…',
+                'correo-ok': '¡Listo! Correo enviado.',
+                'correo-error': 'Guardado ✅ (el correo se reintentará solo)',
+                listo: '¡Listo!'
+            }[estado] || 'Procesando…';
+        }
+    }
+
+    // Toast pequeño y no bloqueante para reportar el correo cuando el
+    // overlay principal ya se cerró (el formulario sigue libre de usarse).
+    function miniToast(texto, autoOcultarMs = null) {
+        const el = document.getElementById('epMiniToast');
+        if (!el) return;
+        document.getElementById('epMiniToastTexto').textContent = texto;
+        el.classList.add('is-visible');
+        if (autoOcultarMs) setTimeout(() => el.classList.remove('is-visible'), autoOcultarMs);
+    }
+
+    function miniToastOcultar() {
+        document.getElementById('epMiniToast')?.classList.remove('is-visible');
+    }
+
+    return { mostrar, ocultar, setEstado, miniToast, miniToastOcultar };
+})();
+
+// ════════════════════════════════════════════════════════════
+// Comprimir imágenes en el cliente antes de adjuntarlas
+// ════════════════════════════════════════════════════════════
+// Las fotos tomadas con celular suelen pesar 3-8 MB. Convertidas a
+// base64 (+33% de tamaño) y subidas a Google Apps Script/Drive, eso
+// es la parte que más tiempo toma en todo el envío de una novedad.
+// Esta función reduce esa foto a un tamaño razonable para el caso de
+// uso (soporte documental, no una foto de estudio) ANTES de leerla
+// como base64, sin tocar el resto del flujo de envío.
+//
+// Si el archivo no es una imagen (p.ej. un PDF), se devuelve tal cual.
+async function comprimirImagenSiAplica(file, maxDim = 1600, calidad = 0.72) {
+    if (!file || !file.type || !file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+        return file;
+    }
+
+    try {
+        const bitmap = await createImageBitmap(file);
+        let { width, height } = bitmap;
+
+        if (width <= maxDim && height <= maxDim && file.size < 900 * 1024) {
+            // Ya es razonablemente pequeña: no vale la pena recomprimir.
+            bitmap.close?.();
+            return file;
+        }
+
+        const escala = Math.min(1, maxDim / Math.max(width, height));
+        const nuevoAncho = Math.round(width * escala);
+        const nuevoAlto = Math.round(height * escala);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = nuevoAncho;
+        canvas.height = nuevoAlto;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(bitmap, 0, 0, nuevoAncho, nuevoAlto);
+        bitmap.close?.();
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', calidad));
+        if (!blob) return file; // si algo falla, se usa el archivo original
+
+        const nombreBase = (file.name || 'imagen').replace(/\.[^.]+$/, '');
+        const comprimido = new File([blob], `${nombreBase}.jpg`, { type: 'image/jpeg' });
+
+        console.log(`[Compresión] ${file.name}: ${(file.size / 1024).toFixed(0)}KB → ${(comprimido.size / 1024).toFixed(0)}KB`);
+        return comprimido;
+    } catch (e) {
+        console.warn('[Compresión] No se pudo comprimir la imagen, se usa el archivo original:', e.message);
+        return file; // ante cualquier error, seguir con el archivo tal cual
+    }
+}

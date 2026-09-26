@@ -3308,6 +3308,10 @@
 		.resumen-seccion-acudiente .resumen-seccion-title { color: #7c3aed; }
 		.resumen-seccion-acudiente { border-left: 3px solid #7c3aed; }
 
+		.resumen-seccion-discapacidad .resumen-seccion-icon { background: rgba(168, 85, 247, 0.12); }
+		.resumen-seccion-discapacidad .resumen-seccion-title { color: #9333ea; }
+		.resumen-seccion-discapacidad { border-left: 3px solid #9333ea; }
+
 		/* Grid de datos */
 		.resumen-datos-grid {
 			display: grid;
@@ -3738,6 +3742,7 @@ body.dark-mode .notif-item-mensaje { color: #94a3b8; }
 .cf-card-red    { background: linear-gradient(180deg, #fef2f2 0%, #ffffff 55%); border-color: #fca5a5; }
 .cf-card-blue   { background: linear-gradient(180deg, #eff6ff 0%, #ffffff 55%); border-color: #93c5fd; }
 .cf-card-orange { background: linear-gradient(180deg, #fff7ed 0%, #ffffff 55%); border-color: #fdba74; }
+.cf-card-purple { background: linear-gradient(180deg, #faf5ff 0%, #ffffff 55%); border-color: #d8b4fe; }
 
 .cf-card-head {
     display: flex;
@@ -3761,12 +3766,14 @@ body.dark-mode .notif-item-mensaje { color: #94a3b8; }
 .cf-card-red    .cf-card-title { color: #b91c1c; }
 .cf-card-blue   .cf-card-title { color: #1d4ed8; }
 .cf-card-orange .cf-card-title { color: #c2410c; }
+.cf-card-purple .cf-card-title { color: #7e22ce; }
 
 .cf-dot { width: 9px; height: 9px; border-radius: 999px; flex-shrink: 0; }
 .cf-dot-green  { background: #22c55e; }
 .cf-dot-red    { background: #ef4444; }
 .cf-dot-blue   { background: #3b82f6; }
 .cf-dot-orange { background: #f97316; }
+.cf-dot-purple { background: #a855f7; }
 
 .cf-columns {
     display: grid;
@@ -3809,6 +3816,7 @@ body.dark-mode .notif-item-mensaje { color: #94a3b8; }
 .cf-card-red    .cf-field .cf-microlabel { color: #dc2626; }
 .cf-card-blue   .cf-field .cf-microlabel { color: #2563eb; }
 .cf-card-orange .cf-field .cf-microlabel { color: #c2410c; }
+.cf-card-purple .cf-field .cf-microlabel { color: #7e22ce; }
 
 .cf-field input,
 .cf-field select {
@@ -3864,6 +3872,32 @@ body.dark-mode .notif-item-mensaje { color: #94a3b8; }
 .cf-gender label + label { border-left: 1.5px solid #e2e8f0; }
 .cf-card-green .cf-gender label:has(input:checked) { background: #16a34a; color: #fff; }
 .cf-card-red   .cf-gender label:has(input:checked) { background: #dc2626; color: #fff; }
+.cf-card-purple .cf-gender label:has(input:checked) { background: #9333ea; color: #fff; }
+
+/* Grid de checkboxes tipo chip (ej: Categorías de discapacidad) */
+.cf-check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+}
+.cf-check-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.cf-check-chip input { accent-color: #9333ea; width: 14px; height: 14px; flex-shrink: 0; }
+.cf-card-purple .cf-check-chip:has(input:checked) { background: #9333ea; border-color: #9333ea; color: #fff; }
+body.dark-mode .cf-check-chip { background: #0f172a !important; border-color: #334155 !important; color: #cbd5e1 !important; }
+body.dark-mode .cf-card-purple .cf-check-chip:has(input:checked) { background: #9333ea !important; border-color: #9333ea !important; color: #fff !important; }
 
 /* Zona de soporte documental compacta */
 .cf-upload {
@@ -4041,6 +4075,7 @@ body.dark-mode .cf-gender label + label { border-left-color: #475569 !important;
 body.dark-mode .cf-gender label { color: #94a3b8 !important; }
 body.dark-mode .cf-card-green .cf-gender label:has(input:checked) { background: #059669 !important; color: #fff !important; }
 body.dark-mode .cf-card-red   .cf-gender label:has(input:checked) { background: #dc2626 !important; color: #fff !important; }
+body.dark-mode .cf-card-purple .cf-gender label:has(input:checked) { background: #9333ea !important; color: #fff !important; }
 
 body.dark-mode .cf-upload {
     background: #0f172a !important;
@@ -4066,6 +4101,7 @@ body.dark-mode .cf-card-green  .cf-field .cf-microlabel { color: #6ee7b7 !import
 body.dark-mode .cf-card-red    .cf-field .cf-microlabel { color: #fca5a5 !important; }
 body.dark-mode .cf-card-blue   .cf-field .cf-microlabel { color: #93c5fd !important; }
 body.dark-mode .cf-card-orange .cf-field .cf-microlabel { color: #fdba74 !important; }
+body.dark-mode .cf-card-purple .cf-field .cf-microlabel { color: #d8b4fe !important; }
 
 /* Caja compacta "Dato Pendiente" con mejor contraste de texto */
 body.dark-mode .cf-nutricion-pendiente span { color: #fcd34d !important; }
@@ -6514,6 +6550,9 @@ body.dark-mode .cf-card-blue {
 }
 body.dark-mode .cf-card-orange {
     border-color: rgba(245,158,11,.72) !important;
+}
+body.dark-mode .cf-card-purple {
+    border-color: rgba(168,85,247,.72) !important;
 }
 
 body.dark-mode .cf-card-head {

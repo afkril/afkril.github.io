@@ -1,0 +1,73 @@
+/* ════════════════════════════════════════════════════════════
+   BARRA DE PROGRESO DE ENVÍO (novedades y acciones especiales)
+   ════════════════════════════════════════════════════════════ */
+
+.ep-overlay {
+    position: fixed; inset: 0; z-index: 10070;
+    background: rgba(15, 23, 42, 0.55);
+    display: none; align-items: center; justify-content: center; padding: 16px;
+}
+.ep-overlay.is-open { display: flex; }
+
+.ep-box {
+    width: 100%; max-width: 360px;
+    background: #fff; border-radius: 18px; padding: 26px 24px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+    text-align: center;
+}
+.dark-mode .ep-box { background: #0f172a; color: #e2e8f0; }
+
+.ep-spinner {
+    width: 40px; height: 40px; margin: 0 auto 16px;
+    border: 4px solid #e0e7ff; border-top-color: #6366f1;
+    border-radius: 50%; animation: epSpin .8s linear infinite;
+}
+.dark-mode .ep-spinner { border-color: #1e293b; border-top-color: #818cf8; }
+@keyframes epSpin { to { transform: rotate(360deg); } }
+
+.ep-titulo { font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 16px; min-height: 22px; }
+.dark-mode .ep-titulo { color: #e2e8f0; }
+
+.ep-barra { height: 6px; border-radius: 999px; background: #e2e8f0; overflow: hidden; margin-bottom: 18px; }
+.dark-mode .ep-barra { background: #1e293b; }
+.ep-barra-fill { height: 100%; width: 8%; background: #6366f1; border-radius: 999px; transition: width .35s ease; }
+
+.ep-pasos { list-style: none; margin: 0; padding: 0; text-align: left; }
+.ep-paso {
+    display: flex; align-items: center; gap: 10px; padding: 6px 0;
+    font-size: 0.82rem; color: #94a3b8; font-weight: 600;
+}
+.ep-paso-icono {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; color: transparent;
+}
+.dark-mode .ep-paso-icono { border-color: #334155; }
+
+.ep-paso.is-active { color: #4f46e5; }
+.dark-mode .ep-paso.is-active { color: #a5b4fc; }
+.ep-paso.is-active .ep-paso-icono { border-color: #6366f1; }
+
+.ep-paso.is-done { color: #16a34a; }
+.dark-mode .ep-paso.is-done { color: #4ade80; }
+.ep-paso.is-done .ep-paso-icono { background: #16a34a; border-color: #16a34a; color: #fff; }
+.ep-paso.is-done .ep-paso-icono::after { content: '✓'; }
+
+.ep-paso.is-error { color: #dc2626; }
+.ep-paso.is-error .ep-paso-icono { background: #dc2626; border-color: #dc2626; color: #fff; }
+.ep-paso.is-error .ep-paso-icono::after { content: '!'; }
+
+/* Toast pequeño de estado del correo en segundo plano (no bloqueante) */
+.ep-mini-toast {
+    position: fixed; bottom: 20px; right: 20px; z-index: 10040;
+    background: #1e293b; color: #e2e8f0; padding: 10px 16px; border-radius: 12px;
+    font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    transform: translateY(12px); opacity: 0; pointer-events: none;
+    transition: all .25s ease;
+}
+.ep-mini-toast.is-visible { transform: translateY(0); opacity: 1; }
+.ep-mini-toast .ep-mini-spinner {
+    width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.35);
+    border-top-color: #fff; border-radius: 50%; animation: epSpin .7s linear infinite;
+}

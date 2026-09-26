@@ -149,6 +149,9 @@ const OfflineModule = (() => {
     }
 
     // ── Cola de envíos pendientes (formulario de novedades) ─────
+    // Se conserva por compatibilidad (usada cuando isOnline() ya reportó
+    // "sin conexión" de entrada). Nótese que NO genera firebaseKey aquí:
+    // trySync() hace fallback a push() para estos registros antiguos.
     async function queueSubmission({ noveltyData, googleData, refPath }) {
         const tempId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
         const record = { tempId, noveltyData, googleData, refPath, timestamp: Date.now(), attempts: 0 };
@@ -156,6 +159,81 @@ const OfflineModule = (() => {
         store.put(record);
         _notifyStatus();
         return { tempId };
+    }
+
+    // ── Envío robusto con guardia de tiempo, y con el correo desacoplado del
+    //    camino crítico ────────────────────────────────────────────────────
+    //
+    // Antes, el usuario esperaba a que el CORREO terminara de enviarse
+    // (subida del archivo a Drive + envío por Apps Script) para ver el
+    // mensaje de éxito. Eso es lo que hacía sentir lento el envío: el dato
+    // ya estaba seguro en Firebase en 1-2 segundos, pero la pantalla seguía
+    // "cargando" varios segundos más solo por el correo.
+    //
+    // Ahora: apenas Firebase confirma (lo único que de verdad debe bloquear
+    // al usuario), se resuelve la función y el formulario puede liberarse.
+    // El correo se dispara aparte, sin await, y se reporta su avance con
+    // `onProgress` para poder mostrarlo como un paso secundario en la UI
+    // (barra/stepper) sin retener al usuario ahí.
+    async function submitNovedad({ noveltyData, googleData, refPath, timeoutMs = 8000, onProgress }) {
+        onProgress?.('guardando');
+
+        const newRef = database.ref(refPath).push(); // clave instantánea, sin red
+        const firebaseKey = newRef.key;
+
+        const writePromise = newRef.set(noveltyData).then(() => true).catch(() => false);
+        let timedOut = false;
+        const timeoutPromise = new Promise((resolve) => {
+            setTimeout(() => { timedOut = true; resolve('timeout'); }, timeoutMs);
+        });
+
+        const result = await Promise.race([writePromise, timeoutPromise]);
+
+        // Dispara el correo SIN esperarlo (fire-and-forget) — pero solo una
+        // vez que Firebase ya confirmó, para no repetir el bug anterior.
+        const dispararCorreoEnSegundoPlano = () => {
+            if (!googleData || typeof enviarAGoogleSilencioso !== 'function') { onProgress?.('listo'); return; }
+            onProgress?.('correo');
+            enviarAGoogleSilencioso(googleData)
+                .then(() => onProgress?.('correo-ok'))
+                .catch((e) => {
+                    console.warn('[Offline] Correo falló, pero el dato ya está seguro en Firebase:', e.message);
+                    onProgress?.('correo-error');
+                });
+        };
+
+        if (result === true && !timedOut) {
+            if (typeof DuplicadosModule !== 'undefined') DuplicadosModule.cargarIndiceGlobal(true);
+            dispararCorreoEnSegundoPlano();
+            return { status: 'ok', key: firebaseKey };
+        }
+
+        // No confirmó a tiempo (result === 'timeout') o el propio Firebase
+        // rechazó la escritura (result === false, p.ej. permisos): se
+        // encola con la MISMA clave para no perder el dato ni duplicarlo.
+        const tempId = 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        const record = { tempId, firebaseKey, noveltyData, googleData, refPath, timestamp: Date.now(), attempts: 0 };
+        const store = await _tx(STORE_PENDING, 'readwrite');
+        store.put(record);
+        _notifyStatus();
+        onProgress?.('encolado');
+
+        // Si la escritura original ERA solo lenta (no rechazada) y termina
+        // llegando después, se resuelve sola sin esperar a trySync():
+        writePromise.then(async (ok) => {
+            if (!ok) return;
+            const stillPending = (await _getPendingAll()).some(p => p.tempId === tempId);
+            if (!stillPending) return; // ya lo resolvió trySync() mientras tanto
+            if (googleData && typeof enviarAGoogleSilencioso === 'function') {
+                try { await enviarAGoogleSilencioso(googleData); } catch (e) { /* se reintenta en el próximo trySync si hace falta */ }
+            }
+            await _removePending(tempId);
+            _notifyStatus();
+            if (typeof loadNoveltiesTable === 'function') loadNoveltiesTable();
+            if (typeof DuplicadosModule !== 'undefined') DuplicadosModule.cargarIndiceGlobal(true);
+        }).catch(() => { /* queda en cola para que trySync() reintente */ });
+
+        return { status: 'queued', tempId, key: firebaseKey };
     }
 
     async function _getPendingAll() {
@@ -189,14 +267,26 @@ const OfflineModule = (() => {
 
             for (const item of pending) {
                 try {
-                    const newRef = await database.ref(item.refPath).push(item.noveltyData);
+                    // Si el registro trae firebaseKey (viene de submitNovedad),
+                    // se escribe con set() a esa MISMA clave: idempotente, no
+                    // duplica aunque este sea el segundo/tercer reintento.
+                    // Si no la trae (registros antiguos en cola de antes de
+                    // este cambio), se usa push() como antes.
+                    let newKey;
+                    if (item.firebaseKey) {
+                        await database.ref(`${item.refPath}/${item.firebaseKey}`).set(item.noveltyData);
+                        newKey = item.firebaseKey;
+                    } else {
+                        const newRef = await database.ref(item.refPath).push(item.noveltyData);
+                        newKey = newRef.key;
+                    }
 
                     // Reemplazar el registro temporal en memoria por el real,
                     // si sigue existiendo en la tabla actual.
                     if (typeof currentNovelties !== 'undefined') {
                         const idx = currentNovelties.findIndex(n => n.id === item.tempId);
                         if (idx !== -1) {
-                            currentNovelties[idx] = { id: newRef.key, ...item.noveltyData };
+                            currentNovelties[idx] = { id: newKey, ...item.noveltyData };
                         }
                     }
 
@@ -361,6 +451,7 @@ const OfflineModule = (() => {
         cachedRead,
         patchCache,
         queueSubmission,
+        submitNovedad,
         trySync,
         getPendingCount,
         onStatusChange

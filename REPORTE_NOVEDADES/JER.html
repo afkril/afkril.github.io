@@ -26,6 +26,7 @@
 
     <!-- CONSULTA POR CÓDIGO UDS -->
     <link rel="stylesheet" href="css/consulta-uds.css">
+    <link rel="stylesheet" href="css/envio-progreso.css">
     <style id="formulario-background-integrado">
         /*
          * Fondo visual del formulario:
@@ -231,7 +232,7 @@
                         </a>
                         <button type="button" onclick="ConsultaUDSModule.abrirModal()" class="cuds-quick-btn text-slate-400 hover:text-indigo-500 transition-colors" title="Consultar UDS">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        </button>						
+                        </button>
 					</div>
                 </div>
             </div>
@@ -628,6 +629,23 @@
                                 </div>
                             </div>
 
+                            <!-- ANTECEDENTE DE PREMATUREZ — solo visible si el ingreso tiene menos de 24 meses -->
+                            <div id="prematurezWrapper" class="cf-row2 hidden" style="margin-top:8px;">
+                                <div class="cf-field cf-noicon">
+                                    <label class="cf-microlabel">Antecedente de prematurez *</label>
+                                    <div class="cf-gender">
+                                        <label><input type="radio" name="antecedente_prematurez" value="SI" onchange="togglePrematurezGestacional()"> Sí</label>
+                                        <label><input type="radio" name="antecedente_prematurez" value="NO" onchange="togglePrematurezGestacional()"> No</label>
+                                    </div>
+                                </div>
+                                <div class="cf-field cf-noicon hidden" id="edadGestacionalWrapper">
+                                    <label class="cf-microlabel">Edad Gestacional al nacer *</label>
+                                    <input type="number" id="edadGestacional" name="edad_gestacional" placeholder="Ej: 34 (entre 3 y 36 semanas)"
+                                           step="1" min="3" max="36"
+                                           oninput="validarEdadGestacional(this)">
+                                </div>
+                            </div>
+
                             <!-- INDICADOR DE ESTADO NUTRICIONAL CON 7 RANGOS -->
                             <div class="nutricion-indicator" id="nutricionIndicator" style="display: none;">
                                 <div class="nutricion-status" id="nutricionStatus">--</div>
@@ -638,6 +656,108 @@
                                     <!-- Se llena dinámicamente -->
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cf-card cf-card-purple">
+                    <div class="cf-card-head">
+                        <div class="cf-card-title"><span class="cf-dot cf-dot-purple"></span> Discapacidad</div>
+                    </div>
+
+                    <div class="cf-field cf-noicon">
+                        <label class="cf-microlabel">¿Tiene discapacidad? *</label>
+                        <div class="cf-gender">
+                            <label><input type="radio" name="_discapacidadTiene" value="SI" onchange="toggleDiscapacidadFields()"> Sí</label>
+                            <label><input type="radio" name="_discapacidadTiene" value="NO" onchange="toggleDiscapacidadFields()"> No</label>
+                        </div>
+                    </div>
+
+                    <div id="discapacidadFieldsWrapper" class="hidden" style="margin-top:10px;">
+                        <div class="cf-row2">
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">La discapacidad está certificada *</label>
+                                <div class="cf-gender">
+                                    <label><input type="radio" name="discapacidad_certificada" value="SI"> Sí</label>
+                                    <label><input type="radio" name="discapacidad_certificada" value="NO"> No</label>
+                                </div>
+                            </div>
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">Entidad que certifica la discapacidad *</label>
+                                <select id="discapacidadEntidad" name="discapacidad_entidad_certifica">
+                                    <option value="">Seleccione...</option>
+                                    <option value="IPS">IPS</option>
+                                    <option value="NO DEFINE">No define</option>
+                                    <option value="EPS">EPS</option>
+                                    <option value="REGIMEN ESPECIAL">Régimen especial</option>
+                                    <option value="INMLCF">INMLCF</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="cf-row2">
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">Está inscrito en el registro para la localización y caracterización de personas con discapacidad *</label>
+                                <div class="cf-gender">
+                                    <label><input type="radio" name="discapacidad_registro_localizacion" value="SI"> Sí</label>
+                                    <label><input type="radio" name="discapacidad_registro_localizacion" value="NO"> No</label>
+                                </div>
+                            </div>
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">Requiere la ayuda de otra persona *</label>
+                                <div class="cf-gender">
+                                    <label><input type="radio" name="discapacidad_requiere_ayuda_persona" value="SI"> Sí</label>
+                                    <label><input type="radio" name="discapacidad_requiere_ayuda_persona" value="NO"> No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cf-row2">
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">Requiere ayuda técnica / producto de apoyo *</label>
+                                <div class="cf-gender">
+                                    <label><input type="radio" name="discapacidad_requiere_ayuda_tecnica" value="SI"> Sí</label>
+                                    <label><input type="radio" name="discapacidad_requiere_ayuda_tecnica" value="NO"> No</label>
+                                </div>
+                            </div>
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">Cuenta con la Ayuda Técnica / producto de apoyo *</label>
+                                <div class="cf-gender">
+                                    <label><input type="radio" name="discapacidad_cuenta_ayuda_tecnica" value="SI"> Sí</label>
+                                    <label><input type="radio" name="discapacidad_cuenta_ayuda_tecnica" value="NO"> No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cf-row2">
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">Requiere terapia y/o rehabilitación *</label>
+                                <div class="cf-gender">
+                                    <label><input type="radio" name="discapacidad_requiere_terapia" value="SI"> Sí</label>
+                                    <label><input type="radio" name="discapacidad_requiere_terapia" value="NO"> No</label>
+                                </div>
+                            </div>
+                            <div class="cf-field cf-noicon">
+                                <label class="cf-microlabel">Recibe atención en terapia y/o Rehabilitación</label>
+                                <div class="cf-gender">
+                                    <label><input type="radio" name="discapacidad_recibe_terapia" value="SI"> Sí</label>
+                                    <label><input type="radio" name="discapacidad_recibe_terapia" value="NO"> No</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cf-field cf-noicon">
+                            <label class="cf-microlabel">Categorías de discapacidad *</label>
+                            <select id="discapacidadCategoria" name="discapacidad_categoria">
+                                <option value="">Seleccione...</option>
+                                <option value="Discapacidad auditiva">Discapacidad auditiva</option>
+                                <option value="Discapacidad física">Discapacidad física</option>
+                                <option value="Discapacidad intelectual">Discapacidad intelectual</option>
+                                <option value="Discapacidad múltiple">Discapacidad múltiple</option>
+                                <option value="Discapacidad psicosocial (mental)">Discapacidad psicosocial (mental)</option>
+                                <option value="Discapacidad visual">Discapacidad visual</option>
+                                <option value="Sordoceguera">Sordoceguera</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -1002,6 +1122,26 @@
     <!-- ═══════════════════════════════════════════════════════════
          FICHA LATERAL DEL PARTICIPANTE (Consulta UDS)
     ═══════════════════════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════════════════════════════
+         BARRA DE PROGRESO DE ENVÍO (formulario y acciones especiales)
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="epOverlay" class="ep-overlay">
+        <div class="ep-box">
+            <div class="ep-spinner"></div>
+            <div class="ep-titulo" id="epTitulo">Preparando información…</div>
+            <div class="ep-barra"><div class="ep-barra-fill" id="epBarraFill"></div></div>
+            <ul class="ep-pasos">
+                <li class="ep-paso" id="epPaso-preparando"><span class="ep-paso-icono"></span> Preparando información</li>
+                <li class="ep-paso" id="epPaso-guardando"><span class="ep-paso-icono"></span> Guardando en el sistema</li>
+                <li class="ep-paso" id="epPaso-correo"><span class="ep-paso-icono"></span> Enviando notificación por correo</li>
+            </ul>
+        </div>
+    </div>
+    <div id="epMiniToast" class="ep-mini-toast">
+        <span class="ep-mini-spinner"></span>
+        <span id="epMiniToastTexto">Enviando correo…</span>
+    </div>
+
     <div id="consultaUdsFicha" class="cuds-ficha-overlay" onclick="if(event.target===this) ConsultaUDSModule.cerrarFicha()">
         <div class="cuds-ficha-panel" onclick="event.stopPropagation()">
             <div class="cuds-ficha-header">

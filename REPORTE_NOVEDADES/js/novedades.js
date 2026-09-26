@@ -1223,6 +1223,23 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
             }
 
 
+            ${
+                tieneIngreso
+                ? `
+                    <button
+                        class="novelty-tab-btn"
+                        data-tab="discapacidad"
+                        onclick="switchNoveltyTab('discapacidad')">
+
+                        <span class="tab-icon">♿</span>
+                        <span>Discapacidad</span>
+
+                    </button>
+                `
+                : ''
+            }
+
+
             <button
                 class="novelty-tab-btn"
                 data-tab="comunicacion"
@@ -1335,6 +1352,25 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                             novelty,
                             isArchived
                         )}
+
+                    </div>
+                `
+                : ''
+            }
+
+
+            <!-- =================================================
+                 DISCAPACIDAD
+            ================================================== -->
+
+            ${
+                tieneIngreso
+                ? `
+                    <div
+                        class="novelty-tab-panel"
+                        data-panel="discapacidad">
+
+                        ${renderDiscapacidadTab(novelty)}
 
                     </div>
                 `
@@ -1728,6 +1764,29 @@ function renderAcudienteTab(novelty) {
         </div>
     `;
 }
+function renderPrematurezInfoHTML(nutricion) {
+    if (!nutricion || !nutricion.antecedentePrematurez) return '';
+    const tiene = nutricion.antecedentePrematurez;
+    return `
+        <div class="novelty-data-grid" style="margin-top:10px;">
+            <div class="novelty-data-card wide">
+                <span>🍼 Antecedente de prematurez</span>
+                <strong>${tiene === 'SI' ? 'SÍ' : 'NO'}</strong>
+            </div>
+            ${
+                tiene === 'SI'
+                ? `
+                    <div class="novelty-data-card">
+                        <span>📆 Edad gestacional al nacer</span>
+                        <strong>${nutricion.edadGestacional ? nutricion.edadGestacional + ' semanas' : '-'}</strong>
+                    </div>
+                `
+                : ''
+            }
+        </div>
+    `;
+}
+
 function renderNutricionalTab(novelty, isArchived) {
     const nutricion =
         novelty.nutricion ||
@@ -1793,6 +1852,7 @@ function renderNutricionalTab(novelty, isArchived) {
                 </span>
 
             </div>
+            ${renderPrematurezInfoHTML(nutricion)}
         `;
     }
     const estadoColor =
@@ -1885,6 +1945,115 @@ function renderNutricionalTab(novelty, isArchived) {
                 <strong>
                     ${nutricion.eps || '-'}
                 </strong>
+            </div>
+        </div>
+        ${renderPrematurezInfoHTML(nutricion)}
+    `;
+}
+function renderDiscapacidadTab(novelty) {
+    const d =
+        novelty.discapacidad ||
+        (novelty.ingreso &&
+         novelty.ingreso.discapacidad);
+
+    if (!d || !d.tiene) {
+        return `
+            <div class="novelty-empty-state">
+                <div>♿</div>
+                <strong>
+                    Sin datos de discapacidad
+                </strong>
+                <span>
+                    No se registró información de discapacidad
+                    para esta novedad.
+                </span>
+            </div>
+        `;
+    }
+
+    if (d.tiene !== 'SI') {
+        return `
+            <div class="novelty-section-title">
+                <div>
+                    <span class="section-kicker">
+                        DISCAPACIDAD
+                    </span>
+                    <h3>
+                        Discapacidad
+                    </h3>
+                </div>
+                <span class="novelty-section-icon discapacidad">
+                    ♿
+                </span>
+            </div>
+            <div class="novelty-data-grid">
+                <div class="novelty-data-card wide">
+                    <span>♿ ¿Tiene discapacidad?</span>
+                    <strong>NO</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    const categorias =
+        Array.isArray(d.categorias) && d.categorias.length
+            ? d.categorias.join(', ')
+            : 'Ninguna registrada';
+
+    return `
+        <div class="novelty-section-title">
+            <div>
+                <span class="section-kicker">
+                    DISCAPACIDAD
+                </span>
+                <h3>
+                    Discapacidad
+                </h3>
+            </div>
+            <span class="novelty-section-icon discapacidad">
+                ♿
+            </span>
+        </div>
+        <div class="novelty-data-grid grid-3col">
+            <div class="novelty-data-card wide">
+                <span>♿ ¿Tiene discapacidad?</span>
+                <strong>SÍ</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>📋 Certificada</span>
+                <strong>${d.certificada || '-'}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🏥 Entidad que certifica</span>
+                <strong>${d.entidadCertifica || '-'}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>📝 Registro de localización</span>
+                <strong>${d.registroLocalizacion || '-'}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🤝 Requiere ayuda de otra persona</span>
+                <strong>${d.requiereAyudaPersona || '-'}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🦽 Requiere ayuda técnica</span>
+                <strong>${d.requiereAyudaTecnica || '-'}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🦽 Cuenta con ayuda técnica</span>
+                <strong>${d.cuentaAyudaTecnica || '-'}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>💆 Requiere terapia/rehabilitación</span>
+                <strong>${d.requiereTerapia || '-'}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>💆 Recibe terapia/rehabilitación</span>
+                <strong>${d.recibeTerapia || '-'}</strong>
+            </div>
+            <div class="novelty-data-card wide">
+                <span>🏷️ Categorías de discapacidad</span>
+                <strong>${categorias}</strong>
             </div>
         </div>
     `;
@@ -1992,6 +2161,23 @@ function generatePlainTextFive(novelty, isArchived, udsName, udsCode) {
             text += `  - Régimen:            ${n.regimen || '-'}\n`;
             text += `  - EPS:                ${n.eps || '-'}\n`;
             text += `  - Estado Nutricional: ${n.estadoNutricional || 'No calculado'}\n`;
+        }
+
+        const d = novelty.discapacidad || (novelty.ingreso && novelty.ingreso.discapacidad);
+        if (d && d.tiene) {
+            text += `\n[ DISCAPACIDAD ]\n`;
+            text += `  - Tiene discapacidad:             ${d.tiene === 'SI' ? 'SÍ' : 'NO'}\n`;
+            if (d.tiene === 'SI') {
+                text += `  - Certificada:                     ${d.certificada || '-'}\n`;
+                text += `  - Entidad que certifica:           ${d.entidadCertifica || '-'}\n`;
+                text += `  - Inscrito registro localización:  ${d.registroLocalizacion || '-'}\n`;
+                text += `  - Requiere ayuda de otra persona:  ${d.requiereAyudaPersona || '-'}\n`;
+                text += `  - Requiere ayuda técnica:          ${d.requiereAyudaTecnica || '-'}\n`;
+                text += `  - Cuenta con ayuda técnica:        ${d.cuentaAyudaTecnica || '-'}\n`;
+                text += `  - Requiere terapia/rehab:          ${d.requiereTerapia || '-'}\n`;
+                text += `  - Recibe terapia/rehab:            ${d.recibeTerapia || '-'}\n`;
+                text += `  - Categorías:                      ${(Array.isArray(d.categorias) && d.categorias.length) ? d.categorias.join(', ') : 'Ninguna'}\n`;
+            }
         }
     }
 
@@ -2395,6 +2581,104 @@ function toggleSection(type) {
         }
 
 /* ============================================================
+   TARJETA DE DISCAPACIDAD (dentro de Reportar Ingresos)
+   Solo se pregunta inicialmente "¿Tiene discapacidad?"; si la
+   respuesta es SI se despliegan las demás preguntas.
+   ============================================================ */
+function toggleDiscapacidadFields() {
+    const tiene = document.querySelector('input[name="_discapacidadTiene"]:checked')?.value;
+    const wrapper = document.getElementById('discapacidadFieldsWrapper');
+    if (wrapper) wrapper.classList.toggle('hidden', tiene !== 'SI');
+}
+
+function getDiscapacidadData() {
+    const tiene = document.querySelector('input[name="_discapacidadTiene"]:checked')?.value || '';
+    if (tiene !== 'SI') {
+        return { tiene: tiene || 'NO' };
+    }
+    const categoriaSeleccionada = document.getElementById('discapacidadCategoria')?.value || '';
+    const categorias = categoriaSeleccionada ? [categoriaSeleccionada] : [];
+    return {
+        tiene: 'SI',
+        certificada: document.querySelector('input[name="discapacidad_certificada"]:checked')?.value || '',
+        entidadCertifica: document.getElementById('discapacidadEntidad')?.value || '',
+        registroLocalizacion: document.querySelector('input[name="discapacidad_registro_localizacion"]:checked')?.value || '',
+        requiereAyudaPersona: document.querySelector('input[name="discapacidad_requiere_ayuda_persona"]:checked')?.value || '',
+        requiereAyudaTecnica: document.querySelector('input[name="discapacidad_requiere_ayuda_tecnica"]:checked')?.value || '',
+        cuentaAyudaTecnica: document.querySelector('input[name="discapacidad_cuenta_ayuda_tecnica"]:checked')?.value || '',
+        requiereTerapia: document.querySelector('input[name="discapacidad_requiere_terapia"]:checked')?.value || '',
+        recibeTerapia: document.querySelector('input[name="discapacidad_recibe_terapia"]:checked')?.value || '',
+        categorias
+    };
+}
+
+/* ============================================================
+   ANTECEDENTE DE PREMATUREZ (dentro de Datos Nutricionales)
+   Solo se pregunta si el beneficiario ingresa con menos de 24
+   meses de edad (según Fecha Nacimiento y Fecha Ingreso). Si la
+   respuesta es SI se despliega Edad Gestacional al nacer.
+   ============================================================ */
+function togglePrematurezVisibility() {
+    const displayAge = document.getElementById('displayAge');
+    const wrapper = document.getElementById('prematurezWrapper');
+    if (!wrapper) return;
+
+    const edadMeses = (displayAge && typeof parseEdadAMeses === 'function')
+        ? parseEdadAMeses(displayAge.value)
+        : null;
+    const mostrar = edadMeses !== null && edadMeses < 24;
+
+    wrapper.classList.toggle('hidden', !mostrar);
+
+    if (!mostrar) {
+        document.querySelectorAll('input[name="antecedente_prematurez"]').forEach(r => r.checked = false);
+        const edadGestWrapper = document.getElementById('edadGestacionalWrapper');
+        if (edadGestWrapper) edadGestWrapper.classList.add('hidden');
+        const edadGestInput = document.getElementById('edadGestacional');
+        if (edadGestInput) {
+            edadGestInput.value = '';
+            edadGestInput.classList.remove('input-error');
+        }
+    }
+}
+
+function togglePrematurezGestacional() {
+    const tiene = document.querySelector('input[name="antecedente_prematurez"]:checked')?.value;
+    const wrapper = document.getElementById('edadGestacionalWrapper');
+    if (wrapper) wrapper.classList.toggle('hidden', tiene !== 'SI');
+    if (tiene !== 'SI') {
+        const edadGestInput = document.getElementById('edadGestacional');
+        if (edadGestInput) {
+            edadGestInput.value = '';
+            edadGestInput.classList.remove('input-error');
+        }
+    }
+}
+
+function validarEdadGestacional(input) {
+    if (input.value === '') { input.classList.remove('input-error'); return; }
+    const valor = parseFloat(input.value);
+    if (isNaN(valor) || valor < 3 || valor > 36) {
+        input.classList.add('input-error');
+        showToast('⚠️ La edad gestacional debe estar entre 3 y 36 semanas', 'warning');
+    } else {
+        input.classList.remove('input-error');
+    }
+}
+
+function getPrematurezData() {
+    const wrapper = document.getElementById('prematurezWrapper');
+    const aplica = wrapper && !wrapper.classList.contains('hidden');
+    if (!aplica) return { aplica: false, tiene: '', edadGestacional: '' };
+
+    return {
+        aplica: true,
+        tiene: document.querySelector('input[name="antecedente_prematurez"]:checked')?.value || '',
+        edadGestacional: document.getElementById('edadGestacional')?.value || ''
+    };
+}
+
+/* ============================================================
    RESET COMPLETO DEL FORMULARIO
    Función única reutilizada tras un envío exitoso, al cambiar
    de asociación/operador (index.html) y desde el botón manual
@@ -2414,6 +2698,14 @@ function resetFormularioCompleto(opts) {
     const secIngreso = document.getElementById('sectionIngreso');
     if (secRetiro) secRetiro.classList.add('hidden');
     if (secIngreso) secIngreso.classList.add('hidden');
+
+    const discapWrapper = document.getElementById('discapacidadFieldsWrapper');
+    if (discapWrapper) discapWrapper.classList.add('hidden');
+
+    const prematurezWrapperReset = document.getElementById('prematurezWrapper');
+    if (prematurezWrapperReset) prematurezWrapperReset.classList.add('hidden');
+    const edadGestWrapperReset = document.getElementById('edadGestacionalWrapper');
+    if (edadGestWrapperReset) edadGestWrapperReset.classList.add('hidden');
 
     const displayAge = document.getElementById('displayAge');
     if (displayAge) displayAge.value = 'Esperando fechas...';
@@ -2624,6 +2916,8 @@ function updateAgeDisplay() {
             } else if (displayField) {
                 displayField.value = "Esperando fechas...";
             }
+
+            if (typeof togglePrematurezVisibility === 'function') togglePrematurezVisibility();
         }
 
 function calculateAge(dob, entry) {
@@ -2746,6 +3040,30 @@ function formatData() {
                     formData += `  - Régimen:            ${nutricionRegimen ? nutricionRegimen.value : ''}\n`;
                     formData += `  - EPS:                ${nutricionEPS ? nutricionEPS.value : ''}\n`;
                     formData += `  - Estado Nutric.:     ${nutricionStatus ? nutricionStatus.textContent : 'No calculado'}\n`;
+                }
+
+                const prematurezInfo = getPrematurezData();
+                if (prematurezInfo.aplica) {
+                    formData += `\n[ ANTECEDENTE DE PREMATUREZ ]\n`;
+                    formData += `  - Antecedente de prematurez: ${prematurezInfo.tiene === 'SI' ? 'SÍ' : 'NO'}\n`;
+                    if (prematurezInfo.tiene === 'SI') {
+                        formData += `  - Edad Gestacional al nacer: ${prematurezInfo.edadGestacional || ''} semanas\n`;
+                    }
+                }
+
+                const discapacidad = getDiscapacidadData();
+                formData += `\n[ DISCAPACIDAD ]\n`;
+                formData += `  - Tiene discapacidad:              ${discapacidad.tiene === 'SI' ? 'SÍ' : 'NO'}\n`;
+                if (discapacidad.tiene === 'SI') {
+                    formData += `  - Certificada:                     ${discapacidad.certificada || ''}\n`;
+                    formData += `  - Entidad que certifica:           ${discapacidad.entidadCertifica || ''}\n`;
+                    formData += `  - Inscrito registro localización:  ${discapacidad.registroLocalizacion || ''}\n`;
+                    formData += `  - Requiere ayuda de otra persona:  ${discapacidad.requiereAyudaPersona || ''}\n`;
+                    formData += `  - Requiere ayuda técnica:          ${discapacidad.requiereAyudaTecnica || ''}\n`;
+                    formData += `  - Cuenta con ayuda técnica:        ${discapacidad.cuentaAyudaTecnica || ''}\n`;
+                    formData += `  - Requiere terapia/rehab:          ${discapacidad.requiereTerapia || ''}\n`;
+                    formData += `  - Recibe terapia/rehab:            ${discapacidad.recibeTerapia || ''}\n`;
+                    formData += `  - Categorías:                      ${discapacidad.categorias.join(', ') || 'Ninguna'}\n`;
                 }
             }
             
@@ -3087,6 +3405,89 @@ document.addEventListener('DOMContentLoaded', function() {
                             return;
                         }
                         nutricionPerimetroBraquial.classList.remove('input-error');
+
+                        // ============================================
+                        // VALIDACIÓN DE ANTECEDENTE DE PREMATUREZ
+                        // (solo aplica si el ingreso tiene < 24 meses)
+                        // ============================================
+                        const prematurezWrapperCheck = document.getElementById('prematurezWrapper');
+                        const requierePrematurez = prematurezWrapperCheck && !prematurezWrapperCheck.classList.contains('hidden');
+                        if (requierePrematurez) {
+                            const antecedentePrematurezCheck = document.querySelector('input[name="antecedente_prematurez"]:checked');
+                            if (!antecedentePrematurezCheck) {
+                                showToast("❌ Indique el ANTECEDENTE DE PREMATUREZ", "error");
+                                prematurezWrapperCheck.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                return;
+                            }
+
+                            if (antecedentePrematurezCheck.value === 'SI') {
+                                const edadGestacionalInput = document.getElementById('edadGestacional');
+                                const edadGestacionalVal = parseFloat(edadGestacionalInput?.value);
+
+                                if (!edadGestacionalInput || edadGestacionalInput.value === '') {
+                                    showToast("❌ Indique la EDAD GESTACIONAL AL NACER", "error");
+                                    edadGestacionalInput?.classList.add('input-error');
+                                    edadGestacionalInput?.focus();
+                                    return;
+                                }
+
+                                if (isNaN(edadGestacionalVal) || edadGestacionalVal < 3 || edadGestacionalVal > 36) {
+                                    showToast("❌ La EDAD GESTACIONAL debe estar entre 3 y 36 semanas", "error");
+                                    edadGestacionalInput.classList.add('input-error');
+                                    edadGestacionalInput.focus();
+                                    return;
+                                }
+                                edadGestacionalInput.classList.remove('input-error');
+                            }
+                        }
+
+                        // ============================================
+                        // VALIDACIÓN DE DISCAPACIDAD
+                        // ============================================
+                        const discapTiene = document.querySelector('input[name="_discapacidadTiene"]:checked');
+                        if (!discapTiene) {
+                            showToast("❌ Indique si el beneficiario TIENE DISCAPACIDAD", "error");
+                            document.getElementById('discapacidadFieldsWrapper')?.closest('.cf-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            return;
+                        }
+
+                        if (discapTiene.value === 'SI') {
+                            const reqDiscapRadio = (name, label) => {
+                                const val = document.querySelector(`input[name="${name}"]:checked`);
+                                if (!val) {
+                                    showToast(`❌ Responda: ${label}`, "error");
+                                    document.getElementById('discapacidadFieldsWrapper')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    return false;
+                                }
+                                return true;
+                            };
+
+                            if (!reqDiscapRadio('discapacidad_certificada', '¿La discapacidad está certificada?')) return;
+
+                            const discapEntidad = document.getElementById('discapacidadEntidad');
+                            if (!discapEntidad || !discapEntidad.value) {
+                                showToast("❌ Seleccione la ENTIDAD que certifica la discapacidad", "error");
+                                discapEntidad?.classList.add('input-error');
+                                discapEntidad?.focus();
+                                return;
+                            }
+                            discapEntidad.classList.remove('input-error');
+
+                            if (!reqDiscapRadio('discapacidad_registro_localizacion', '¿Está inscrito en el registro de localización y caracterización?')) return;
+                            if (!reqDiscapRadio('discapacidad_requiere_ayuda_persona', '¿Requiere la ayuda de otra persona?')) return;
+                            if (!reqDiscapRadio('discapacidad_requiere_ayuda_tecnica', '¿Requiere ayuda técnica / producto de apoyo?')) return;
+                            if (!reqDiscapRadio('discapacidad_cuenta_ayuda_tecnica', '¿Cuenta con la ayuda técnica / producto de apoyo?')) return;
+                            if (!reqDiscapRadio('discapacidad_requiere_terapia', '¿Requiere terapia y/o rehabilitación?')) return;
+
+                            const discapCategoriaSelect = document.getElementById('discapacidadCategoria');
+                            if (!discapCategoriaSelect || !discapCategoriaSelect.value) {
+                                showToast("❌ Seleccione la CATEGORÍA DE DISCAPACIDAD", "error");
+                                discapCategoriaSelect?.classList.add('input-error');
+                                discapCategoriaSelect?.focus();
+                                return;
+                            }
+                            discapCategoriaSelect.classList.remove('input-error');
+                        }
                     }
 
                     // ============================================
@@ -3221,6 +3622,7 @@ document.addEventListener('DOMContentLoaded', function() {
 						const nutricionStatus = document.getElementById('nutricionStatus');
 						
 						const nutricionPendienteFlag = document.getElementById('nutricionPendiente');
+						const prematurezData = getPrematurezData();
 						noveltyData.nutricion = {
 							pendiente: nutricionPendienteFlag?.checked || false,
 							fecha: nutricionFecha?.value || '',
@@ -3229,8 +3631,13 @@ document.addEventListener('DOMContentLoaded', function() {
 							perimetroBraquial: nutricionPerimetroBraquial?.value || '',
 							regimen: nutricionRegimen?.value || '',
 							eps: nutricionEPS?.value || '',
-							estadoNutricional: nutricionPendienteFlag?.checked ? '⏳ Pendiente' : (nutricionStatus?.textContent || 'No calculado')
+							estadoNutricional: nutricionPendienteFlag?.checked ? '⏳ Pendiente' : (nutricionStatus?.textContent || 'No calculado'),
+							antecedentePrematurez: prematurezData.aplica ? (prematurezData.tiene || '') : '',
+							edadGestacional: (prematurezData.aplica && prematurezData.tiene === 'SI') ? prematurezData.edadGestacional : ''
 						};
+
+						// Discapacidad
+						noveltyData.discapacidad = getDiscapacidadData();
 					}
 
                     // Preparar datos para Google Apps Script
@@ -3272,12 +3679,29 @@ document.addEventListener('DOMContentLoaded', function() {
                         googleData.nutricion_perimetro_braquial = noveltyData.nutricion.perimetroBraquial;
                         googleData.nutricion_regimen = noveltyData.nutricion.regimen;
                         googleData.nutricion_eps = noveltyData.nutricion.eps;
+                        googleData.antecedente_prematurez = noveltyData.nutricion.antecedentePrematurez;
+                        googleData.edad_gestacional = noveltyData.nutricion.edadGestacional;
+
+                        // Discapacidad
+                        googleData.discapacidad_tiene = noveltyData.discapacidad?.tiene || 'NO';
+                        if (noveltyData.discapacidad?.tiene === 'SI') {
+                            googleData.discapacidad_certificada = noveltyData.discapacidad.certificada;
+                            googleData.discapacidad_entidad_certifica = noveltyData.discapacidad.entidadCertifica;
+                            googleData.discapacidad_registro_localizacion = noveltyData.discapacidad.registroLocalizacion;
+                            googleData.discapacidad_requiere_ayuda_persona = noveltyData.discapacidad.requiereAyudaPersona;
+                            googleData.discapacidad_requiere_ayuda_tecnica = noveltyData.discapacidad.requiereAyudaTecnica;
+                            googleData.discapacidad_cuenta_ayuda_tecnica = noveltyData.discapacidad.cuentaAyudaTecnica;
+                            googleData.discapacidad_requiere_terapia = noveltyData.discapacidad.requiereTerapia;
+                            googleData.discapacidad_recibe_terapia = noveltyData.discapacidad.recibeTerapia;
+                            googleData.discapacidad_categorias = noveltyData.discapacidad.categorias.join(', ');
+                        }
                     }
 
                     if (btn) {
                         btn.disabled = true;
                         btn.innerHTML = '<span class="spinner"></span> GUARDANDO...';
                     }
+                    EnvioProgresoUI.mostrar();
 
                     try {
                         const refPath = AsociacionesModule.getRef('novelties');
@@ -3286,11 +3710,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         //    online/offline, porque si se encola para después, el
                         //    archivo ya debe ir embebido en base64 dentro de googleData)
                         if (fileInput?.files?.length > 0) {
-                            const file = fileInput.files[0];
+                            let file = fileInput.files[0];
 
                             if (file.size > 8 * 1024 * 1024) {
                                 throw new Error("El archivo excede 8MB. Use un archivo más pequeño.");
                             }
+
+                            // Si es una foto, se reduce ANTES de convertir a base64:
+                            // esto es lo que más acelera el envío del correo cuando
+                            // la foto viene directo de la cámara del celular.
+                            file = await comprimirImagenSiAplica(file);
 
                             const base64 = await new Promise((resolve, reject) => {
                                 const reader = new FileReader();
@@ -3306,11 +3735,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // 1b. Procesar Ram Diligenciado (solo aplica si hay retiro)
                         if (ramFileInput?.files?.length > 0) {
-                            const ramFile = ramFileInput.files[0];
+                            let ramFile = ramFileInput.files[0];
 
                             if (ramFile.size > 8 * 1024 * 1024) {
                                 throw new Error("El archivo del Ram excede 8MB. Use un archivo más pequeño.");
                             }
+
+                            ramFile = await comprimirImagenSiAplica(ramFile);
 
                             const ramBase64 = await new Promise((resolve, reject) => {
                                 const reader = new FileReader();
@@ -3328,19 +3759,44 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }
 
-                        if (!OfflineModule.isOnline()) {
-                            // 2a. SIN CONEXIÓN: guardar localmente en IndexedDB y
-                            // mostrar el registro de inmediato en la tabla con un ID
-                            // temporal. Se sincroniza solo apenas vuelva la señal.
-                            const { tempId } = await OfflineModule.queueSubmission({ noveltyData, googleData, refPath });
-                            currentNovelties.push({ id: tempId, ...noveltyData, _pendienteSync: true });
+                        // 2. Guardar con guardia de tiempo: NO se decide antes si
+                        // "hay conexión" (ese chequeo puede mentir con señal
+                        // intermitente). En su lugar, se intenta escribir en
+                        // Firebase con una clave fija generada localmente; si no
+                        // confirma en 8s, se encola con esa MISMA clave para
+                        // reintentar solo (evita tanto perder el dato como
+                        // duplicarlo). El correo SOLO se envía una vez Firebase
+                        // ya confirmó la escritura — nunca antes — así se evita
+                        // el caso de "llegó el correo pero no quedó en Firebase".
+                        const resultado = await OfflineModule.submitNovedad({
+                            noveltyData, googleData, refPath,
+                            onProgress: (estado) => {
+                                EnvioProgresoUI.setEstado(estado);
+                                // Una vez el dato ya está a salvo (o encolado), no hace
+                                // falta seguir reteniendo al usuario por el correo: se
+                                // cierra la barra y el correo se reporta aparte con un
+                                // toast pequeño que no bloquea el formulario.
+                                if (estado === 'correo') {
+                                    EnvioProgresoUI.ocultar(700);
+                                    setTimeout(() => EnvioProgresoUI.miniToast('📧 Enviando notificación por correo…'), 750);
+                                } else if (estado === 'correo-ok') {
+                                    EnvioProgresoUI.miniToast('✅ Correo enviado correctamente', 3000);
+                                } else if (estado === 'correo-error') {
+                                    EnvioProgresoUI.miniToast('⚠️ El correo tardó en salir, se reintentará solo', 4000);
+                                }
+                            }
+                        });
+
+                        if (resultado.status === 'queued') {
+                            EnvioProgresoUI.ocultar(300);
+                            currentNovelties.push({ id: resultado.tempId, ...noveltyData, _pendienteSync: true });
                             filterNovelties();
                             updatePendientesIndicator();
 
                             mostrarResumenEnvio();
                             setTimeout(() => {
                                 resetFormularioCompleto({
-                                    toastMsg: '📥 Sin conexión: registro guardado en este dispositivo. Se enviará solo cuando vuelva la señal.',
+                                    toastMsg: '📥 Conexión inestable: el registro se guardó de forma segura y se enviará solo cuando la señal se estabilice.',
                                     toastType: 'info'
                                 });
                             }, 500);
@@ -3351,16 +3807,25 @@ document.addEventListener('DOMContentLoaded', function() {
                             return;
                         }
 
-                        // 2b. CON CONEXIÓN: flujo normal
-                        await database.ref(refPath).push(noveltyData);
-                        console.log('✅ Firebase OK');
-                        if (typeof DuplicadosModule !== 'undefined') DuplicadosModule.cargarIndiceGlobal(true);
-
-                        // 3. Enviar a Google Apps Script
-                        await enviarAGoogle(googleData, btn);
+                        // Confirmado en Firebase (el correo ya va en segundo plano,
+                        // reportado por onProgress; no se espera aquí)
+                        console.log('✅ Firebase OK, clave:', resultado.key);
+                        EnvioProgresoUI.ocultar(300);
+                        mostrarResumenEnvio();
+                        setTimeout(() => {
+                            resetFormularioCompleto({
+                                toastMsg: '✅ ¡Éxito! Reporte enviado correctamente.',
+                                toastType: 'success'
+                            });
+                        }, 500);
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = '<svg class="cf-submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg><span>Guardar Reporte</span>';
+                        }
 
                     } catch (error) {
                         console.error('Error:', error);
+                        EnvioProgresoUI.ocultar(0);
                         showToast(error.message, "error");
                         if (btn) {
                             btn.disabled = false;
@@ -3692,6 +4157,102 @@ function construirResumenEnvio() {
 										${nutricionStatus || 'No calculado'}
 									</div>
 								</div>
+							</div>
+						</div>
+					`;
+				}
+
+				// Sección Antecedente de Prematurez (solo si aplicaba: ingreso < 24 meses)
+				const prematurezWrapperEl = document.getElementById('prematurezWrapper');
+				const prematurezAplicaResumen = prematurezWrapperEl && !prematurezWrapperEl.classList.contains('hidden');
+				if (prematurezAplicaResumen) {
+					const antecedentePrematurezVal = document.querySelector('input[name="antecedente_prematurez"]:checked')?.value || '';
+					const edadGestacionalVal = document.getElementById('edadGestacional')?.value || '';
+					html += `
+						<div class="resumen-seccion-card resumen-seccion-nutricional">
+							<div class="resumen-seccion-header">
+								<div class="resumen-seccion-icon">🍼</div>
+								<h4 class="resumen-seccion-title">Antecedente de Prematurez</h4>
+							</div>
+							<div class="resumen-datos-grid">
+								<div>
+									<div class="resumen-dato-label">🍼 Antecedente de prematurez</div>
+									<div class="resumen-dato-valor destacado">${antecedentePrematurezVal === 'SI' ? 'SÍ' : 'NO'}</div>
+								</div>
+								${antecedentePrematurezVal === 'SI' ? `
+								<div>
+									<div class="resumen-dato-label">📆 Edad Gestacional al nacer</div>
+									<div class="resumen-dato-valor">${edadGestacionalVal ? edadGestacionalVal + ' semanas' : '-'}</div>
+								</div>
+								` : ''}
+							</div>
+						</div>
+					`;
+				}
+
+				// Sección Discapacidad
+				const discapTieneEl = document.querySelector('input[name="_discapacidadTiene"]:checked')?.value || '';
+				if (discapTieneEl) {
+					const discapCertificada = document.querySelector('input[name="discapacidad_certificada"]:checked')?.value || '';
+					const discapEntidad = document.getElementById('discapacidadEntidad')?.value || '';
+					const discapRegistro = document.querySelector('input[name="discapacidad_registro_localizacion"]:checked')?.value || '';
+					const discapAyudaPersona = document.querySelector('input[name="discapacidad_requiere_ayuda_persona"]:checked')?.value || '';
+					const discapRequiereAyudaTecnica = document.querySelector('input[name="discapacidad_requiere_ayuda_tecnica"]:checked')?.value || '';
+					const discapCuentaAyudaTecnica = document.querySelector('input[name="discapacidad_cuenta_ayuda_tecnica"]:checked')?.value || '';
+					const discapRequiereTerapia = document.querySelector('input[name="discapacidad_requiere_terapia"]:checked')?.value || '';
+					const discapRecibeTerapia = document.querySelector('input[name="discapacidad_recibe_terapia"]:checked')?.value || '';
+					const discapCategoriaVal = document.getElementById('discapacidadCategoria')?.value || '';
+					const discapCategoriasArr = discapCategoriaVal ? [discapCategoriaVal] : [];
+
+					html += `
+						<div class="resumen-seccion-card resumen-seccion-discapacidad">
+							<div class="resumen-seccion-header">
+								<div class="resumen-seccion-icon">♿</div>
+								<h4 class="resumen-seccion-title">Discapacidad</h4>
+							</div>
+							<div class="resumen-datos-grid">
+								<div class="resumen-dato-full">
+									<div class="resumen-dato-label">♿ ¿Tiene discapacidad?</div>
+									<div class="resumen-dato-valor destacado">${discapTieneEl === 'SI' ? 'SÍ' : 'NO'}</div>
+								</div>
+								${discapTieneEl === 'SI' ? `
+								<div>
+									<div class="resumen-dato-label">📋 Certificada</div>
+									<div class="resumen-dato-valor">${discapCertificada || 'No indicado'}</div>
+								</div>
+								<div>
+									<div class="resumen-dato-label">🏥 Entidad que certifica</div>
+									<div class="resumen-dato-valor">${discapEntidad || 'No indicado'}</div>
+								</div>
+								<div>
+									<div class="resumen-dato-label">📝 Registro de localización</div>
+									<div class="resumen-dato-valor">${discapRegistro || 'No indicado'}</div>
+								</div>
+								<div>
+									<div class="resumen-dato-label">🤝 Requiere ayuda de otra persona</div>
+									<div class="resumen-dato-valor">${discapAyudaPersona || 'No indicado'}</div>
+								</div>
+								<div>
+									<div class="resumen-dato-label">🦽 Requiere ayuda técnica</div>
+									<div class="resumen-dato-valor">${discapRequiereAyudaTecnica || 'No indicado'}</div>
+								</div>
+								<div>
+									<div class="resumen-dato-label">🦽 Cuenta con ayuda técnica</div>
+									<div class="resumen-dato-valor">${discapCuentaAyudaTecnica || 'No indicado'}</div>
+								</div>
+								<div>
+									<div class="resumen-dato-label">💆 Requiere terapia/rehabilitación</div>
+									<div class="resumen-dato-valor">${discapRequiereTerapia || 'No indicado'}</div>
+								</div>
+								<div>
+									<div class="resumen-dato-label">💆 Recibe terapia/rehabilitación</div>
+									<div class="resumen-dato-valor">${discapRecibeTerapia || 'No indicado'}</div>
+								</div>
+								<div class="resumen-dato-full">
+									<div class="resumen-dato-label">🏷️ Categorías de discapacidad</div>
+									<div class="resumen-dato-valor">${discapCategoriasArr.join(', ') || 'Ninguna'}</div>
+								</div>
+								` : ''}
 							</div>
 						</div>
 					`;

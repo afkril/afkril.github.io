@@ -123,22 +123,29 @@ const ConsultaUDSModule = (() => {
     }
 
     // ── Guardar una novedad generada desde Consulta UDS reutilizando el MISMO
-    //    motor que usa el formulario principal (Firebase + Google Apps Script +
-    //    cola offline), para no duplicar esa lógica en dos sitios ──
+    //    motor que usa el formulario principal (submitNovedad: Firebase con
+    //    guardia de tiempo + Google Apps Script + cola offline idempotente),
+    //    para no duplicar esa lógica ni repetir el bug de "correo sin
+    //    respaldo en Firebase" en un segundo lugar del sistema ──
     async function _guardarNovedadDesdeConsulta(noveltyData, googleData) {
         const refPath = AsociacionesModule.getRef('novelties');
-
-        if (typeof OfflineModule !== 'undefined' && !OfflineModule.isOnline()) {
-            await OfflineModule.queueSubmission({ noveltyData, googleData, refPath });
-            return { offline: true };
-        }
-
-        await database.ref(refPath).push(noveltyData);
-        if (typeof DuplicadosModule !== 'undefined') DuplicadosModule.cargarIndiceGlobal(true);
-        if (typeof enviarAGoogleSilencioso === 'function') {
-            await enviarAGoogleSilencioso(googleData);
-        }
-        return { offline: false };
+        const resultado = await OfflineModule.submitNovedad({
+            noveltyData, googleData, refPath,
+            onProgress: (estado) => {
+                if (typeof EnvioProgresoUI === 'undefined') return;
+                EnvioProgresoUI.setEstado(estado);
+                if (estado === 'correo') {
+                    EnvioProgresoUI.ocultar(500);
+                    setTimeout(() => EnvioProgresoUI.miniToast('📧 Enviando notificación por correo…'), 550);
+                } else if (estado === 'correo-ok') {
+                    EnvioProgresoUI.miniToast('✅ Correo enviado correctamente', 3000);
+                } else if (estado === 'correo-error') {
+                    EnvioProgresoUI.miniToast('⚠️ El correo tardó en salir, se reintentará solo', 4000);
+                }
+            }
+        });
+        if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.ocultar(300);
+        return { offline: resultado.status === 'queued' };
     }
 
     // ── Texto plano para el correo (REPORTE_DETALLADO), análogo a formatData()
@@ -574,6 +581,7 @@ const ConsultaUDSModule = (() => {
         };
 
         if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+        if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.mostrar();
         try {
             const r = await _guardarNovedadDesdeConsulta(noveltyData, googleData);
             _todosEventos.push({
@@ -589,6 +597,7 @@ const ConsultaUDSModule = (() => {
                 : '✅ Retiro reportado correctamente.', r.offline ? 'info' : 'success');
         } catch (e) {
             console.error('[ConsultaUDS] Error al reportar retiro:', e);
+            if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.ocultar(0);
             mostrarErrorRetiro('No se pudo guardar el retiro. Intente nuevamente.');
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = 'Confirmar retiro'; }
@@ -755,6 +764,7 @@ const ConsultaUDSModule = (() => {
         };
 
         if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+        if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.mostrar();
         try {
             const r = await _guardarNovedadDesdeConsulta(noveltyData, googleData);
             _todosEventos.push({
@@ -771,6 +781,7 @@ const ConsultaUDSModule = (() => {
                 : '✅ Reingreso registrado correctamente.', r.offline ? 'info' : 'success');
         } catch (e) {
             console.error('[ConsultaUDS] Error al reportar reingreso:', e);
+            if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.ocultar(0);
             mostrarErrorReingreso('No se pudo guardar el reingreso. Intente nuevamente.');
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = 'Confirmar reingreso'; }
