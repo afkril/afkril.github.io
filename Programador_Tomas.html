@@ -190,6 +190,11 @@
   }
 
   .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .pagination{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding-top:14px; margin-top:4px; border-top:1px solid var(--border); }
+  .pagination .pg-info{ font-size:11px; color:var(--ink-soft); }
+  .pagination .pg-controls{ display:flex; align-items:center; gap:10px; }
+  .pagination .pg-page{ font-size:11px; color:var(--ink-soft); white-space:nowrap; }
+  .pagination .btn[disabled]{ opacity:.45; cursor:not-allowed; }
   table{ width:100%; min-width:680px; border-collapse:collapse; font-size:11px; }
   thead th{ text-align:left; font-weight:600; color:var(--ink-soft); font-size:10px; text-transform:none; letter-spacing:.01em; padding:8px 10px; border-bottom:1px solid var(--border); white-space:nowrap; background:var(--surface); }
   tbody td{ padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
@@ -212,6 +217,10 @@
   .badge.estado.sev-sobrepeso{ background:var(--sev-sobrepeso-tint); color:var(--sev-sobrepeso); }
   .badge.estado.sev-obesidad{ background:var(--sev-obesidad-tint); color:var(--sev-obesidad); font-weight:700; }
   .badge.estado.sev-default{ background:var(--sev-default-tint); color:var(--sev-default); }
+  .toma-cell{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+  .toma-cell-foot{ display:flex; align-items:center; gap:8px; }
+  .toma-cell .sub{ color:var(--ink-soft); font-size:10px; }
+  .toma-cell.muted{ color:var(--ink-faint); font-size:11px; }
 
   .legend{ display:flex; gap:10px; flex-wrap:wrap; padding:12px 18px 0; }
   .legend .item{ display:flex; align-items:center; gap:6px; font-size:10px; color:var(--ink-soft); }
@@ -331,6 +340,8 @@
     </div>
     <nav class="nav">
       <button data-view="tablero" class="active"><span class="ic">&#9673;</span><span class="lbl-text">Panorama</span></button>
+      <button data-view="mejoras"><span class="ic">&#8599;</span><span class="lbl-text">Mejoras nutricionales</span></button>
+      <button data-view="desmejoras"><span class="ic">&#8600;</span><span class="lbl-text">Desmejora nutricional</span></button>
       <button data-view="calendario"><span class="ic">&#128197;</span><span class="lbl-text">Calendario</span></button>
       <button data-view="cargar"><span class="ic">&#8593;</span><span class="lbl-text">Cargar reporte</span></button>
       <button data-view="config"><span class="ic">&#9881;</span><span class="lbl-text">Configuración</span></button>
@@ -376,6 +387,10 @@
               <option value="vinculado">Solo vinculados</option>
               <option value="desvinculado">Solo desvinculados</option>
             </select>
+            <select id="fVistaTomas">
+              <option value="ultima">Solo última toma</option>
+              <option value="todas">Todas las tomas</option>
+            </select>
           </div>
         </div>
         <div class="legend" id="estadoLegend">
@@ -387,6 +402,70 @@
           <span class="item"><span class="dot" style="background:var(--sev-obesidad);"></span>Obesidad</span>
         </div>
         <div class="panel-body" id="tableWrap"></div>
+      </div>
+    </section>
+
+    <!-- MEJORAS NUTRICIONALES -->
+    <section class="view" id="view-mejoras">
+      <div class="topline">
+        <div>
+          <h1>Mejoras nutricionales</h1>
+          <p>Beneficiarios que pasaron a un estado nutricional menos severo entre su toma anterior y la última toma cargada (se valida contra su penúltima toma; hasta 3 tomas si están disponibles).</p>
+        </div>
+      </div>
+
+      <div class="cards" id="mejorasCards"></div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Beneficiarios con mejora</h2>
+          <div class="filters">
+            <input type="text" id="fSearchMejoras" placeholder="Buscar por nombre o documento">
+            <div class="multiselect" id="fContratoMejorasWrap">
+              <button type="button" class="ms-btn" id="fContratoMejorasBtn">Todos los contratos</button>
+              <div class="ms-panel" id="fContratoMejorasPanel"></div>
+            </div>
+            <select id="fUnidadMejoras"><option value="">Todas las unidades</option></select>
+            <select id="fVinculoMejoras">
+              <option value="">Vinculados y desvinculados</option>
+              <option value="vinculado">Solo vinculados</option>
+              <option value="desvinculado">Solo desvinculados</option>
+            </select>
+          </div>
+        </div>
+        <div class="panel-body" id="mejorasWrap"></div>
+      </div>
+    </section>
+
+    <!-- DESMEJORA NUTRICIONAL -->
+    <section class="view" id="view-desmejoras">
+      <div class="topline">
+        <div>
+          <h1>Desmejora nutricional</h1>
+          <p>Beneficiarios que pasaron a un estado nutricional más severo entre su toma anterior y la última toma cargada (p. ej. de Peso adecuado a Riesgo de desnutrición o de sobrepeso). Se valida contra su penúltima toma; hasta 3 tomas si están disponibles.</p>
+        </div>
+      </div>
+
+      <div class="cards" id="desmejorasCards"></div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Beneficiarios con desmejora</h2>
+          <div class="filters">
+            <input type="text" id="fSearchDesmejoras" placeholder="Buscar por nombre o documento">
+            <div class="multiselect" id="fContratoDesmejorasWrap">
+              <button type="button" class="ms-btn" id="fContratoDesmejorasBtn">Todos los contratos</button>
+              <div class="ms-panel" id="fContratoDesmejorasPanel"></div>
+            </div>
+            <select id="fUnidadDesmejoras"><option value="">Todas las unidades</option></select>
+            <select id="fVinculoDesmejoras">
+              <option value="">Vinculados y desvinculados</option>
+              <option value="vinculado">Solo vinculados</option>
+              <option value="desvinculado">Solo desvinculados</option>
+            </select>
+          </div>
+        </div>
+        <div class="panel-body" id="desmejorasWrap"></div>
       </div>
     </section>
 
@@ -571,11 +650,19 @@
         </ul>
       </div>
       <div class="help-section">
-        <h4><span class="tag">3</span>Calendario</h4>
+        <h4><span class="tag">3</span>Mejoras nutricionales</h4>
+        <p>Lista a los beneficiarios que pasaron a un estado nutricional menos severo entre su toma anterior y la más reciente (por ejemplo, de Desnutrición a Riesgo de desnutrición). Compara las tomas válidas de cada beneficiario (mínimo 2, hasta 3 si están disponibles) y muestra la toma previa, la anterior y la actual, para que puedas ver quiénes mejoraron aunque ya no aparezcan como urgentes en el calendario.</p>
+      </div>
+      <div class="help-section">
+        <h4><span class="tag">4</span>Desmejora nutricional</h4>
+        <p>Es el caso contrario a Mejoras nutricionales: lista a los beneficiarios que pasaron a un estado nutricional más severo entre su toma anterior y la más reciente (por ejemplo, de Peso adecuado a Riesgo de sobrepeso, o de Riesgo de desnutrición a Desnutrición). Usa la misma lógica de comparación (mínimo 2 tomas válidas, hasta 3) y permite ver el detalle de cada toma implicada.</p>
+      </div>
+      <div class="help-section">
+        <h4><span class="tag">5</span>Calendario</h4>
         <p>Muestra las próximas tomas organizadas por día del mes, con un color según el estado nutricional. Puedes navegar entre meses, filtrar igual que en el panorama, y generar un PDF con la agenda de tomas programadas para un periodo.</p>
       </div>
       <div class="help-section">
-        <h4><span class="tag">4</span>Configuración</h4>
+        <h4><span class="tag">6</span>Configuración</h4>
         <p>Permite ajustar los parámetros del sistema: los estados nutricionales reconocidos y su severidad, y otros valores que usa el sistema para calcular la próxima toma y clasificar la urgencia. También puedes exportar o importar esa configuración, y restaurar los valores por defecto.</p>
       </div>
       <div class="help-section">
@@ -583,6 +670,7 @@
         <ul>
           <li>Cuando un beneficiario tiene varias tomas cargadas, el sistema siempre usa la más reciente para calcular su estado y su próxima toma.</li>
           <li>Si una fila del reporte no trae los datos mínimos requeridos, aparecerá listada como "con datos incompletos" tras la carga.</li>
+          <li>Las tomas con estado "Sin dato" no se tienen en cuenta al calcular mejoras nutricionales, ya que no hay severidad que comparar.</li>
         </ul>
       </div>
     </div>
@@ -662,10 +750,13 @@
     errors: [],         // registros descartados por datos faltantes
     lastUpload: null,
     settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
-    filters: { search:'', contrato:'', unidad:'', estados:[], urgencia:'', vinculo:'' },
+    filters: { search:'', contrato:'', unidad:'', estados:[], urgencia:'', vinculo:'', vistaTomas:'ultima', contratosMejoras:[], contratosDesmejoras:[] },
     calMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    calSelected: null
+    calSelected: null,
+    tablePage: 1
   };
+
+  const TABLE_PAGE_SIZE = 20;
 
   function todayMid(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
   function addDays(date, n){ const d = new Date(date); d.setDate(d.getDate()+n); return d; }
@@ -918,6 +1009,8 @@
     document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.view===id));
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id==='view-'+id));
     if(id==='calendario') renderCalendar();
+    if(id==='mejoras') renderMejoras();
+    if(id==='desmejoras') renderDesmejoras();
   }
   document.querySelectorAll('.nav button').forEach(b=>{
     b.addEventListener('click', ()=> switchView(b.dataset.view));
@@ -986,8 +1079,12 @@
     }).sort((a,b)=> a.proximaToma - b.proximaToma);
   }
 
+  // Según el selector "fVistaTomas": todas las tomas cargadas, o solo la más
+  // reciente de cada beneficiario (sin repetir), antes de aplicar el resto de
+  // los filtros.
   function filteredRows(){
-    return applyFilters(state.rows);
+    const base = state.filters.vistaTomas === 'todas' ? state.rows : state.latestRows;
+    return applyFilters(base);
   }
 
   // Solo la toma más reciente (mayor fecha de valoración nutricional / columna T)
@@ -1045,19 +1142,25 @@
     fill('fContratoCal', contratos, 'Todos los contratos');
     fill('fUnidad', unidades, 'Todas las unidades');
     fill('fUnidadCal', unidades, 'Todas las unidades');
+    fill('fUnidadMejoras', unidades, 'Todas las unidades');
+    fill('fUnidadDesmejoras', unidades, 'Todas las unidades');
 
-    // conserva solo estados que aún existen en los datos cargados
+    // conserva solo estados/contratos que aún existen en los datos cargados
     state.filters.estados = state.filters.estados.filter(e=> estados.includes(e));
+    state.filters.contratosMejoras = state.filters.contratosMejoras.filter(c=> contratos.includes(c));
+    state.filters.contratosDesmejoras = state.filters.contratosDesmejoras.filter(c=> contratos.includes(c));
     fillEstadoMultiselect('fEstadoPanel', estados);
     fillEstadoMultiselect('fEstadoCalPanel', estados);
+    fillEstadoMultiselect('fContratoMejorasPanel', contratos, 'Sin contratos disponibles');
+    fillEstadoMultiselect('fContratoDesmejorasPanel', contratos, 'Sin contratos disponibles');
 
     syncFilterInputs();
   }
 
-  function fillEstadoMultiselect(panelId, estados){
+  function fillEstadoMultiselect(panelId, opciones, emptyLabel){
     const panel = document.getElementById(panelId);
-    if(!estados.length){
-      panel.innerHTML = `<div class="ms-empty">Sin estados disponibles</div>`;
+    if(!opciones.length){
+      panel.innerHTML = `<div class="ms-empty">${emptyLabel || 'Sin estados disponibles'}</div>`;
       return;
     }
     panel.innerHTML = `
@@ -1065,7 +1168,7 @@
         <button type="button" class="ms-link" data-act="all">Todos</button>
         <button type="button" class="ms-link" data-act="none">Ninguno</button>
       </div>
-      ${estados.map(e=>`
+      ${opciones.map(e=>`
         <label class="ms-option">
           <input type="checkbox" value="${escapeHtml(e)}">
           <span>${escapeHtml(e)}</span>
@@ -1073,7 +1176,8 @@
     `;
   }
 
-  function setupEstadoMultiselect(btnId, panelId){
+  // Multiselect genérico: btn/panel controlan un campo array de state.filters.
+  function setupMultiselect(btnId, panelId, field){
     const btn = document.getElementById(btnId);
     const panel = document.getElementById(panelId);
     btn.addEventListener('click', e=>{
@@ -1086,16 +1190,21 @@
       const act = e.target.closest('[data-act]');
       if(!act) return;
       const all = [...panel.querySelectorAll('input[type=checkbox]')].map(c=>c.value);
-      onFilterChange('estados', act.dataset.act === 'all' ? all : []);
+      onFilterChange(field, act.dataset.act === 'all' ? all : []);
     });
     panel.addEventListener('change', e=>{
       if(!e.target.matches('input[type=checkbox]')) return;
       const checked = [...panel.querySelectorAll('input[type=checkbox]:checked')].map(c=>c.value);
-      onFilterChange('estados', checked);
+      onFilterChange(field, checked);
     });
+  }
+  function setupEstadoMultiselect(btnId, panelId){
+    setupMultiselect(btnId, panelId, 'estados');
   }
   setupEstadoMultiselect('fEstadoBtn', 'fEstadoPanel');
   setupEstadoMultiselect('fEstadoCalBtn', 'fEstadoCalPanel');
+  setupMultiselect('fContratoMejorasBtn', 'fContratoMejorasPanel', 'contratosMejoras');
+  setupMultiselect('fContratoDesmejorasBtn', 'fContratoDesmejorasPanel', 'contratosDesmejoras');
   document.addEventListener('click', ()=> document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open')));
 
   function estadoBtnLabel(){
@@ -1105,17 +1214,30 @@
     return `${sel.length} estados seleccionados`;
   }
 
+  function contratoBtnLabel(sel){
+    if(!sel.length) return 'Todos los contratos';
+    if(sel.length === 1) return sel[0];
+    return `${sel.length} contratos seleccionados`;
+  }
+
   function syncFilterInputs(){
     const f = state.filters;
     document.getElementById('fSearch').value = f.search;
     document.getElementById('fSearchCal').value = f.search;
+    document.getElementById('fSearchMejoras').value = f.search;
+    document.getElementById('fSearchDesmejoras').value = f.search;
     document.getElementById('fContrato').value = f.contrato;
     document.getElementById('fContratoCal').value = f.contrato;
     document.getElementById('fUnidad').value = f.unidad;
     document.getElementById('fUnidadCal').value = f.unidad;
+    document.getElementById('fUnidadMejoras').value = f.unidad;
+    document.getElementById('fUnidadDesmejoras').value = f.unidad;
     document.getElementById('fUrgencia').value = f.urgencia;
     document.getElementById('fVinculo').value = f.vinculo;
+    document.getElementById('fVistaTomas').value = f.vistaTomas;
     document.getElementById('fVinculoCal').value = f.vinculo;
+    document.getElementById('fVinculoMejoras').value = f.vinculo;
+    document.getElementById('fVinculoDesmejoras').value = f.vinculo;
 
     const label = estadoBtnLabel();
     document.getElementById('fEstadoBtn').textContent = label;
@@ -1125,13 +1247,25 @@
         cb.checked = f.estados.includes(cb.value);
       });
     });
+
+    document.getElementById('fContratoMejorasBtn').textContent = contratoBtnLabel(f.contratosMejoras);
+    document.getElementById('fContratoMejorasPanel').querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.checked = f.contratosMejoras.includes(cb.value);
+    });
+    document.getElementById('fContratoDesmejorasBtn').textContent = contratoBtnLabel(f.contratosDesmejoras);
+    document.getElementById('fContratoDesmejorasPanel').querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.checked = f.contratosDesmejoras.includes(cb.value);
+    });
   }
 
   function onFilterChange(field, value){
     state.filters[field] = value;
+    state.tablePage = 1;
     syncFilterInputs();
     renderTable();
     if(document.getElementById('view-calendario').classList.contains('active')) renderCalendar();
+    if(document.getElementById('view-mejoras').classList.contains('active')) renderMejoras();
+    if(document.getElementById('view-desmejoras').classList.contains('active')) renderDesmejoras();
   }
 
   function escapeHtml(s){
@@ -1149,13 +1283,20 @@
       wrap.innerHTML = `<div class="empty"><div class="big">Sin resultados</div>Ajusta los filtros para ver beneficiarios.</div>`;
       return;
     }
+
+    const totalPages = Math.max(1, Math.ceil(rows.length / TABLE_PAGE_SIZE));
+    if(state.tablePage > totalPages) state.tablePage = totalPages;
+    if(state.tablePage < 1) state.tablePage = 1;
+    const start = (state.tablePage - 1) * TABLE_PAGE_SIZE;
+    const pageRows = rows.slice(start, start + TABLE_PAGE_SIZE);
+
     wrap.innerHTML = `<div class="table-scroll"><table>
       <thead><tr>
         <th>Beneficiario</th><th>Contrato</th><th>Unidad</th><th>Estado nutricional</th>
         <th>Última toma</th><th>Próxima toma</th><th></th><th></th>
       </tr></thead>
       <tbody>
-        ${rows.map(r=>`
+        ${pageRows.map(r=>`
           <tr>
             <td class="name-cell">${escapeHtml(r.nombreCompleto)}<div class="sub">${escapeHtml(r.tipoDocumento)} ${escapeHtml(r.numeroDocumento)}</div></td>
             <td>${escapeHtml(r.contrato)}</td>
@@ -1168,7 +1309,20 @@
           </tr>
         `).join('')}
       </tbody>
-    </table></div>`;
+    </table></div>
+    <div class="pagination" id="tablePagination">
+      <span class="pg-info">Mostrando ${start+1}–${Math.min(start+TABLE_PAGE_SIZE, rows.length)} de ${rows.length}</span>
+      <div class="pg-controls">
+        <button type="button" class="btn secondary sm" id="pgPrev" ${state.tablePage<=1?'disabled':''}>&#8592; Anterior</button>
+        <span class="pg-page">Página ${state.tablePage} de ${totalPages}</span>
+        <button type="button" class="btn secondary sm" id="pgNext" ${state.tablePage>=totalPages?'disabled':''}>Siguiente &#8594;</button>
+      </div>
+    </div>`;
+
+    const prevBtn = document.getElementById('pgPrev');
+    const nextBtn = document.getElementById('pgNext');
+    if(prevBtn) prevBtn.addEventListener('click', ()=>{ state.tablePage--; renderTable(); });
+    if(nextBtn) nextBtn.addEventListener('click', ()=>{ state.tablePage++; renderTable(); });
   }
 
   /* ---------------------------------------------------------
@@ -1186,6 +1340,183 @@
     return 'sev-default';
   }
 
+  // Puntaje de severidad para comparar tomas entre sí: más alto = más cerca de un
+  // peso adecuado. "Sin dato" no es comparable y se excluye del análisis.
+  const ESTADO_SCORE = {
+    'sev-critical':0, 'sev-obesidad':0,
+    'sev-alto':1, 'sev-sobrepeso':1,
+    'sev-riesgo':2,
+    'sev-normal':3
+  };
+  function estadoScore(estado){
+    const cls = estadoSeverityClass(estado);
+    return ESTADO_SCORE.hasOwnProperty(cls) ? ESTADO_SCORE[cls] : null;
+  }
+
+  /* ---------------------------------------------------------
+     MEJORAS / DESMEJORAS NUTRICIONALES
+     Compara, por beneficiario, su toma más reciente contra la
+     inmediatamente anterior (y, si existe, la que la precede),
+     usando únicamente tomas con estado nutricional válido
+     (se ignoran las de "Sin dato"). "esCambio" recibe los
+     puntajes (actual, anterior) y decide si esa transición
+     cuenta como mejora o como desmejora.
+  --------------------------------------------------------- */
+  function computeTransiciones(esCambio){
+    const byDoc = new Map();
+    state.rows.forEach(r=>{
+      if(estadoScore(r.estado) === null) return;
+      if(!byDoc.has(r.numeroDocumento)) byDoc.set(r.numeroDocumento, []);
+      byDoc.get(r.numeroDocumento).push(r);
+    });
+
+    const out = [];
+    byDoc.forEach(list=>{
+      list.sort((a,b)=> a.fechaToma - b.fechaToma);
+      if(list.length < 2) return; // se requieren mínimo 2 tomas válidas para comparar
+
+      const ventana = list.slice(-3); // hasta las últimas 3 tomas con dato válido
+      const actual = ventana[ventana.length-1];
+      const anterior = ventana[ventana.length-2];
+      const scoreActual = estadoScore(actual.estado);
+      const scoreAnterior = estadoScore(anterior.estado);
+
+      if(esCambio(scoreActual, scoreAnterior)){
+        out.push({
+          actual, anterior,
+          previa: ventana.length===3 ? ventana[0] : null
+        });
+      }
+    });
+
+    out.sort((a,b)=> b.actual.fechaToma - a.actual.fechaToma);
+    return out;
+  }
+
+  // Mejora: pasó a un estado nutricional menos severo (p. ej. Desnutrición -> Riesgo de desnutrición).
+  function computeMejoras(){
+    return computeTransiciones((scoreActual, scoreAnterior)=> scoreActual > scoreAnterior);
+  }
+  // Desmejora: pasó a un estado nutricional más severo (p. ej. Peso adecuado -> Riesgo de sobrepeso).
+  function computeDesmejoras(){
+    return computeTransiciones((scoreActual, scoreAnterior)=> scoreActual < scoreAnterior);
+  }
+
+  function tomaCell(r){
+    if(!r) return `<div class="toma-cell muted">— sin toma previa —</div>`;
+    return `<div class="toma-cell">
+      <span class="badge estado ${estadoSeverityClass(r.estado)}">${escapeHtml(r.estado)}</span>
+      <div class="toma-cell-foot">
+        <span class="sub">${fmtDate(r.fechaToma)}</span>
+        <button type="button" class="btn secondary sm btn-ver-detalle-row" data-doc="${escapeHtml(r.numeroDocumento)}" data-time="${r.fechaToma.getTime()}">Ver detalles</button>
+      </div>
+    </div>`;
+  }
+
+  function renderMejoras(){
+    const cardsWrap = document.getElementById('mejorasCards');
+    const wrap = document.getElementById('mejorasWrap');
+    if(!state.rows.length){
+      cardsWrap.innerHTML = '';
+      wrap.innerHTML = `<div class="empty"><div class="big">Aún no hay datos</div>Sube un reporte para detectar mejoras nutricionales.<br><button type="button" class="btn" id="btnIrCargarMejoras">&#8593; Cargar reporte</button></div>`;
+      const goBtn = document.getElementById('btnIrCargarMejoras');
+      if(goBtn) goBtn.addEventListener('click', ()=> switchView('cargar'));
+      return;
+    }
+
+    let mejoras = computeMejoras();
+
+    const f = state.filters;
+    const search = normalize(f.search);
+    mejoras = mejoras.filter(m=>{
+      const r = m.actual;
+      if(f.contratosMejoras.length && !f.contratosMejoras.includes(r.contrato)) return false;
+      if(f.unidad && r.unidadLabel !== f.unidad) return false;
+      if(f.vinculo === 'vinculado' && !esVinculado(r)) return false;
+      if(f.vinculo === 'desvinculado' && esVinculado(r)) return false;
+      if(search && !(normalize(r.nombreCompleto).includes(search) || normalize(r.numeroDocumento).includes(search))) return false;
+      return true;
+    });
+
+    cardsWrap.innerHTML = `<div class="card primary"><div class="num">${mejoras.length}</div><div class="lbl">Beneficiarios con mejora nutricional</div></div>`;
+
+    if(!mejoras.length){
+      wrap.innerHTML = `<div class="empty"><div class="big">Sin mejoras detectadas</div>Ningún beneficiario pasó a un estado nutricional menos severo entre sus últimas tomas.</div>`;
+      return;
+    }
+
+    wrap.innerHTML = `<div class="table-scroll"><table>
+      <thead><tr>
+        <th>Beneficiario</th><th>Contrato</th><th>Unidad</th>
+        <th>Toma previa</th><th>Toma anterior</th><th>Toma actual</th>
+      </tr></thead>
+      <tbody>
+        ${mejoras.map(m=>`
+          <tr>
+            <td class="name-cell">${escapeHtml(m.actual.nombreCompleto)}<div class="sub">${escapeHtml(m.actual.tipoDocumento)} ${escapeHtml(m.actual.numeroDocumento)}</div></td>
+            <td>${escapeHtml(m.actual.contrato)}</td>
+            <td>${escapeHtml(m.actual.unidadLabel)}</td>
+            <td>${tomaCell(m.previa)}</td>
+            <td>${tomaCell(m.anterior)}</td>
+            <td>${tomaCell(m.actual)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table></div>`;
+  }
+
+  function renderDesmejoras(){
+    const cardsWrap = document.getElementById('desmejorasCards');
+    const wrap = document.getElementById('desmejorasWrap');
+    if(!state.rows.length){
+      cardsWrap.innerHTML = '';
+      wrap.innerHTML = `<div class="empty"><div class="big">Aún no hay datos</div>Sube un reporte para detectar desmejoras nutricionales.<br><button type="button" class="btn" id="btnIrCargarDesmejoras">&#8593; Cargar reporte</button></div>`;
+      const goBtn = document.getElementById('btnIrCargarDesmejoras');
+      if(goBtn) goBtn.addEventListener('click', ()=> switchView('cargar'));
+      return;
+    }
+
+    let desmejoras = computeDesmejoras();
+
+    const f = state.filters;
+    const search = normalize(f.search);
+    desmejoras = desmejoras.filter(m=>{
+      const r = m.actual;
+      if(f.contratosDesmejoras.length && !f.contratosDesmejoras.includes(r.contrato)) return false;
+      if(f.unidad && r.unidadLabel !== f.unidad) return false;
+      if(f.vinculo === 'vinculado' && !esVinculado(r)) return false;
+      if(f.vinculo === 'desvinculado' && esVinculado(r)) return false;
+      if(search && !(normalize(r.nombreCompleto).includes(search) || normalize(r.numeroDocumento).includes(search))) return false;
+      return true;
+    });
+
+    cardsWrap.innerHTML = `<div class="card danger"><div class="num">${desmejoras.length}</div><div class="lbl">Beneficiarios con desmejora nutricional</div></div>`;
+
+    if(!desmejoras.length){
+      wrap.innerHTML = `<div class="empty"><div class="big">Sin desmejoras detectadas</div>Ningún beneficiario pasó a un estado nutricional más severo entre sus últimas tomas.</div>`;
+      return;
+    }
+
+    wrap.innerHTML = `<div class="table-scroll"><table>
+      <thead><tr>
+        <th>Beneficiario</th><th>Contrato</th><th>Unidad</th>
+        <th>Toma previa</th><th>Toma anterior</th><th>Toma actual</th>
+      </tr></thead>
+      <tbody>
+        ${desmejoras.map(m=>`
+          <tr>
+            <td class="name-cell">${escapeHtml(m.actual.nombreCompleto)}<div class="sub">${escapeHtml(m.actual.tipoDocumento)} ${escapeHtml(m.actual.numeroDocumento)}</div></td>
+            <td>${escapeHtml(m.actual.contrato)}</td>
+            <td>${escapeHtml(m.actual.unidadLabel)}</td>
+            <td>${tomaCell(m.previa)}</td>
+            <td>${tomaCell(m.anterior)}</td>
+            <td>${tomaCell(m.actual)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table></div>`;
+  }
+
   function urgLabel(r){
     if(r.urgencia==='vencida') return `Vencida hace ${Math.abs(r.diasRestantes)} d`;
     if(r.urgencia==='proxima') return r.diasRestantes===0 ? 'Hoy' : `En ${r.diasRestantes} d`;
@@ -1197,10 +1528,19 @@
   document.getElementById('fUnidad').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
   document.getElementById('fUrgencia').addEventListener('change', e=> onFilterChange('urgencia', e.target.value));
   document.getElementById('fVinculo').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
+  document.getElementById('fVistaTomas').addEventListener('change', e=> onFilterChange('vistaTomas', e.target.value));
 
   document.getElementById('fSearchCal').addEventListener('input', e=> onFilterChange('search', e.target.value));
   document.getElementById('fContratoCal').addEventListener('change', e=> onFilterChange('contrato', e.target.value));
   document.getElementById('fUnidadCal').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
+
+  document.getElementById('fSearchMejoras').addEventListener('input', e=> onFilterChange('search', e.target.value));
+  document.getElementById('fUnidadMejoras').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
+  document.getElementById('fVinculoMejoras').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
+
+  document.getElementById('fSearchDesmejoras').addEventListener('input', e=> onFilterChange('search', e.target.value));
+  document.getElementById('fUnidadDesmejoras').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
+  document.getElementById('fVinculoDesmejoras').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
   document.getElementById('fVinculoCal').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
 
   /* ---------------------------------------------------------
@@ -1715,7 +2055,19 @@
     // mostrar la más reciente según fecha de valoración nutricional (columna T).
     const r = state.latestRows.find(x=> x.numeroDocumento === documento);
     if(!r) return;
+    fillDetailModal(r);
+  }
 
+  // Abre el mismo modal de detalle pero para una toma puntual (no necesariamente
+  // la más reciente), usada por ejemplo en Mejoras nutricionales para poder
+  // revisar la toma anterior o la previa de un beneficiario.
+  function openDetailModalRow(documento, timeMs){
+    const r = state.rows.find(x=> x.numeroDocumento === documento && x.fechaToma && x.fechaToma.getTime() === timeMs);
+    if(!r) return;
+    fillDetailModal(r);
+  }
+
+  function fillDetailModal(r){
     document.getElementById('detailName').textContent = r.nombreCompleto;
     document.getElementById('detailDoc').textContent = `${r.tipoDocumento} ${r.numeroDocumento}`;
 
@@ -1785,7 +2137,9 @@
   });
   document.addEventListener('click', e=>{
     const btn = e.target.closest('.btn-ver-detalle');
-    if(btn) openDetailModal(btn.dataset.doc);
+    if(btn){ openDetailModal(btn.dataset.doc); return; }
+    const btnRow = e.target.closest('.btn-ver-detalle-row');
+    if(btnRow) openDetailModalRow(btnRow.dataset.doc, Number(btnRow.dataset.time));
   });
 
   /* ---------------------------------------------------------
@@ -1819,11 +2173,14 @@
   }
 
   function renderAll(){
+    state.tablePage = 1;
     renderSummaryCards();
     fillFilterOptions();
     renderTable();
     renderFoot();
     if(document.getElementById('view-calendario').classList.contains('active')) renderCalendar();
+    if(document.getElementById('view-mejoras').classList.contains('active')) renderMejoras();
+    if(document.getElementById('view-desmejoras').classList.contains('active')) renderDesmejoras();
   }
 
   /* ---------------------------------------------------------
