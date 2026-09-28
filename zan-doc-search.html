@@ -331,6 +331,12 @@
   .plan-list{max-height:170px;overflow:auto;border:1px solid var(--border-soft);border-radius:8px;margin-top:6px;}
   .plan-list-item{padding:6px 10px;font-size:.78rem;border-bottom:1px solid var(--border-soft);}
   .plan-list-item:last-child{border-bottom:none;}
+  .num-option{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
+  .num-option label{display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:.8rem;color:var(--text);background:var(--surface);}
+  .num-option label:hover{border-color:var(--primary);}
+  .num-option label:has(input:checked){border-color:var(--primary);background:var(--neutral-soft);}
+  .num-option input{margin-top:2px;accent-color:var(--primary);}
+  .num-option small{display:block;color:var(--text-soft);font-size:.72rem;margin-top:1px;}
 
   .history-row{display:flex;align-items:center;justify-content:space-between;padding:10px 4px;border-bottom:1px solid var(--border-soft);gap:10px;}
   .history-row:last-child{border-bottom:none;}
@@ -1607,6 +1613,13 @@ function nameWithLast(it, k) {
   const part = safeName(segs.slice(-k).join(' - ')).slice(0, 120);
   return it.isFolder ? part : part + ' - ' + safeName(it.name);
 }
+// ---------- Numeración opcional (orden del Paso 2) ----------
+let numberedCopy = false;     // false = nombres normales | true = 001.nombre, 002.nombre...
+const NUM_SEP = '.';          // separador entre número y nombre: '001.factura 200' (usa '. ' para '001. factura 200')
+const numPad = total => Math.max(3, String(total).length);
+function finalName(it, idx, total) {
+  return numberedCopy ? String(idx + 1).padStart(numPad(total), '0') + NUM_SEP + it.destName : it.destName;
+}
 function buildCopyPlan() {
   const included = results.filter(r => r.status !== 'no' && r.include !== false);
   const perTerm = new Map();
@@ -1647,16 +1660,23 @@ function buildCopyPlan() {
   return items;
 }
 
+function renderPlanList() {
+  const esc = s => String(s).replace(/</g, '&lt;');
+  const total = lastPlan.length;
+  document.getElementById('planListBox').innerHTML = lastPlan.map((it, i) =>
+    '<div class="plan-list-item"><b>' + esc(it.terms[0]) + '</b> → ' + (it.isFolder ? '📁 ' : '📄 ') + esc(finalName(it, i, total)) +
+    (it.renamed ? '<span class="ren">⧉ Duplicado: se guardará con las últimas subcarpetas (origen: ' + esc(it.path) + ')</span>' : '') + '</div>'
+  ).join('');
+}
+
 document.getElementById('btnCopy').onclick = () => {
   lastPlan = buildCopyPlan();
   if (!lastPlan.length) return;
-  const esc = s => String(s).replace(/</g, '&lt;');
+  numberedCopy = false;
   const nFolders = lastPlan.filter(i => i.isFolder).length;
   const nRen = lastPlan.filter(i => i.renamed).length;
-  const list = lastPlan.map(it =>
-    '<div class="plan-list-item"><b>' + esc(it.terms[0]) + '</b> → ' + (it.isFolder ? '📁 ' : '📄 ') + esc(it.destName) +
-    (it.renamed ? '<span class="ren">⧉ Duplicado: se guardará con las últimas subcarpetas (origen: ' + esc(it.path) + ')</span>' : '') + '</div>'
-  ).join('');
+  const ex = lastPlan[0].destName.replace(/</g, '&lt;');
+  const pad = numPad(lastPlan.length);
   document.getElementById('copyPlanBody').innerHTML =
     '<div class="plan-summary">' +
       '<div class="plan-stat"><b>' + lastPlan.length + '</b><span>Elementos a copiar</span></div>' +
@@ -1664,8 +1684,17 @@ document.getElementById('btnCopy').onclick = () => {
       '<div class="plan-stat"><b>' + nFolders + '</b><span>Carpetas completas</span></div>' +
       '<div class="plan-stat"><b>' + nRen + '</b><span>Renombrados (duplicados)</span></div>' +
     '</div>' +
+    '<span class="field-label" style="margin-top:12px;">Nombre de los elementos copiados</span>' +
+    '<div class="num-option">' +
+      '<label><input type="radio" name="numMode" value="normal" checked><span>Normal<small>Se conservan los nombres originales</small></span></label>' +
+      '<label><input type="radio" name="numMode" value="numbered"><span>Numerados en el orden del Paso 2<small>Ej: ' + '1'.padStart(pad, '0') + NUM_SEP + ex + '</small></span></label>' +
+    '</div>' +
     '<span class="field-label" style="margin-top:12px;">Detalle del plan</span>' +
-    '<div class="plan-list">' + list + '</div>';
+    '<div class="plan-list" id="planListBox"></div>';
+  document.querySelectorAll('#copyPlanBody input[name="numMode"]').forEach(r => {
+    r.onchange = () => { numberedCopy = r.value === 'numbered' && r.checked; renderPlanList(); };
+  });
+  renderPlanList();
   openModal('copyPlanModal');
 };
 
@@ -1714,14 +1743,15 @@ async function executeCopyProcess() {
     fill.style.width = percentage + '%';
     count.textContent = (i + 1) + ' / ' + total;
     pct.textContent = percentage + '%';
-    cur.textContent = it.destName;
+    const outName = finalName(it, i, total);
+    cur.textContent = outName;
 
     try {
       if (it.isFolder) {
-        const targetSubDir = await destHandle.getDirectoryHandle(safeName(it.destName), { create: true });
+        const targetSubDir = await destHandle.getDirectoryHandle(safeName(outName), { create: true });
         copyErrors += await copyDirectoryRecursive(it.handle, targetSubDir);
       } else {
-        await copySingleFile(it.handle, destHandle, safeName(it.destName));
+        await copySingleFile(it.handle, destHandle, safeName(outName));
       }
     } catch (err) {
       console.error('Error al copiar elemento:', it, err);
