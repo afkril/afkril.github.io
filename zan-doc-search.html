@@ -1614,11 +1614,10 @@ function nameWithLast(it, k) {
   return it.isFolder ? part : part + ' - ' + safeName(it.name);
 }
 // ---------- Numeración opcional (orden del Paso 2) ----------
-let numberedCopy = false;     // false = nombres normales | true = 001.nombre, 002.nombre...
-const NUM_SEP = '.';          // separador entre número y nombre: '001.factura 200' (usa '. ' para '001. factura 200')
-const numPad = total => Math.max(3, String(total).length);
+let numberedCopy = false;     // false = nombres normales | true = 1.nombre, 2.nombre...
+const NUM_SEP = '.';          // separador entre número y nombre: '1.factura 200' (usa '. ' para '1. factura 200')
 function finalName(it, idx, total) {
-  return numberedCopy ? String(idx + 1).padStart(numPad(total), '0') + NUM_SEP + it.destName : it.destName;
+  return numberedCopy ? (idx + 1) + NUM_SEP + it.destName : it.destName;
 }
 function buildCopyPlan() {
   const included = results.filter(r => r.status !== 'no' && r.include !== false);
@@ -1676,7 +1675,6 @@ document.getElementById('btnCopy').onclick = () => {
   const nFolders = lastPlan.filter(i => i.isFolder).length;
   const nRen = lastPlan.filter(i => i.renamed).length;
   const ex = lastPlan[0].destName.replace(/</g, '&lt;');
-  const pad = numPad(lastPlan.length);
   document.getElementById('copyPlanBody').innerHTML =
     '<div class="plan-summary">' +
       '<div class="plan-stat"><b>' + lastPlan.length + '</b><span>Elementos a copiar</span></div>' +
@@ -1687,7 +1685,7 @@ document.getElementById('btnCopy').onclick = () => {
     '<span class="field-label" style="margin-top:12px;">Nombre de los elementos copiados</span>' +
     '<div class="num-option">' +
       '<label><input type="radio" name="numMode" value="normal" checked><span>Normal<small>Se conservan los nombres originales</small></span></label>' +
-      '<label><input type="radio" name="numMode" value="numbered"><span>Numerados en el orden del Paso 2<small>Ej: ' + '1'.padStart(pad, '0') + NUM_SEP + ex + '</small></span></label>' +
+      '<label><input type="radio" name="numMode" value="numbered"><span>Numerados en el orden del Paso 2<small>Ej: ' + '1' + NUM_SEP + ex + '</small></span></label>' +
     '</div>' +
     '<span class="field-label" style="margin-top:12px;">Detalle del plan</span>' +
     '<div class="plan-list" id="planListBox"></div>';
