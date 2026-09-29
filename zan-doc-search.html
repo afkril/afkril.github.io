@@ -175,8 +175,11 @@
   .mini-check{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text-soft);}
   .mini-check input{accent-color:var(--primary);}
   .select-input{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:.78rem;background:#fff;font-family:inherit;color:var(--text);}
+  .opt-hint{font-size:.68rem;color:var(--text-mute);margin-top:4px;line-height:1.35;}
   .btn-link{background:none;border:none;color:var(--primary);font-size:.74rem;font-weight:600;cursor:pointer;padding:4px 2px;}
   .btn-link:hover{text-decoration:underline;}
+  @keyframes btnShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-5px);}40%{transform:translateX(5px);}60%{transform:translateX(-3px);}80%{transform:translateX(3px);}}
+  #btnSearch.shake{animation:btnShake .4s;}
 
   /* ---------- Buttons ---------- */
   button{
@@ -331,26 +334,6 @@
   .plan-list{max-height:170px;overflow:auto;border:1px solid var(--border-soft);border-radius:8px;margin-top:6px;}
   .plan-list-item{padding:6px 10px;font-size:.78rem;border-bottom:1px solid var(--border-soft);}
   .plan-list-item:last-child{border-bottom:none;}
-  .num-option{margin-top:12px;display:flex;flex-direction:column;gap:6px;}
-  .num-option label{display:flex;align-items:flex-start;gap:8px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:.8rem;color:var(--text);background:var(--surface);}
-  .num-option label:hover{border-color:var(--primary);}
-  .num-option label:has(input:checked){border-color:var(--primary);background:var(--neutral-soft);}
-  .num-option input{margin-top:2px;accent-color:var(--primary);}
-  .settings-toggle{margin-top:12px;display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-size:.76rem;font-weight:600;color:var(--text-soft);cursor:pointer;font-family:inherit;}
-  .settings-toggle:hover,.settings-toggle.open{border-color:var(--primary);color:var(--primary);}
-  .settings-badge{font-weight:500;color:var(--text-mute);font-size:.7rem;}
-  .copy-settings{margin-top:8px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--neutral-soft);}
-  .copy-settings .field-label{margin-top:0;}
-  .copy-settings .sep{height:1px;background:var(--border);margin:12px 0;}
-  .rule-table{width:100%;border-collapse:collapse;font-size:.76rem;}
-  .rule-table th{text-align:left;font-size:.68rem;color:var(--text-mute);font-weight:600;padding:0 4px 4px;}
-  .rule-table td{padding:3px 4px;}
-  .rule-table input{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:.78rem;font-family:inherit;background:#fff;color:var(--text);}
-  .rule-del{border:none;background:none;color:var(--text-mute);cursor:pointer;font-size:.9rem;padding:2px 6px;}
-  .rule-del:hover{color:#b42318;}
-  .rule-add{margin-top:6px;border:1px dashed var(--border);background:#fff;border-radius:6px;padding:5px 10px;font-size:.74rem;cursor:pointer;color:var(--text-soft);font-family:inherit;}
-  .rule-add:hover{border-color:var(--primary);color:var(--primary);}
-  .num-option small{display:block;color:var(--text-soft);font-size:.72rem;margin-top:1px;}
 
   .history-row{display:flex;align-items:center;justify-content:space-between;padding:10px 4px;border-bottom:1px solid var(--border-soft);gap:10px;}
   .history-row:last-child{border-bottom:none;}
@@ -493,6 +476,19 @@
     font-size: 0.8rem;
     color: var(--text);
     line-height: 1.4;
+  }
+  .zan-tip-tag {
+    display: inline-block;
+    background: #fff4e0;
+    color: #a15c00;
+    border: 1px solid #ffe3ab;
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 1px 7px;
+    border-radius: 99px;
+    margin-right: 4px;
+    letter-spacing: .03em;
+    text-transform: uppercase;
   }
   .zan-bubble-text b {
     color: var(--primary-dark);
@@ -649,6 +645,13 @@
         <label class="mini-check"><input type="checkbox" id="chkSearchFile" checked> Nombre de archivo</label>
         <label class="mini-check"><input type="checkbox" id="chkSearchFolder" checked> Nombre de carpeta</label>
       </div>
+
+      <span class="field-label" style="margin-top:14px;">Duplicados <span class="tag-mini">opcional</span></span>
+      <div class="seg-control" id="dupControl">
+        <button class="seg-btn active" data-dup="all" type="button">Cargar duplicados</button>
+        <button class="seg-btn" data-dup="first" type="button">Solo el primero</button>
+      </div>
+      <div class="opt-hint" id="dupHint"></div>
 
       <span class="field-label" style="margin-top:14px;">Filtrar por extensión (opcional)</span>
       <div class="row" style="gap:6px;flex-wrap:nowrap;">
@@ -824,6 +827,8 @@ let results = [];            // filas: [{term, status, fileName, path, handle, f
 let destHandle = null;
 let excelRows = [];          // filas crudas leídas del Excel/CSV actual
 let isCancellingCopy = false;
+let isIndexing = false;      // true mientras se indexa la carpeta madre (Paso 1)
+let scanToken = 0;           // identifica el escaneo vigente (evita mezclar dos escaneos)
 
 let searchSettings = {
   matchMode: 'both',                 // 'exact' | 'similar' | 'both'
@@ -831,7 +836,7 @@ let searchSettings = {
   searchIn: { file: true, folder: true },
   extensions: [],                    // sin punto, minúsculas
   copyPreference: 'auto',            // 'auto' | 'file' | 'folder'
-  fileNumRules: []                   // [{n:'2', word:'FEV'}] numerar archivos internos al copiar
+  duplicates: 'all'                  // 'all' = cargar todas las rutas | 'first' = solo el primer resultado
 };
 
 let searchHistory = [];
@@ -941,7 +946,11 @@ const ZAN_CONFIG = {
   happyMs: 4000,               // duración del "happy" tras una búsqueda
   doneMs: 8000,                // duración del "done" tras copiar
   sitAfterMs: 1 * 60 * 1000,   // inactividad para sentarse
-  sleepAfterMs: 2 * 60 * 1000 // inactividad para acostarse
+  sleepAfterMs: 2 * 60 * 1000, // inactividad para acostarse
+  tipAfterMs: 15 * 1000,       // inactividad mínima antes de dar un consejo
+  tipEveryMs: 35 * 1000,       // tiempo mínimo entre un consejo y el siguiente
+  tipShowMs: 12 * 1000,        // cuánto se queda visible cada consejo
+  warnHoldMs: 7 * 1000         // cuánto se mantiene el aviso de "aún indexando"
 };
 const zanImg = document.getElementById('zanImg');
 const zanAvatarEl = document.getElementById('zanAvatar');
@@ -962,8 +971,9 @@ function zanApply(state) {
   zanImg.classList.add('zan-pop');
 }
 // Cambio de estado permanente (cancela cualquier estado pasajero)
+let zanTipActive = false;
 function setZanState(state) {
-  clearTimeout(zanTempTimer); zanTempTimer = null; zanPending = null;
+  clearTimeout(zanTempTimer); zanTempTimer = null; zanPending = null; zanTipActive = false;
   zanApply(state);
 }
 function zanShow(html) {
@@ -981,7 +991,32 @@ function zanTemp(state, ms, html) {
   }, ms);
 }
 function zanRevert() {
-  if (zanBusy) setZanState('thinking'); else updateZanGuidance();
+  if (zanBusy) { setZanState('thinking'); if (zanBusy === 'index') zanShow(zanIndexMsg()); }
+  else updateZanGuidance();
+}
+
+// Mensaje de Zan mientras se indexa la carpeta madre (con avance en vivo)
+let zanHoldUntil = 0;   // mientras no pase esta hora, el avance no pisa el aviso
+function zanIndexMsg() {
+  return '<b>Indexando la carpeta madre...</b> Llevo <b>' + fileIndex.length.toLocaleString() + '</b> archivos y <b>' +
+    dirIndex.length.toLocaleString() + '</b> carpetas. Dame un momento. 🔍';
+}
+function zanIndexProgress() {
+  if (zanBusy !== 'index' || Date.now() < zanHoldUntil || zanTempTimer) return;
+  zanText.innerHTML = zanIndexMsg();
+}
+// El usuario pidió buscar sin que termine el Paso 1: Zan avisa y sigue "cargando"
+function zanWarnIndexing() {
+  zanHoldUntil = Date.now() + ZAN_CONFIG.warnHoldMs;
+  setZanState('thinking');
+  zanShow('<b>¡Aún no termino de indexar la carpeta madre!</b> ⏳ Llevo ' + fileIndex.length.toLocaleString() + ' archivos y ' +
+    dirIndex.length.toLocaleString() + ' carpetas. Si busco ahora podrían quedar documentos por fuera. ' +
+    'Espera a que termine y pulsa <b>\"Iniciar búsqueda\"</b> otra vez.');
+  const si = document.getElementById('searchInfo');
+  si.textContent = '⏳ Aún indexando la carpeta madre…';
+  si.style.color = 'var(--warn)';
+  const btn = document.getElementById('btnSearch');
+  btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake');
 }
 // Ejecuta fn ya, o al terminar el estado "data" si todavía está en pantalla
 function zanAfterData(fn) {
@@ -993,6 +1028,7 @@ function zanErase(html) { zanTemp('erase', ZAN_CONFIG.eraseMs, html); }
 function zanActivity() {
   const was = zanState;
   zanLastActivity = Date.now();
+  if (zanTipActive) { zanTipActive = false; clearTimeout(zanTempTimer); zanTempTimer = null; zanPending = null; zanRevert(); return; }
   if (was === 'sit' || was === 'sleep') {
     zanTemp('alert', 1400, was === 'sleep'
       ? '<b>¡Ya desperté!</b> ¿En qué seguimos? 👀'
@@ -1018,6 +1054,16 @@ function setZanEmotion(e) { setZanState(ZAN_LEGACY[e] || e); }
 
 function updateZanGuidance() {
   zanBubble.style.display = 'block';
+
+  // Trabajando (indexando, buscando o copiando): Zan se queda en "cargando"
+  if (zanBusy) {
+    setZanState('thinking');
+    if (zanBusy === 'index') {
+      zanText.innerHTML = zanIndexMsg();
+      zanPill1.className = 'zan-pill active'; zanPill2.className = 'zan-pill'; zanPill3.className = 'zan-pill';
+    }
+    return;
+  }
 
   if (!dirHandle) {
     setZanState('idle');
@@ -1048,6 +1094,79 @@ function updateZanGuidance() {
 
   setZanState('watch');   // ya hay resultados: Zan observa mientras revisas
 }
+
+
+// ==========================================================================
+// CONSEJOS DE ZAN (aparecen de vez en cuando si no estás haciendo nada)
+// ==========================================================================
+const ZAN_TIPS = {
+  folder: [
+    'Elige la carpeta <b>más alta</b> donde puedan estar tus documentos: reviso todas las subcarpetas, sin límite de niveles.',
+    'Espera a que termine el indexado antes de buscar. Así ningún archivo se queda fuera de la búsqueda.',
+    'Usa <b>Chrome o Edge</b>: otros navegadores no me dejan leer carpetas.',
+    'Todo ocurre en tu computador: no subo ningún archivo a internet.'
+  ],
+  terms: [
+    'Puedes arrastrar un <b>Excel o CSV</b> y elegir con el selector qué columna usar como términos.',
+    'No importan las mayúsculas ni las tildes: \"Factura\" y \"factura\" son lo mismo para mí.',
+    'Los términos cortos y distintivos, como un número de factura, encuentran más que las frases largas.',
+    'En la pestaña <b>Manual</b> puedes separar los términos con coma o salto de línea.',
+    'Los términos repetidos se omiten solos. Con la ✕ quitas uno, y en <b>Ver / editar lista completa</b> puedes borrar varios a la vez.'
+  ],
+  ready: [
+    '<b>Solo exactos</b>: el nombre debe contener tu término. <b>Ambos</b> añade similares cuando no hay ningún exacto.',
+    'Si un término lleva números (ej. factura 501), un similar solo vale si su nombre trae esos mismos números.',
+    'Sensibilidad: bájala si no aparece nada, súbela si salen demasiados nombres parecidos.',
+    'Filtra por <b>extensión</b> (pdf, xlsx…) para ignorar los archivos que no te interesan.',
+    '¿Un término puede estar en varias rutas? En <b>Duplicados</b> elige ver todas o solo la primera.',
+    'Si activas <b>Nombre de carpeta</b> y una carpeta coincide, puedo copiarla completa con todo su contenido.',
+    'En <b>Al copiar, priorizar</b> decides si copio solo el archivo o la carpeta que lo contiene.'
+  ],
+  results: [
+    'Usa <b>Buscar en resultados</b> para filtrar la tabla por término, archivo o ruta.',
+    'Desmarca la casilla de una fila para dejarla fuera de la copia.',
+    'En la columna <b>Copiar</b> pulsa el botón de cada fila para alternar Archivo, Carpeta o Auto.',
+    '<b>Exportar</b> guarda la tabla en Excel con la ruta original y los duplicados.',
+    '¿Quedaron términos sin hallar? Prueba el modo <b>Ambos</b> o baja la sensibilidad y busca de nuevo.',
+    'Al copiar, los duplicados se guardan con las últimas subcarpetas en el nombre, así no se pisan entre sí.'
+  ],
+  general: [
+    'Si te estorbo, arrástrame a otro lugar de la pantalla. 🐾',
+    'En <b>🕓 Historial</b> puedes ver tus últimas búsquedas.'
+  ]
+};
+const zanTipsSeen = new Set();
+let zanLastTip = 0;
+function zanTipContext() {
+  if (!dirHandle) return 'folder';
+  if (!terms.length) return 'terms';
+  if (results.length === 0) return 'ready';
+  return 'results';
+}
+function zanPickTip() {
+  const ctx = zanTipContext();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    for (const key of [ctx, 'general']) {
+      const left = ZAN_TIPS[key].filter(t => !zanTipsSeen.has(t));
+      if (left.length) { const t = left[Math.floor(Math.random() * left.length)]; zanTipsSeen.add(t); return t; }
+    }
+    zanTipsSeen.clear();   // ya vio todos los consejos: empieza de nuevo
+  }
+  return null;
+}
+setInterval(() => {
+  if (zanBusy || zanTempTimer || zanState === 'sit' || zanState === 'sleep') return;
+  if (zanBubble.style.display === 'none') return;                                   // cerró la burbuja: no molestar
+  if (document.querySelector('.modal-backdrop.active, .copy-overlay.active')) return;
+  if (document.activeElement && /^(TEXTAREA|INPUT|SELECT)$/.test(document.activeElement.tagName)) return;
+  const now = Date.now();
+  if (now - zanLastActivity < ZAN_CONFIG.tipAfterMs || now - zanLastTip < ZAN_CONFIG.tipEveryMs) return;
+  const tip = zanPickTip();
+  if (!tip) return;
+  zanLastTip = now;
+  zanTemp('idle', ZAN_CONFIG.tipShowMs, '<span class=\"zan-tip-tag\">💡 Consejo</span> ' + tip);
+  zanTipActive = true;
+}, 1000);
 
 document.getElementById('zanCloseBubble').onclick = () => {
   zanBubble.style.display = 'none';
@@ -1116,7 +1235,14 @@ function initSettingsUI() {
   document.getElementById('chkSearchFile').checked = searchSettings.searchIn.file;
   document.getElementById('chkSearchFolder').checked = searchSettings.searchIn.folder;
   document.getElementById('copyPreference').value = searchSettings.copyPreference;
+  renderDupControl();
   renderExtChips();
+}
+function renderDupControl() {
+  document.querySelectorAll('#dupControl .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.dup === searchSettings.duplicates));
+  document.getElementById('dupHint').textContent = searchSettings.duplicates === 'first'
+    ? 'Si un término aparece en varias rutas, solo verás y copiarás la primera.'
+    : 'Si un término aparece en varias rutas, verás todas y las copias se guardan con nombre único.';
 }
 
 // Eventos de opciones
@@ -1136,6 +1262,9 @@ document.getElementById('thresholdSlider').oninput = e => {
 };
 document.getElementById('chkSearchFile').onchange = e => { searchSettings.searchIn.file = e.target.checked; persistSettings(); };
 document.getElementById('chkSearchFolder').onchange = e => { searchSettings.searchIn.folder = e.target.checked; persistSettings(); };
+document.querySelectorAll('#dupControl .seg-btn').forEach(b => {
+  b.onclick = () => { searchSettings.duplicates = b.dataset.dup; renderDupControl(); persistSettings(); };
+});
 document.getElementById('copyPreference').onchange = e => { searchSettings.copyPreference = e.target.value; persistSettings(); };
 
 document.getElementById('btnAddExt').onclick = addExtension;
@@ -1171,22 +1300,29 @@ initSettingsUI();
 document.getElementById('btnFolder').onclick = async () => {
   try {
     dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+    const myToken = ++scanToken;
+    isIndexing = true;
     dirName = dirHandle.name;
     document.getElementById('folderInfo').innerHTML = '📂 <b>' + dirName + '</b> — indexando...';
     fileIndex = []; dirIndex = []; dirByPath = new Map(); scanMaxDepth = 0; scanSkipped = []; results = [];
     
     zanBusy = 'index';
+    zanHoldUntil = 0;
     setZanState('thinking');
     zanBubble.style.display = 'block';
-    zanText.innerHTML = '<b>Indexando la carpeta...</b> Dame un momento mientras escaneo archivos y subcarpetas. 🔍';
+    zanText.innerHTML = zanIndexMsg();
+    zanPill1.className = 'zan-pill active'; zanPill2.className = 'zan-pill'; zanPill3.className = 'zan-pill';
+    updateSearchBtn();
 
-    await scanDir(dirHandle, dirName);
+    await scanDir(dirHandle, dirName, myToken);
+    if (myToken !== scanToken) return;   // se eligió otra carpeta mientras tanto
+    isIndexing = false;
     document.getElementById('folderInfo').innerHTML = '📂 <b>' + dirName + '</b><br>' + fileIndex.length.toLocaleString() + ' archivos · ' + dirIndex.length.toLocaleString() + ' carpetas · hasta ' + scanMaxDepth + ' niveles de profundidad' + (scanSkipped.length ? '<br><span style="color:#b45309;">⚠ ' + scanSkipped.length + ' carpeta(s) sin permiso o ilegibles (omitidas)</span>' : '');
     document.getElementById('stFiles').textContent = fileIndex.length.toLocaleString();
     updateSearchBtn();
     zanBusy = null;
     updateZanGuidance();
-  } catch (e) { zanBusy = null; if (e.name !== 'AbortError') { setZanState('error'); zanBubble.style.display = 'block'; zanText.innerHTML = '<b>No pude abrir la carpeta.</b> ' + e.message; alert('Error al abrir carpeta: ' + e.message); } }
+  } catch (e) { if (e.name === 'AbortError') return; isIndexing = false; zanBusy = null; updateSearchBtn(); setZanState('error'); zanBubble.style.display = 'block'; zanText.innerHTML = '<b>No pude abrir la carpeta.</b> ' + e.message; alert('Error al abrir carpeta: ' + e.message); }
 };
 
 async function* walkEntries(handle) {
@@ -1211,11 +1347,12 @@ async function* walkEntries(handle) {
 
 // Escaneo completo, sin límite de niveles. Cola iterativa (no se desborda con árboles muy profundos)
 // y tolerante a errores: una carpeta ilegible se omite y el resto continúa.
-async function scanDir(rootHandle, rootPath) {
+async function scanDir(rootHandle, rootPath, token) {
   const queue = [{ handle: rootHandle, path: rootPath, depth: 0 }];
   const info = document.getElementById('folderInfo');
   let seen = 0;
   for (let qi = 0; qi < queue.length; qi++) {
+    if (token !== scanToken) return;
     const cur = queue[qi]; queue[qi] = null;
     try {
       for await (const [name, child] of walkEntries(cur.handle)) {
@@ -1230,7 +1367,9 @@ async function scanDir(rootHandle, rootPath) {
         }
         if (++seen % 300 === 0) {
           info.innerHTML = '📂 <b>' + dirName + '</b> — indexando... ' + fileIndex.length.toLocaleString() + ' archivos · ' + dirIndex.length.toLocaleString() + ' carpetas';
+          zanIndexProgress();
           await new Promise(r => setTimeout(r, 0));
+          if (token !== scanToken) return;
         }
       }
     } catch (e) { scanSkipped.push(cur.path); console.warn('No se pudo leer la carpeta: ' + cur.path, e); }
@@ -1340,7 +1479,10 @@ function renderTermsPreview() {
 }
 
 function updateSearchBtn() {
-  document.getElementById('btnSearch').disabled = !(dirHandle && terms.length && fileIndex.length);
+  document.getElementById('btnSearch').disabled = !(dirHandle && terms.length && (isIndexing || fileIndex.length));
+  const si = document.getElementById('searchInfo');
+  if (isIndexing) { si.textContent = '⏳ Indexando la carpeta madre…'; si.style.color = 'var(--warn)'; }
+  else if (si.style.color) { si.textContent = ''; si.style.color = ''; }
 }
 
 // Modal: gestor de términos
@@ -1382,6 +1524,7 @@ document.getElementById('btnDeleteSelected').onclick = () => {
 // EJECUCIÓN DE BÚSQUEDA Y RESULTADOS
 // ==========================================================================
 document.getElementById('btnSearch').onclick = async () => {
+  if (isIndexing && dirHandle && terms.length) { zanWarnIndexing(); return; }   // Paso 1 sin terminar
   if (!dirHandle || !terms.length || !fileIndex.length) return;
 
   const pWrap = document.getElementById('progressWrap');
@@ -1424,8 +1567,11 @@ document.getElementById('btnSearch').onclick = async () => {
     pFill.style.width = Math.round(((i + 1) / total) * 100) + '%';
     pText.textContent = 'Procesando ' + (i + 1) + ' de ' + total + ': ' + term;
 
-    const rows = matchTerm(term, activeFiles, activeDirs);
-    rows.forEach((r, k) => { r.dupCount = rows.length; r.dupIndex = k + 1; r.dupOf = rows[0].path; });
+    let rows = matchTerm(term, activeFiles, activeDirs);
+    // Duplicados desactivados: si hay varias rutas, se muestra solo la primera
+    let skipped = 0;
+    if (searchSettings.duplicates === 'first' && rows.length > 1) { skipped = rows.length - 1; rows = [rows[0]]; }
+    rows.forEach((r, k) => { r.dupCount = rows.length; r.dupIndex = k + 1; r.dupOf = rows[0].path; if (skipped) r.dupSkipped = skipped; });
     results.push(...rows);
 
     if (i % 25 === 0) await new Promise(r => setTimeout(r, 0));
@@ -1446,14 +1592,15 @@ document.getElementById('btnSearch').onclick = async () => {
 
   zanBusy = null;
   const foundNow = new Set(results.filter(r => r.status !== 'no').map(r => r.term)).size;
-  const dupTerms = new Set(results.filter(r => r.dupCount > 1).map(r => r.term)).size;
+  const dupTerms = new Set(results.filter(r => r.dupCount > 1 || r.dupSkipped).map(r => r.term)).size;
+  const onlyFirst = searchSettings.duplicates === 'first';
   zanAfterData(() => {
     if (foundNow === 0) {
       setZanState('sad');
       zanShow('<b>No encontré coincidencias</b> para ninguno de los ' + total + ' términos. Prueba con el modo "similar" o baja el umbral. 😿');
     } else {
       const missing = total - foundNow;
-      zanTemp('happy', ZAN_CONFIG.happyMs, '<b>¡Búsqueda finalizada!</b> Encontré <b>' + foundNow + '</b> de ' + total + ' términos' + (missing ? ' (' + missing + ' sin coincidencia)' : '') + '.' + (dupTerms ? ' <b>' + dupTerms + '</b> aparecen en varias rutas (duplicados): revísalos en la tabla. ⧉' : ' Revisa los resultados. 🎉'));
+      zanTemp('happy', ZAN_CONFIG.happyMs, '<b>¡Búsqueda finalizada!</b> Encontré <b>' + foundNow + '</b> de ' + total + ' términos' + (missing ? ' (' + missing + ' sin coincidencia)' : '') + '.' + (dupTerms ? (onlyFirst ? ' <b>' + dupTerms + '</b> tenían más de una ruta: te muestro solo la primera. ⧉' : ' <b>' + dupTerms + '</b> aparecen en varias rutas (duplicados): revísalos en la tabla. ⧉') : ' Revisa los resultados. 🎉'));
     }
   });
 };
@@ -1513,7 +1660,7 @@ function renderResultsTable() {
   const best = new Map(), dupTerms = new Set();
   results.forEach(r => {
     if (!best.has(r.term) || rank[r.status] > rank[best.get(r.term)]) best.set(r.term, r.status);
-    if (r.dupCount > 1) dupTerms.add(r.term);
+    if (r.dupCount > 1 || r.dupSkipped) dupTerms.add(r.term);
   });
   let stExact = 0, stDir = 0, stSim = 0, stNo = 0;
   best.forEach(s => { if (s === 'exact') stExact++; else if (s === 'dir') stDir++; else if (s === 'similar') stSim++; else stNo++; });
@@ -1527,6 +1674,7 @@ function renderResultsTable() {
     if (r.status === 'similar') badgeHtml = '<span class="badge b-sim">≈ ' + (r.simPct || 0) + '% Similar</span>';
     const isDup = r.status !== 'no' && r.dupCount > 1;
     if (isDup) badgeHtml += '<span class="badge b-dup">⧉ Duplicado ' + r.dupIndex + '/' + r.dupCount + '</span>';
+    if (r.status !== 'no' && r.dupSkipped) badgeHtml += '<span class="badge b-dup">⧉ 1.º de ' + (r.dupSkipped + 1) + '</span>';
 
     let copyHtml = '—';
     if (r.status !== 'no') {
@@ -1541,7 +1689,8 @@ function renderResultsTable() {
     }
 
     let dupNote = '';
-    if (isDup) dupNote = r.dupIndex === 1
+    if (r.status !== 'no' && r.dupSkipped) dupNote = '<div class="dup-note">ℹ Existen ' + (r.dupSkipped + 1) + ' rutas para este término; se muestra solo la primera</div>';
+    else if (isDup) dupNote = r.dupIndex === 1
       ? '<div class="dup-note">⚠ Duplicado: este término existe en ' + r.dupCount + ' rutas</div>'
       : '<div class="dup-note">⚠ Duplicado de la ruta: ' + esc(r.dupOf) + '</div>';
 
@@ -1592,7 +1741,7 @@ document.getElementById('btnExport').onclick = () => {
     'Estado': r.status,
     'Tipo': r.kind === 'dir' ? 'Carpeta' : (r.kind === 'file' ? 'Archivo' : ''),
     'Archivo/Carpeta Encontrado': r.fileName,
-    'Duplicado': r.status !== 'no' && r.dupCount > 1 ? ('Sí (' + r.dupIndex + ' de ' + r.dupCount + ')') : 'No',
+    'Duplicado': r.status !== 'no' && r.dupSkipped ? ('Sí (se muestra solo el 1.º de ' + (r.dupSkipped + 1) + ')') : (r.status !== 'no' && r.dupCount > 1 ? ('Sí (' + r.dupIndex + ' de ' + r.dupCount + ')') : 'No'),
     'Ruta Original': r.path
   }));
   const ws = XLSX.utils.json_to_sheet(data);
@@ -1627,12 +1776,6 @@ function nameWithLast(it, k) {
   if (!it.isFolder) segs.pop();
   const part = safeName(segs.slice(-k).join(' - ')).slice(0, 120);
   return it.isFolder ? part : part + ' - ' + safeName(it.name);
-}
-// ---------- Numeración opcional (orden del Paso 2) ----------
-let numberedCopy = false;     // false = nombres normales | true = 1.nombre, 2.nombre...
-const NUM_SEP = '.';          // separador entre número y nombre: '1.factura 200' (usa '. ' para '1. factura 200')
-function finalName(it, idx, total) {
-  return numberedCopy ? (idx + 1) + NUM_SEP + it.destName : it.destName;
 }
 function buildCopyPlan() {
   const included = results.filter(r => r.status !== 'no' && r.include !== false);
@@ -1674,78 +1817,16 @@ function buildCopyPlan() {
   return items;
 }
 
-// ---------- Zan en el panel de Ajustes ----------
-let zanSettingsOpen = false;
-function zanSettingsHelp() {
-  if (!zanSettingsOpen) { updateZanGuidance(); return; }
-  setZanState('idle');
-  zanShow('<b>Ajustes de copia.</b> Aquí decides cómo se nombrarán los archivos:<br>' +
-    '• <b>Carpetas:</b> puedes numerarlas en el orden del Paso 2.<br>' +
-    '• <b>Archivos internos:</b> escribe un <b>numeral</b> y una <b>palabra inicial</b>. Si un archivo dentro de las carpetas empieza con esa palabra (da igual mayúsculas o minúsculas), le pondré el número delante. Ej: <b>2</b> + <b>FEV</b> → <i>2.FEV_800110181.pdf</i> 📝');
-}
-// Estado pasajero dentro de ajustes: al terminar vuelve a la explicación (si el panel sigue abierto)
-function zanSettingsReact(kind, html) {
-  if (!zanSettingsOpen) return;
-  if (kind === 'erase') zanErase(html); else zanTemp('happy', 2200, html);
-  zanPending = zanSettingsHelp;
-}
-
-// ---------- Numerar archivos internos: reglas {n, word} ----------
-// Si el nombre EMPIEZA con la palabra (sin distinguir mayúsculas/minúsculas) se antepone "n." -> FEV_123.pdf => 2.FEV_123.pdf
-function internalName(name) {
-  const lower = name.toLowerCase();
-  for (const r of (searchSettings.fileNumRules || [])) {
-    const n = String(r.n || '').trim(), w = String(r.word || '').trim().toLowerCase();
-    if (n && w && lower.startsWith(w)) return safeName(n + NUM_SEP + name);
-  }
-  return name;
-}
-function updateSettingsBadge() {
-  const el = document.getElementById('copySettingsBadge'); if (!el) return;
-  const parts = [];
-  if (numberedCopy) parts.push('carpetas numeradas');
-  const nr = (searchSettings.fileNumRules || []).filter(r => String(r.n || '').trim() && String(r.word || '').trim()).length;
-  if (nr) parts.push(nr + (nr === 1 ? ' regla' : ' reglas') + ' de archivos');
-  el.textContent = parts.length ? '· ' + parts.join(' · ') : '';
-}
-function renderRulesTable() {
-  const rules = searchSettings.fileNumRules;
-  const box = document.getElementById('ruleTableBox'); if (!box) return;
-  const esc = v => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-  box.innerHTML = (rules.length
-    ? '<table class="rule-table"><thead><tr><th style="width:78px;">Numeral</th><th>Palabra inicial</th><th style="width:28px;"></th></tr></thead><tbody>' +
-      rules.map((r, i) =>
-        '<tr><td><input data-rn="' + i + '" value="' + esc(r.n) + '" placeholder="2" inputmode="numeric"></td>' +
-        '<td><input data-rw="' + i + '" value="' + esc(r.word) + '" placeholder="FEV"></td>' +
-        '<td><button type="button" class="rule-del" data-rd="' + i + '" title="Quitar">✕</button></td></tr>'
-      ).join('') + '</tbody></table>'
-    : '<div style="font-size:.74rem;color:var(--text-mute);">Sin reglas. Agrega una para numerar archivos dentro de las carpetas copiadas.</div>') +
-    '<button type="button" class="rule-add" id="btnAddRule">+ Agregar regla</button>';
-  box.querySelectorAll('input[data-rn]').forEach(inp => inp.oninput = () => { rules[+inp.dataset.rn].n = inp.value; persistSettings(); updateSettingsBadge(); });
-  box.querySelectorAll('input[data-rw]').forEach(inp => inp.oninput = () => { rules[+inp.dataset.rw].word = inp.value; persistSettings(); updateSettingsBadge(); });
-  box.querySelectorAll('button[data-rd]').forEach(b => b.onclick = () => { rules.splice(+b.dataset.rd, 1); persistSettings(); renderRulesTable(); updateSettingsBadge(); zanSettingsReact('erase', '<b>Regla eliminada.</b> Ya no numeraré esos archivos. 🗑️'); });
-  document.getElementById('btnAddRule').onclick = () => {
-    rules.push({ n: '', word: '' }); persistSettings(); renderRulesTable();
-    zanSettingsReact('add', '<b>¡Nueva regla!</b> Escribe el numeral y la palabra inicial del archivo. 😄');
-    const last = box.querySelector('input[data-rn="' + (rules.length - 1) + '"]'); if (last) last.focus();
-  };
-}
-function renderPlanList() {
-  const esc = s => String(s).replace(/</g, '&lt;');
-  const total = lastPlan.length;
-  document.getElementById('planListBox').innerHTML = lastPlan.map((it, i) =>
-    '<div class="plan-list-item"><b>' + esc(it.terms[0]) + '</b> → ' + (it.isFolder ? '📁 ' : '📄 ') + esc(finalName(it, i, total)) +
-    (it.renamed ? '<span class="ren">⧉ Duplicado: se guardará con las últimas subcarpetas (origen: ' + esc(it.path) + ')</span>' : '') + '</div>'
-  ).join('');
-}
-
 document.getElementById('btnCopy').onclick = () => {
   lastPlan = buildCopyPlan();
   if (!lastPlan.length) return;
-  numberedCopy = false;
+  const esc = s => String(s).replace(/</g, '&lt;');
   const nFolders = lastPlan.filter(i => i.isFolder).length;
   const nRen = lastPlan.filter(i => i.renamed).length;
-  const ex = lastPlan[0].destName.replace(/</g, '&lt;');
+  const list = lastPlan.map(it =>
+    '<div class="plan-list-item"><b>' + esc(it.terms[0]) + '</b> → ' + (it.isFolder ? '📁 ' : '📄 ') + esc(it.destName) +
+    (it.renamed ? '<span class="ren">⧉ Duplicado: se guardará con las últimas subcarpetas (origen: ' + esc(it.path) + ')</span>' : '') + '</div>'
+  ).join('');
   document.getElementById('copyPlanBody').innerHTML =
     '<div class="plan-summary">' +
       '<div class="plan-stat"><b>' + lastPlan.length + '</b><span>Elementos a copiar</span></div>' +
@@ -1753,35 +1834,8 @@ document.getElementById('btnCopy').onclick = () => {
       '<div class="plan-stat"><b>' + nFolders + '</b><span>Carpetas completas</span></div>' +
       '<div class="plan-stat"><b>' + nRen + '</b><span>Renombrados (duplicados)</span></div>' +
     '</div>' +
-    '<button type="button" class="settings-toggle" id="btnCopySettings">⚙ Ajustes <span class="settings-badge" id="copySettingsBadge"></span></button>' +
-    '<div class="copy-settings" id="copySettingsPanel" style="display:none;">' +
-      '<span class="field-label">Numerar carpetas / elementos copiados</span>' +
-      '<div class="num-option" style="margin-top:0;">' +
-        '<label><input type="radio" name="numMode" value="normal" checked><span>Normal<small>Se conservan los nombres originales</small></span></label>' +
-        '<label><input type="radio" name="numMode" value="numbered"><span>Numerados en el orden del Paso 2<small>Ej: ' + '1' + NUM_SEP + ex + '</small></span></label>' +
-      '</div>' +
-      '<div class="sep"></div>' +
-      '<span class="field-label">Numerar archivos internos</span>' +
-      '<div style="font-size:.72rem;color:var(--text-soft);margin-bottom:6px;">Dentro de las carpetas copiadas, los archivos cuyo nombre empiece con la palabra (sin importar mayúsculas o minúsculas) llevarán el numeral al inicio. Ej: numeral 2 + palabra FEV → <b>2' + NUM_SEP + 'FEV_800110181.pdf</b></div>' +
-      '<div id="ruleTableBox"></div>' +
-    '</div>' +
     '<span class="field-label" style="margin-top:12px;">Detalle del plan</span>' +
-    '<div class="plan-list" id="planListBox"></div>';
-  document.querySelectorAll('#copyPlanBody input[name="numMode"]').forEach(r => {
-    r.onchange = () => { numberedCopy = r.value === 'numbered' && r.checked; renderPlanList(); updateSettingsBadge(); };
-  });
-  const setBtn = document.getElementById('btnCopySettings'), setPanel = document.getElementById('copySettingsPanel');
-  zanSettingsOpen = false;
-  setBtn.onclick = () => {
-    const open = setPanel.style.display === 'none';
-    setPanel.style.display = open ? 'block' : 'none';
-    setBtn.classList.toggle('open', open);
-    zanSettingsOpen = open;
-    if (open) zanSettingsHelp(); else updateZanGuidance();
-  };
-  renderRulesTable();
-  updateSettingsBadge();
-  renderPlanList();
+    '<div class="plan-list">' + list + '</div>';
   openModal('copyPlanModal');
 };
 
@@ -1830,15 +1884,14 @@ async function executeCopyProcess() {
     fill.style.width = percentage + '%';
     count.textContent = (i + 1) + ' / ' + total;
     pct.textContent = percentage + '%';
-    const outName = finalName(it, i, total);
-    cur.textContent = outName;
+    cur.textContent = it.destName;
 
     try {
       if (it.isFolder) {
-        const targetSubDir = await destHandle.getDirectoryHandle(safeName(outName), { create: true });
+        const targetSubDir = await destHandle.getDirectoryHandle(safeName(it.destName), { create: true });
         copyErrors += await copyDirectoryRecursive(it.handle, targetSubDir);
       } else {
-        await copySingleFile(it.handle, destHandle, safeName(outName));
+        await copySingleFile(it.handle, destHandle, safeName(it.destName));
       }
     } catch (err) {
       console.error('Error al copiar elemento:', it, err);
@@ -1887,7 +1940,7 @@ async function copyDirectoryRecursive(sourceDirHandle, targetDirHandle) {
     for await (const [name, handle] of walkEntries(sourceDirHandle)) {
       try {
         if (handle.kind === 'file') {
-          await copySingleFile(handle, targetDirHandle, internalName(name));
+          await copySingleFile(handle, targetDirHandle, name);
         } else if (handle.kind === 'directory') {
           const newSubDir = await targetDirHandle.getDirectoryHandle(name, { create: true });
           errors += await copyDirectoryRecursive(handle, newSubDir);
@@ -1927,10 +1980,7 @@ document.getElementById('btnClearHistory').onclick = () => {
 };
 
 function openModal(id) { document.getElementById(id).classList.add('active'); }
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-  if (id === 'copyPlanModal' && zanSettingsOpen) { zanSettingsOpen = false; updateZanGuidance(); }
-}
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
 document.querySelectorAll('[data-close]').forEach(btn => {
   btn.onclick = () => closeModal(btn.dataset.close);
