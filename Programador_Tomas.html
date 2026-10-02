@@ -390,9 +390,45 @@
   @keyframes zanFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
   @keyframes zanBubblePop{ 0%{ opacity:0; transform:scale(.6); } 100%{ opacity:1; transform:scale(1); } }
   @media print{ #zanAssistantContainer{ display:none; } }
+
+  /* ---------- Panel admin ---------- */
+  .admin-fab{position:fixed;left:12px;bottom:12px;z-index:95;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow);cursor:pointer;opacity:.5;transition:.15s;}
+  .admin-fab:hover{opacity:1;transform:scale(1.06);}
+  .adm-overlay{position:fixed;inset:0;z-index:1000;background:var(--bg);display:none;overflow:auto;}
+  .adm-overlay.active{display:block;}
+  .adm-wrap{max-width:1150px;margin:0 auto;padding:22px 18px 60px;color:var(--ink);}
+  .adm-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  .adm-top h2{font-size:1.15rem;flex:1;min-width:200px;color:var(--primary);}
+  .adm-top select,.adm-login input{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font:inherit;font-size:.82rem;background:#fff;}
+  .adm-btn{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font:inherit;font-size:.82rem;color:var(--ink-soft);}
+  .adm-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .adm-login{max-width:340px;margin:12vh auto;background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);}
+  .adm-login .err{color:var(--danger);font-size:.78rem;}
+  .adm-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
+  .adm-card,.adm-box{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);}
+  .adm-card b{display:block;font-size:1.5rem;color:var(--primary);}
+  .adm-card span{font-size:.72rem;color:var(--ink-soft);}
+  .adm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:12px;}
+  .adm-box h4{font-size:.82rem;margin-bottom:10px;}
+  .adm-hours{display:flex;align-items:flex-end;gap:3px;height:120px;}
+  .adm-hours div{flex:1;background:var(--primary-soft);border-radius:3px 3px 0 0;min-height:2px;}
+  .adm-hlab{display:flex;gap:3px;font-size:.58rem;color:var(--ink-faint);margin-top:3px;}
+  .adm-hlab span{flex:1;text-align:center;}
+  .adm-row{display:flex;align-items:center;gap:8px;font-size:.78rem;margin:5px 0;}
+  .adm-row .n{flex:0 0 46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .adm-row .bar{flex:1;background:var(--surface-alt);border-radius:4px;height:10px;}
+  .adm-row .bar i{display:block;height:100%;background:var(--gold);border-radius:4px;}
+  .adm-row .v{flex:0 0 40px;text-align:right;color:var(--ink-soft);}
+  .adm-tbl{width:100%;border-collapse:collapse;font-size:.76rem;}
+  .adm-tbl th,.adm-tbl td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);}
+  .adm-tbl th{color:var(--ink-faint);font-weight:600;}
+  .adm-scroll{overflow-x:auto;}
+  .adm-empty{color:var(--ink-faint);font-size:.78rem;}
 </style>
 </head>
 <body>
+<button class="admin-fab" id="btnAdmin" type="button" title="Panel administrativo (Ctrl+Shift+A)">📊</button>
+<div class="adm-overlay" id="admOverlay"><div class="adm-wrap" id="admRoot"></div></div>
 <div class="app">
 
   <div class="sidebar" id="sidebar">
@@ -774,6 +810,7 @@
 </div>
 
 <script>
+window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({type, data, ts: Date.now()}); if (window.__zflush) window.__zflush(); };
 (function(){
 
   /* ---------------------------------------------------------
@@ -1028,6 +1065,9 @@
     state.rows = rows;
     state.errors = errors;
     state.lastUpload = { filename, date: new Date(), total: grid.length-1, ok: rows.length, fail: errors.length };
+    track('upload', { total: grid.length-1, ok: rows.length, fail: errors.length,
+      beneficiarios: new Set(rows.map(r => r.numeroDocumento)).size,
+      contratos: tcount(rows, r => r.contrato), estados: tcount(rows, r => r.estado), unidades: new Set(rows.map(r => r.unidad)).size });
     computeSchedule();
     renderUploadResult({ ok:true });
     renderAll();
@@ -1103,7 +1143,10 @@
   /* ---------------------------------------------------------
      NAVEGACIÓN
   --------------------------------------------------------- */
+  const tcount = (rows, f) => { const o = {}; rows.forEach(r => { const k = String(f(r) || 'Sin dato').replace(/[.\/\[\]*`~]/g, '-').trim().slice(0, 80) || 'Sin dato'; o[k] = (o[k] || 0) + 1; }); return o; };
+  const track = (t, d) => { try { zanTrack(t, d || {}); } catch (e) {} };
   function switchView(id){
+    track('view', { view: id });
     document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.view===id));
     document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id==='view-'+id));
     if(id==='calendario') renderCalendar();
@@ -1359,6 +1402,7 @@
   }
 
   function onFilterChange(field, value){
+    track('filter', { field, v: ['urgencia', 'vinculo', 'vistaTomas'].includes(field) ? String(value) : '' });
     state.filters[field] = value;
     state.tablePage = 1;
     syncFilterInputs();
@@ -1820,7 +1864,14 @@
   }
 
   document.getElementById('cfgSave').addEventListener('click', ()=>{
+    const prevSet = state.settings;
     state.settings = readConfigFromForm();
+    try {
+      const ch = [], base = new Map(prevSet.statuses.map(s => [s.estado.toLowerCase(), s.dias])), orig = new Map(DEFAULT_SETTINGS.statuses.map(s => [s.estado.toLowerCase(), s.dias]));
+      state.settings.statuses.forEach(s => { const o = orig.get(s.estado.toLowerCase()); if (o === undefined) ch.push(s.estado + ': nuevo (' + s.dias + ' d)'); else if (o !== s.dias) ch.push(s.estado + ': ' + o + ' → ' + s.dias + ' d'); });
+      if (state.settings.defaultDias !== DEFAULT_SETTINGS.defaultDias) ch.push('Plazo por defecto: ' + DEFAULT_SETTINGS.defaultDias + ' → ' + state.settings.defaultDias + ' d');
+      track('config_save', { changed: ch.map(x => x.replace(/[.\/]/g, '-').slice(0, 120)), nChanged: ch.length });
+    } catch (e) {}
     computeSchedule();
     renderAll();
     const btn = document.getElementById('cfgSave');
@@ -1839,7 +1890,7 @@
     const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'configuracion-plazos.json'; a.click();
+    a.href = url; a.download = 'configuracion-plazos.json'; a.click(); track('config_export');
     URL.revokeObjectURL(url);
   });
 
@@ -1950,6 +2001,7 @@
   }
 
   function openPdfModal(){
+    track('pdf_open');
     document.getElementById('pdfMonthLabel').textContent = `${MONTHS[state.calMonth.getMonth()]} ${state.calMonth.getFullYear()}`;
     document.getElementById('pdfFiltersSummary').innerHTML = buildFiltersSummaryHtml();
     renderPdfSubOptions();
@@ -2147,6 +2199,10 @@
       .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
       .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
     doc.save(`tomas-programadas-${slug}.pdf`);
+    track('pdf', { period: pdfState.period, label: range.label, seguimientos: rows.length,
+      beneficiarios: new Set(rows.map(r => r.numeroDocumento)).size,
+      estados: tcount(rows, r => r.estado), contratos: tcount(rows, r => r.contrato),
+      filtros: Object.entries(state.filters).filter(([k, v]) => k !== 'vistaTomas' && (Array.isArray(v) ? v.length : v)).map(([k]) => k) });
     closePdfModal();
     zanOnPdf(true, rows.length, range.label);
   }
@@ -2155,6 +2211,7 @@
      DETALLE DEL BENEFICIARIO
   --------------------------------------------------------- */
   function openDetailModal(documento){
+    track('detail');
     // Un beneficiario puede tener varias tomas cargadas en el archivo; se debe
     // mostrar la más reciente según fecha de valoración nutricional (columna T).
     const r = state.latestRows.find(x=> x.numeroDocumento === documento);
@@ -2251,6 +2308,7 @@
      AYUDA / MANUAL DE USO
   --------------------------------------------------------- */
   function openHelpModal(){
+    track('manual');
     document.getElementById('helpModalOverlay').classList.add('open');
   }
   function closeHelpModal(){
@@ -2755,6 +2813,165 @@ const ZAN_SPRITES = {
   updateZanGuidance();
 
 })();
+</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, setDoc, doc, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyDX9mBXhGSx6vVqvrLgMLY0Stno4nI-jPw",
+  authDomain: "moonbox-b997c.firebaseapp.com",
+  databaseURL: "https://moonbox-b997c-default-rtdb.firebaseio.com",
+  projectId: "moonbox-b997c",
+  storageBucket: "moonbox-b997c.firebasestorage.app",
+  messagingSenderId: "507195516792",
+  appId: "1:507195516792:web:a4ed4d8715e137d6e48a8d",
+  measurementId: "G-10F98RC1Z0"
+});
+const db = getFirestore(app), auth = getAuth(app);
+
+/* ---------- Registro de uso ---------- */
+let vid = 'v' + Math.random().toString(36).slice(2, 10);
+try { vid = localStorage.getItem('nutriVid') || vid; localStorage.setItem('nutriVid', vid); } catch (e) {}
+const sid = vid + '-' + Date.now().toString(36);
+const start = Date.now();
+let ip = 'desconocida';
+const ipReady = (async () => {
+  try {
+    const c = new AbortController(); setTimeout(() => c.abort(), 4000);
+    const r = await fetch('https://api.ipify.org?format=json', { signal: c.signal });
+    ip = (await r.json()).ip || ip;
+  } catch (e) {}
+})();
+const ua = (navigator.userAgent.match(/(Edg|Chrome|Firefox|Safari)\/[\d.]+/) || [''])[0] + ' · ' + (navigator.platform || '');
+
+async function beat() {
+  await ipReady;
+  try { await setDoc(doc(db, 'nutri_sessions', sid), { sid, vid, ip, ua, start, last: Date.now(), secs: Math.round((Date.now() - start) / 1000) }, { merge: true }); } catch (e) {}
+}
+async function send(ev) {
+  await ipReady;
+  try { await addDoc(collection(db, 'nutri_events'), { type: ev.type, sid, vid, ip, ts: ev.ts, data: ev.data || {} }); } catch (e) { console.warn('track', e.message); }
+}
+function flush() { const q = window.__zq || []; window.__zq = []; q.forEach(send); }
+window.__zflush = flush; flush();
+beat(); setInterval(() => { if (!document.hidden) beat(); }, 60000);
+window.addEventListener('pagehide', beat);
+
+/* ---------- Panel administrativo ---------- */
+const $ = id => document.getElementById(id);
+const root = $('admRoot'), overlay = $('admOverlay');
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const open = () => { overlay.classList.add('active'); render(); };
+const close = () => overlay.classList.remove('active');
+$('btnAdmin').onclick = open;
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') { e.preventDefault(); overlay.classList.contains('active') ? close() : open(); }
+  if (e.key === 'Escape' && overlay.classList.contains('active')) close();
+});
+let user = null, days = 30;
+onAuthStateChanged(auth, u => { user = u; if (overlay.classList.contains('active')) render(); });
+function render() { user ? loadPanel() : loginView(); }
+function loginView() {
+  root.innerHTML = `<div class="adm-login"><h3>🔒 Panel administrativo</h3>
+    <input id="admMail" type="email" placeholder="Correo admin" autocomplete="username">
+    <input id="admPass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <div class="err" id="admErr"></div>
+    <button class="adm-btn primary" id="admGo" type="button">Entrar</button>
+    <button class="adm-btn" id="admX" type="button">Cerrar</button></div>`;
+  $('admX').onclick = close;
+  const go = async () => { try { await signInWithEmailAndPassword(auth, $('admMail').value.trim(), $('admPass').value); } catch (e) { $('admErr').textContent = 'No se pudo entrar: ' + (e.code || e.message); } };
+  $('admGo').onclick = go; $('admPass').onkeydown = e => { if (e.key === 'Enter') go(); };
+}
+const tally = (arr, fn) => { const m = new Map(); arr.forEach(x => { const k = fn(x); if (k != null) m.set(k, (m.get(k) || 0) + 1); }); return [...m].sort((a, b) => b[1] - a[1]); };
+const addMaps = (evs, key) => { const m = new Map(); evs.forEach(x => Object.entries(x.data[key] || {}).forEach(([k, v]) => m.set(k, (m.get(k) || 0) + v))); return [...m].sort((a, b) => b[1] - a[1]); };
+const rank = (list, n = 10) => list.length ? (() => { const mx = list[0][1]; return list.slice(0, n).map(([k, v]) =>
+  `<div class="adm-row"><span class="n" title="${esc(k)}">${esc(k)}</span><span class="bar"><i style="width:${v / mx * 100}%"></i></span><span class="v">${v.toLocaleString()}</span></div>`).join(''); })() : '<div class="adm-empty">Sin datos todavía</div>';
+const fmt = t => new Date(t).toLocaleString();
+const dur = s => s >= 3600 ? (s / 3600).toFixed(1) + ' h' : s >= 60 ? Math.round(s / 60) + ' min' : s + ' s';
+const VIEWS = { tablero: 'Panorama', mejoras: 'Mejoras nutricionales', desmejoras: 'Desmejora nutricional', calendario: 'Calendario', cargar: 'Cargar reporte', config: 'Configuración' };
+const FEATS = { pdf_open: 'Abrir generador de PDF', pdf: 'PDF generado', config_save: 'Guardar configuración', config_export: 'Exportar configuración', manual: 'Ver manual', detail: 'Ver detalle de beneficiario', upload: 'Cargar reporte' };
+
+async function loadPanel() {
+  root.innerHTML = '<div class="adm-empty" style="padding:40px;text-align:center;">Cargando datos…</div>';
+  const since = days ? Date.now() - days * 864e5 : 0;
+  let ev = [], se = [];
+  try {
+    const [e, s] = await Promise.all([
+      getDocs(query(collection(db, 'nutri_events'), where('ts', '>=', since), orderBy('ts', 'desc'), limit(5000))),
+      getDocs(query(collection(db, 'nutri_sessions'), where('start', '>=', since), orderBy('start', 'desc'), limit(1000)))]);
+    ev = e.docs.map(d => d.data()); se = s.docs.map(d => d.data());
+  } catch (e) {
+    root.innerHTML = `<div class="adm-login"><h3>Sin permiso o error</h3><div class="err">${esc(e.code || e.message)}<br>Revisa las reglas de Firestore, que tu correo sea el admin y que exista el índice solicitado en la consola.</div>
+      <button class="adm-btn" id="admOut" type="button">Cerrar sesión</button><button class="adm-btn" id="admX" type="button">Cerrar</button></div>`;
+    $('admOut').onclick = () => signOut(auth); $('admX').onclick = close; return;
+  }
+  const T = t => ev.filter(x => x.type === t);
+  const ups = T('upload'), pdfs = T('pdf'), cfgs = T('config_save'), man = T('manual');
+  const sum = (a, f) => a.reduce((t, x) => t + (+f(x) || 0), 0);
+  const hours = Array(24).fill(0);
+  [...se.map(s => s.start), ...ev.map(x => x.ts)].forEach(t => hours[new Date(t).getHours()]++);
+  const hmax = Math.max(1, ...hours);
+  const ips = new Map();
+  const get = ip => { if (!ips.has(ip)) ips.set(ip, { ip, ua: '', ses: 0, secs: 0, last: 0, up: 0, pdf: 0, seg: 0, man: 0, cfg: 0, contratos: new Set() }); return ips.get(ip); };
+  se.forEach(s => { const o = get(s.ip); o.ua = s.ua; o.ses++; o.secs += s.secs || 0; o.last = Math.max(o.last, s.last || 0); });
+  ev.forEach(x => { const o = get(x.ip); o.last = Math.max(o.last, x.ts);
+    if (x.type === 'upload') { o.up++; Object.keys(x.data.contratos || {}).forEach(c => o.contratos.add(c)); }
+    if (x.type === 'pdf') { o.pdf++; o.seg += x.data.seguimientos || 0; }
+    if (x.type === 'manual') o.man++;
+    if (x.type === 'config_save' && x.data.nChanged) o.cfg++; });
+  const manIps = new Set(man.map(x => x.ip));
+  const cfgChanged = cfgs.filter(x => x.data.nChanged);
+  const views = tally(T('view'), x => VIEWS[x.data.view] || x.data.view);
+  const feats = tally(ev.filter(x => FEATS[x.type]), x => FEATS[x.type]);
+  const filters = tally(T('filter'), x => 'Filtro: ' + x.data.field + (x.data.v ? ' = ' + x.data.v : ''));
+  const rangos = tally(cfgChanged.flatMap(x => x.data.changed || []), x => x);
+  const pers = tally(pdfs, x => x.data.period);
+
+  root.innerHTML = `
+  <div class="adm-top"><h2>📊 Panel administrativo · Seguimiento Nutricional <small style="color:var(--ink-faint);font-weight:400;">· ${esc(user.email)}</small></h2>
+    <select id="admDays"><option value="1">Hoy (24 h)</option><option value="7">7 días</option><option value="30">30 días</option><option value="90">90 días</option><option value="0">Todo</option></select>
+    <button class="adm-btn" id="admRef" type="button">↻ Actualizar</button><button class="adm-btn" id="admOut" type="button">Salir</button><button class="adm-btn primary" id="admX" type="button">Cerrar</button></div>
+  <div class="adm-cards">
+    <div class="adm-card"><b>${se.length}</b><span>Sesiones</span></div>
+    <div class="adm-card"><b>${ips.size}</b><span>IPs distintas</span></div>
+    <div class="adm-card"><b>${ups.length}</b><span>Reportes cargados</span></div>
+    <div class="adm-card"><b>${sum(ups, x => x.data.beneficiarios).toLocaleString()}</b><span>Beneficiarios en reportes</span></div>
+    <div class="adm-card"><b>${pdfs.length}</b><span>PDF generados</span></div>
+    <div class="adm-card"><b>${sum(pdfs, x => x.data.seguimientos).toLocaleString()}</b><span>Seguimientos generados</span></div>
+    <div class="adm-card"><b>${manIps.size}</b><span>Personas (IP) que vieron el manual · ${man.length} aperturas</span></div>
+    <div class="adm-card"><b>${cfgChanged.length}</b><span>Ajustes de periodos de toma (${new Set(cfgChanged.map(x => x.ip)).size} IP)</span></div>
+  </div>
+  <div class="adm-grid">
+    <div class="adm-box"><h4>Horarios de uso (actividad por hora)</h4>
+      <div class="adm-hours">${hours.map((v, h) => `<div style="height:${v / hmax * 100}%" title="${h}:00 → ${v}"></div>`).join('')}</div>
+      <div class="adm-hlab">${hours.map((_, h) => `<span>${h % 3 ? '' : h}</span>`).join('')}</div></div>
+    <div class="adm-box"><h4>Apartados más usados</h4>${rank(views)}</div>
+    <div class="adm-box"><h4>Funcionalidades más usadas</h4>${rank(feats)}</div>
+    <div class="adm-box"><h4>Filtros más usados</h4>${rank(filters)}</div>
+    <div class="adm-box"><h4>Contratos cargados (beneficiarios acumulados)</h4>${rank(addMaps(ups, 'contratos'))}</div>
+    <div class="adm-box"><h4>Estado nutricional en reportes cargados</h4>${rank(addMaps(ups, 'estados'))}</div>
+    <div class="adm-box"><h4>Seguimientos en PDF por estado nutricional</h4>${rank(addMaps(pdfs, 'estados'))}</div>
+    <div class="adm-box"><h4>Seguimientos en PDF por contrato</h4>${rank(addMaps(pdfs, 'contratos'))}</div>
+    <div class="adm-box"><h4>Ajustes de periodos de toma (por rango/estado)</h4>${rank(rangos)}</div>
+    <div class="adm-box"><h4>Periodo elegido en PDF</h4>${rank(pers)}</div>
+  </div>
+  <div class="adm-box" style="margin-bottom:12px;"><h4>Quién lo usa (por IP)</h4><div class="adm-scroll"><table class="adm-tbl">
+    <tr><th>IP</th><th>Navegador</th><th>Sesiones</th><th>Tiempo</th><th>Reportes</th><th>Contratos</th><th>PDF</th><th>Seguimientos</th><th>Manual</th><th>Ajustes</th><th>Último uso</th></tr>
+    ${[...ips.values()].sort((a, b) => b.last - a.last).map(o => `<tr><td>${esc(o.ip)}</td><td>${esc(o.ua)}</td><td>${o.ses}</td><td>${dur(o.secs)}</td><td>${o.up}</td><td>${esc([...o.contratos].join(', ')) || '—'}</td><td>${o.pdf}</td><td>${o.seg}</td><td>${o.man}</td><td>${o.cfg}</td><td>${fmt(o.last)}</td></tr>`).join('') || '<tr><td colspan="11" class="adm-empty">Sin datos</td></tr>'}
+  </table></div></div>
+  <div class="adm-box"><h4>Últimas actividades</h4><div class="adm-scroll"><table class="adm-tbl">
+    <tr><th>Fecha</th><th>IP</th><th>Evento</th><th>Detalle</th></tr>
+    ${ev.filter(x => x.type !== 'view' && x.type !== 'filter').slice(0, 40).map(x => { const d = x.data || {};
+      const t = x.type === 'upload' ? `${d.beneficiarios} beneficiarios, ${Object.keys(d.contratos || {}).join(', ')}` : x.type === 'pdf' ? `${d.seguimientos} seguimientos · ${d.label}` : x.type === 'config_save' ? (d.nChanged ? (d.changed || []).join(' | ') : 'sin cambios') : '';
+      return `<tr><td>${fmt(x.ts)}</td><td>${esc(x.ip)}</td><td>${esc(FEATS[x.type] || x.type)}</td><td>${esc(t)}</td></tr>`; }).join('') || '<tr><td colspan="4" class="adm-empty">Sin datos</td></tr>'}
+  </table></div></div>`;
+  $('admDays').value = String(days);
+  $('admDays').onchange = e => { days = +e.target.value; loadPanel(); };
+  $('admRef').onclick = loadPanel; $('admX').onclick = close; $('admOut').onclick = () => signOut(auth);
+}
+
 </script>
 </body>
 </html>
