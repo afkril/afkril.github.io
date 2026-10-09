@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Control de Asistencia UDS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* ===== CSS ===== */
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eef5f4;--card:#fff;--ink:#12303a;--mut:#5b7480;--line:#d6e4e6;--g:#0f766e;--g2:#14b8a6;--b:#1e40af;--b2:#3b82f6;
+--ok:#bbf7d0;--okt:#14532d;--warn:#fde047;--warnt:#713f12;--gray:#cbd5e1;--grayt:#475569;--sp:#dbeafe;--wk:#e8eef0}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1a1f;--card:#112530;--ink:#e2f0f0;--mut:#8fb0b8;--line:#21404a;--ok:#14532d;--okt:#bbf7d0;--warn:#a16207;--warnt:#fef9c3;--gray:#334155;--grayt:#cbd5e1;--sp:#1e3a5f;--wk:#16303a}}
+:root[data-theme="dark"]{--bg:#0b1a1f;--card:#112530;--ink:#e2f0f0;--mut:#8fb0b8;--line:#21404a;--ok:#14532d;--okt:#bbf7d0;--warn:#a16207;--warnt:#fef9c3;--gray:#334155;--grayt:#cbd5e1;--sp:#1e3a5f;--wk:#16303a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+header{background:linear-gradient(120deg,var(--g),var(--b));color:#fff;padding:11px 20px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:17px;font-weight:600}header small{opacity:.85}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{background:#fff;color:var(--g);border:0;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
+.btn.alt{background:rgba(255,255,255,.18);color:#fff}
+header input[type=number]{width:80px;padding:7px;border-radius:8px;border:0}
+main{padding:12px 20px;max-width:1500px;margin:auto}
+nav{display:flex;gap:6px;margin-bottom:10px}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 16px;border-radius:8px;cursor:pointer;font-weight:600}
+nav button.on{background:var(--g);color:#fff;border-color:var(--g)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(15,60,70,.06)}
+.card h3{margin:0 0 6px;font-size:11.5px;color:var(--g);text-transform:uppercase;letter-spacing:.04em}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:7px;margin-bottom:9px}
+.kpi{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--g2);border-radius:8px;padding:5px 9px}
+.kpi:nth-child(even){border-left-color:var(--b2)}
+.kpi b{display:block;font-size:16px;line-height:1.2}.kpi span{color:var(--mut);font-size:10.5px;line-height:1.2;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:3px}
+.chip{width:29px;padding:1px 0;text-align:center;border:1px solid var(--line);border-radius:6px;line-height:1.15;background:var(--card);color:var(--ink);cursor:pointer;font-size:11px}
+.chip i{display:block;font-style:normal;color:var(--mut);font-size:8.5px}
+.chip.sp{background:var(--b);color:#fff;border-color:var(--b)}.chip.sp i{color:#dbeafe}
+.chip.wk{background:var(--wk);cursor:default;opacity:.6}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--mut);margin-top:5px}
+.legend span:before{content:"";display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px;background:var(--c);border:1px solid var(--line)}
+.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{background:linear-gradient(var(--g),#0b5f59);color:#fff;padding:7px 6px;position:sticky;top:0;white-space:nowrap}
+td{padding:5px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.n,th.n{text-align:center}
+tbody tr:hover td{background:rgba(20,184,166,.07)}
+tr.link{cursor:pointer}
+tfoot td{background:var(--sp);font-weight:700}
+.d{width:28px;min-width:28px;text-align:center;padding:4px 0}
+.cx{background:var(--ok);color:var(--okt);font-weight:700}
+.cf{background:var(--warn);color:var(--warnt);font-weight:700}
+.cn{background:var(--card);color:var(--mut);font-size:9px;opacity:.8}
+.cr{background:var(--gray);color:var(--grayt)}
+.cs{background:repeating-linear-gradient(45deg,var(--sp),var(--sp) 4px,transparent 4px,transparent 8px);color:var(--mut)}
+.cw{background:var(--wk);color:var(--mut)}
+tr.ret td:nth-child(-n+4){color:var(--mut);font-style:italic}
+.bar{height:8px;background:var(--line);border-radius:5px;min-width:70px;overflow:hidden}.bar div{height:100%;background:linear-gradient(90deg,var(--g2),var(--b2))}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+select,input[type=text]{padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);min-width:180px}
+.chk{padding:3px 8px;border-radius:6px;font-weight:600;font-size:12px}
+.chk.ok{background:var(--ok);color:var(--okt)}.chk.bad{background:#fecaca;color:#7f1d1d}
+.empty{text-align:center;padding:50px;color:var(--mut)}
+.hide{display:none}
+.q{border:1px solid var(--line);background:var(--bg);color:var(--g);border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:700;cursor:pointer;margin-left:6px;padding:0;vertical-align:middle;text-transform:none}
+#fab{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:44px;height:44px;border-radius:50%;border:0;background:linear-gradient(135deg,var(--g),var(--b));color:#fff;font-size:20px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;z-index:40}
+#fab.hide,#tut.hide{display:none}
+#tut{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(430px,94vw);z-index:60;background:var(--card);color:var(--ink);border:1px solid var(--line);border-top:4px solid var(--g2);border-radius:12px;padding:11px 14px;box-shadow:0 10px 34px rgba(0,0,0,.35)}
+#tut h4{margin:0 0 4px;font-size:15px;color:var(--g)}#tut p{margin:0 0 8px;font-size:13px}
+.tb{display:flex;align-items:center;gap:6px}.tb .sp{flex:1}
+.tb button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:5px 11px;cursor:pointer;font-weight:600}
+.tb button.go{background:var(--g);color:#fff;border-color:var(--g)}
+.dots{display:flex;gap:4px;flex:1}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--b2);width:18px;border-radius:4px}
+.spot{outline:3px solid var(--b2);outline-offset:3px;border-radius:10px}
+.sw{display:inline-block;min-width:30px;text-align:center;border-radius:4px;padding:1px 4px;font-size:11px;border:1px solid var(--line)}
+td.ed{cursor:pointer}td.ed:hover{outline:2px solid var(--b2);outline-offset:-2px}
+.cm{background:var(--b);color:#fff;font-weight:700;font-size:10px}
+#pop{position:fixed;z-index:50;width:180px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:8px;display:flex;flex-direction:column;gap:5px}
+#pop.hide{display:none}#pop b{font-size:12px;margin-bottom:2px}
+#pop button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:7px;padding:6px;cursor:pointer;text-align:left}
+#pop button:hover,#pop button.sel{background:var(--b);color:#fff;border-color:var(--b)}
+
+.wkn{font-size:17px;font-weight:700;line-height:1.1}
+.wkn small{display:block;font-size:9.5px;font-weight:400;color:var(--mut)}
+.wkc{display:inline-flex;align-items:center;gap:5px}
+.wkd{border:0;background:none;font-size:12px;line-height:1;cursor:pointer;padding:3px;border-radius:6px;opacity:.55}
+.wkd:hover{opacity:1;background:var(--sp)}
+#v3 td,#v3 th{padding:2px 6px}
+#v3 .wkn{font-size:16px}
+.wd .fl{display:block;margin-top:4px;padding:2px 0;border-radius:6px;font-size:12px;font-weight:700;background:var(--warn);color:var(--warnt)}
+.wd .fl.z{background:transparent;color:var(--mut);font-weight:400;font-size:10px}
+#wm{position:fixed;inset:0;z-index:70;background:rgba(10,25,30,.55);display:flex;align-items:center;justify-content:center;padding:14px}
+#wm.hide{display:none}
+#wm .box{background:var(--card);color:var(--ink);border:1px solid var(--line);border-top:4px solid var(--g2);border-radius:12px;padding:14px 16px;width:min(560px,100%);max-height:90vh;overflow:auto;box-shadow:0 14px 40px rgba(0,0,0,.4)}
+#wm h4{margin:0;font-size:15px;color:var(--g)}#wm .sub{color:var(--mut);font-size:12px;margin:2px 0 10px}
+#wm .x{float:right;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:14px}
+.wd{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.wd div{border:1px solid var(--line);border-radius:8px;padding:6px 3px;text-align:center;background:var(--bg)}
+.wd .h{font-size:10.5px;color:var(--mut)}.wd b{display:block;font-size:20px;line-height:1.2}
+.wd small{display:block;font-size:10px;color:var(--mut)}
+.wd .pk{border-color:var(--g2);background:var(--ok);color:var(--okt)}.wd .pk .h,.wd .pk small{color:var(--okt)}
+.wd .sp2{background:repeating-linear-gradient(45deg,var(--sp),var(--sp) 4px,transparent 4px,transparent 8px)}
+.wd .out{opacity:.35}
+.wnote{margin-top:10px;font-size:12px;color:var(--mut)}
+
+.hl{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.dh{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fold{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:7px;padding:2px 9px;font-size:11px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0}
+#dcard.fold h3{margin-bottom:0}#dcard.fold #dbody{display:none}
+#dsum{color:var(--mut);text-transform:none;letter-spacing:0;font-weight:400;display:none}#dcard.fold #dsum{display:inline}
+.dsc{background:var(--warn);color:var(--warnt);font-weight:700;font-size:10.5px;border-radius:6px;padding:1px 5px;white-space:nowrap}
+details.card>summary{cursor:pointer;font-size:11.5px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.04em}
+.wd .bl{border:2px dashed var(--warn)}
+.ce{background:#fecaca;color:#7f1d1d;font-weight:700;outline:2px solid #dc2626;outline-offset:-2px;cursor:help}
+.bdg{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:#dc2626;color:#fff;font-size:11px;font-weight:700;text-align:center}
+nav button.on .bdg{background:#fecaca;color:#7f1d1d}
+.obs{color:#b91c1c;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="hl">
+    <div><h1>Control Diario de Asistencia por UDS</h1><small id="sub">Cargue el reporte Excel o use datos de ejemplo</small></div>
+    <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hide">
+    <button class="btn" onclick="file.click()">📂 Cargar Excel</button>
+  </div>
+  <div class="tools">
+    <label>Año <input type="number" id="year" value="2026"></label>
+    <button class="btn alt" onclick="demo()">Ejemplo</button>
+    <button class="btn alt" onclick="tut(0)">📘 Tutorial</button>
+  </div>
+</header>
+<main>
+  <div id="empty" class="card empty">Cargue el reporte Cuéntame tal cual lo genera el sistema (.xlsx). <a href="#" onclick="tut(0);return false" style="color:var(--b)">Ver tutorial paso a paso</a></div>
+  <div id="app" class="hide">
+    <div class="card" id="dcard">
+      <h3 class="dh"><span>Días especiales (festivos, recesos, último viernes): no suman <button class="q" onclick="tut(2)">?</button> <span id="dsum"></span></span><button class="fold" id="dfold" onclick="togD()">▾ Plegar</button></h3>
+      <div id="dbody"><div class="chips" id="chips"></div>
+      <div class="legend"><span style="--c:var(--b)">Día especial (excluido)</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:var(--card)">Día de servicio</span>
+        <a href="#" onclick="autoDetect();return false" style="color:var(--b)">Detectar días sin ninguna asistencia</a></div></div>
+    </div>
+    <nav><button id="t1" class="on" onclick="tab(1)">Consolidado</button><button id="t2" onclick="tab(2)">Detalle por UDS</button><button id="t3" onclick="tab(3)">Cupo por semana</button><button id="t4" onclick="tab(4)">Errores de marcación</button></nav>
+    <section id="v1"></section>
+    <section id="v3" class="hide"></section>
+    <section id="v4" class="hide"></section>
+    <section id="v2" class="hide">
+      <div class="card">
+        <h3>Detalle por UDS <button class="q" onclick="tut(4)">?</button> <button class="q" onclick="tut(6)" title="Editar casos">✎</button></h3>
+        <div class="row">
+          <select id="udsSel" onchange="renderDet()"></select>
+          <input type="text" id="q" placeholder="Buscar por nombre o documento…" oninput="renderDet()">
+          <select id="stSel" onchange="renderDet()"><option value="">Todos</option><option value="A">Activos (incl. los que asistieron y luego se retiraron)</option><option value="I">Retirados (inactivos sin asistencias)</option></select>
+          <button class="btn" style="background:var(--g);color:#fff" onclick="resetOv()">↺ Restablecer ajustes de esta UDS</button>
+        </div>
+        <div class="kpis" id="detK"></div>
+        <div class="wrap"><table id="detT"></table></div>
+        <div class="legend"><span style="--c:var(--ok)">Asistió (X)</span><span style="--c:var(--warn)">Falla (-)</span><span style="--c:var(--gray)">Retiro</span><span style="--c:var(--card)">N/A: ingreso posterior (no cuenta)</span><span style="--c:var(--b)">Ajustado manualmente</span><span style="--c:transparent">Clic en una celda -, R o N/A para validarla</span><span style="--c:var(--sp)">Día especial</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:#fecaca">⚠ Error de marcación (asistencia en día libre)</span></div>
+      </div>
+    </section>
+  </div>
+</main>
+<button id="fab" onclick="fabGo()" title="Tutorial">?</button>
+<div id="tut" class="hide"></div>
+<div id="pop" class="hide"></div>
+<div id="wm" class="hide" onclick="if(event.target.id==='wm')wclose()"><div class="box" id="wmb"></div></div>
+<script>
+/* ===== JS ===== */
+const $=s=>document.querySelector(s), file=$('#file');
+const MN=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'], WD=['D','L','M','M','J','V','S'];
+let S={rows:[],month:9,special:new Set(),ov:{}};
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const year=()=>+$('#year').value||new Date().getFullYear();
+const nDays=()=>new Date(year(),S.month,0).getDate();
+const dow=d=>new Date(year(),S.month-1,d).getDay();
+const isWk=d=>[0,6].includes(dow(d));
+const isSp=d=>S.special.has(d);
+let AUTO={};
+/* días sin ninguna asistencia en una UDS (recesos propios) se excluyen automáticamente */
+function uAuto(c){if(AUTO[c])return AUTO[c];const rs=S.rows.filter(r=>r.code===c),t=new Set();
+ if(rs.some(r=>Object.values(r.marks).some(Boolean)))for(let d=1;d<=nDays();d++)if(!isWk(d)&&!isSp(d)&&!rs.some(r=>r.marks[d]))t.add(d);
+ return AUTO[c]=t}
+const spDay=(d,c)=>isSp(d)||uAuto(c).has(d);
+const svc=c=>{const a=[];for(let d=1;d<=nDays();d++)if(!isWk(d)&&!spDay(d,c))a.push(d);return a};
+
+function parseMonth(v){const s=String(v??'').toLowerCase().trim();const n=parseInt(s);if(n>=1&&n<=12)return n;const i=MN.findIndex(m=>s.includes(m));return i>=0?i+1:null}
+
+file.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=ev=>{try{parseBook(XLSX.read(ev.target.result,{type:'array'}))}catch(x){alert('No se pudo leer el archivo: '+x.message)}};r.readAsArrayBuffer(f);file.value=''};
+
+function parseBook(wb){
+ const ws=wb.Sheets[wb.SheetNames[0]],rg=XLSX.utils.decode_range(ws['!ref']);rg.s.c=0;rg.s.r=0;ws['!ref']=XLSX.utils.encode_range(rg); // índices = columnas reales (M=12, P=15)
+ const a=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+ const m=parseMonth(a[2]&&a[2][7]);if(m)S.month=m;            // H3
+ const y=parseInt(a[2]&&a[2][9]);if(y>2000)$('#year').value=y;   // J3
+ S.info=[a[0]&&a[0][7],a[1]&&a[1][15],a[1]&&a[1][33]].filter(Boolean).join(' · ');
+ S.rows=[];let cur=null,dc=null;
+ a.forEach(r=>{
+  if(/CUENTAME/i.test(String(r[11]))){cur={code:String(r[12]).trim(),uds:String(r[15]).trim()};dc=null;return}   // M y P
+  if(cur&&String(r[16]).trim()==='1'&&String(r[46]).trim()==='31'){dc={};for(let d=1;d<=31;d++)dc[d]=15+d;return}
+  if(!cur||!dc)return;
+  if(/^(TOTAL|Verific)/i.test(String(r[7]).trim())||/^(TOTAL|Verific)/i.test(String(r[6]).trim())){dc=null;return}
+  const doc=String(r[8]).trim();if(!doc||String(r[6]).trim()===''||isNaN(+r[6]))return;
+  const name=[9,10,11,12].map(c=>String(r[c]).trim()).filter(Boolean).join(' ');
+  const marks={};for(let d=1;d<=31;d++)marks[d]=String(r[dc[d]]).trim().toUpperCase()==='X';
+  S.rows.push({code:cur.code,uds:cur.uds,doc,name,active:!/inactiv|retir/i.test(String(r[49])),marks,sysAbs:+r[48]||0});
+ });
+ if(!S.rows.length){alert('No encontré participantes. Verifique que sea el reporte de control diario de asistencia.');return}
+ start();
+}
+
+function start(){
+ S.special=new Set();AUTO={};
+ S.rows.forEach((r,i)=>r.i=i);{const n={};S.rows.forEach(r=>{const k=r.code+'|'+r.doc;n[k]=(n[k]||0)+1;r.key=k+'|'+n[k]})}loadOv();
+ // último viernes del mes
+ for(let d=nDays();d>=1;d--)if(dow(d)===5){S.special.add(d);break}
+ autoDetect(true);
+ $('#empty').classList.add('hide');$('#app').classList.remove('hide');
+ $('#sub').textContent=`${S.info?S.info+' · ':''}${new Set(S.rows.map(r=>r.code)).size} UDS · ${S.rows.length} participantes · ${S.month}/${year()}`;
+ const codes=[...new Map(S.rows.map(r=>[r.code,r.uds])).entries()];
+ $('#udsSel').innerHTML=codes.map(([c,u])=>`<option value="${esc(c)}">${esc(c)} — ${esc(u)}</option>`).join('');
+ refresh();
+}
+function autoDetect(silent){
+ for(let d=1;d<=nDays();d++){if(isWk(d)||isSp(d))continue;if(S.rows.length&&!S.rows.some(r=>r.marks[d]))S.special.add(d)}
+ if(!silent)refresh();
+}
+$('#year').onchange=()=>S.rows.length&&start();
+
+/* Cálculo por participante */
+function calc(r){
+ const sv=svc(r.code);let first=0,last=0;
+ sv.forEach(d=>{if(r.marks[d]){if(!first)first=d;last=d}});
+ const ov=S.ov[r.key]||{},o={att:0,abs:0,ret:0,na:0,cell:{},man:{}};
+ sv.forEach(d=>{let k;
+  if(r.marks[d])k='x';
+  else if(!first)k=r.active?'f':'r';          // sin ninguna asistencia en el mes
+  else if(d<first)k='n';                      // ingreso posterior: no aplica
+  else if(!r.active&&d>last)k='r';            // retiro
+  else k='f';
+  if(k!=='x'&&ov[d]){k=ov[d];o.man[d]=1}       // ajuste manual (solo f / r / n)
+  o.cell[d]=k;o[{x:'att',f:'abs',r:'ret',n:'na'}[k]]++;
+ });
+ o.eff=r.active||o.ret===0;   // inactivo sin ningún día de retiro = participante completo del mes
+ return o;
+}
+/* ajustes manuales */
+const okey=()=>'uds_ajustes_'+year()+'_'+S.month;
+function loadOv(){try{S.ov=JSON.parse(localStorage.getItem(okey())||'{}')}catch(e){S.ov={}}}
+function saveOv(){try{localStorage.setItem(okey(),JSON.stringify(S.ov))}catch(e){}}
+function setOv(k){const r=S.rows[pc.i];const m=S.ov[r.key]??={};k?m[pc.d]=k:delete m[pc.d];if(!Object.keys(m).length)delete S.ov[r.key];
+ saveOv();$('#pop').classList.add('hide');renderCons();renderDet();renderWk()}
+function resetOv(){const c=$('#udsSel').value;S.rows.filter(r=>r.code===c).forEach(r=>delete S.ov[r.key]);saveOv();renderCons();renderDet();renderWk()}
+let pc=null;
+document.addEventListener('click',e=>{
+ const pop=$('#pop');if(e.target.closest('#pop'))return;
+ const td=e.target.closest('td.ed');if(!td){pop.classList.add('hide');return}
+ pc={i:+td.dataset.i,d:+td.dataset.d};const r=S.rows[pc.i],cur=(S.ov[r.key]||{})[pc.d];
+ pop.innerHTML=`<b>${esc(r.name)}<br>Día ${pc.d} — validar como:</b>`+[['f','Falla (-)'],['r','Retiro (R)'],['n','No aplica (N/A)']].map(([k,l])=>`<button class="${cur===k?'sel':''}" onclick="setOv('${k}')">${l}</button>`).join('')+`<button onclick="setOv('')">↺ Automático</button>`;
+ pop.classList.remove('hide');const b=td.getBoundingClientRect();
+ pop.style.left=Math.max(4,Math.min(b.left,innerWidth-190))+'px';pop.style.top=Math.max(4,Math.min(b.bottom+4,innerHeight-200))+'px';
+});
+document.addEventListener('keydown',e=>e.key==='Escape'&&$('#pop').classList.add('hide'));
+
+function stats(rows){
+ const t={act:0,ina:0,att:0,abs:0,attR:0,absR:0,ret:0,na:0,cap:0,sys:0},ds=new Set();
+ rows.forEach(r=>{const c=calc(r),n=svc(r.code).length;ds.add(n);t.sys+=r.sysAbs||0;t.na+=c.na;t.ret+=c.ret;
+  if(c.eff){t.act++;t.att+=c.att;t.abs+=c.abs;t.cap+=n}else{t.ina++;t.attR+=c.att;t.absR+=c.abs}});
+ t.att+=t.attR;t.abs+=t.absR;t.cap=t.att+t.abs; // cupo = Σ participantes inscritos cada día (X o falla; no R ni N/A)
+  // el cupo se ocupa por activos y por quienes se retiraron
+ const a=[...ds];t.days=a.length<2?(a[0]??0):Math.min(...a)+'–'+Math.max(...a);
+ t.pct=t.cap?Math.round(t.att/t.cap*1000)/10:0;t.ok=t.att+t.abs<=t.cap;return t;
+}
+
+function refresh(){AUTO={};calcErr();chips();renderCons();renderDet();renderWk();renderErr()}
+function chips(){let h='';for(let d=1;d<=nDays();d++){const w=isWk(d);h+=`<div class="chip ${w?'wk':isSp(d)?'sp':''}" ${w?'':`onclick="togg(${d})"`}>${d}<i>${WD[dow(d)]}</i></div>`}
+ $('#chips').innerHTML=h;const l=[...S.special].sort((a,b)=>a-b);$('#dsum').textContent='— '+(l.length?l.join(', '):'ninguno')}
+function togD(f,ns){const c=$('#dcard'),on=f===undefined?!c.classList.contains('fold'):f;c.classList.toggle('fold',on);
+ $('#dfold').textContent=on?'▸ Desplegar':'▾ Plegar';if(!ns)try{localStorage.setItem('uds_dfold',on?'1':'0')}catch(e){}}
+function togg(d){S.special.has(d)?S.special.delete(d):S.special.add(d);refresh()}
+function tab(n){[1,2,3,4].forEach(i=>{$('#v'+i).classList.toggle('hide',i!==n);$('#t'+i).classList.toggle('on',i===n)})}
+function kp(items){return items.map(([l,v])=>`<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('')}
+
+function renderCons(){
+ const g={};S.rows.forEach(r=>(g[r.code]??=[]).push(r));
+ const T=stats(S.rows);
+ let h=`<div class="kpis">${kp([['Días de servicio',T.days],['Participantes activos',T.act],['Cupo máximo (activos × días)',T.cap],['Asistencias',T.att],['Inasistencias',T.abs],['Retirados',T.ina],['Cumplimiento',T.pct+'%'],['Errores de marcación',ERR.length]])}</div>
+ <div class="card"><h3>Consolidado por UDS <button class=\"q\" onclick=\"tut(3)\">?</button></h3><div class="wrap"><table><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th>Activos</th><th>Retirados</th><th>Días</th><th>Cupo máx.</th><th>Asistencias</th><th>Inasist.</th><th>Incl. de retirados</th><th>Cumpl.</th><th>Err. marc.</th><th>Control</th></tr></thead><tbody>`;
+ Object.entries(g).forEach(([c,rs])=>{const s=stats(rs);
+  h+=`<tr class="link" onclick="goDet('${esc(c)}')"><td>${esc(c)}</td><td>${esc(rs[0].uds)}</td><td class="n">${s.act}</td><td class="n">${s.ina}</td><td class="n">${s.days}</td><td class="n">${s.cap}</td><td class="n"><b>${s.att}</b></td><td class="n">${s.abs}</td><td class="n">${s.attR}</td>
+  <td><div class="bar"><div style="width:${s.pct}%"></div></div>${s.pct}%</td><td class="n">${(()=>{const n=ERR.filter(e=>e.code===c).length;return n?`<span class="chk bad">${n}</span>`:'0'})()}</td><td class="n">${s.ok?'✔':'⚠'}</td></tr>`});
+ h+=`</tbody><tfoot><tr><td colspan="2">TOTAL</td><td class="n">${T.act}</td><td class="n">${T.ina}</td><td class="n">${T.days}</td><td class="n">${T.cap}</td><td class="n">${T.att}</td><td class="n">${T.abs}</td><td class="n">${T.attR}</td><td class="n">${T.pct}%</td><td class="n">${ERR.length}</td><td class="n">${T.ok?'✔':'⚠'}</td></tr></tfoot></table></div></div>`;
+ $('#v1').innerHTML=h;
+}
+function goDet(c){$('#udsSel').value=c;tab(2);renderDet()}
+
+function renderDet(){
+ if(!S.rows.length)return;
+ const c=$('#udsSel').value,q=$('#q').value.toLowerCase().trim(),st=$('#stSel').value;
+ const all=S.rows.filter(r=>r.code===c),s=stats(all);
+ const rows=all.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.doc.toLowerCase().includes(q))&&(!st||(st==='I')===(!r.active&&calc(r).att===0)));
+ const nErr=ERR.filter(e=>e.code===c).length;const au=[...uAuto(c)],nAdj=all.reduce((a,r)=>a+Object.keys(S.ov[r.key]||{}).length,0);
+ $('#detK').innerHTML=kp([['Activos',s.act],['Retirados',s.ina],['Días servicio',s.days],['Cupo (Σ participantes por día)',s.cap],['Asistencias (incl. retirados)',s.att],['Inasistencias',s.abs],['No aplica (ingresos)',s.na],['Ajustes manuales',nAdj],['Errores de marcación',nErr]])+(au.length?`<div class="kpi"><b>${au.join(', ')}</b><span>Días sin atención en esta UDS (excluidos)</span></div>`:'')+
+  `<div class="kpi"><span class="chk ${s.ok?'ok':'bad'}">${s.ok?'Dentro del cupo ✔':'Supera el cupo ⚠'}</span></div>`;
+ const N=nDays(),cs=all.map(calc),E={},Av={};
+ for(let d=1;d<=N;d++){E[d]=cs.filter(o=>o.cell[d]==='x'||o.cell[d]==='f').length;Av[d]=cs.filter(o=>o.cell[d]==='x').length}
+ let h='<thead><tr><th>#</th><th>Documento</th><th style="text-align:left">Participante</th><th>Estado</th>';
+ for(let d=1;d<=N;d++)h+=`<th class="d">${d}<br><small>${WD[dow(d)]}</small></th>`;
+ h+='<th>Asist.</th><th>Falla</th><th>Retiro</th><th>N/A</th></tr></thead><tbody>';
+ rows.forEach((r,i)=>{const o=calc(r);
+  h+=`<tr class="${o.eff?'':'ret'}"><td class="n">${i+1}</td><td>${esc(r.doc)}</td><td>${esc(r.name)}</td><td class="n">${r.active?'Activo':o.eff?'<span title="Inactivo en el sistema, pero con el mes completo: cuenta como activo">Activo*</span>':'Inactivo'}</td>`;
+  for(let d=1;d<=N;d++){let cl,t,at='';
+   if((isWk(d)||isSp(d))&&r.marks[d]){cl='ce';t='⚠';at=` title="Error de marcación: asistencia marcada en ${isWk(d)?'fin de semana':'día especial / sin servicio'}"`}else if(isWk(d)){cl='cw';t=''}else if(spDay(d,c)){cl='cs';t='–'}
+   else{const k=o.cell[d];cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];t={x:'X',f:'-',r:'R',n:'N/A'}[k];
+    if(k!=='x'){cl=(o.man[d]?'cm':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" title="Clic para validar"`}}
+   h+=`<td class="d ${cl}"${at}>${t}</td>`}
+  h+=`<td class="n"><b>${o.att}</b></td><td class="n">${o.abs}</td><td class="n">${o.ret}</td><td class="n">${o.na}</td></tr>`});
+ if(!rows.length)h+=`<tr><td colspan="${N+8}" class="empty">Sin resultados</td></tr>`;
+ const fr=(lab,M,tot)=>{let x=`<tr><td colspan="4" style="text-align:right">${lab}</td>`;
+  for(let d=1;d<=N;d++)x+=`<td class="d">${isWk(d)?'':spDay(d,c)?'–':M[d]}</td>`;return x+`<td class="n" colspan="4">Σ ${tot}</td></tr>`};
+ $('#detT').innerHTML=h+'</tbody><tfoot>'+fr('Cupo del día (participantes)',E,s.cap)+fr('Asistieron',Av,s.att)+'</tfoot>';
+}
+
+/* ===== Cupo por semana ===== */
+const DN=['Lun','Mar','Mié','Jue','Vie'];
+/* semanas lunes-viernes del mes (máx. 5); cada una = lista de días hábiles que caen en el mes */
+function weeksOf(){const off=(dow(1)+6)%7,m={};
+ for(let d=1;d<=nDays();d++){if(isWk(d))continue;(m[Math.floor((d-1+off)/7)]??=[]).push(d)}
+ return Object.keys(m).sort((a,b)=>a-b).slice(0,5).map(k=>m[k])}
+/* cupo y asistentes de cada día de servicio de una UDS; blank = días en blanco solo de esta UDS */
+function dayStats(c){const cs=S.rows.filter(r=>r.code===c).map(calc),E={},A={};
+ svc(c).forEach(d=>{E[d]=cs.filter(o=>o.cell[d]==='x'||o.cell[d]==='f').length;A[d]=cs.filter(o=>o.cell[d]==='x').length});
+ return{E,A,blank:uAuto(c)}}
+/* valor que más se repite; si hay empate, el menor */
+function modeOf(v){if(!v.length)return null;const n={};v.forEach(x=>n[x]=(n[x]||0)+1);
+ const best=Math.max(...Object.values(n)),val=Math.min(...Object.keys(n).filter(k=>n[k]===best).map(Number));return{v:val,n:best,t:v.length}}
+const weekCupo=(ds,days)=>modeOf(days.filter(d=>d in ds.E).map(d=>ds.E[d]));
+/* semana de una UDS: cupo semanal, días en blanco propios y descuento (cupo × días en blanco) */
+function weekInfo(ds,days){const w=weekCupo(ds,days),bl=days.filter(d=>ds.blank.has(d));
+ const cupo=w?w.v:(modeOf(Object.values(ds.E))||{v:0}).v;   // semana toda en blanco: usa el cupo más frecuente del mes
+ return{w,bl,cupo,desc:bl.length*cupo}}
+let WK=null;
+function renderWk(){
+ if(!S.rows.length)return;
+ const W=weeksOf(),codes=[...new Map(S.rows.map(r=>[r.code,r.uds])).entries()],tot=W.map(()=>0),dt=W.map(()=>0),D=[];
+ WK={W,ds:{}};
+ const rng=days=>days[0]===days[days.length-1]?days[0]:days[0]+'–'+days[days.length-1];
+ const nm=d=>DN[dow(d)-1]+' '+d;
+ let h=`<div class="card"><h3>Cupo por semana (niños por UDS) <button class="q" onclick="tut(7)">?</button></h3>
+ <div class="legend" style="margin:0 0 8px"><span style="--c:var(--ok)">Cupo semanal = el valor del cupo diario que más se repite en la semana (si hay empate, el menor)</span><span style="--c:var(--warn)">Descuento = días en blanco solo de esa UDS × cupo</span></div>
+ <div class="wrap"><table><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th>`;
+ W.forEach((d,i)=>h+=`<th class="n">Semana ${i+1}<br><small>${rng(d)} ${MN[S.month-1]}</small></th>`);
+ h+='</tr></thead><tbody>';
+ codes.forEach(([c,u])=>{const ds=WK.ds[c]=dayStats(c);
+  h+=`<tr><td>${esc(c)}</td><td>${esc(u)}</td>`;
+  W.forEach((days,i)=>{const f=weekInfo(ds,days),w=f.w;
+   if(w)tot[i]+=w.v;
+   if(f.desc){dt[i]+=f.desc;D.push({c,u,i,f})}
+   if(!w&&!f.bl.length){h+=`<td class="n cs" title="Semana sin días de servicio">–</td>`;return}
+   h+=`<td class="n"><div class="wkc"><div class="wkn">${w?w.v:'–'}<small>${w?`${w.n} de ${w.t} día${w.t>1?'s':''}`:'sin diligenciar'}</small></div><button class="wkd" title="Ver detalles" data-c="${esc(c)}" data-w="${i}" onclick="wkDet(this)">🔍</button>${f.desc?`<span class="dsc" title="${f.bl.length} día(s) sin diligenciar × ${f.cupo} cupos">−${f.desc}</span>`:''}</div></td>`});
+  h+='</tr>'});
+ h+=`</tbody><tfoot><tr><td colspan="2">TOTAL niños</td>${tot.map(t=>`<td class="n">${t}</td>`).join('')}</tr>${D.length?`<tr><td colspan="2">Asistencias a descontar</td>${dt.map(t=>`<td class="n">${t?'−'+t:''}</td>`).join('')}</tr>`:''}</tfoot></table></div></div>`;
+ if(D.length){const T=D.reduce((a,x)=>a+x.f.desc,0);
+  h+=`<details class="card" open><summary>Descuentos por días sin diligenciar · ${D.length} caso${D.length>1?'s':''} · −${T} asistencias</summary>
+  <div class="legend" style="margin:6px 0 8px"><span style="--c:var(--warn)">Días en blanco solo en esa UDS (no están en días especiales). Pudo ser permiso, incapacidad u otro caso especial. Descuento = cupo de la semana × días en blanco.</span></div>
+  <div class="wrap"><table><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th>Semana</th><th style="text-align:left">Días en blanco</th><th>Cupo</th><th>Días</th><th>Asist. a descontar</th><th></th></tr></thead><tbody>`;
+  D.forEach(x=>h+=`<tr><td>${esc(x.c)}</td><td>${esc(x.u)}</td><td class="n">Semana ${x.i+1}</td><td>${x.f.bl.map(nm).join(' · ')}</td><td class="n">${x.f.cupo}</td><td class="n">${x.f.bl.length}</td><td class="n"><b>${x.f.cupo} × ${x.f.bl.length} = ${x.f.desc}</b></td><td class="n"><button class="wkd" title="Ver detalles" data-c="${esc(x.c)}" data-w="${x.i}" onclick="wkDet(this)">🔍</button></td></tr>`);
+  h+=`</tbody><tfoot><tr><td colspan="6">TOTAL a descontar</td><td class="n">−${T}</td><td></td></tr></tfoot></table></div></details>`}
+ else h+=`<div class="card"><h3>Descuentos por días sin diligenciar</h3><div class="legend" style="margin:0">Ninguna UDS tiene días en blanco fuera de los días especiales.</div></div>`;
+ $('#v3').innerHTML=h;
+}
+function wkDet(b){
+ const c=b.dataset.c,wi=+b.dataset.w,days=WK.W[wi],ds=WK.ds[c],f=weekInfo(ds,days),w=f.w;
+ const uds=S.rows.find(r=>r.code===c).uds,N=nDays(),mon=days[0]-(dow(days[0])-1);
+ let g='';
+ for(let k=0;k<5;k++){const d=mon+k,lab=`<span class="h">${DN[k]} ${d>=1&&d<=N?d:''}</span>`;
+  if(d<1||d>N)g+=`<div class="out">${lab}<b>·</b><small>fuera del mes</small></div>`;
+  else if(isSp(d))g+=`<div class="sp2">${lab}<b>–</b><small>día especial (excluido)</small></div>`;
+  else if(ds.blank.has(d))g+=`<div class="bl">${lab}<b>–</b><small>sin diligenciar</small><span class="fl">−${f.cupo} desc.</span></div>`;
+  else if(!(d in ds.E))g+=`<div class="sp2">${lab}<b>–</b><small>sin servicio</small></div>`;
+  else{const fa=ds.E[d]-ds.A[d];
+   g+=`<div class="${w&&ds.E[d]===w.v?'pk':''}">${lab}<b>${ds.E[d]}</b><small>asistieron ${ds.A[d]}</small><span class="fl ${fa?'':'z'}">${fa?'⚠ ':''}${fa} falla${fa===1?'':'s'}</span></div>`}}
+ const note=(w?`<b style="color:var(--ink)">Cupo semanal: ${w.v}</b> — se repite en ${w.n} de ${w.t} día${w.t>1?'s':''} de servicio${w.n===w.t?'':' (los días en verde)'}. Los días especiales no cuentan.`
+  :`<b style="color:var(--ink)">Sin cupo semanal:</b> todos los días de esta semana están en blanco en esta UDS.`)
+  +(f.desc?`<div style="margin-top:6px"><span class="dsc">Descuento: ${f.bl.length} día${f.bl.length>1?'s':''} × ${f.cupo} = ${f.desc} asistencias</span> sin diligenciar (permiso, incapacidad u otro caso especial).</div>`:'');
+ $('#wmb').innerHTML=`<button class="x" onclick="wclose()">✕</button><h4>${esc(uds)}</h4><div class="sub">Semana ${wi+1} · cupo del día (participantes) tal como está marcado</div><div class="wd">${g}</div><div class="wnote">${note}</div>`;
+ $('#wm').classList.remove('hide');
+}
+function wclose(){$('#wm').classList.add('hide')}
+document.addEventListener('keydown',e=>e.key==='Escape'&&wclose());
+
+/* ===== Errores de marcación: asistencia (X) marcada en día libre (especial / sin servicio / fin de semana) ===== */
+const WDL=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+let ERR=[];
+const fmtD=d=>`${WDL[dow(d)]} ${d} de ${MN[S.month-1]} ${year()}`;
+const errObs=e=>'Error de digitación: asistencia marcada en '+(e.why==='Fin de semana'?'fin de semana':'día libre (especial / sin servicio)');
+function calcErr(){ERR=[];
+ S.rows.forEach(r=>{for(let d=1;d<=nDays();d++)if(r.marks[d]&&(isWk(d)||isSp(d)))
+  ERR.push({code:r.code,uds:r.uds,doc:r.doc,name:r.name,d,why:isWk(d)?'Fin de semana':'Día especial / sin servicio'})});
+ ERR.sort((a,b)=>a.code.localeCompare(b.code)||a.d-b.d||a.name.localeCompare(b.name))}
+function renderErr(){
+ if(!S.rows.length)return;
+ const n=ERR.length,u=new Set(ERR.map(e=>e.code)).size,dd=[...new Set(ERR.map(e=>e.d))].sort((a,b)=>a-b);
+ $('#t4').innerHTML='Errores de marcación'+(n?`<span class="bdg">${n}</span>`:'');
+ let h=`<div class="kpis">${kp([['Errores de marcación',n],['UDS afectadas',u],['Días afectados',dd.length?dd.join(', '):'—'],['Participantes afectados',new Set(ERR.map(e=>e.code+'|'+e.doc)).size]])}</div>`;
+ if(!n){$('#v4').innerHTML=h+'<div class="card"><h3>Errores de marcación</h3><div class="legend" style="margin:0">✔ Ninguna asistencia marcada en días especiales, sin servicio o fines de semana.</div></div>';return}
+ h+=`<div class="card"><h3 class="dh"><span>Asistencias marcadas en día libre (error de digitación)</span><button class="fold" onclick="expErr()">⬇ Descargar Excel</button></h3>
+ <div class="legend" style="margin:0 0 8px"><span style="--c:#fecaca">Estas marcas NO se cuentan en asistencias ni en cupo. Corrija la marcación en el sistema de origen, o desmarque el día si en realidad sí hubo servicio (panel “Días especiales”). Toque una fila para ver la UDS.</span></div>
+ <div class="wrap"><table><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th>Documento</th><th style="text-align:left">Participante</th><th style="text-align:left">Fecha</th><th>Motivo</th><th style="text-align:left">Observación</th></tr></thead><tbody>`;
+ ERR.forEach(e=>h+=`<tr class="link" onclick="goDet('${esc(e.code)}')"><td>${esc(e.code)}</td><td>${esc(e.uds)}</td><td>${esc(e.doc)}</td><td>${esc(e.name)}</td><td>${esc(fmtD(e.d))}</td><td class="n"><span class="chk bad">${esc(e.why)}</span></td><td class="obs">${esc(errObs(e))}</td></tr>`);
+ $('#v4').innerHTML=h+'</tbody></table></div></div>'}
+function expErr(){
+ const a=[['Código UDS','Unidad de servicio','Documento','Participante','Fecha','Motivo','Observación']];
+ ERR.forEach(e=>a.push([e.code,e.uds,e.doc,e.name,fmtD(e.d),e.why,errObs(e)]));
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),'Errores de marcación');
+ XLSX.writeFile(wb,`Errores_de_marcacion_${year()}_${String(S.month).padStart(2,'0')}.xlsx`)}
+
+/* Datos de ejemplo */
+function demo(){
+ S.month=9;$('#year').value=2026;S.rows=[];let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+ const nm=['Ana Gómez','Luis Pérez','Sofía Rojas','Mateo Díaz','Valeria Cruz','Juan Torres','Camila Ruiz','Santiago León','Isabela Mora','Daniel Silva','Laura Vega','Samuel Rey','Mariana Cano'];
+ [['170101','UDS Los Girasoles'],['170102','UDS Semillitas del Huila']].forEach(([code,u],k)=>{
+  nm.forEach((n,i)=>{const act=!(i===3||i===9&&k===1);const marks={};
+   for(let d=1;d<=30;d++){const w=new Date(2026,8,d).getDay();marks[d]=w>0&&w<6&&![15,25].includes(d)&&d!==25&&rnd()>.15&&(act||d<=7)&&!(k===1&&d>=8&&d<=10)}
+   if(k===0&&i===2){marks[25]=true;marks[12]=true}if(k===1&&i===5)marks[25]=true; // casos de ejemplo: último viernes (especial) y sábado
+   S.rows.push({code,uds:u,doc:String(1000000+i*137+k*9000),name:n,active:act,marks})})});
+ start();
+}
+/* ===== Tutorial paso a paso ===== */
+const TS=[
+ {i:'📂',t:'Cargue el reporte',x:'Pulse <b>Cargar Excel</b> y suba el reporte Cuéntame RAM <b>tal cual lo genera el sistema</b> (.xlsx). Lee todas las UDS solo.',s:'header .hl'},
+ {i:'🎨',t:'Qué significa cada marca',x:'<span class="sw cx">X</span> asistió &nbsp;<span class="sw cf">-</span> falla (cuenta) &nbsp;<span class="sw cr">R</span> retiro &nbsp;<span class="sw cn">N/A</span> no aplica &nbsp;<span class="sw cs">–</span> especial &nbsp;<span class="sw" style="background:#fecaca;color:#7f1d1d">⚠</span> error de marcación. <b>R y N/A no cuentan.</b>'},
+ {i:'📅',t:'Días especiales',x:'Toque los <b>festivos o recesos</b> para excluirlos (azul). El último viernes ya viene marcado. Con el botón de la derecha puede <b>plegar</b> este panel.',s:'#dcard'},
+ {i:'📊',t:'Consolidado',x:'Resumen por UDS: cupo, asistencias, inasistencias y %. Toque una UDS para ver su detalle.',s:'#v1',tab:1},
+ {i:'🔎',t:'Detalle y filtros',x:'Elija la UDS, busque por nombre o documento y filtre <b>Activos</b> o <b>Retirados</b>. Las fallas salen en amarillo.',s:'#v2',tab:2},
+ {i:'🧮',t:'Cómo se cuenta',x:'<b>R</b> = días después de retirarse. <b>N/A</b> = días antes de ingresar. El cupo suma los niños inscritos cada día.'},
+ {i:'✏️',t:'Editar casos especiales',x:'Toque una celda <b>-</b>, <b>R</b> o <b>N/A</b> y elija qué es en realidad. Queda en <b>azul</b>; los ajustes se guardan en este navegador.',s:'#v2',tab:2},
+ {i:'🗓️',t:'Cupo por semana',x:'Muestra el cupo de cada UDS por semana: el valor que <b>más se repite</b> entre sus días (si empatan, el menor). Toque la <b>🔍</b> para ver los 5 días reales. Los días en blanco solo de una UDS se muestran como <b>descuentos</b> (cupo × días).',s:'#v3',tab:3},
+ {i:'⚠️',t:'Errores de marcación',x:'Si un participante tiene <b>X en un día especial, sin servicio o fin de semana</b>, se marca como <b>error de digitación</b> (celda roja ⚠). No suma en asistencias ni cupo y queda listado con su observación en la pestaña <b>Errores de marcación</b>, con descarga a Excel.',s:'#v4',tab:4}
+];
+let TI=0;
+function tut(n){TI=n??0;$('#tut').classList.remove('hide');$('#fab').classList.add('hide');rt()}
+function rt(){const st=TS[TI];document.querySelectorAll('.spot').forEach(e=>e.classList.remove('spot'));
+ if(st.tab&&!$('#app').classList.contains('hide'))tab(st.tab);
+ if(st.s==='#dcard')togD(false,1);const el=st.s&&$(st.s);if(el&&el.offsetParent){el.classList.add('spot');el.scrollIntoView({block:'start',behavior:'smooth'})}
+ const last=TI===TS.length-1;
+ $('#tut').innerHTML=`<h4>${st.i} ${st.t}</h4><p>${st.x}</p><div class="tb"><div class="dots">${TS.map((_,k)=>`<i class="${k===TI?'on':''}"></i>`).join('')}</div>
+  <button onclick="tclose()">Omitir</button>${TI?'<button onclick="TI--;rt()">←</button>':''}<button class="go" onclick="${last?'tclose()':'TI++;rt()'}">${last?'¡Listo!':'Siguiente →'}</button></div>`}
+function tclose(){$('#tut').classList.add('hide');$('#fab').classList.remove('hide');document.querySelectorAll('.spot').forEach(e=>e.classList.remove('spot'));
+ try{localStorage.setItem('uds_tut_ok','1')}catch(e){}}
+function fabGo(){tut(!$('#app').classList.contains('hide')?(!$('#v4').classList.contains('hide')?8:!$('#v3').classList.contains('hide')?7:$('#v2').classList.contains('hide')?3:4):0)}
+document.addEventListener('keydown',e=>e.key==='Escape'&&!$('#tut').classList.contains('hide')&&tclose());
+try{if(localStorage.getItem('uds_dfold')==='1')togD(true,1)}catch(e){}
+try{if(!localStorage.getItem('uds_tut_ok'))tut(0)}catch(e){}
+</script>
+</body>
+</html>
