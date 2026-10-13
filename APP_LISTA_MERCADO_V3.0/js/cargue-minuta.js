@@ -6,7 +6,7 @@
 // ahora en el módulo "Gestión de Operadores" (js/gestion-operadores.js).
 
 // 🔗 Reemplaza esta URL por la de tu generador externo de minutas (JSON).
-const URL_GENERADOR_MINUTAS = 'https://afkril.github.io/LISTA_MERCADO_V3/InsertMinuta.html';
+const URL_GENERADOR_MINUTAS = 'https://afkril.github.io/APP_LISTA_MERCADO_V3.0/InsertMinuta.html';
 
 let cargueParsedData = null;
 
