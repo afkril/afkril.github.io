@@ -124,6 +124,22 @@
     outline:2px solid var(--brass-bright);outline-offset:2px;
   }
 
+  .ac-wrap{position:relative;}
+  .ac-list{
+    display:none;position:absolute;left:0;right:0;top:calc(100% + 3px);z-index:50;
+    background:var(--paper);border:1px solid var(--brass);border-radius:5px;
+    max-height:220px;overflow-y:auto;box-shadow:0 10px 24px rgba(0,0,0,0.25);
+  }
+  .ac-list.open{display:block;}
+  .ac-item{
+    padding:9px 12px;cursor:pointer;font-size:.86rem;display:flex;justify-content:space-between;gap:10px;
+    border-bottom:1px solid var(--line);
+  }
+  .ac-item:last-child{border-bottom:none;}
+  .ac-item small{font-family:'IBM Plex Mono';font-size:.64rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;align-self:center;}
+  .ac-item.sel,.ac-item:hover{background:rgba(181,130,47,0.16);}
+  .ac-item b{color:var(--brass);}
+
   .btn-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:16px 0 6px;}
   .btn{
     padding:10px;border-radius:6px;border:1.5px solid transparent;cursor:pointer;
@@ -267,10 +283,10 @@
   }
   .btn-close-modal:hover{border-color:var(--stamp-red);color:var(--stamp-red);}
   .modal-body{overflow-y:auto;padding:18px;}
-  pre.json-pre{background:#211a10;color:#c9e0a5;font-size:.76rem;font-family:'IBM Plex Mono';white-space:pre-wrap;word-break:break-all;line-height:1.55;padding:12px;border-radius:6px;}
+  pre.json-pre{background:#211a10;color:#c9e0a5;font-size:.76rem;font-family:'IBM Plex Mono';white-space:pre;overflow-x:auto;line-height:1.55;padding:12px;border-radius:6px;}
 
   .confirm-modal{max-width:420px;}
-  .confirm-body{padding:20px;font-family:'Public Sans';font-size:.9rem;color:var(--ink);line-height:1.5;}
+  .confirm-body{white-space:pre-line;padding:20px;font-family:'Public Sans';font-size:.9rem;color:var(--ink);line-height:1.5;}
   .confirm-footer{display:flex;gap:10px;justify-content:flex-end;padding:0 20px 20px;}
   .confirm-btn{
     padding:9px 18px;border-radius:5px;font-family:'IBM Plex Mono';font-size:.74rem;
@@ -313,7 +329,7 @@
 
   <div class="header">
     <div>
-      <span class="eyebrow">Registro de raciones · M1 – M24</span>
+      <span class="eyebrow">Registro de raciones · M1 – M25</span>
       <h1>Control de Gramajes</h1>
     </div>
     <div class="status"><span class="dot"></span>Libro activo</div>
@@ -322,7 +338,10 @@
   <div class="index-card">
     <span class="card-label">Nueva ficha de producto</span>
     <div class="main-fields">
-      <input type="text" id="nombre" placeholder="Nombre del producto...">
+      <div class="ac-wrap">
+        <input type="text" id="nombre" autocomplete="off" placeholder="Nombre del producto..." role="combobox" aria-expanded="false" aria-controls="ac-list" aria-autocomplete="list">
+        <div class="ac-list" id="ac-list" role="listbox"></div>
+      </div>
       <select id="categoria">
         <option value="" disabled selected>Categoría...</option>
         <option value="granos">Granos</option>
@@ -411,7 +430,7 @@ const WEEKS = [
   {label:'Semana 2',menus:[6,7,8,9,10]},
   {label:'Semana 3',menus:[11,12,13,14,15]},
   {label:'Semana 4',menus:[16,17,18,19,20]},
-  {label:'Semana 5',menus:[21,22,23,24]},
+  {label:'Semana 5',menus:[21,22,23,24,25]},
 ];
 
 /* ---------- utilidades: toast + confirm ---------- */
@@ -473,7 +492,7 @@ function toggleActive(inp){
   inp.closest('.stamp-tile').classList.toggle('active',Number(inp.value)>0);
 }
 
-function saveData(){
+async function saveData(){
   const n=document.getElementById('nombre').value.trim();
   const c=document.getElementById('categoria').value;
   const u=document.getElementById('unidad').value.trim();
@@ -483,10 +502,125 @@ function saveData(){
     const v=Number(i.value);
     if(v>0)g[i.dataset.m]=v;
   });
-  db.push({n,c,u,g});
+  // ¿se sobrescribe algún menú que ya tenía valor?
+  const existente=db.find(x=>sameProduct(x,{n,c,u}));
+  if(existente){
+    const choques=Object.keys(g).filter(m=>existente.g[m]!==undefined&&existente.g[m]!==g[m]);
+    if(choques.length){
+      const detalle=choques.map(m=>`${m.toUpperCase()}: ${existente.g[m]} → ${g[m]}`).join('\n');
+      const ok=await showConfirm(`"${existente.n}" ya tiene valor en estos menús:\n\n${detalle}\n\n¿Reemplazar los valores anteriores?`,'Reemplazar gramaje');
+      if(!ok)return; // se cancela: no se guarda nada y el formulario queda como estaba
+    }
+  }
+  const estado=upsertProduct({n,c,u,g});
   save();resetForm();rebuildFilterChips();render();
-  showToast(`"${n}" quedó registrado en el inventario.`,'success');
+  showToast(estado==='updated'
+    ?`"${n}" ya existía: se agregaron los menús a la misma línea.`
+    :`"${n}" quedó registrado en el inventario.`,'success');
 }
+
+/* ---------- productos únicos: mismo nombre+categoría+unidad = una sola línea ---------- */
+const norm=t=>String(t||'').trim().toLowerCase();
+const sameProduct=(a,b)=>norm(a.n)===norm(b.n)&&norm(a.c)===norm(b.c)&&norm(a.u)===norm(b.u);
+
+function upsertProduct(item){
+  const found=db.find(x=>sameProduct(x,item));
+  if(found){
+    found.g=Object.assign({},found.g,item.g); // menús nuevos se suman; si el menú ya existía, se actualiza
+    return 'updated';
+  }
+  db.push(item);
+  return 'new';
+}
+
+function dedupeDB(){
+  const merged=[];
+  db.forEach(item=>{
+    const found=merged.find(x=>sameProduct(x,item));
+    if(found)found.g=Object.assign({},found.g,item.g);
+    else merged.push(item);
+  });
+  db=merged;
+}
+
+/* ---------- autocompletado por prefijo ---------- */
+let acItems=[],acIndex=-1;
+
+function refreshDatalist(){ /* se mantiene por compatibilidad: la lista se calcula al escribir */ }
+
+function escapeHTML(t){return String(t).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+
+function acClose(){
+  const l=document.getElementById('ac-list');
+  l.classList.remove('open');l.innerHTML='';acItems=[];acIndex=-1;
+  document.getElementById('nombre').setAttribute('aria-expanded','false');
+}
+
+function acUpdate(){
+  const inp=document.getElementById('nombre');
+  const typed=norm(inp.value);
+  if(!typed){acClose();return;}
+  // un resultado por nombre único, solo los que EMPIEZAN con lo escrito
+  const seen=new Map();
+  db.forEach(x=>{
+    const k=norm(x.n);
+    if(k.startsWith(typed)&&!seen.has(k))seen.set(k,x);
+  });
+  acItems=[...seen.values()].sort((a,b)=>a.n.localeCompare(b.n)).slice(0,8);
+  // si lo escrito ya es exactamente el único resultado, no hace falta sugerirlo
+  if(!acItems.length||(acItems.length===1&&norm(acItems[0].n)===typed)){
+    acClose();autofillFromName();return;
+  }
+  const l=document.getElementById('ac-list');
+  l.innerHTML=acItems.map((x,i)=>{
+    const len=typed.length;
+    return `<div class="ac-item" role="option" data-i="${i}"><span><b>${escapeHTML(x.n.slice(0,len))}</b>${escapeHTML(x.n.slice(len))}</span><small>${escapeHTML(x.c)}</small></div>`;
+  }).join('');
+  l.classList.add('open');acIndex=-1;
+  inp.setAttribute('aria-expanded','true');
+}
+
+function acPick(i){
+  const x=acItems[i];if(!x)return;
+  document.getElementById('nombre').value=x.n;
+  document.getElementById('categoria').value=x.c;
+  document.getElementById('unidad').value=x.u;
+  acClose();
+}
+
+function autofillFromName(){
+  const typed=norm(document.getElementById('nombre').value);
+  if(!typed)return;
+  const matches=db.filter(x=>norm(x.n)===typed);
+  if(!matches.length)return;
+  // si hay varias versiones del mismo nombre, se toma la más reciente
+  const m=matches[matches.length-1];
+  document.getElementById('categoria').value=m.c;
+  document.getElementById('unidad').value=m.u;
+}
+
+(function initAutocomplete(){
+  const inp=document.getElementById('nombre');
+  const list=document.getElementById('ac-list');
+  inp.addEventListener('input',acUpdate);
+  inp.addEventListener('blur',()=>{setTimeout(acClose,120);autofillFromName();});
+  inp.addEventListener('keydown',e=>{
+    const open=list.classList.contains('open');
+    if(!open)return;
+    const els=list.querySelectorAll('.ac-item');
+    if(e.key==='ArrowDown'){e.preventDefault();acIndex=(acIndex+1)%els.length;}
+    else if(e.key==='ArrowUp'){e.preventDefault();acIndex=(acIndex-1+els.length)%els.length;}
+    else if(e.key==='Enter'){if(acIndex>=0){e.preventDefault();acPick(acIndex);}return;}
+    else if(e.key==='Escape'){acClose();return;}
+    else return;
+    els.forEach((el,i)=>el.classList.toggle('sel',i===acIndex));
+    if(els[acIndex])els[acIndex].scrollIntoView({block:'nearest'});
+  });
+  list.addEventListener('mousedown',e=>{
+    const it=e.target.closest('.ac-item');
+    if(it){e.preventDefault();acPick(Number(it.dataset.i));}
+  });
+})();
 
 function render(){
   const body=document.getElementById('inventory-body');
@@ -538,6 +672,7 @@ function resetForm(){
 function save(){localStorage.setItem('creativaDB_v6',JSON.stringify(db));}
 
 function rebuildFilterChips(){
+  refreshDatalist();
   const bar=document.getElementById('filter-bar');
   const cats=['Todos',...new Set(db.map(x=>x.c))];
   if(!cats.includes(activeFilter))activeFilter='Todos';
@@ -583,9 +718,15 @@ function buildOrganizedJSON(){
   return orderedList; // Ahora devuelve un [...] en lugar de un {...}
 }
 
+// Una sola línea por producto; el salto de línea solo ocurre entre productos
+function formatJSON(list){
+  if(!list.length)return '[]';
+  return '[\n'+list.map(x=>'  '+JSON.stringify(x)).join(',\n')+'\n]';
+}
+
 function openModal(){
   // Se mostrará exactamente el formato de lista: [ { "n": "Arroz", ... }, ... ]
-  document.getElementById('json-output').textContent = JSON.stringify(buildOrganizedJSON(), null, 2);
+  document.getElementById('json-output').textContent = formatJSON(buildOrganizedJSON());
   document.getElementById('modal-overlay').classList.add('open');
   document.getElementById('copy-btn').textContent = 'Copiar';
 }
@@ -600,7 +741,7 @@ function handleOverlayClick(e){
 
 function copyJSON(){
   // Copia el formato de lista directamente al portapapeles
-  navigator.clipboard.writeText(JSON.stringify(buildOrganizedJSON(), null, 2));
+  navigator.clipboard.writeText(formatJSON(buildOrganizedJSON()));
   const btn = document.getElementById('copy-btn');
   btn.textContent = '¡Copiado!';
   setTimeout(() => btn.textContent = 'Copiar', 2000);
@@ -610,7 +751,7 @@ function exportToExcel(){
   if(!db.length){showToast('No hay datos para exportar.','error');return;}
   const rows=db.map(item=>{
     let row={Producto:item.n,Categoria:item.c,Unidad:item.u};
-    for(let i=1;i<=24;i++)row[`M${i}`]=item.g[`m${i}`]||0;
+    for(let i=1;i<=25;i++)row[`M${i}`]=item.g[`m${i}`]||0;
     return row;
   });
   const ws=XLSX.utils.json_to_sheet(rows);
@@ -629,12 +770,12 @@ function importFromExcel(e){
     const json=XLSX.utils.sheet_to_json(ws);
     const imported=json.map(row=>{
       let g={};
-      for(let i=1;i<=24;i++){const v=Number(row[`M${i}`]);if(v>0)g[`m${i}`]=v;}
+      for(let i=1;i<=25;i++){const v=Number(row[`M${i}`]);if(v>0)g[`m${i}`]=v;}
       return{n:row.Producto||'Sin nombre',c:row.Categoria||'granos',u:row.Unidad||'gr',g};
     });
-    const ok=await showConfirm(`¿Importar ${imported.length} productos al inventario actual?`,'Importar Excel');
+    const ok=await showConfirm(`¿Importar ${imported.length} productos al inventario actual? Los productos que ya existan se unirán en una sola línea y los menús repetidos se reemplazarán.`,'Importar Excel');
     if(ok){
-      db=db.concat(imported);save();rebuildFilterChips();render();
+      imported.forEach(upsertProduct);save();rebuildFilterChips();render();
       showToast(`${imported.length} productos importados.`,'success');
     }
     e.target.value='';
@@ -642,6 +783,6 @@ function importFromExcel(e){
   reader.readAsArrayBuffer(file);
 }
 
+dedupeDB();save();
 buildGrid();rebuildFilterChips();render();
 </script>
-
