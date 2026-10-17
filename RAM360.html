@@ -114,9 +114,34 @@ details.card>summary{cursor:pointer;font-size:11.5px;font-weight:700;color:var(-
 .bdg{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:#dc2626;color:#fff;font-size:11px;font-weight:700;text-align:center}
 nav button.on .bdg{background:#fecaca;color:#7f1d1d}
 .obs{color:#b91c1c;font-weight:600}
+
+/* ===== Fase 2 ===== */
+:focus-visible{outline:3px solid var(--b2);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.skip{position:absolute;left:-999px;top:8px;z-index:99;background:#fff;color:#000;padding:8px 12px;border-radius:8px}.skip:focus{left:8px}
+button.chip{font:inherit;font-size:11px;padding:1px 0}
+.row label{display:flex;gap:6px;align-items:center}
+.row input[type=number]{width:80px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.br{display:grid;grid-template-columns:minmax(90px,220px) 1fr 48px;gap:8px;align-items:center;margin:5px 0;font-size:12px}
+.br span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt{position:relative;height:12px;background:var(--line);border-radius:6px}
+.bt i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--g2),var(--b2))}.bt i.lo{background:#f59e0b}
+.bt u{position:absolute;top:-3px;bottom:-3px;width:2px;background:#dc2626}
+#sumT{width:100%;font:13px/1.45 inherit;font-family:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);resize:vertical}
+.pc{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px;background:var(--card)}
+.pc small{display:block;color:var(--mut)}
+.mg{display:flex;flex-wrap:wrap;gap:3px;margin:6px 0}
+.mc{width:34px;height:38px;border-radius:6px;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.mc small{font-size:8px;font-weight:400;opacity:.75}
+.mc.ed{cursor:pointer}
+.ps{display:flex;gap:14px;font-size:12px;font-weight:600}
+@media(max-width:720px){header{padding:10px 12px}main{padding:10px 8px}nav{overflow-x:auto}nav button{white-space:nowrap;min-height:42px}
+.chip{width:38px;padding:6px 0;font-size:13px}.btn,select,input[type=text]{min-height:42px}.kpis{grid-template-columns:repeat(2,1fr)}
+.br{grid-template-columns:90px 1fr 44px}select,input[type=text]{min-width:0;width:100%}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
-<body>
+<body><a class="skip" href="#main">Saltar al contenido</a><div id="live" class="sr" aria-live="polite"></div>
 <header>
   <div class="hl">
     <div><h1>Control Diario de Asistencia por UDS</h1><small id="sub">Cargue el reporte Excel o use datos de ejemplo</small></div>
@@ -126,10 +151,10 @@ nav button.on .bdg{background:#fecaca;color:#7f1d1d}
   <div class="tools">
     <label>Año <input type="number" id="year" value="2026"></label>
     <button class="btn alt" onclick="demo()">Ejemplo</button>
-    <button class="btn alt" onclick="tut(0)">📘 Tutorial</button>
+    <button class="btn alt" onclick="tut(0)">📘 Tutorial</button><button class="btn alt" onclick="theme()" aria-label="Cambiar entre tema claro y oscuro" title="Tema">🌓</button><button class="btn alt" onclick="Zm(-.1)" aria-label="Reducir tamaño de texto" title="Reducir">A−</button><button class="btn alt" onclick="Zm(.1)" aria-label="Aumentar tamaño de texto" title="Aumentar">A+</button>
   </div>
 </header>
-<main>
+<main id="main" tabindex="-1">
   <div id="empty" class="card empty">Cargue el reporte Cuéntame tal cual lo genera el sistema (.xlsx). <a href="#" onclick="tut(0);return false" style="color:var(--b)">Ver tutorial paso a paso</a></div>
   <div id="app" class="hide">
     <div class="card" id="dcard">
@@ -138,10 +163,11 @@ nav button.on .bdg{background:#fecaca;color:#7f1d1d}
       <div class="legend"><span style="--c:var(--b)">Día especial (excluido)</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:var(--card)">Día de servicio</span>
         <a href="#" onclick="autoDetect();return false" style="color:var(--b)">Detectar días sin ninguna asistencia</a></div></div>
     </div>
-    <nav><button id="t1" class="on" onclick="tab(1)">Consolidado</button><button id="t2" onclick="tab(2)">Detalle por UDS</button><button id="t3" onclick="tab(3)">Cupo por semana</button><button id="t4" onclick="tab(4)">Errores de marcación</button></nav>
+    <nav id="nav" role="tablist" aria-label="Vistas"><button id="t1" class="on" onclick="tab(1)">Consolidado</button><button id="t2" onclick="tab(2)">Detalle por UDS</button><button id="t3" onclick="tab(3)">Cupo por semana</button><button id="t4" onclick="tab(4)">Errores de marcación</button><button id="t5" onclick="tab(5)">Análisis</button></nav>
     <section id="v1"></section>
     <section id="v3" class="hide"></section>
     <section id="v4" class="hide"></section>
+    <section id="v5" class="hide"><div class="card hide" id="anCfg"><h3>Configuración</h3><div class="row" style="margin:0"><label>Valor ración ($) <input type="number" id="aval" min="0" step="1" style="width:110px" onchange="setAn()"></label><label>Meta de cumplimiento (%) <input type="number" id="athr" min="1" max="100" onchange="setAn()"></label><label>Alertar con inasistencias seguidas (misma semana) ≥ <input type="number" id="arun" min="2" onchange="setAn()"></label></div><div class="row" style="margin:8px 0 0"><label>Operador <input type="text" id="mop" oninput="setMeta()"></label><label>Contrato N.° <input type="text" id="mco" oninput="setMeta()"></label><label>Regional <input type="text" id="mrg" oninput="setMeta()"></label><label>Centro zonal <input type="text" id="mcz" oninput="setMeta()"></label><label>Modalidad <input type="text" id="mmd" oninput="setMeta()"></label><label>Ciudad <input type="text" id="mci" oninput="setMeta()"></label></div><div class="legend" style="margin:6px 0 0">Se leen del reporte (operador H1, contrato J2, regional M2, centro zonal P2, modalidad H6; ciudad si aparece rotulada) y puede corregirlos. Presupuesto a facturar = (asistencias + inasistencias) × valor ración.</div></div><div id="anB"></div></section>
     <section id="v2" class="hide">
       <div class="card">
         <h3>Detalle por UDS <button class="q" onclick="tut(4)">?</button> <button class="q" onclick="tut(6)" title="Editar casos">✎</button></h3>
@@ -149,10 +175,10 @@ nav button.on .bdg{background:#fecaca;color:#7f1d1d}
           <select id="udsSel" onchange="renderDet()"></select>
           <input type="text" id="q" placeholder="Buscar por nombre o documento…" oninput="renderDet()">
           <select id="stSel" onchange="renderDet()"><option value="">Todos</option><option value="A">Activos (incl. los que asistieron y luego se retiraron)</option><option value="I">Retirados (inactivos sin asistencias)</option></select>
-          <button class="btn" style="background:var(--g);color:#fff" onclick="resetOv()">↺ Restablecer ajustes de esta UDS</button>
+          <button class="btn" style="background:var(--g);color:#fff" onclick="resetOv()">↺ Restablecer ajustes de esta UDS</button><button class="btn" id="vm" style="background:var(--b);color:#fff" onclick="togM()">▦ Ver tarjetas</button>
         </div>
         <div class="kpis" id="detK"></div>
-        <div class="wrap"><table id="detT"></table></div>
+        <div class="wrap" id="detW"><table id="detT"></table></div><div id="detC" class="hide"></div>
         <div class="legend"><span style="--c:var(--ok)">Asistió (X)</span><span style="--c:var(--warn)">Falla (-)</span><span style="--c:var(--gray)">Retiro</span><span style="--c:var(--card)">N/A: ingreso posterior (no cuenta)</span><span style="--c:var(--b)">Ajustado manualmente</span><span style="--c:transparent">Clic en una celda -, R o N/A para validarla</span><span style="--c:var(--sp)">Día especial</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:#fecaca">⚠ Error de marcación (asistencia en día libre)</span></div>
       </div>
     </section>
@@ -161,7 +187,7 @@ nav button.on .bdg{background:#fecaca;color:#7f1d1d}
 <button id="fab" onclick="fabGo()" title="Tutorial">?</button>
 <div id="tut" class="hide"></div>
 <div id="pop" class="hide"></div>
-<div id="wm" class="hide" onclick="if(event.target.id==='wm')wclose()"><div class="box" id="wmb"></div></div>
+<div id="wm" class="hide" onclick="if(event.target.id==='wm')wclose()"><div class="box" id="wmb" role="dialog" aria-modal="true" aria-label="Detalle semanal"></div></div>
 <script>
 /* ===== JS ===== */
 const $=s=>document.querySelector(s), file=$('#file');
@@ -192,7 +218,7 @@ function parseBook(wb){
  const m=parseMonth(a[2]&&a[2][7]);if(m)S.month=m;            // H3
  const y=parseInt(a[2]&&a[2][9]);if(y>2000)$('#year').value=y;   // J3
  S.info=[a[0]&&a[0][7],a[1]&&a[1][15],a[1]&&a[1][33]].filter(Boolean).join(' · ');
- S.rows=[];let cur=null,dc=null;
+ S.meta=detectMeta(a);S.rows=[];let cur=null,dc=null;
  a.forEach(r=>{
   if(/CUENTAME/i.test(String(r[11]))){cur={code:String(r[12]).trim(),uds:String(r[15]).trim()};dc=null;return}   // M y P
   if(cur&&String(r[16]).trim()==='1'&&String(r[46]).trim()==='31'){dc={};for(let d=1;d<=31;d++)dc[d]=15+d;return}
@@ -213,7 +239,7 @@ function start(){
  // último viernes del mes
  for(let d=nDays();d>=1;d--)if(dow(d)===5){S.special.add(d);break}
  autoDetect(true);
- $('#empty').classList.add('hide');$('#app').classList.remove('hide');
+ $('#empty').classList.add('hide');$('#app').classList.remove('hide');fillMeta();
  $('#sub').textContent=`${S.info?S.info+' · ':''}${new Set(S.rows.map(r=>r.code)).size} UDS · ${S.rows.length} participantes · ${S.month}/${year()}`;
  const codes=[...new Map(S.rows.map(r=>[r.code,r.uds])).entries()];
  $('#udsSel').innerHTML=codes.map(([c,u])=>`<option value="${esc(c)}">${esc(c)} — ${esc(u)}</option>`).join('');
@@ -252,11 +278,11 @@ function resetOv(){const c=$('#udsSel').value;S.rows.filter(r=>r.code===c).forEa
 let pc=null;
 document.addEventListener('click',e=>{
  const pop=$('#pop');if(e.target.closest('#pop'))return;
- const td=e.target.closest('td.ed');if(!td){pop.classList.add('hide');return}
+ const td=e.target.closest('.ed');if(!td){pop.classList.add('hide');return}
  pc={i:+td.dataset.i,d:+td.dataset.d};const r=S.rows[pc.i],cur=(S.ov[r.key]||{})[pc.d];
  pop.innerHTML=`<b>${esc(r.name)}<br>Día ${pc.d} — validar como:</b>`+[['f','Falla (-)'],['r','Retiro (R)'],['n','No aplica (N/A)']].map(([k,l])=>`<button class="${cur===k?'sel':''}" onclick="setOv('${k}')">${l}</button>`).join('')+`<button onclick="setOv('')">↺ Automático</button>`;
  pop.classList.remove('hide');const b=td.getBoundingClientRect();
- pop.style.left=Math.max(4,Math.min(b.left,innerWidth-190))+'px';pop.style.top=Math.max(4,Math.min(b.bottom+4,innerHeight-200))+'px';
+ pop.style.left=Math.max(4,Math.min(b.left,innerWidth-190))+'px';pop.style.top=Math.max(4,Math.min(b.bottom+4,innerHeight-200))+'px';{const fb=pop.querySelector('button');fb&&fb.focus({preventScroll:true})}
 });
 document.addEventListener('keydown',e=>e.key==='Escape'&&$('#pop').classList.add('hide'));
 
@@ -270,13 +296,13 @@ function stats(rows){
  t.pct=t.cap?Math.round(t.att/t.cap*1000)/10:0;t.ok=t.att+t.abs<=t.cap;return t;
 }
 
-function refresh(){AUTO={};calcErr();chips();renderCons();renderDet();renderWk();renderErr()}
-function chips(){let h='';for(let d=1;d<=nDays();d++){const w=isWk(d);h+=`<div class="chip ${w?'wk':isSp(d)?'sp':''}" ${w?'':`onclick="togg(${d})"`}>${d}<i>${WD[dow(d)]}</i></div>`}
+function refresh(){AUTO={};calcErr();chips();renderCons();renderDet();renderWk();renderErr();renderAn();$('#live').textContent='Datos actualizados'}
+function chips(){let h='';for(let d=1;d<=nDays();d++){const w=isWk(d);h+=w?`<div class="chip wk" aria-hidden="true">${d}<i>${WD[dow(d)]}</i></div>`:`<button type="button" class="chip ${isSp(d)?'sp':''}" aria-pressed="${isSp(d)}" aria-label="Día ${d} ${WDL[dow(d)]}: ${isSp(d)?'especial, excluido':'de servicio'}" onclick="togg(${d})">${d}<i>${WD[dow(d)]}</i></button>`}
  $('#chips').innerHTML=h;const l=[...S.special].sort((a,b)=>a-b);$('#dsum').textContent='— '+(l.length?l.join(', '):'ninguno')}
 function togD(f,ns){const c=$('#dcard'),on=f===undefined?!c.classList.contains('fold'):f;c.classList.toggle('fold',on);
  $('#dfold').textContent=on?'▸ Desplegar':'▾ Plegar';if(!ns)try{localStorage.setItem('uds_dfold',on?'1':'0')}catch(e){}}
 function togg(d){S.special.has(d)?S.special.delete(d):S.special.add(d);refresh()}
-function tab(n){[1,2,3,4].forEach(i=>{$('#v'+i).classList.toggle('hide',i!==n);$('#t'+i).classList.toggle('on',i===n)})}
+function tab(n){[1,2,3,4,5].forEach(i=>{const on=i===n;$('#v'+i).classList.toggle('hide',!on);const b=$('#t'+i);b.classList.toggle('on',on);b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1})}
 function kp(items){return items.map(([l,v])=>`<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('')}
 
 function renderCons(){
@@ -293,7 +319,7 @@ function renderCons(){
 function goDet(c){$('#udsSel').value=c;tab(2);renderDet()}
 
 function renderDet(){
- if(!S.rows.length)return;
+ if(!S.rows.length)return;renderCards();
  const c=$('#udsSel').value,q=$('#q').value.toLowerCase().trim(),st=$('#stSel').value;
  const all=S.rows.filter(r=>r.code===c),s=stats(all);
  const rows=all.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.doc.toLowerCase().includes(q))&&(!st||(st==='I')===(!r.active&&calc(r).att===0)));
@@ -310,7 +336,7 @@ function renderDet(){
   for(let d=1;d<=N;d++){let cl,t,at='';
    if((isWk(d)||isSp(d))&&r.marks[d]){cl='ce';t='⚠';at=` title="Error de marcación: asistencia marcada en ${isWk(d)?'fin de semana':'día especial / sin servicio'}"`}else if(isWk(d)){cl='cw';t=''}else if(spDay(d,c)){cl='cs';t='–'}
    else{const k=o.cell[d];cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];t={x:'X',f:'-',r:'R',n:'N/A'}[k];
-    if(k!=='x'){cl=(o.man[d]?'cm':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" title="Clic para validar"`}}
+    if(k!=='x'){cl=(o.man[d]?'cm':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" title="Clic para validar" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
    h+=`<td class="d ${cl}"${at}>${t}</td>`}
   h+=`<td class="n"><b>${o.att}</b></td><td class="n">${o.abs}</td><td class="n">${o.ret}</td><td class="n">${o.na}</td></tr>`});
  if(!rows.length)h+=`<tr><td colspan="${N+8}" class="empty">Sin resultados</td></tr>`;
@@ -382,7 +408,7 @@ function wkDet(b){
   :`<b style="color:var(--ink)">Sin cupo semanal:</b> todos los días de esta semana están en blanco en esta UDS.`)
   +(f.desc?`<div style="margin-top:6px"><span class="dsc">Descuento: ${f.bl.length} día${f.bl.length>1?'s':''} × ${f.cupo} = ${f.desc} asistencias</span> sin diligenciar (permiso, incapacidad u otro caso especial).</div>`:'');
  $('#wmb').innerHTML=`<button class="x" onclick="wclose()">✕</button><h4>${esc(uds)}</h4><div class="sub">Semana ${wi+1} · cupo del día (participantes) tal como está marcado</div><div class="wd">${g}</div><div class="wnote">${note}</div>`;
- $('#wm').classList.remove('hide');
+ $('#wm').classList.remove('hide');$('#wmb .x').focus();
 }
 function wclose(){$('#wm').classList.add('hide')}
 document.addEventListener('keydown',e=>e.key==='Escape'&&wclose());
@@ -415,7 +441,7 @@ function expErr(){
 
 /* Datos de ejemplo */
 function demo(){
- S.month=9;$('#year').value=2026;S.rows=[];let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+ S.month=9;$('#year').value=2026;S.rows=[];S.meta={op:'Operador de ejemplo',co:'000-2026',rg:'Huila',cz:'Centro Zonal Neiva',md:'Modalidad de ejemplo',ci:'Neiva'};let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
  const nm=['Ana Gómez','Luis Pérez','Sofía Rojas','Mateo Díaz','Valeria Cruz','Juan Torres','Camila Ruiz','Santiago León','Isabela Mora','Daniel Silva','Laura Vega','Samuel Rey','Mariana Cano'];
  [['170101','UDS Los Girasoles'],['170102','UDS Semillitas del Huila']].forEach(([code,u],k)=>{
   nm.forEach((n,i)=>{const act=!(i===3||i===9&&k===1);const marks={};
@@ -436,6 +462,90 @@ const TS=[
  {i:'🗓️',t:'Cupo por semana',x:'Muestra el cupo de cada UDS por semana: el valor que <b>más se repite</b> entre sus días (si empatan, el menor). Toque la <b>🔍</b> para ver los 5 días reales. Los días en blanco solo de una UDS se muestran como <b>descuentos</b> (cupo × días).',s:'#v3',tab:3},
  {i:'⚠️',t:'Errores de marcación',x:'Si un participante tiene <b>X en un día especial, sin servicio o fin de semana</b>, se marca como <b>error de digitación</b> (celda roja ⚠). No suma en asistencias ni cupo y queda listado con su observación en la pestaña <b>Errores de marcación</b>, con descarga a Excel.',s:'#v4',tab:4}
 ];
+/* ===== Fase 2: análisis, alertas, resumen, accesibilidad y vista móvil ===== */
+const MF=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const AN={thr:90,run:3,val:8094};
+try{Object.assign(AN,JSON.parse(localStorage.getItem('uds_an2')||'{}'))}catch(e){}
+$('#athr').value=AN.thr;$('#arun').value=AN.run;$('#aval').value=AN.val;
+function setAn(){AN.thr=Math.min(100,Math.max(1,+$('#athr').value||90));AN.val=Math.max(0,Math.round(+$('#aval').value)||8094);AN.run=Math.max(2,+$('#arun').value||3);try{localStorage.setItem('uds_an2',JSON.stringify(AN))}catch(e){}renderAn()}
+const money=n=>"$"+Math.round(n).toLocaleString("es-CO");
+const wkNum=d=>{if(!WK)return wkId(d)+1;const i=WK.W.findIndex(w=>w.includes(d));return i<0?wkId(d)+1:i+1};
+function wkDiscounts(){const out=[];if(!WK)return out;Object.entries(grp()).forEach(([c,rs])=>{const ds=WK.ds[c];if(!ds)return;WK.W.forEach((days,i)=>{const f=weekInfo(ds,days);if(f.desc)out.push({c,u:rs[0].uds,i,f})})});return out}
+const wkId=d=>Math.floor((d-1+(dow(1)+6)%7)/7);
+let FIN=false,FINNO=false;try{FIN=sessionStorage.getItem("uds_fin")==="1"}catch(e){}
+function finOk(){FIN=true;FINNO=false;try{sessionStorage.setItem("uds_fin","1")}catch(e){}renderAn()}
+function finNo(){FINNO=true;renderAn()}
+function fillMeta(){const m=S.meta||{};$('#mop').value=m.op||'';$('#mco').value=m.co||'';$('#mcz').value=m.cz||'';$('#mci').value=m.ci||'';$('#mrg').value=m.rg||'';$('#mmd').value=m.md||''}
+function setMeta(){S.meta={op:$('#mop').value.trim(),co:$('#mco').value.trim(),cz:$('#mcz').value.trim(),ci:$('#mci').value.trim(),rg:$('#mrg').value.trim(),md:$('#mmd').value.trim()};renderAn()}
+function detectMeta(a){const m={op:'',co:'',rg:'',cz:'',md:'',ci:''},cl=v=>String(v??'').replace(/\s+/g,' ').trim(),
+ L={op:/operador/i,cz:/centro\s*zonal/i,ci:/ciudad|municipio/i,co:/contrato/i},EL=/^(operador|centro|ciudad|municipio|contrato)/i;
+ for(let r=0;r<Math.min(8,a.length);r++){const row=a[r]||[];for(let c=0;c<row.length;c++){const t=cl(row[c]);if(!t)continue;
+  for(const k in L){if(m[k]||!L[k].test(t))continue;
+   let v=t.includes(':')?cl(t.slice(t.indexOf(':')+1)):'';
+   if(!v)for(let q=c+1;q<Math.min(row.length,c+8);q++){const n=cl(row[q]);if(n&&!EL.test(n)){v=n;break}}
+   if(v)m[k]=v}}}
+ const fx=(r,c)=>{const t=cl(a[r]&&a[r][c]);return t.includes(':')?(cl(t.slice(t.indexOf(':')+1))||t):t};   // celdas fijas del reporte
+ for(const [k,r,c] of [['op',0,7],['co',1,9],['rg',1,12],['cz',1,15],['md',5,7]]){const v=fx(r,c);if(v)m[k]=v}   // H1 operador · J2 contrato · M2 regional · P2 centro zonal · H6 modalidad
+ return m}
+const grp=()=>{const g={};S.rows.forEach(r=>(g[r.code]??=[]).push(r));return g};
+function alerts(){const low=[],st=[];
+ Object.entries(grp()).forEach(([c,rs])=>{const s=stats(rs);if(s.cap&&s.pct<AN.thr)low.push({c,u:rs[0].uds,p:s.pct});
+  const sv=svc(c);rs.forEach(r=>{const o=calc(r);let n=0,a=0,cur=null,pw=-1;
+   sv.forEach(d=>{const w=wkId(d);if(w!==pw){n=0;pw=w;cur=null}if(o.cell[d]==='f'){if(!n)a=d;n++;if(n===AN.run){cur={c,u:rs[0].uds,name:r.name,doc:r.doc,n,a,z:d,w:wkNum(d)};st.push(cur)}else if(n>AN.run&&cur){cur.n=n;cur.z=d}}else{n=0;cur=null}});
+   0})});
+ return{low:low.sort((x,y)=>x.p-y.p),st:st.sort((x,y)=>y.n-x.n)}}
+function dailyOf(rows){const cs=rows.map(calc),out=[];
+ for(let d=1;d<=nDays();d++){if(isWk(d)||isSp(d))continue;let e=0,a=0;cs.forEach(o=>{const k=o.cell[d];if(k==='x'){e++;a++}else if(k==='f')e++});out.push({d,e,a,p:e?a/e*100:null})}
+ return out}
+function renderAn(){if(!S.rows.length)return;
+ $('#anCfg').classList.toggle('hide',!FIN);
+ if(!FIN){$('#t5').innerHTML='Análisis';$('#anB').innerHTML=FINNO?`<div class="card"><h3>Acceso restringido</h3><p style="margin:6px 0 10px">Este panel contiene valores de facturación y está disponible para el perfil Financiero / Administrativo del ICBF.</p><button class="btn" style="background:var(--g);color:#fff" onclick="FINNO=false;renderAn()">Volver</button></div>`:`<div class="card" role="group" aria-labelledby="fgt"><h3 id="fgt">Confirmar perfil</h3><p style="margin:6px 0 10px">El panel de análisis incluye el presupuesto a facturar. ¿Va a actuar como <b>Financiero / Administrativo del ICBF</b>?</p><div class="row" style="margin:0"><button class="btn" style="background:var(--g);color:#fff" onclick="finOk()">✔ Confirmar y habilitar</button><button class="btn" style="background:var(--bg);color:var(--ink);border:1px solid var(--line)" onclick="finNo()">No</button></div></div>`;return}
+ const T=stats(S.rows),A=alerts(),dl=dailyOf(S.rows),N=A.low.length+A.st.length,er=ERR.length;
+ $('#t5').innerHTML='Análisis'+(N?`<span class="bdg" aria-label="${N} alertas">${N}</span>`:'');
+ const WD2=wkDiscounts(),dBl=WD2.reduce((a,x)=>a+x.f.desc,0),dSt=A.st.length,dTot=dBl+dSt,gross=(T.att+T.abs)*AN.val,net=gross-dTot*AN.val;
+ const U=Object.entries(grp()).map(([c,rs])=>{const s=stats(rs);return{c,u:rs[0].uds,p:s.pct,s,dl:dailyOf(rs)}}).sort((a,b)=>a.p-b.p);
+ const best=U[U.length-1],worst=U[0];
+ const txt=[`*Resumen de asistencia – ${MF[S.month-1]} ${year()}*`,...[['Operador','op'],['Contrato N.°','co'],['Regional','rg'],['Centro zonal','cz'],['Modalidad','md'],['Ciudad','ci']].filter(([,k])=>(S.meta||{})[k]).map(([l,k])=>`• ${l}: ${S.meta[k]}`),`• UDS: ${U.length} · Activos: ${T.act} · Retirados: ${T.ina}`,`• Asistencias: ${T.att} de ${T.cap} cupos → *${T.pct}%*`,`• Inasistencias: ${T.abs}`,`• Valor ración: ${money(AN.val)}`,`• Presupuesto bruto ((asistencias + inasistencias) × valor ración): ${money(gross)}`,`• Descuento por días sin diligenciar: ${dBl} raciones (−${money(dBl*AN.val)})`,`• Descuento por inasistencias seguidas: ${dSt} caso(s) × 1 ración (−${money(dSt*AN.val)})`,`• *Presupuesto a facturar (neto): ${money(net)}*`,`• Mayor cumplimiento: ${best.c} ${best.u} (${best.p}%)`,`• Menor cumplimiento: ${worst.c} ${worst.u} (${worst.p}%)`,`• UDS bajo la meta (<${AN.thr}%): ${A.low.length}${A.low.length?' → '+A.low.slice(0,5).map(x=>x.c).join(', ')+(A.low.length>5?'…':''):''}`,`• Casos con ≥${AN.run} inasistencias seguidas en la misma semana: ${A.st.length}`,`• Errores de marcación: ${er}`,`• Días especiales excluidos: ${[...S.special].sort((a,b)=>a-b).join(', ')||'ninguno'}`].join('\n');
+ const bars=U.map(u=>`<div class="br"><span title="${esc(u.u)}">${esc(u.c)} ${esc(u.u)}</span><div class="bt" role="img" aria-label="${esc(u.c)}: ${u.p}%"><i class="${u.p<AN.thr?'lo':''}" style="width:${Math.min(100,u.p)}%"></i><u style="left:${AN.thr}%"></u></div><b>${u.p}%</b></div>`).join('');
+ const hd=dl.map(x=>x.d),wk0=new Set(hd.filter((d,i)=>i===0||wkId(d)!==wkId(hd[i-1])));
+ const mxw=u=>{const m={};u.dl.forEach(x=>{if(x.p!==null)m[wkId(x.d)]=Math.max(m[wkId(x.d)]||0,x.a)});return m};
+ const heat=`<div class="wrap"><table><thead><tr><th style="text-align:left;min-width:210px">Código — Unidad de servicio</th>${hd.map(d=>`<th class="d"${wk0.has(d)?' style="border-left:3px solid #fff"':''}>${d}</th>`).join('')}</tr></thead><tbody>${U.map(u=>{const m=mxw(u);return`<tr><td style="position:sticky;left:0;background:var(--card);text-align:left">${esc(u.c)} — ${esc(u.u)}</td>${hd.map(d=>{const x=u.dl.find(z=>z.d===d),bl=wk0.has(d)?'border-left:3px solid var(--ink);':'';if(!x||x.p===null)return`<td class="d cs" style="${bl}">–</td>`;const mw=m[wkId(d)]||0,r=mw?x.a/mw:0;return`<td class="d" style="${bl}background:hsl(${Math.round(Math.max(0,Math.min(1,r)-.5)*2*120)} 70% 78%);color:#12303a" title="${esc(u.c)} día ${d}: ${x.a} asistieron de ${x.e} · mayor cobertura de la semana: ${mw}">${x.a}</td>`}).join('')}</tr>`}).join('')}</tbody></table></div>`;
+ const aL=A.low.length?`<div class="wrap"><table><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th>Cumplimiento</th></tr></thead><tbody>${A.low.map(x=>`<tr class="link" tabindex="0" onclick="goDet('${esc(x.c)}')"><td>${esc(x.c)}</td><td>${esc(x.u)}</td><td class="n"><span class="chk bad">${x.p}%</span></td></tr>`).join('')}</tbody></table></div>`:'';
+ const aS=A.st.length?`<div class="wrap"><table><thead><tr><th>UDS</th><th style="text-align:left">Participante</th><th>Documento</th><th>Semana</th><th>Seguidas</th><th>Desde – hasta</th><th>Descuento</th></tr></thead><tbody>${A.st.slice(0,60).map(x=>`<tr class="link" tabindex="0" onclick="goDet('${esc(x.c)}')"><td>${esc(x.c)}</td><td>${esc(x.name)}</td><td>${esc(x.doc)}</td><td class="n">Semana ${x.w}</td><td class="n"><span class="chk bad">${x.n}</span></td><td class="n">${x.a} – ${x.z} ${MN[S.month-1]}</td><td class="n">−1 ración (−${money(AN.val)})</td></tr>`).join('')}</tbody></table></div>${A.st.length>60?`<div class="legend">Se muestran 60 de ${A.st.length}.</div>`:''}`:'';
+ $('#anB').innerHTML=`<div class="kpis">${kp([['Cumplimiento general',T.pct+'%'],['Presupuesto bruto',money(gross)],['Descuentos',dTot?'−'+money(dTot*AN.val):'$0'],['Presupuesto a facturar (neto)',money(net)],['UDS bajo la meta',A.low.length],['Casos de inasistencias seguidas',A.st.length],['Errores de marcación',er]])}</div>
+ <div class="card"><h3>Resumen automático</h3><textarea id="sumT" rows="10" readonly aria-label="Resumen del mes">${esc(txt)}</textarea><div class="row" style="margin:6px 0 0"><button class="btn" style="background:var(--g);color:#fff" onclick="cpSum()">📋 Copiar</button><button class="btn" style="background:#16a34a;color:#fff" onclick="waSum()">💬 WhatsApp</button><span id="cpm" role="status" class="legend"></span></div></div>
+ ${dTot?`<div class="card"><h3>Descuentos</h3><div class="kpis">${kp([['Días sin diligenciar (raciones)',dBl],['Inasistencias seguidas (casos × 1 ración)',dSt],['Total raciones a descontar',dTot],['Total descuento',money(dTot*AN.val)]])}</div>${dBl?`<h3 style="margin:8px 0 6px">Días sin diligenciar (igual que en “Cupo por semana”)</h3><div class="wrap"><table><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th>Semana</th><th style="text-align:left">Días en blanco</th><th>Cupo</th><th>Raciones a descontar</th><th>Valor</th></tr></thead><tbody>${WD2.map(x=>`<tr><td>${esc(x.c)}</td><td>${esc(x.u)}</td><td class="n">Semana ${x.i+1}</td><td>${x.f.bl.map(d=>DN[dow(d)-1]+' '+d).join(' · ')}</td><td class="n">${x.f.cupo}</td><td class="n">${x.f.cupo} × ${x.f.bl.length} = <b>${x.f.desc}</b></td><td class="n">−${money(x.f.desc*AN.val)}</td></tr>`).join('')}</tbody><tfoot><tr><td colspan="5">TOTAL</td><td class="n">${dBl}</td><td class="n">−${money(dBl*AN.val)}</td></tr></tfoot></table></div>`:''}${dSt?`<div class="legend" style="margin:8px 0 0">Inasistencias seguidas: ${dSt} caso(s) × 1 ración = −${money(dSt*AN.val)}. Solo aplica 1 descuento por caso, sin importar cuántos días seguidos falte (detalle abajo en las alertas).</div>`:''}</div>`:''}
+ ${aL?`<div class="card"><h3>Alertas: UDS bajo la meta (${AN.thr}%)</h3>${aL}</div>`:''}
+ ${aS?`<div class="card"><h3>Alertas: ${AN.run} o más inasistencias seguidas (misma semana)</h3>${aS}</div>`:''}
+ <div class="card"><h3>Cumplimiento por UDS</h3>${bars}<div class="legend"><span style="--c:#dc2626">Línea roja = meta</span><span style="--c:#f59e0b">Bajo la meta</span></div></div>
+ <div class="card"><h3>Mapa de calor: asistentes por UDS y día</h3>${heat}<div class="legend"><span style="--c:hsl(120 70% 78%)">Verde = mayor cobertura de la semana (esa UDS)</span><span style="--c:hsl(60 70% 78%)">Amarillo = menos asistentes</span><span style="--c:hsl(0 70% 78%)">Rojo = muy por debajo</span><span style="--c:var(--ink)">Línea gruesa = inicio de semana</span></div></div>`}
+function cpSum(){const t=$('#sumT'),ok=()=>{$('#cpm').textContent='Copiado ✔'};
+ navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t.value).then(ok,()=>{t.select();document.execCommand('copy');ok()}):(t.select(),document.execCommand('copy'),ok())}
+function waSum(){window.open('https://wa.me/?text='+encodeURIComponent($('#sumT').value),'_blank','noopener')}
+
+/* vista móvil: tarjetas por participante */
+S.cards=innerWidth<720;
+function togM(){S.cards=!S.cards;renderCards()}
+function renderCards(){const on=S.cards;$('#detW').classList.toggle('hide',on);$('#detC').classList.toggle('hide',!on);$('#vm').textContent=on?'▤ Ver tabla':'▦ Ver tarjetas';if(!on||!S.rows.length)return;
+ const c=$('#udsSel').value,q=$('#q').value.toLowerCase().trim(),st=$('#stSel').value,N=nDays();
+ const rows=S.rows.filter(r=>r.code===c&&(!q||r.name.toLowerCase().includes(q)||r.doc.toLowerCase().includes(q))&&(!st||(st==='I')===(!r.active&&calc(r).att===0)));
+ $('#detC').innerHTML=rows.map(r=>{const o=calc(r);let g='';
+  for(let d=1;d<=N;d++){const w=isWk(d),sp=spDay(d,c);let cl,t,at='';
+   if((w||isSp(d))&&r.marks[d]){cl='ce';t='⚠'}else if(w)continue;else if(sp){cl='cs';t='–'}
+   else{const k=o.cell[d];cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(k!=='x'){cl=(o.man[d]?'cm':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
+   g+=`<span class="mc ${cl}"${at}>${t}<small>${d} ${WD[dow(d)]}</small></span>`}
+  return`<article class="pc"><b>${esc(r.name)}</b><small>${esc(r.doc)} · ${r.active?'Activo':o.eff?'Activo*':'Inactivo'}</small><div class="mg">${g}</div><div class="ps"><span>✔ ${o.att}</span><span>Falla ${o.abs}</span><span>R ${o.ret}</span><span>N/A ${o.na}</span></div></article>`}).join('')||'<div class="empty">Sin resultados</div>'}
+
+/* accesibilidad */
+function theme(){const r=document.documentElement,d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=d?'light':'dark';try{localStorage.setItem('uds_theme',r.dataset.theme)}catch(e){}}
+let FZ=1;function Zm(v){FZ=Math.min(1.5,Math.max(.8,Math.round((FZ+v)*10)/10));document.querySelector('main').style.zoom=FZ;try{localStorage.setItem('uds_z',FZ)}catch(e){}}
+try{const t=localStorage.getItem('uds_theme');if(t)document.documentElement.dataset.theme=t;const z=+localStorage.getItem('uds_z');if(z){FZ=z;document.querySelector('main').style.zoom=z}}catch(e){}
+document.addEventListener('keydown',e=>{const t=e.target;if((e.key==='Enter'||e.key===' ')&&t.classList&&(t.classList.contains('ed')||t.matches('tr.link'))){e.preventDefault();t.click()}});
+document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('role','tab'));
+document.querySelectorAll('#v1,#v2,#v3,#v4,#v5').forEach(x=>x.setAttribute('role','tabpanel'));
+$('#nav').addEventListener('keydown',e=>{const k={ArrowRight:1,ArrowLeft:-1}[e.key];if(!k)return;const i=[1,2,3,4,5],cur=i.find(n=>$('#t'+n).classList.contains('on')),nx=i[(i.indexOf(cur)+k+5)%5];tab(nx);$('#t'+nx).focus()});
+TS.push({i:'📈',t:'Análisis y alertas',x:'Confirme su perfil (Financiero / Administrativo ICBF) y verá el <b>resumen automático</b> con el <b>presupuesto a facturar</b> (copiar o enviar por WhatsApp), las <b>alertas</b> por UDS bajo la meta y por inasistencias seguidas, y las gráficas. La meta, las faltas seguidas y el valor de la ración se pueden cambiar arriba.',s:'#v5',tab:5});
+tab(1);
 let TI=0;
 function tut(n){TI=n??0;$('#tut').classList.remove('hide');$('#fab').classList.add('hide');rt()}
 function rt(){const st=TS[TI];document.querySelectorAll('.spot').forEach(e=>e.classList.remove('spot'));
@@ -446,7 +556,7 @@ function rt(){const st=TS[TI];document.querySelectorAll('.spot').forEach(e=>e.cl
   <button onclick="tclose()">Omitir</button>${TI?'<button onclick="TI--;rt()">←</button>':''}<button class="go" onclick="${last?'tclose()':'TI++;rt()'}">${last?'¡Listo!':'Siguiente →'}</button></div>`}
 function tclose(){$('#tut').classList.add('hide');$('#fab').classList.remove('hide');document.querySelectorAll('.spot').forEach(e=>e.classList.remove('spot'));
  try{localStorage.setItem('uds_tut_ok','1')}catch(e){}}
-function fabGo(){tut(!$('#app').classList.contains('hide')?(!$('#v4').classList.contains('hide')?8:!$('#v3').classList.contains('hide')?7:$('#v2').classList.contains('hide')?3:4):0)}
+function fabGo(){tut(!$('#app').classList.contains('hide')?(!$('#v5').classList.contains('hide')?9:!$('#v4').classList.contains('hide')?8:!$('#v3').classList.contains('hide')?7:$('#v2').classList.contains('hide')?3:4):0)}
 document.addEventListener('keydown',e=>e.key==='Escape'&&!$('#tut').classList.contains('hide')&&tclose());
 try{if(localStorage.getItem('uds_dfold')==='1')togD(true,1)}catch(e){}
 try{if(!localStorage.getItem('uds_tut_ok'))tut(0)}catch(e){}
