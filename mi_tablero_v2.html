@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Tablero de Apps - APP ZAN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #070c12;
+    --cyan-glow: #00f2fe;
+    --mint-accent: #34d399;
+    --text-main: #e2e8f0;    
+    --text-muted: #94a3b8;   
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    background-color: var(--bg-dark);
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(0, 242, 254, 0.1), transparent 60%),
+      radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.06), transparent 50%),
+      linear-gradient(180deg, #05080d 0%, #08111c 100%);
+    padding: 24px 20px 60px;
+    overflow-x: hidden;
+  }
+
+  header {
+    max-width: 1280px;
+    margin: 0 auto 28px;
+    text-align: center;
+  }
+
+  .subtitle-badge {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    color: var(--cyan-glow);
+    text-transform: uppercase;
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+    letter-spacing: 1px;
+    color: #ffffff;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    margin-bottom: 6px;
+  }
+
+  header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+
+  .toolbar {
+    max-width: 1280px;
+    margin: 0 auto 24px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .search-box {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 10px 16px;
+    background: rgba(12, 22, 34, 0.9);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 0.88rem;
+    outline: none;
+    transition: all 0.25s ease;
+  }
+
+  .search-box input:focus {
+    border-color: var(--cyan-glow);
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+  }
+
+  /* GRID 4 COLUMNAS - Altura ligeramente mayor para dar espacio a la info detallada */
+  main.grid-board {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    perspective: 1200px;
+  }
+
+  @media (max-width: 1100px) {
+    main.grid-board { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 820px) {
+    main.grid-board { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 520px) {
+    main.grid-board { grid-template-columns: 1fr; }
+  }
+
+  .poke-card-wrapper {
+    position: relative;
+    width: 100%;
+    height: 410px;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+  }
+
+  .poke-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transform-origin: center center;
+    cursor: pointer;
+  }
+
+  .poke-card-wrapper:hover .poke-card-inner,
+  .poke-card-wrapper.flipped .poke-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 16px;
+    border: 2px solid rgba(0, 242, 254, 0.3);
+    background: #0b1522;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* --- DORSO TRASERO --- */
+  .card-back {
+    transform: rotateY(0deg);
+    background: radial-gradient(circle at 50% 35%, #132438 0%, #070e17 100%);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-back::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 10px;
+    pointer-events: none;
+  }
+
+  .back-top-badge {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    color: var(--cyan-glow);
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    padding: 3px 10px;
+    border-radius: 12px;
+    z-index: 2;
+  }
+
+  .back-center-emblem {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto 0;
+  }
+
+  .back-center-emblem svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.3));
+  }
+
+  .back-title-banner {
+    width: 100%;
+    background: rgba(0, 242, 254, 0.06);
+    border-top: 1px solid rgba(0, 242, 254, 0.25);
+    border-bottom: 1px solid rgba(0, 242, 254, 0.25);
+    padding: 8px 10px;
+    text-align: center;
+    z-index: 2;
+  }
+
+  .back-title-banner h2 {
+    font-family: 'Anton', sans-serif;
+    font-size: 1.05rem;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    font-weight: 400;
+  }
+
+  .back-title-banner p {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .back-footer-tag {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    z-index: 2;
+  }
+
+  .corner-sparkle {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    opacity: 0.4;
+  }
+  .corner-sparkle.tl { top: 14px; left: 14px; }
+  .corner-sparkle.tr { top: 14px; right: 14px; }
+  .corner-sparkle.bl { bottom: 14px; left: 14px; }
+  .corner-sparkle.br { bottom: 14px; right: 14px; }
+
+  /* --- FRENTE INTERACTIVO --- */
+  .card-front {
+    transform: rotateY(180deg);
+    background: linear-gradient(160deg, #0d1b2a 0%, #08121e 100%);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .card-front-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(0, 242, 254, 0.15);
+    padding-bottom: 8px;
+  }
+
+  .front-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #0f2338;
+    border: 1px solid rgba(0, 242, 254, 0.3);
+    object-fit: contain;
+    padding: 3px;
+    flex-shrink: 0;
+  }
+
+  .front-header-text h3 {
+    font-family: 'Anton', sans-serif;
+    font-size: 0.98rem;
+    color: #ffffff;
+    font-weight: 400;
+    line-height: 1.1;
+  }
+
+  .front-header-text span {
+    font-size: 0.68rem;
+    color: var(--mint-accent);
+    font-weight: 500;
+  }
+
+  .front-desc {
+    font-size: 0.76rem;
+    color: var(--text-main);
+    line-height: 1.42;
+    margin: 8px 0;
+    flex-grow: 1;
+    font-weight: 400;
+    overflow-y: auto;
+  }
+
+  .versions-container {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+
+  .versions-title {
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--cyan-glow);
+    margin-bottom: 4px;
+    display: block;
+    font-weight: 600;
+  }
+
+  .version-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .v-btn {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.2s ease;
+  }
+
+  .v-btn:hover {
+    background: var(--cyan-glow);
+    color: #05080d;
+    border-color: var(--cyan-glow);
+  }
+
+  .v-btn.latest {
+    background: #059669;
+    border: none;
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .v-btn.latest:hover {
+    background: #10b981;
+  }
+
+  .btn-launch {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #0284c7 0%, #00f2fe 100%);
+    color: #04111d;
+    font-weight: 700;
+    font-size: 0.76rem;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.25s ease;
+  }
+
+  .btn-launch:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 14px rgba(0, 242, 254, 0.35);
+  }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="subtitle-badge">PANEL INTERACTIVO 3D</div>
+  <h1>MI TABLERO DE APPS</h1>
+  <p>Pasa el cursor sobre la tarjeta para explorar las funciones detalladas</p>
+</header>
+
+<div class="toolbar">
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Buscar app, minutas, novedades, ZAN..." onkeyup="filterCards()">
+  </div>
+</div>
+
+<main class="grid-board" id="cardsGrid">
+
+  <!-- CARTA 1 -->
+  <div class="poke-card-wrapper" data-title="Lista Mercado & Minutas">
+    <div class="poke-card-inner">
+      <div class="card-face card-back">
+        <span class="back-top-badge">5 VERSIONES</span>
+        <svg class="corner-sparkle tl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle tr" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle bl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle br" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <div class="back-center-emblem">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#00f2fe" stroke-width="2">
+            <circle cx="50" cy="50" r="42" stroke-opacity="0.4"/>
+            <circle cx="50" cy="50" r="32" stroke-opacity="0.8"/>
+            <path d="M50 8 A42 42 0 0 1 92 50 C70 50 50 70 50 92 A42 42 0 0 1 8 50 C30 50 50 30 50 8 Z" fill="rgba(0, 242, 254, 0.08)"/>
+            <circle cx="50" cy="50" r="10" fill="#00f2fe"/>
+          </svg>
+        </div>
+        <div class="back-title-banner">
+          <h2>LISTA MERCADO & MINUTAS</h2>
+          <p>Pasa el cursor para detalles</p>
+        </div>
+        <span class="back-footer-tag">2026 • APP ZAN</span>
+      </div>
+      <div class="card-face card-front">
+        <div class="card-front-header">
+          <img class="front-logo" src="https://afkril.github.io/LISTA_MERCADO_V3/LOGO_MINUTA.png" alt="Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%2300f2fe\'><path d=\'M12 2L2 19h20L12 2z\'/></svg>'">
+          <div class="front-header-text">
+            <h3>Lista Mercado & Minutas</h3>
+            <span>5 Versiones activas</span>
+          </div>
+        </div>
+        <p class="front-desc">Sistema integral para la planificación de minutas semanales y mensuales. Incluye calendario automatizado de festivos, directorio detallado de unidades operativas UDS, control de insumos y generación automática de actas de entrega oficiales.</p>
+        <div class="versions-container">
+          <span class="versions-title">Versiones disponibles</span>
+          <div class="version-list version-chips">
+            <a class="v-btn" href="https://afkril.github.io/LISTA_MERCADO.html" target="_blank">V1</a>
+            <a class="v-btn" href="https://afkril.github.io/LISTA_MERCADO_V2.html" target="_blank">V2</a>
+            <a class="v-btn" href="https://afkril.github.io/LISTA_MERCADO_V3.html" target="_blank">V3</a>
+            <a class="v-btn" href="https://afkril.github.io/LISTA_MERCADO_V3/index.html" target="_blank">V4</a>
+            <a class="v-btn latest" href="https://afkril.github.io/APP_LISTA_MERCADO_V3.0/index.html" target="_blank">V5 ★</a>
+          </div>
+        </div>
+        <a class="btn-launch" href="https://afkril.github.io/APP_LISTA_MERCADO_V3.0/index.html" target="_blank">Abrir V5 Reciente</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARTA 2 -->
+  <div class="poke-card-wrapper" data-title="Novedades JER">
+    <div class="poke-card-inner">
+      <div class="card-face card-back">
+        <span class="back-top-badge">2 VERSIONES</span>
+        <svg class="corner-sparkle tl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle tr" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle bl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle br" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <div class="back-center-emblem">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#00f2fe" stroke-width="2">
+            <circle cx="50" cy="50" r="42" stroke-opacity="0.4"/>
+            <circle cx="50" cy="50" r="32" stroke-opacity="0.8"/>
+            <path d="M50 8 A42 42 0 0 1 92 50 C70 50 50 70 50 92 A42 42 0 0 1 8 50 C30 50 50 30 50 8 Z" fill="rgba(0, 242, 254, 0.08)"/>
+            <circle cx="50" cy="50" r="10" fill="#00f2fe"/>
+          </svg>
+        </div>
+        <div class="back-title-banner">
+          <h2>NOVEDADES - ASOCIACIÓN JER</h2>
+          <p>Pasa el cursor para detalles</p>
+        </div>
+        <span class="back-footer-tag">2026 • APP ZAN</span>
+      </div>
+      <div class="card-face card-front">
+        <div class="card-front-header">
+          <img class="front-logo" src="https://afkril.github.io/Novedades_JER/LOGOJER.png" alt="Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%2300f2fe\'><path d=\'M12 2L2 19h20L12 2z\'/></svg>'">
+          <div class="front-header-text">
+            <h3>Novedades - JER</h3>
+            <span>2 Versiones activas</span>
+          </div>
+        </div>
+        <p class="front-desc">Plataforma especializada de gestión para la Asociación José Eustasio Rivera. Permite llevar el registro riguroso de ingresos, retiros y novedades de beneficiarios, seguimiento nutricional por cupos y un panel centralizado de administración operativa.</p>
+        <div class="versions-container">
+          <span class="versions-title">Versiones disponibles</span>
+          <div class="version-list version-chips">
+            <a class="v-btn" href="https://afkril.github.io/NOVEDADES_JER.html" target="_blank">V1</a>
+            <a class="v-btn latest" href="https://afkril.github.io/Novedades_JER/index.html" target="_blank">V2 ★</a>
+          </div>
+        </div>
+        <a class="btn-launch" href="https://afkril.github.io/Novedades_JER/index.html" target="_blank">Abrir V2 Reciente</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARTA 3 -->
+  <div class="poke-card-wrapper" data-title="Novedades Timanco 3">
+    <div class="poke-card-inner">
+      <div class="card-face card-back">
+        <span class="back-top-badge">1 VERSIÓN</span>
+        <svg class="corner-sparkle tl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle tr" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle bl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle br" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <div class="back-center-emblem">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#00f2fe" stroke-width="2">
+            <circle cx="50" cy="50" r="42" stroke-opacity="0.4"/>
+            <circle cx="50" cy="50" r="32" stroke-opacity="0.8"/>
+            <path d="M50 8 A42 42 0 0 1 92 50 C70 50 50 70 50 92 A42 42 0 0 1 8 50 C30 50 50 30 50 8 Z" fill="rgba(0, 242, 254, 0.08)"/>
+            <circle cx="50" cy="50" r="10" fill="#00f2fe"/>
+          </svg>
+        </div>
+        <div class="back-title-banner">
+          <h2>NOVEDADES - TIMANCO 3</h2>
+          <p>Pasa el cursor para detalles</p>
+        </div>
+        <span class="back-footer-tag">2026 • APP ZAN</span>
+      </div>
+      <div class="card-face card-front">
+        <div class="card-front-header">
+          <img class="front-logo" src="https://afkril.github.io/LOGOT3.png" alt="Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%2300f2fe\'><path d=\'M12 2L2 19h20L12 2z\'/></svg>'">
+          <div class="front-header-text">
+            <h3>Novedades - Timanco 3</h3>
+            <span>1 Versión activa</span>
+          </div>
+        </div>
+        <p class="front-desc">Módulo de control enfocado en la Asociación Timanco 3. Diseñado para optimizar el reporte ágil de novedades de niños y niñas, seguimiento de asistencia y consolidación de datos nutricionales institucionales.</p>
+        <div class="versions-container">
+          <span class="versions-title">Versiones disponibles</span>
+          <div class="version-list version-chips">
+            <a class="v-btn latest" href="https://afkril.github.io/NOVEDADES_T3.html" target="_blank">V1 ★</a>
+          </div>
+        </div>
+        <a class="btn-launch" href="https://afkril.github.io/NOVEDADES_T3.html" target="_blank">Abrir V1 Reciente</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARTA 4 -->
+  <div class="poke-card-wrapper" data-title="ZAN Tabla de Valores">
+    <div class="poke-card-inner">
+      <div class="card-face card-back">
+        <span class="back-top-badge">2 VERSIONES</span>
+        <svg class="corner-sparkle tl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle tr" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle bl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle br" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <div class="back-center-emblem">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#00f2fe" stroke-width="2">
+            <circle cx="50" cy="50" r="42" stroke-opacity="0.4"/>
+            <circle cx="50" cy="50" r="32" stroke-opacity="0.8"/>
+            <path d="M50 8 A42 42 0 0 1 92 50 C70 50 50 70 50 92 A42 42 0 0 1 8 50 C30 50 50 30 50 8 Z" fill="rgba(0, 242, 254, 0.08)"/>
+            <circle cx="50" cy="50" r="10" fill="#00f2fe"/>
+          </svg>
+        </div>
+        <div class="back-title-banner">
+          <h2>ZAN - TABLA DE VALORES</h2>
+          <p>Pasa el cursor para detalles</p>
+        </div>
+        <span class="back-footer-tag">2026 • APP ZAN</span>
+      </div>
+      <div class="card-face card-front">
+        <div class="card-front-header">
+          <div class="front-logo" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--cyan-glow);">⚖️</div>
+          <div class="front-header-text">
+            <h3>ZAN - Tabla Valores</h3>
+            <span>2 Versiones activas</span>
+          </div>
+        </div>
+        <p class="front-desc">Herramienta de precisión para la consulta y cálculo financiero de la tabla de valores ZAN. Facilita el control logístico de pedidos, presupuestos y la proyección de compras locales para la ejecución de contratos.</p>
+        <div class="versions-container">
+          <span class="versions-title">Versiones disponibles</span>
+          <div class="version-list version-chips">
+            <a class="v-btn" href="https://afkril.github.io/ZAN_V2.html" target="_blank">V1</a>
+            <a class="v-btn latest" href="https://afkril.github.io/ZAN_V2/loading.html" target="_blank">V2 ★</a>
+          </div>
+        </div>
+        <a class="btn-launch" href="https://afkril.github.io/ZAN_V2/loading.html" target="_blank">Abrir V2 Reciente</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARTA 5 -->
+  <div class="poke-card-wrapper" data-title="Multi Operadores">
+    <div class="poke-card-inner">
+      <div class="card-face card-back">
+        <span class="back-top-badge">4 VERSIONES</span>
+        <svg class="corner-sparkle tl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle tr" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle bl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle br" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <div class="back-center-emblem">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#00f2fe" stroke-width="2">
+            <circle cx="50" cy="50" r="42" stroke-opacity="0.4"/>
+            <circle cx="50" cy="50" r="32" stroke-opacity="0.8"/>
+            <path d="M50 8 A42 42 0 0 1 92 50 C70 50 50 70 50 92 A42 42 0 0 1 8 50 C30 50 50 30 50 8 Z" fill="rgba(0, 242, 254, 0.08)"/>
+            <circle cx="50" cy="50" r="10" fill="#00f2fe"/>
+          </svg>
+        </div>
+        <div class="back-title-banner">
+          <h2>MULTI OPERADORES</h2>
+          <p>Pasa el cursor para detalles</p>
+        </div>
+        <span class="back-footer-tag">2026 • APP ZAN</span>
+      </div>
+      <div class="card-face card-front">
+        <div class="card-front-header">
+          <div class="front-logo" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--cyan-glow);">👥</div>
+          <div class="front-header-text">
+            <h3>Multi Operadores</h3>
+            <span>4 Versiones activas</span>
+          </div>
+        </div>
+        <p class="front-desc">Sistema centralizado para administrar múltiples asociaciones u operadores desde un único entorno de trabajo. Permite procesar novedades masivas y generar reportes consolidados por unidad y contrato.</p>
+        <div class="versions-container">
+          <span class="versions-title">Versiones disponibles</span>
+          <div class="version-list version-chips">
+            <a class="v-btn" href="https://afkril.github.io/APP-NOVEDADES/index.html" target="_blank">V1</a>
+            <a class="v-btn" href="https://afkril.github.io/APP-NOVEDADES-V2/index.html" target="_blank">V2</a>
+            <a class="v-btn" href="https://afkril.github.io/APP-NOVEDADES-V3/index.html" target="_blank">V3</a>
+            <a class="v-btn latest" href="https://afkril.github.io/APP-NOVEDADES-V4/index.html" target="_blank">V4 ★</a>
+          </div>
+        </div>
+        <a class="btn-launch" href="https://afkril.github.io/APP-NOVEDADES-V4/index.html" target="_blank">Abrir V4 Reciente</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARTA 6 -->
+  <div class="poke-card-wrapper" data-title="RAM360 Análisis RAM">
+    <div class="poke-card-inner">
+      <div class="card-face card-back">
+        <span class="back-top-badge">1 VERSIÓN</span>
+        <svg class="corner-sparkle tl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle tr" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle bl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle br" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <div class="back-center-emblem">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#00f2fe" stroke-width="2">
+            <circle cx="50" cy="50" r="42" stroke-opacity="0.4"/>
+            <circle cx="50" cy="50" r="32" stroke-opacity="0.8"/>
+            <path d="M50 8 A42 42 0 0 1 92 50 C70 50 50 70 50 92 A42 42 0 0 1 8 50 C30 50 50 30 50 8 Z" fill="rgba(0, 242, 254, 0.08)"/>
+            <circle cx="50" cy="50" r="10" fill="#00f2fe"/>
+          </svg>
+        </div>
+        <div class="back-title-banner">
+          <h2>RAM360 - ANÁLISIS RAM</h2>
+          <p>Pasa el cursor para detalles</p>
+        </div>
+        <span class="back-footer-tag">2026 • APP ZAN</span>
+      </div>
+      <div class="card-face card-front">
+        <div class="card-front-header">
+          <div class="front-logo" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--cyan-glow);">📊</div>
+          <div class="front-header-text">
+            <h3>RAM360 - Análisis</h3>
+            <span>1 Versión activa</span>
+          </div>
+        </div>
+        <p class="front-desc">Módulo de auditoría y procesamiento analítico de la RAM Digital. Examina y contrasta reportes crudos del sistema Cuéntame para filtrar inconsistencias, auditar cupos y consolidar métricas de manera automatizada.</p>
+        <div class="versions-container">
+          <span class="versions-title">Versiones disponibles</span>
+          <div class="version-list version-chips">
+            <a class="v-btn latest" href="https://afkril.github.io/RAM360.html" target="_blank">V1 ★</a>
+          </div>
+        </div>
+        <a class="btn-launch" href="https://afkril.github.io/RAM360.html" target="_blank">Abrir V1 Reciente</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARTA 7 -->
+  <div class="poke-card-wrapper" data-title="Programador Tomas Nutricional">
+    <div class="poke-card-inner">
+      <div class="card-face card-back">
+        <span class="back-top-badge">1 VERSIÓN</span>
+        <svg class="corner-sparkle tl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle tr" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle bl" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <svg class="corner-sparkle br" viewBox="0 0 24 24" fill="#00f2fe"><path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z"/></svg>
+        <div class="back-center-emblem">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#00f2fe" stroke-width="2">
+            <circle cx="50" cy="50" r="42" stroke-opacity="0.4"/>
+            <circle cx="50" cy="50" r="32" stroke-opacity="0.8"/>
+            <path d="M50 8 A42 42 0 0 1 92 50 C70 50 50 70 50 92 A42 42 0 0 1 8 50 C30 50 50 30 50 8 Z" fill="rgba(0, 242, 254, 0.08)"/>
+            <circle cx="50" cy="50" r="10" fill="#00f2fe"/>
+          </svg>
+        </div>
+        <div class="back-title-banner">
+          <h2>PROGRAMADOR TOMÁS</h2>
+          <p>Pasa el cursor para detalles</p>
+        </div>
+        <span class="back-footer-tag">2026 • APP ZAN</span>
+      </div>
+      <div class="card-face card-front">
+        <div class="card-front-header">
+          <div class="front-logo" style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--cyan-glow);">📅</div>
+          <div class="front-header-text">
+            <h3>Programador Tomás</h3>
+            <span>1 Versión activa</span>
+          </div>
+        </div>
+        <p class="front-desc">Asistente inteligente para el seguimiento nutricional. Importa reportes directos del sistema Cuéntame, evalúa perfiles antropométricos y programa automáticamente las fechas del próximo control en un calendario interactivo.</p>
+        <div class="versions-container">
+          <span class="versions-title">Versiones disponibles</span>
+          <div class="version-list version-chips">
+            <a class="v-btn latest" href="https://afkril.github.io/Programador_Tomas.html" target="_blank">V1 ★</a>
+          </div>
+        </div>
+        <a class="btn-launch" href="https://afkril.github.io/Programador_Tomas.html" target="_blank">Abrir V1 Reciente</a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>APP ZAN &copy; 2026 • Tablero de Aplicaciones Directas</p>
+</footer>
+
+<script>
+  document.querySelectorAll('.poke-card-wrapper').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.tagName.toLowerCase() === 'a') return;
+      if (window.innerWidth <= 820) {
+        card.classList.toggle('flipped');
+      }
+    });
+  });
+
+  function filterCards() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const cards = document.querySelectorAll('.poke-card-wrapper');
+    cards.forEach(card => {
+      const title = card.getAttribute('data-title').toLowerCase();
+      card.style.display = title.includes(query) ? 'block' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>

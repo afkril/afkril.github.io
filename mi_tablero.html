@@ -23,6 +23,10 @@
     --gold:#b8860b;
     --purple:#7c3aed;
     --paper-lilac:#efe9f9;
+    --teal:#0f766e;
+    --rose:#be123c;
+    --paper-mint:#e3f3ef;
+    --paper-rose:#fbe8ec;
   }
 
   *{box-sizing:border-box;}
@@ -99,10 +103,10 @@
 
   @media (max-width:680px){
     main{grid-template-columns:1fr; gap:56px;}
-    .card-5{ grid-column:auto; }
+    .card-7{ grid-column:auto; }
   }
 
-  .card-5{ grid-column: 1 / -1; max-width:460px; margin:0 auto; }
+  .card-7{ grid-column: 1 / -1; max-width:460px; margin:0 auto; }
 
   .card{
     position:relative;
@@ -159,6 +163,8 @@
   .card-3{ --rot:-1.4deg; background:var(--paper-manila); }
   .card-4{ --rot:2deg; background:var(--paper-kraft); }
   .card-5{ --rot:-1.8deg; background:var(--paper-lilac); }
+  .card-6{ --rot:1.5deg; background:var(--paper-mint); }
+  .card-7{ --rot:-1.2deg; background:var(--paper-rose); }
 
   .logo-wrap{
     width:64px; height:64px;
@@ -223,12 +229,16 @@
   .card-3 .badge, .card-3 .go{ background:var(--orange); }
   .card-4 .badge, .card-4 .go{ background:var(--gold); }
   .card-5 .badge, .card-5 .go{ background:var(--purple); }
+  .card-6 .badge, .card-6 .go{ background:var(--teal); }
+  .card-7 .badge, .card-7 .go{ background:var(--rose); }
 
   .pin.p1{ background:radial-gradient(circle at 35% 30%, #fff7, #2563eb 35%, #123a99 100%); }
   .pin.p2{ background:radial-gradient(circle at 35% 30%, #fff7, #1f8a4c 35%, #0e4f29 100%); }
   .pin.p3{ background:radial-gradient(circle at 35% 30%, #fff7, #d9621a 35%, #7a3406 100%); }
   .pin.p4{ background:radial-gradient(circle at 35% 30%, #fff7, #b8860b 35%, #6b4d05 100%); }
   .pin.p5{ background:radial-gradient(circle at 35% 30%, #fff7, #7c3aed 35%, #4527a0 100%); }
+  .pin.p6{ background:radial-gradient(circle at 35% 30%, #fff7, #0f766e 35%, #063f3a 100%); }
+  .pin.p7{ background:radial-gradient(circle at 35% 30%, #fff7, #be123c 35%, #6b0a22 100%); }
 
   /* --- version chips --- */
   .versions{
@@ -277,6 +287,8 @@
   .card-3 .v-chip.latest{ background:var(--orange); }
   .card-4 .v-chip.latest{ background:var(--gold); }
   .card-5 .v-chip.latest{ background:var(--purple); }
+  .card-6 .v-chip.latest{ background:var(--teal); }
+  .card-7 .v-chip.latest{ background:var(--rose); }
 
   .card-footer{
     display:flex;
@@ -434,6 +446,48 @@
     <div class="card-footer">
       <span class="hint">toca una versión para abrirla</span>
       <a class="go" href="https://afkril.github.io/APP-NOVEDADES-V4/index.html" target="_blank" rel="noopener">Abrir última
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="card card-6" style="--delay:.6s">
+    <span class="pin p6"></span>
+    <span class="tape tr"></span>
+    <div class="logo-wrap fallback" style="background:var(--teal);">📊</div>
+    <span class="badge">1 versión</span>
+    <h2>RAM360 &mdash; Análisis RAM Digital</h2>
+    <p class="desc">Analiza la RAM Digital a partir del reporte generado por Cuéntame, para revisar y consolidar la información de forma rápida.</p>
+    <div class="versions">
+      <span class="versions-label">Versiones disponibles</span>
+      <div class="version-list">
+        <a class="v-chip latest" href="https://afkril.github.io/RAM360.html" target="_blank" rel="noopener">V1 &middot; más reciente</a>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="hint">toca una versión para abrirla</span>
+      <a class="go" href="https://afkril.github.io/RAM360.html" target="_blank" rel="noopener">Abrir última
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="card card-7" style="--delay:.72s">
+    <span class="pin p7"></span>
+    <span class="tape tr"></span>
+    <div class="logo-wrap fallback" style="background:var(--rose);">📅</div>
+    <span class="badge">1 versión</span>
+    <h2>Programador Tomás &mdash; Seguimiento Nutricional</h2>
+    <p class="desc">Sube el reporte nutricional tal cual del sistema Cuéntame, analiza los estados nutricionales y programa en un calendario cuándo toca el siguiente seguimiento según cada estado.</p>
+    <div class="versions">
+      <span class="versions-label">Versiones disponibles</span>
+      <div class="version-list">
+        <a class="v-chip latest" href="https://afkril.github.io/Programador_Tomas.html" target="_blank" rel="noopener">V1 &middot; más reciente</a>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="hint">toca una versión para abrirla</span>
+      <a class="go" href="https://afkril.github.io/Programador_Tomas.html" target="_blank" rel="noopener">Abrir última
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
     </div>
