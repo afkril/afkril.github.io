@@ -1,0 +1,14 @@
+/* ===== Versiones de minuta ===== */
+.ver-row { flex-wrap: wrap; gap: .4rem; }
+.ver-btn { flex: 0 1 auto; min-width: 54px; display: inline-flex; flex-direction: column; align-items: center; gap: 1px; font-size: .75rem; }
+.ver-btn-fecha { font-size: .55rem; font-weight: 500; opacity: .8; }
+
+.status-badge.status-ver { background: rgba(14,165,233,.14); border: 1px solid rgba(14,165,233,.35); color: #38bdf8; }
+
+.cm-version-box { margin-top: .85rem; padding: .8rem; border: 1px dashed rgba(34,211,238,.35); border-radius: .6rem; background: rgba(34,211,238,.04); }
+.cm-version-hint { font-size: .72rem; color: var(--text-secondary); margin-top: .5rem; }
+.cm-version-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .6rem; }
+.cm-btn-danger { color: #f87171 !important; border-color: rgba(239,68,68,.35) !important; }
+
+.dir-version-wrap { display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; color: #38bdf8; padding: .2rem .45rem; background: rgba(14,165,233,.1); border: 1px solid rgba(14,165,233,.3); border-radius: .375rem; white-space: nowrap; }
+.dir-version-wrap select { background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--border); border-radius: .3rem; font-size: .72rem; padding: .15rem .3rem; font-family: inherit; max-width: 170px; }

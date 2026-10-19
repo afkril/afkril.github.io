@@ -27,8 +27,14 @@
 		let currentOperador = null; // código del operador activo, o null si la modalidad no maneja operadores / no hay ninguno seleccionado
 		let operadoresConfig = {};  // { regional: { modalidad: [codigo, ...] } } — derivado de `regionales`
 		let operadoresNombres = {}; // { codigo: 'Nombre para mostrar' }
+		let currentVersionMinuta = 'v1'; // versión de minuta activa ('v1' = la original). Ver js/versiones-minuta.js
 
 		function getCurrentDB() {
+			// Respeta la versión de minuta activa (V1 = db original del operador/modalidad)
+			if (currentVersionMinuta && currentVersionMinuta !== 'v1' && typeof vmExiste === 'function'
+				&& vmExiste(currentRegional, currentModalidad, currentOperador, currentVersionMinuta)) {
+				return vmGetDB(currentRegional, currentModalidad, currentOperador, currentVersionMinuta);
+			}
 			if (currentOperador) {
 				const opDb = regionales[currentRegional]?.modalidades?.[currentModalidad]?.operadores?.[currentOperador]?.db;
 				if (opDb) return opDb;
@@ -39,6 +45,10 @@
 		// Base de datos "original" (tal como está en database.js) contra la que el
 		// editor compara para marcar cambios; respeta el operador activo.
 		function getBaseDB() {
+			if (currentVersionMinuta && currentVersionMinuta !== 'v1' && typeof vmBaseSnapshot === 'function'
+				&& vmExiste(currentRegional, currentModalidad, currentOperador, currentVersionMinuta)) {
+				return vmBaseSnapshot(currentRegional, currentModalidad, currentOperador, currentVersionMinuta);
+			}
 			if (currentOperador) {
 				const opDb = baseDatabase[currentRegional]?.modalidades?.[currentModalidad]?.operadores?.[currentOperador]?.db;
 				if (opDb) return opDb;
@@ -57,10 +67,8 @@
 
 		// Ruta de Firebase para la "db" activa (respeta el operador activo)
 		function getCurrentDBPath() {
-			if (currentOperador) {
-				return `regionales/${currentRegional}/modalidades/${currentModalidad}/operadores/${currentOperador}/db`;
-			}
-			return `regionales/${currentRegional}/modalidades/${currentModalidad}/db`;
+			const ver = vmExiste(currentRegional, currentModalidad, currentOperador, currentVersionMinuta) ? currentVersionMinuta : 'v1';
+			return vmPath(currentRegional, currentModalidad, currentOperador, ver, 'db');
 		}
 
 		// Reconstruye operadoresConfig/operadoresNombres a partir de `regionales`
@@ -155,6 +163,7 @@
 				cont.innerHTML = '';
 				if (label) label.style.display = 'none';
 				currentOperador = null;
+				sincronizarVersionActiva();
 				if (typeof actualizarChipPerfil === 'function') actualizarChipPerfil();
 				return;
 			}
@@ -193,6 +202,7 @@
 			`;
 			}).join('');
 
+			sincronizarVersionActiva();
 			if (typeof actualizarChipPerfil === 'function') actualizarChipPerfil();
 		}
 

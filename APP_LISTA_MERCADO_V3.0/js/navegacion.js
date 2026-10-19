@@ -262,6 +262,7 @@
 
 			const partes = [regionales[currentRegional].titulo.replace('Regional ', ''), modCorta];
 			if (opNombre) partes.push(opNombre);
+			if (typeof currentVersionMinuta !== 'undefined' && currentVersionMinuta !== 'v1') partes.push('V' + vmNumero(currentVersionMinuta));
 			valueEl.textContent = partes.join(' · ');
 			valueEl.title = `${regionales[currentRegional].titulo} · ${modTitulo}${opNombre ? ' · ' + opNombre : ''}`;
 		}

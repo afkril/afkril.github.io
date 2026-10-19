@@ -423,6 +423,39 @@
                 : [];
             _intercambiosHayCambios = false;
             _intercambiosNotificarUI();
+            if (typeof vmActualizarSelectorDirectorio === 'function') vmActualizarSelectorDirectorio();
+        }
+
+        // ── Versión de minuta del directorio abierto ──
+        // Muestra/oculta el selector junto al nombre del directorio y lo sincroniza.
+        function vmActualizarSelectorDirectorio() {
+            var wrap = document.getElementById('tab-dir-version-wrap');
+            var sel = document.getElementById('tab-dir-version');
+            if (!wrap || !sel) return;
+            if (!_intercambiosDirNombre) { wrap.style.display = 'none'; return; }
+            sel.innerHTML = vmOpcionesHtml(currentVersionMinuta);
+            wrap.style.display = 'inline-flex';
+        }
+
+        // Cambia (y guarda en el directorio) la versión de minuta con la que se genera.
+        // Los intercambios del directorio se conservan y se guardan junto con el cambio.
+        function tabCambiarVersionDirectorio(id) {
+            if (!_intercambiosDirNombre) return;
+            var habiaSemanal = !!(typeof currentData !== 'undefined' && currentData);
+            var habiaMensual = !!(typeof monthlyData !== 'undefined' && monthlyData);
+            cambiarVersionMinuta(id, { silencioso: true });
+
+            var dirs = tabLoadDirectoriosGuardados();
+            var d = dirs[_intercambiosDirNombre];
+            if (!d) return;
+            d.versionMinuta = currentVersionMinuta;
+            if (d.configSemanal) d.configSemanal.versionMinuta = currentVersionMinuta;
+            d.intercambios = _intercambiosFilasLimpias();
+            tabSaveDirectoriosGuardados(dirs);
+
+            if (habiaSemanal) generar();
+            if (habiaMensual) generarMensual();
+            showToast('Directorio "' + _intercambiosDirNombre + '" ahora usa la minuta ' + vmEtiqueta(currentVersionMinuta), 'success');
         }
 
         // Avisa a las listas de mercado (semanal/mensual) para que actualicen el badge
@@ -2055,6 +2088,7 @@ document.addEventListener('keydown', function(e) {
                 regional:  (typeof currentRegional !== 'undefined') ? currentRegional : '',
                 modalidad: (typeof currentModalidad !== 'undefined') ? currentModalidad : '',
                 operador:  (typeof currentOperador !== 'undefined') ? currentOperador : null,
+                versionMinuta: (typeof currentVersionMinuta !== 'undefined') ? currentVersionMinuta : 'v1',
                 semana:    semEl ? semEl.value : '1',
                 ninos:     ninosEl ? ninosEl.value : '',
                 dias:      Array.from(document.querySelectorAll('.d-ch:checked')).map(function(cb){ return parseInt(cb.value); }),
@@ -2234,7 +2268,8 @@ document.addEventListener('keydown', function(e) {
                         entries.forEach(function(item) {
                             var info = item.d.uds ? (item.d.uds.length + ' UDS') : '';
                             var fechaMeta = item.d.fecha ? new Date(item.d.fecha).toLocaleDateString('es-CO', {day:'2-digit',month:'short'}) : '';
-                            var meta = [fechaMeta, info].filter(Boolean).join(' · ');
+                            var verDir = (typeof vmVersionDeDirectorio === 'function') ? vmEtiqueta(vmVersionDeDirectorio(item.d)) : '';
+                            var meta = [fechaMeta, info, verDir ? 'Minuta ' + verDir : ''].filter(Boolean).join(' · ');
                             var nameEsc = escHtml(item.name);
                             var semanaLabel = escHtml(item.d.semana || item.name);
                             // Use data-name attribute to avoid JS injection in onclick
@@ -2406,6 +2441,7 @@ document.addEventListener('keydown', function(e) {
                     configSemanal: tabGetConfigGeneracionSemanal(),
                     gramajesEntrega: tabGetGramajesEntrega(),
                     intercambios: _intercambiosFilasLimpias(),
+                    versionMinuta: (typeof currentVersionMinuta !== 'undefined') ? currentVersionMinuta : 'v1',
                     mes: dirs[nombre] ? dirs[nombre].mes : '',
                     semana: dirs[nombre] ? dirs[nombre].semana : '',
                     contrato: dirs[nombre] ? dirs[nombre].contrato : ''
@@ -2556,6 +2592,14 @@ document.addEventListener('keydown', function(e) {
                   <div style="font-size:0.62rem;color:var(--text-secondary);margin-top:0.25rem;">Trae la semana, los días marcados y los valores digitados en "Entrega" de ese contrato/semana (puede ser distinto al de arriba).</div>
                 </div>
 
+                <div style="margin-bottom:0.5rem;margin-top:0.85rem;">
+                  <label style="font-size:0.65rem;font-weight:600;color:#38bdf8;text-transform:uppercase;display:block;margin-bottom:0.3rem;">📋 Versión de minuta que usará este directorio</label>
+                  <select id="mnd-version" style="width:100%;padding:0.5rem 0.6rem;background:var(--bg-dark);border:1px solid var(--border);border-radius:0.375rem;color:var(--text-primary);font-size:0.8rem;font-family:inherit;outline:none;">
+                    ${vmOpcionesHtml(currentVersionMinuta)}
+                  </select>
+                  <div style="font-size:0.62rem;color:var(--text-secondary);margin-top:0.25rem;">Se aplica al operador activo (${currentOperador ? (operadoresNombres[currentOperador] || currentOperador.toUpperCase()) : 'modalidad'}). Rige hoy: V${vmNumero(vmVigenteEn(currentRegional, currentModalidad, currentOperador || null))}. Podrá cambiarla después.</div>
+                </div>
+
                 <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1rem;">
                   <button onclick="document.getElementById('modal-nuevo-dir').remove()" style="padding:0.45rem 1rem;background:transparent;border:1px solid var(--border);color:var(--text-secondary);border-radius:0.375rem;cursor:pointer;font-family:inherit;font-size:0.82rem;">Cancelar</button>
                   <button onclick="tabConfirmarNuevoDirectorio()" style="padding:0.45rem 1.2rem;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:0.375rem;cursor:pointer;font-family:inherit;font-size:0.82rem;font-weight:700;">🆕 Crear</button>
@@ -2587,6 +2631,7 @@ document.addEventListener('keydown', function(e) {
 
             var fuenteUds = document.getElementById('mnd-fuente-uds').value;
             var fuenteConfig = document.getElementById('mnd-fuente-config').value;
+            var versionSel = (document.getElementById('mnd-version') || {}).value || 'v1';
 
             // 1) Resolver UDS + datos fijos: vacío, el que está en edición, o copiado
             var nuevasUds, nuevosDatosFijos;
@@ -2613,11 +2658,15 @@ document.addEventListener('keydown', function(e) {
                 nuevosGramajes = tabGetGramajesEntrega();
             }
 
+            // La versión de minuta elegida en el modal manda sobre la copiada de otro directorio
+            if (nuevoConfigSemanal) nuevoConfigSemanal = Object.assign({}, nuevoConfigSemanal, { versionMinuta: versionSel });
+
             dirs[nombre] = {
                 nombre: nombre,
                 contrato: contrato,
                 semana: semana,
                 mes: mes,
+                versionMinuta: versionSel,
                 fecha: new Date().toISOString(),
                 uds: nuevasUds,
                 datosFijos: nuevosDatosFijos,
@@ -2638,6 +2687,15 @@ document.addEventListener('keydown', function(e) {
                 // por defecto, se respeta lo que ya estaba activo en la app.
                 tabAplicarConfigSemanalGuardada(nuevoConfigSemanal, nuevosGramajes);
             }
+            // Aplicar la versión elegida (después de un posible cambio de operador por la copia).
+            // Si no existe para el operador resultante, queda la V1 y se guarda como tal.
+            cambiarVersionMinuta(versionSel, { silencioso: true });
+            if (dirs[nombre].versionMinuta !== currentVersionMinuta) {
+                dirs[nombre].versionMinuta = currentVersionMinuta;
+                if (dirs[nombre].configSemanal) dirs[nombre].configSemanal.versionMinuta = currentVersionMinuta;
+                tabSaveDirectoriosGuardados(dirs);
+            }
+            vmActualizarSelectorDirectorio();
 
             tabRefreshSelect();
             document.getElementById('tab-dir-select').value = nombre;
@@ -2756,6 +2814,8 @@ document.addEventListener('keydown', function(e) {
             // legado de la v1 (configSnapshot) si el directorio viene de ahí.
             var _configCompat = tabObtenerConfigSemanalCompat(d);
             tabAplicarConfigSemanalGuardada(_configCompat.configSemanal, _configCompat.gramajesEntrega);
+            // Versión de minuta del directorio (los guardados antes de existir versiones usan la V1)
+            vmAplicarVersionDirectorio(d);
 
             tabRenderizarDirectorio();
             document.getElementById('tab-btn-save-modified').style.display = 'inline-block';
@@ -3280,6 +3340,7 @@ document.addEventListener('keydown', function(e) {
                     rows.push(['🗓️ CONFIGURACIÓN DE GENERACIÓN SEMANAL']);
                     rows.push(['Regional App', cs.regional||'', 'Modalidad App', cs.modalidad||'']);
                     rows.push(['Operador', cs.operador||'', 'Semana', cs.semana||'']);
+                    rows.push(['Versión Minuta', (d.versionMinuta || cs.versionMinuta || 'v1'), '', '']);
                     rows.push(['Niños', cs.ninos||'', 'Días', (cs.dias||[]).join(',')]);
                     rows.push(['Modo Leche Semanal', cs.lecheModoSemanal||'', 'Modo Yogurt Semanal', cs.yogurtModoSemanal||'']);
                 }
@@ -3399,7 +3460,8 @@ document.addEventListener('keydown', function(e) {
                                 var cfgFieldMap = {
                                     'Regional App':'regional', 'Modalidad App':'modalidad', 'Operador':'operador',
                                     'Semana':'semana', 'Niños':'ninos', 'Días':'dias',
-                                    'Modo Leche Semanal':'lecheModoSemanal', 'Modo Yogurt Semanal':'yogurtModoSemanal'
+                                    'Modo Leche Semanal':'lecheModoSemanal', 'Modo Yogurt Semanal':'yogurtModoSemanal',
+                                    'Versión Minuta':'versionMinuta'
                                 };
                                 var _aplicarCfg = function(lbl, val) {
                                     var key = cfgFieldMap[lbl];
@@ -3469,6 +3531,7 @@ document.addEventListener('keydown', function(e) {
                             uds: uds,
                             datosFijos: datosFijosDir,
                             configSemanal: configSemanalDir,
+                            versionMinuta: (configSemanalDir && configSemanalDir.versionMinuta) || 'v1',
                             gramajesEntrega: gramajesEntregaDir,
                             // Si el Excel no trae intercambios (archivo anterior), se conservan los
                             // que ya tuviera un directorio con el mismo nombre.

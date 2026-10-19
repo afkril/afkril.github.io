@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/gestion-operadores.css">
     <link rel="stylesheet" href="css/tutorial.css">
     <link rel="stylesheet" href="css/intercambios-listado.css">
+    <link rel="stylesheet" href="css/versiones-minuta.css">
     <script type="module">
         import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, get, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -315,6 +316,13 @@
 						<div class="perfil-step-title"><span class="perfil-step-num">3</span> <span id="operadorSelectorLabel">Operador</span></div>
 						<div class="reg-row" id="operadorSelector">
 							<!-- Botones de operador generados dinámicamente -->
+						</div>
+					</div>
+
+					<div class="perfil-step" id="perfilStepVersion">
+						<div class="perfil-step-title"><span class="perfil-step-num">4</span> Versión de minuta</div>
+						<div class="reg-row ver-row" id="versionSelector">
+							<!-- Botones de versión generados dinámicamente -->
 						</div>
 					</div>
 				</div>
@@ -681,6 +689,8 @@
 						<span class="status-badge mod-hcb" id="statusModalidad">🏠 HCB</span>
 						<span class="status-divider" id="statusOperadorDivider" style="display:none;"></span>
 						<span class="status-badge status-op" id="statusOperador" style="display:none;"></span>
+						<span class="status-divider" id="statusVersionDivider" style="display:none;"></span>
+						<span class="status-badge status-ver" id="statusVersion" style="display:none;"></span>
 					</div>
 
 					<button class="btn btn-primary" onclick="generar()" id="btnGenerar">
@@ -813,6 +823,8 @@
 						<span class="status-badge mod-hcb" id="statusModalidadMensual">🏠 HCB</span>
 						<span class="status-divider" id="statusOperadorDividerMensual" style="display:none;"></span>
 						<span class="status-badge status-op" id="statusOperadorMensual" style="display:none;"></span>
+						<span class="status-divider" id="statusVersionDividerMensual" style="display:none;"></span>
+						<span class="status-badge status-ver" id="statusVersionMensual" style="display:none;"></span>
 					</div>
 
                     
@@ -1085,6 +1097,10 @@
 					<span class="editor-info-label">👷 Operador:</span>
 					<span class="editor-info-value mod-operador" id="editorOperador">-</span>
 				</div>
+				<div class="editor-info-item" id="editorVersionItem" style="display:none;">
+					<span class="editor-info-label">📋 Minuta:</span>
+					<span class="editor-info-value mod-operador" id="editorVersion">V1</span>
+				</div>
 				<div class="editor-info-item">
 					<span class="editor-info-label">📦 Productos:</span>
 					<span class="editor-info-value" id="editorProductCount">0</span>
@@ -1260,7 +1276,7 @@
 					<span>Cargue de Minuta por Operador</span>
 				</div>
 				<div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-					Cargue la minuta/gramajes propia de un operador (Excel o JSON), cree nuevos operadores, o copie la minuta de un operador a otro.
+					Cargue la minuta/gramajes de un operador o modalidad (Excel o JSON) en una VERSIÓN concreta, cree versiones nuevas con su fecha, o copie la minuta de otra versión u operador.
 				</div>
 			</div>
 
@@ -1302,7 +1318,31 @@
 						</div>
 						<div class="form-group" style="flex:1; min-width: 140px;">
 							<label class="form-label">Operador</label>
-							<select class="form-select" id="cargueOperador" onchange="actualizarInfoCargueActual()"></select>
+							<select class="form-select" id="cargueOperador" onchange="poblarCargueVersiones()"></select>
+						</div>
+					</div>
+
+					<!-- Versión de minuta destino -->
+					<div class="cm-version-box">
+						<div class="config-row" style="gap: 0.75rem; flex-wrap: wrap;">
+							<div class="form-group" style="flex:2; min-width: 200px; position:relative;">
+								<span class="badge-nuevo">Nuevo</span>
+								<label class="form-label">Versión de minuta (destino)</label>
+								<select class="form-select" id="cargueVersion" onchange="actualizarInfoCargueActual()"></select>
+							</div>
+							<div class="form-group" style="flex:1; min-width: 150px;">
+								<label class="form-label">Vigente desde</label>
+								<input type="date" class="form-input" id="cargueVersionFecha">
+							</div>
+						</div>
+						<div class="form-group" style="margin-top:0.5rem;">
+							<label class="form-label">Nombre de la versión (opcional)</label>
+							<input type="text" class="form-input" id="cargueVersionNombre" maxlength="60" placeholder="Ej: Minuta 2026">
+						</div>
+						<div class="cm-version-hint" id="cargueVersionHint"></div>
+						<div class="cm-version-actions">
+							<button type="button" class="btn btn-secondary" id="cargueBtnGuardarMeta" onclick="guardarMetaVersion()">📅 Guardar nombre/fecha</button>
+							<button type="button" class="btn btn-secondary cm-btn-danger" id="cargueBtnEliminarVersion" onclick="eliminarVersionMinuta()" style="display:none;">🗑️ Eliminar versión</button>
 						</div>
 					</div>
 
@@ -1312,7 +1352,7 @@
 							<div class="cm-status-label">📦 Estado de productos</div>
 							<div class="cm-status-value">
 								<span id="cargueProductosActuales">0</span>
-								<span class="cm-status-suffix">Productos actuales</span>
+								<span class="cm-status-suffix">Productos en la versión</span>
 							</div>
 						</div>
 					</div>
@@ -1383,7 +1423,7 @@
 			<div class="config-panel no-print" style="display: flex; justify-content: flex-end;">
 				<button class="btn btn-success" onclick="guardarMinutaOperador()" id="cargueBtnGuardar" disabled>
 					<span class="spinner"></span>
-					<span class="btn-text"><span>💾</span> Guardar minuta del operador</span>
+					<span class="btn-text"><span>💾</span> Guardar en la versión elegida</span>
 				</button>
 			</div>
 
@@ -1391,11 +1431,11 @@
 			<div class="cm-modal-overlay" id="cmModalCopiarOverlay" onclick="cerrarModalCopiarMinuta()"></div>
 			<div class="cm-modal" id="cmModalCopiar" data-accent="cyan" role="dialog" aria-modal="true">
 				<div class="cm-modal-header">
-					<h3 class="cm-modal-title">📋 Copiar minuta de un operador a otro</h3>
+					<h3 class="cm-modal-title">📋 Copiar minuta (de un operador/versión a otro)</h3>
 					<button class="cm-modal-close" onclick="cerrarModalCopiarMinuta()">✕</button>
 				</div>
 				<div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.9rem;">
-					Selecciona el operador de origen; su minuta se cargará en la previsualización para guardarla en el <strong>operador destino</strong> seleccionado en la columna izquierda.
+					Selecciona el operador y la <strong>versión de origen</strong>; su minuta se cargará en la previsualización para guardarla en la <strong>versión destino</strong> (existente o nueva, con su fecha) elegida en la columna izquierda.
 				</div>
 				<div class="config-row" style="gap: 0.75rem; flex-wrap: wrap;">
 					<div class="form-group" style="min-width: 160px; flex:1;">
@@ -1411,7 +1451,11 @@
 					</div>
 					<div class="form-group" style="min-width: 160px; flex:1;">
 						<label class="form-label">Operador origen</label>
-						<select class="form-select" id="copiaOrigenOperador"></select>
+						<select class="form-select" id="copiaOrigenOperador" onchange="poblarCopiaOrigenVersiones()"></select>
+					</div>
+					<div class="form-group" style="min-width: 180px; flex:1;">
+						<label class="form-label">Versión origen</label>
+						<select class="form-select" id="copiaOrigenVersion"></select>
 					</div>
 				</div>
 				<div style="margin-top: 1rem; display:flex; justify-content:flex-end; gap:0.5rem;">
@@ -1579,6 +1623,12 @@
 				white-space:nowrap;cursor:pointer;"
 				onclick="tabAbrirPanelCarpetas()" title="Ver directorios guardados">
 			  </div>
+
+			  <!-- Versión de minuta que usa el directorio cargado -->
+			  <label id="tab-dir-version-wrap" class="dir-version-wrap" style="display:none;" title="Versión de minuta con la que se genera este directorio">
+				📋 Minuta
+				<select id="tab-dir-version" onchange="tabCambiarVersionDirectorio(this.value)"></select>
+			  </label>
 
 			  <!-- Separador visual entre grupos -->
 			  <span style="width:1px;height:20px;background:var(--border);margin:0 0.2rem;flex-shrink:0;"></span>
@@ -3006,6 +3056,7 @@
 
     <script src="js/database.js"></script>
     <script src="js/festivos.js"></script>
+    <script src="js/versiones-minuta.js"></script>
     <script src="js/globals.js"></script>
     <script src="js/firebase-functions.js"></script>
     <script src="js/editor-gramajes.js"></script>

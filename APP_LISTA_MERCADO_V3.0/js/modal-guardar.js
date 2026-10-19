@@ -80,6 +80,8 @@
                 etiqueta: { semana: sm, mes: mes, contrato: contrato, nota: nota },
                 regional: currentRegional,
                 modalidad: currentModalidad,
+                operador: currentOperador || null,
+                versionMinuta: currentVersionMinuta || 'v1',
                 fecha: new Date().toISOString(),
                 semana: semNum,
                 personas: personas,
@@ -105,6 +107,8 @@
                 etiqueta: { semana: sm, mes: mes, contrato: contrato, nota: nota },
                 regional: currentRegional,
                 modalidad: currentModalidad,
+                operador: currentOperador || null,
+                versionMinuta: currentVersionMinuta || 'v1',
                 fecha: new Date().toISOString(),
                 semanas: Array.from(monthlyActiveWeeks.entries()).map(function([week, days]) { return { week: week, days: Array.from(days) }; }),
                 personas: document.getElementById('monthly-num-p').value,
@@ -179,6 +183,12 @@
 			if (l.modalidad) {
 				cambiarModalidad(l.modalidad);
 			}
+
+			// Operador y versión de minuta con los que se guardó (V1 si es una lista anterior a las versiones)
+			if (l.operador && regionales[currentRegional]?.modalidades?.[currentModalidad]?.operadores?.[l.operador]) {
+				cambiarOperador(l.operador);
+			}
+			cambiarVersionMinuta(l.versionMinuta || 'v1', { silencioso: true });
 
 			// Restaurar configuración leche/yogurt
 			if (l.lecheModo) {

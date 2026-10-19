@@ -41,6 +41,8 @@
 							if (remoteMod.db) {
 								regionales[reg].modalidades[mod].db = remoteMod.db;
 							}
+							// Versiones de minuta de la modalidad (las de cada operador vienen dentro del operador)
+							regionales[reg].modalidades[mod].versiones = remoteMod.versiones || {};
 
 							if (remoteMod.operadores) {
 								// Fusionar (no pisar operadores locales creados aún no confirmados por Firebase)
@@ -56,7 +58,9 @@
 					// Firebase todavía tenga un snapshot antiguo en caché.
 					aplicarOperadoresEliminados();
 					reconstruirOperadoresConfig();
+					vmLimpiarSnapshots();
 					actualizarSelectorOperador();
+					vmRevalidarVersionActiva();
 
 					updateFirebaseStatus(true);
 					
@@ -66,7 +70,11 @@
 						loadProductMatrix();
 					}
 					if (activeSection === 'section-cargue') {
-						actualizarInfoCargueActual();
+						if (typeof poblarCargueVersiones === 'function' && document.getElementById('cargueVersion')) {
+							poblarCargueVersiones(document.getElementById('cargueVersion').value);
+						} else {
+							actualizarInfoCargueActual();
+						}
 					}
 				} else {
 					guardarOriginalesFirebase();
@@ -140,7 +148,8 @@
 				);
 
 				// Guardar timestamp de modificación
-				const modKey = currentOperador ? `${currentModalidad}_${currentOperador}` : currentModalidad;
+				let modKey = currentOperador ? `${currentModalidad}_${currentOperador}` : currentModalidad;
+				if (currentVersionMinuta && currentVersionMinuta !== 'v1') modKey += `_${currentVersionMinuta}`;
 				await window.firebaseSet(
 					window.firebaseRef(window.firebaseDB, `modificaciones/${currentRegional}/${modKey}`), 
 					{
@@ -149,9 +158,11 @@
 						camposModificados: modifiedFields.size,
 						regional: currentRegional,
 						modalidad: currentModalidad,
-						operador: currentOperador || null
+						operador: currentOperador || null,
+						versionMinuta: currentVersionMinuta || 'v1'
 					}
 				);
+				vmLimpiarSnapshots(); // lo guardado pasa a ser la nueva referencia de "sin cambios"
 
 				// Limpiar estado de cambios SOLO para esta modalidad/regional
 				const keysToRemove = [];
@@ -182,6 +193,10 @@
 		}
 
         async function restaurarValoresOriginales() {
+			if (currentVersionMinuta && currentVersionMinuta !== 'v1') {
+				showToast('Los valores originales de fábrica solo existen para la V1. Las demás versiones se editan o se vuelven a cargar desde "Cargue de Minuta".', 'warning');
+				return;
+			}
 			if (!confirm('¿Está seguro de restaurar los valores originales para ' + 
 						 regionales[currentRegional].titulo + ' - ' + 
 						 getCurrentTitle() + 
