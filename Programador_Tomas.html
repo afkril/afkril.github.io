@@ -310,6 +310,44 @@
   .help-section li{ margin-bottom:4px; }
   .help-section .tag{ display:inline-block; background:var(--surface-alt); color:var(--primary); border-radius:6px; padding:1px 6px; font-size:10px; font-weight:600; margin-right:4px; }
 
+  /* ---------- FLAG ---------- */
+  .badge.flag{ background:var(--sev-riesgo-tint); color:var(--sev-riesgo); font-weight:700; }
+  .badge.flag.f-multi{ background:var(--sev-alto-tint); color:var(--sev-alto); }
+  .badge.flag.f-7{ background:var(--sev-critical-tint); color:var(--sev-critical); }
+  .badge.flag.f-otro{ background:var(--sev-default-tint); color:var(--sev-default); }
+  .flag-chips{ display:flex; gap:4px; flex-wrap:wrap; }
+  .flag-chip{ font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:6px; background:var(--danger-tint); color:var(--danger); white-space:nowrap; }
+  .flag-desc{ color:var(--ink-soft); font-size:10.5px; min-width:220px; max-width:340px; line-height:1.45; }
+  .flag-guide{ margin:16px 18px 0; border:1px solid var(--border); border-radius:8px; background:var(--surface-alt); }
+  .flag-guide summary{ cursor:pointer; padding:10px 12px; font-size:11px; font-weight:600; color:var(--primary); }
+  .flag-guide-list{ padding:2px 12px 12px; display:flex; flex-direction:column; gap:7px; }
+  .flag-guide-item{ display:flex; gap:10px; align-items:flex-start; font-size:10.5px; color:var(--ink-soft); line-height:1.5; }
+  .flag-guide-item .badge{ flex-shrink:0; min-width:54px; text-align:center; }
+  .cards.flag-cards{ grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); }
+  .card.flag-click{ cursor:pointer; }
+  .card.flag-click:hover{ border-color:var(--primary-soft); }
+  .card.flag-click.active{ border:2px solid var(--primary); }
+
+  /* ---------- TALLAS INCONSISTENTES ---------- */
+  .tallas-chips{ display:flex; flex-wrap:wrap; gap:5px; min-width:260px; max-width:520px; }
+  .talla-chip{ display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:7px; font-size:10px; border:1px solid var(--border); background:var(--surface-alt); color:var(--ink); cursor:pointer; white-space:nowrap; font-family:inherit; }
+  .talla-chip:hover{ border-color:var(--primary-soft); }
+  .talla-chip.t-revisar{ background:var(--gold-tint); border-color:var(--gold); color:#7A561A; }
+  .talla-chip.t-error{ background:var(--danger-tint); border-color:var(--danger); color:var(--danger); font-weight:600; }
+  .detail-compare{ border-top:1px solid var(--border); padding:16px 16px 18px; }
+  .cmp-table{ min-width:0; width:100%; }
+  .cmp-table thead th:last-child, .cmp-table tbody td:last-child{ position:static; border-left:none; background:transparent; }
+  .cmp-table tbody tr:hover td:last-child{ background:transparent; }
+  .cmp-table tr.cmp-revisar td{ background:var(--gold-tint); }
+  .cmp-table tr.cmp-error td{ background:var(--danger-tint); }
+  .cmp-table tr.cmp-actual td:first-child{ box-shadow:inset 3px 0 0 var(--primary); }
+  .cmp-down{ color:var(--danger); font-weight:700; }
+  .cmp-up{ color:var(--sev-normal); font-weight:600; }
+  .cmp-note{ font-size:11px; color:var(--ink-soft); margin:0 0 10px; line-height:1.5; }
+  .badge.cmp-ok{ background:var(--sev-normal-tint); color:var(--sev-normal); }
+  .badge.cmp-revisar{ background:var(--gold-tint); color:var(--gold); }
+  .badge.cmp-error{ background:var(--danger-tint); color:var(--danger); }
+
   .view{ display:none; }
   .view.active{ display:block; }
 
@@ -444,6 +482,8 @@
       <button data-view="tablero" class="active"><span class="ic">&#9673;</span><span class="lbl-text">Panorama</span></button>
       <button data-view="mejoras"><span class="ic">&#8599;</span><span class="lbl-text">Mejoras nutricionales</span></button>
       <button data-view="desmejoras"><span class="ic">&#8600;</span><span class="lbl-text">Desmejora nutricional</span></button>
+      <button data-view="flag"><span class="ic">&#9873;</span><span class="lbl-text">FLAG</span></button>
+      <button data-view="tallas"><span class="ic">&#8645;</span><span class="lbl-text">Tallas inconsistentes</span></button>
       <button data-view="calendario"><span class="ic">&#128197;</span><span class="lbl-text">Calendario</span></button>
       <button data-view="cargar"><span class="ic">&#8593;</span><span class="lbl-text">Cargar reporte</span></button>
       <button data-view="config"><span class="ic">&#9881;</span><span class="lbl-text">Configuración</span></button>
@@ -568,6 +608,81 @@
           </div>
         </div>
         <div class="panel-body" id="desmejorasWrap"></div>
+      </div>
+    </section>
+
+    <!-- FLAG -->
+    <section class="view" id="view-flag">
+      <div class="topline">
+        <div>
+          <h1>FLAG</h1>
+          <p>Beneficiarios cuya toma nutricional más reciente trae un FLAG distinto de 0 (columna BB del reporte): valores extremos o fuera de rango en WAZ, HAZ o WHZ. Las tomas anteriores no se tienen en cuenta.</p>
+        </div>
+      </div>
+
+      <div class="cards flag-cards" id="flagCards"></div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Beneficiarios con FLAG</h2>
+          <div class="filters">
+            <input type="text" id="fSearchFlag" placeholder="Buscar por nombre o documento">
+            <select id="fContratoFlag"><option value="">Todos los contratos</option></select>
+            <select id="fUnidadFlag"><option value="">Todas las unidades</option></select>
+            <select id="fFlag"><option value="">Todos los FLAG</option></select>
+            <select id="fVinculoFlag">
+              <option value="">Vinculados y desvinculados</option>
+              <option value="vinculado">Solo vinculados</option>
+              <option value="desvinculado">Solo desvinculados</option>
+            </select>
+          </div>
+        </div>
+        <details class="flag-guide">
+          <summary>¿Qué significa cada FLAG?</summary>
+          <div class="flag-guide-list" id="flagGuide"></div>
+        </details>
+        <div class="panel-body" id="flagWrap" style="margin-top:14px;"></div>
+      </div>
+    </section>
+
+    <!-- TALLAS INCONSISTENTES -->
+    <section class="view" id="view-tallas">
+      <div class="topline">
+        <div>
+          <h1>Tallas inconsistentes</h1>
+          <p>Compara todas las tomas de cada beneficiario en orden de fecha. Si una talla es menor que la de una toma anterior (p. ej. 110 cm en septiembre y 108 cm en octubre), lo más probable es un error de digitación. <span id="tallasColNote"></span></p>
+        </div>
+      </div>
+
+      <div class="cards" id="tallasCards"></div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Beneficiarios con descensos de talla</h2>
+          <div class="filters">
+            <input type="text" id="fSearchTallas" placeholder="Buscar por nombre o documento">
+            <select id="fContratoTallas"><option value="">Todos los contratos</option></select>
+            <select id="fUnidadTallas"><option value="">Todas las unidades</option></select>
+            <select id="fTallaMin">
+              <option value="">Cualquier descenso</option>
+              <option value="1">Descenso &ge; 1 cm</option>
+              <option value="2">Descenso &ge; 2 cm</option>
+              <option value="5">Descenso &ge; 5 cm</option>
+              <option value="10">Descenso &ge; 10 cm</option>
+            </select>
+            <select id="fVinculoTallas">
+              <option value="">Vinculados y desvinculados</option>
+              <option value="vinculado">Solo vinculados</option>
+              <option value="desvinculado">Solo desvinculados</option>
+            </select>
+          </div>
+        </div>
+        <div class="legend">
+          <span class="item"><span class="dot" style="background:var(--border);border:1px solid var(--ink-faint);"></span>Coherente con la secuencia</span>
+          <span class="item"><span class="dot" style="background:var(--gold);"></span>Revisar: no cuadra, pero podría ser esta toma o la vecina</span>
+          <span class="item"><span class="dot" style="background:var(--danger);"></span>Probable error: queda fuera de la secuencia creciente más larga</span>
+        </div>
+        <div class="panel-body" id="tallasWrap" style="margin-top:14px;"></div>
       </div>
     </section>
 
@@ -760,6 +875,14 @@
         <p>Es el caso contrario a Mejoras nutricionales: lista a los beneficiarios que pasaron a un estado nutricional más severo entre su toma anterior y la más reciente (por ejemplo, de Peso adecuado a Riesgo de sobrepeso, o de Riesgo de desnutrición a Desnutrición). Usa la misma lógica de comparación (mínimo 2 tomas válidas, hasta 3) y permite ver el detalle de cada toma implicada.</p>
       </div>
       <div class="help-section">
+        <h4><span class="tag">Tallas</span>Tallas inconsistentes</h4>
+        <p>Revisa todas las tomas de cada beneficiario y lista a quienes tienen una talla menor que la de una toma anterior (algo que no debería pasar). Cada toma aparece como una etiqueta con su fecha y talla: en <b>amarillo</b> las que conviene revisar y en <b>rojo</b> las que quedan claramente fuera de la secuencia. Al hacer clic en una etiqueta se abre el detalle de esa toma. En <b>Ver detalles</b> de cualquier beneficiario hay además un comparativo de todas sus tomas según talla.</p>
+      </div>
+      <div class="help-section">
+        <h4><span class="tag">FLAG</span>Valores fuera de rango</h4>
+        <p>Lista a los beneficiarios cuya toma más reciente tiene un FLAG distinto de 0 en el reporte (columna BB, o la columna titulada "FLAG"). Cada número indica qué indicador está fuera de rango: 1 = WAZ, 2 = HAZ, 3 = WAZ y HAZ, 4 = WHZ, 5 = WAZ y WHZ, 6 = HAZ y WHZ, 7 = los tres. Despliega <b>¿Qué significa cada FLAG?</b> para ver los criterios, y haz clic en una tarjeta para filtrar por ese número.</p>
+      </div>
+      <div class="help-section">
         <h4><span class="tag">5</span>Calendario</h4>
         <p>Muestra las próximas tomas organizadas por día del mes, con un color según el estado nutricional. Puedes navegar entre meses, filtrar igual que en el panorama, y generar un PDF con la agenda de tomas programadas para un periodo.</p>
       </div>
@@ -883,7 +1006,13 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     errors: [],         // registros descartados por datos faltantes
     lastUpload: null,
     settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
-    filters: { search:'', contrato:'', unidad:'', estados:[], urgencia:'', vinculo:'', vistaTomas:'ultima', contratosMejoras:[], contratosDesmejoras:[] },
+    filters: { search:'', contrato:'', unidad:'', estados:[], urgencia:'', vinculo:'', vistaTomas:'ultima', contratosMejoras:[], contratosDesmejoras:[], flag:'', tallaMin:'' },
+    tallaColumn: null,  // índice de la columna de talla (AS en el reporte)
+    tomasByDoc: new Map(),
+    tallaCache: new Map(),
+    tallasPage: 1,
+    flagColumn: null,   // índice de la columna FLAG detectada en el último reporte (null = no existe)
+    flagPage: 1,
     calMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     calSelected: null,
     tablePage: 1
@@ -978,6 +1107,12 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
       colIndex[key] = idx;
     });
 
+    // Columna FLAG: se busca por encabezado "flag"; si no existe, se usa la columna BB (índice 53).
+    let flagIdx = headerRow.indexOf('flag');
+    if(flagIdx === -1 && headerRow.length > 53) flagIdx = 53;
+    state.flagColumn = flagIdx === -1 ? null : flagIdx;
+    state.tallaColumn = colIndex.talla === -1 ? null : colIndex.talla;
+
     const missingCols = Object.keys(colIndex).filter(k => colIndex[k] === -1 &&
       !['fechaValoracion','estadoPesoEdad','servicio','codigoUnidad','estadoTallaEdad','estadoIMC','estadoActivo'].includes(k));
     if(missingCols.length){
@@ -1019,6 +1154,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
       const estadoPesoTallaVal = (get('estadoPesoTalla')||'').toString().trim();
       const estadoIMC = (get('estadoIMC')||'').toString().trim();
       const estadoActivo = (get('estadoActivo')||'').toString().trim() || 'Activo';
+      const flag = parseFlag(flagIdx === -1 ? '' : line[flagIdx]);
 
       const missing = [];
       if(!numeroDocumento) missing.push('número de documento');
@@ -1057,6 +1193,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
         estadoPesoTalla: estadoPesoTallaVal,
         estadoIMC,
         estadoActivo,
+        flag,
         peso, talla,
         fechaToma
       });
@@ -1116,6 +1253,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
       row.urgencia = diff < 0 ? 'vencida' : (diff <= 7 ? 'proxima' : 'programada');
     });
     state.latestRows = latestTomaPerBeneficiario(state.rows);
+    buildTomasIndex();
     state.latestRows.forEach(row=>{
       row.proyecciones = generarTomasProyectadas(row, today, CANTIDAD_TOMAS_FUTURAS);
     });
@@ -1152,6 +1290,8 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     if(id==='calendario') renderCalendar();
     if(id==='mejoras') renderMejoras();
     if(id==='desmejoras') renderDesmejoras();
+    if(id==='flag') renderFlag();
+    if(id==='tallas') renderTallas();
     zanOnView(id);
   }
   document.querySelectorAll('.nav button').forEach(b=>{
@@ -1190,6 +1330,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
       <div class="pill"><b>${u.ok}</b>importados correctamente</div>
       <div class="pill"><b>${u.fail}</b>con datos incompletos</div>
       <div class="pill"><b>${fmtDate(u.date)}</b>fecha de carga</div>
+      ${state.flagColumn === null ? '' : `<div class="pill"><b>${state.latestRows.filter(r=>r.flag!==0).length}</b>con FLAG ≠ 0 (toma más reciente)</div>`}
     </div>`;
     if(state.errors.length){
       html += `<div class="error-list">` + state.errors.map(er=>
@@ -1287,6 +1428,10 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     fill('fUnidadCal', unidades, 'Todas las unidades');
     fill('fUnidadMejoras', unidades, 'Todas las unidades');
     fill('fUnidadDesmejoras', unidades, 'Todas las unidades');
+    fill('fContratoFlag', contratos, 'Todos los contratos');
+    fill('fUnidadFlag', unidades, 'Todas las unidades');
+    fill('fContratoTallas', contratos, 'Todos los contratos');
+    fill('fUnidadTallas', unidades, 'Todas las unidades');
 
     // conserva solo estados/contratos que aún existen en los datos cargados
     state.filters.estados = state.filters.estados.filter(e=> estados.includes(e));
@@ -1381,6 +1526,16 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     document.getElementById('fVinculoCal').value = f.vinculo;
     document.getElementById('fVinculoMejoras').value = f.vinculo;
     document.getElementById('fVinculoDesmejoras').value = f.vinculo;
+    document.getElementById('fSearchFlag').value = f.search;
+    document.getElementById('fContratoFlag').value = f.contrato;
+    document.getElementById('fUnidadFlag').value = f.unidad;
+    document.getElementById('fVinculoFlag').value = f.vinculo;
+    document.getElementById('fFlag').value = String(f.flag);
+    document.getElementById('fSearchTallas').value = f.search;
+    document.getElementById('fContratoTallas').value = f.contrato;
+    document.getElementById('fUnidadTallas').value = f.unidad;
+    document.getElementById('fVinculoTallas').value = f.vinculo;
+    document.getElementById('fTallaMin').value = f.tallaMin;
 
     const label = estadoBtnLabel();
     document.getElementById('fEstadoBtn').textContent = label;
@@ -1410,6 +1565,8 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     if(document.getElementById('view-calendario').classList.contains('active')) renderCalendar();
     if(document.getElementById('view-mejoras').classList.contains('active')) renderMejoras();
     if(document.getElementById('view-desmejoras').classList.contains('active')) renderDesmejoras();
+    if(document.getElementById('view-flag').classList.contains('active')){ state.flagPage = 1; renderFlag(); }
+    if(document.getElementById('view-tallas').classList.contains('active')){ state.tallasPage = 1; renderTallas(); }
     zanOnFilter(field, value);
   }
 
@@ -1662,6 +1819,346 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     </table></div>`;
   }
 
+  /* ---------------------------------------------------------
+     FLAG (columna BB del reporte)
+     Solo se evalúa la toma nutricional más reciente de cada
+     beneficiario (state.latestRows). Se listan los distintos de 0.
+  --------------------------------------------------------- */
+  const FLAG_INFO = {
+    1: { ind:['WAZ'],               txt:'Valores extremos o fuera de rango en WAZ (Peso/Edad: zscore < -6 o zscore > 6).' },
+    2: { ind:['HAZ'],               txt:'Valores extremos o fuera de rango en HAZ (Talla/Edad: zscore < -5 o zscore > 5).' },
+    3: { ind:['WAZ','HAZ'],         txt:'Valores fuera de rango simultáneos en WAZ y HAZ.' },
+    4: { ind:['WHZ'],               txt:'Valores fuera de rango en WHZ (Peso/Talla: zscore < -6 o zscore > 5).' },
+    5: { ind:['WAZ','WHZ'],         txt:'Valores fuera de rango en la combinación de WAZ y WHZ.' },
+    6: { ind:['HAZ','WHZ'],         txt:'Valores fuera de rango en la combinación de HAZ y WHZ.' },
+    7: { ind:['WAZ','HAZ','WHZ'],   txt:'Valores fuera de rango o extremos en los tres indicadores a la vez (WAZ, HAZ y WHZ).' }
+  };
+  function parseFlag(v){
+    const n = parseNumber(v);
+    return n === null ? 0 : Math.round(n);
+  }
+  function flagBadge(f){
+    const cls = f === 7 ? 'f-7' : (FLAG_INFO[f] ? (FLAG_INFO[f].ind.length > 1 ? 'f-multi' : '') : 'f-otro');
+    return `<span class="badge flag ${cls}">Flag ${f}</span>`;
+  }
+  function flagTexto(f){
+    return FLAG_INFO[f] ? FLAG_INFO[f].txt : 'Valor de FLAG no documentado en esta guía; revisa el reporte original.';
+  }
+  function flagChips(f){
+    if(!FLAG_INFO[f]) return '—';
+    return `<div class="flag-chips">${FLAG_INFO[f].ind.map(i=>`<span class="flag-chip">${i}</span>`).join('')}</div>`;
+  }
+
+  // Beneficiarios con FLAG != 0 en su toma más reciente (sin filtros de pantalla).
+  function flagBaseRows(){
+    return state.latestRows.filter(r => r.flag !== 0);
+  }
+  function filteredFlagRows(){
+    const f = state.filters;
+    const search = normalize(f.search);
+    return flagBaseRows().filter(r=>{
+      if(f.contrato && r.contrato !== f.contrato) return false;
+      if(f.unidad && r.unidadLabel !== f.unidad) return false;
+      if(f.flag !== '' && String(r.flag) !== String(f.flag)) return false;
+      if(f.vinculo === 'vinculado' && !esVinculado(r)) return false;
+      if(f.vinculo === 'desvinculado' && esVinculado(r)) return false;
+      if(search && !(normalize(r.nombreCompleto).includes(search) || normalize(r.numeroDocumento).includes(search))) return false;
+      return true;
+    }).sort((a,b)=> (b.flag - a.flag) || (b.fechaToma - a.fechaToma) || a.nombreCompleto.localeCompare(b.nombreCompleto));
+  }
+
+  function fillFlagControls(){
+    const present = [...new Set(flagBaseRows().map(r=>r.flag))];
+    const values = [...new Set([1,2,3,4,5,6,7].concat(present))].sort((a,b)=>a-b);
+    const sel = document.getElementById('fFlag');
+    sel.innerHTML = `<option value="">Todos los FLAG</option>` + values.map(v=>`<option value="${v}">Flag ${v}</option>`).join('');
+    if(state.filters.flag !== '' && !values.map(String).includes(String(state.filters.flag))) state.filters.flag = '';
+    sel.value = String(state.filters.flag);
+
+    document.getElementById('flagGuide').innerHTML = Object.keys(FLAG_INFO).map(k=>
+      `<div class="flag-guide-item">${flagBadge(Number(k))}<span>${escapeHtml(FLAG_INFO[k].txt)}</span></div>`
+    ).join('') +
+    `<div class="flag-guide-item"><span class="badge estado sev-default" style="min-width:54px;text-align:center;">Flag 0</span><span>Sin valores fuera de rango (no se lista).</span></div>`;
+  }
+
+  function renderFlag(){
+    const cardsWrap = document.getElementById('flagCards');
+    const wrap = document.getElementById('flagWrap');
+    fillFlagControls();
+
+    if(!state.rows.length){
+      cardsWrap.innerHTML = '';
+      wrap.innerHTML = `<div class="empty"><div class="big">Aún no hay datos</div>Sube un reporte para revisar los FLAG.<br><button type="button" class="btn" id="btnIrCargarFlag">&#8593; Cargar reporte</button></div>`;
+      const goBtn = document.getElementById('btnIrCargarFlag');
+      if(goBtn) goBtn.addEventListener('click', ()=> switchView('cargar'));
+      return;
+    }
+    if(state.flagColumn === null){
+      cardsWrap.innerHTML = '';
+      wrap.innerHTML = `<div class="empty"><div class="big">El reporte no trae columna FLAG</div>No encontré una columna titulada "FLAG" ni la columna BB en el archivo cargado.</div>`;
+      return;
+    }
+
+    const base = flagBaseRows();
+    const counts = {};
+    base.forEach(r=>{ counts[r.flag] = (counts[r.flag]||0) + 1; });
+    const keys = [...new Set([1,2,3,4,5,6,7].concat(Object.keys(counts).map(Number)))].sort((a,b)=>a-b);
+    const activeF = String(state.filters.flag);
+
+    cardsWrap.innerHTML =
+      `<div class="card danger flag-click ${state.filters.flag===''?'active':''}" data-flag=""><div class="num">${base.length}</div><div class="lbl">Con FLAG ≠ 0 (de ${state.latestRows.length})</div></div>` +
+      keys.map(k=>`<div class="card flag-click ${activeF===String(k)?'active':''}" data-flag="${k}"><div class="num">${counts[k]||0}</div><div class="lbl">Flag ${k}${FLAG_INFO[k] ? ' · ' + FLAG_INFO[k].ind.join('+') : ''}</div></div>`).join('');
+
+    const rows = filteredFlagRows();
+    if(!rows.length){
+      wrap.innerHTML = base.length
+        ? `<div class="empty"><div class="big">Sin resultados</div>Ajusta los filtros para ver beneficiarios con FLAG.</div>`
+        : `<div class="empty"><div class="big">Sin FLAG detectados</div>Ningún beneficiario tiene un FLAG distinto de 0 en su toma más reciente.</div>`;
+      return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(rows.length / TABLE_PAGE_SIZE));
+    if(state.flagPage > totalPages) state.flagPage = totalPages;
+    if(state.flagPage < 1) state.flagPage = 1;
+    const start = (state.flagPage - 1) * TABLE_PAGE_SIZE;
+    const pageRows = rows.slice(start, start + TABLE_PAGE_SIZE);
+
+    wrap.innerHTML = `<div class="table-scroll"><table>
+      <thead><tr>
+        <th>Beneficiario</th><th>Contrato</th><th>Unidad</th><th>Última toma</th>
+        <th>Estado nutricional</th><th>FLAG</th><th>Indicadores</th><th>Significado</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${pageRows.map(r=>`
+          <tr>
+            <td class="name-cell">${escapeHtml(r.nombreCompleto)}<div class="sub">${escapeHtml(r.tipoDocumento)} ${escapeHtml(r.numeroDocumento)}</div></td>
+            <td>${escapeHtml(r.contrato)}</td>
+            <td>${escapeHtml(r.unidadLabel)}</td>
+            <td>${fmtDate(r.fechaToma)}</td>
+            <td><span class="badge estado ${estadoSeverityClass(r.estado)}">${escapeHtml(r.estado)}</span></td>
+            <td>${flagBadge(r.flag)}</td>
+            <td>${flagChips(r.flag)}</td>
+            <td class="flag-desc">${escapeHtml(flagTexto(r.flag))}</td>
+            <td><button type="button" class="btn secondary sm btn-ver-detalle" data-doc="${escapeHtml(r.numeroDocumento)}">Ver detalles</button></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table></div>
+    <div class="pagination">
+      <span class="pg-info">Mostrando ${start+1}–${Math.min(start+TABLE_PAGE_SIZE, rows.length)} de ${rows.length}</span>
+      <div class="pg-controls">
+        <button type="button" class="btn secondary sm" id="pgPrevFlag" ${state.flagPage<=1?'disabled':''}>&#8592; Anterior</button>
+        <span class="pg-page">Página ${state.flagPage} de ${totalPages}</span>
+        <button type="button" class="btn secondary sm" id="pgNextFlag" ${state.flagPage>=totalPages?'disabled':''}>Siguiente &#8594;</button>
+      </div>
+    </div>`;
+    const pv = document.getElementById('pgPrevFlag'), nx = document.getElementById('pgNextFlag');
+    if(pv) pv.addEventListener('click', ()=>{ state.flagPage--; renderFlag(); });
+    if(nx) nx.addEventListener('click', ()=>{ state.flagPage++; renderFlag(); });
+  }
+
+  document.getElementById('flagCards').addEventListener('click', e=>{
+    const c = e.target.closest('.flag-click');
+    if(!c) return;
+    const v = c.dataset.flag;
+    onFilterChange('flag', String(state.filters.flag) === v ? '' : v);
+  });
+
+  /* ---------------------------------------------------------
+     TALLAS INCONSISTENTES
+     Con todas las tomas de un beneficiario ordenadas por fecha,
+     la talla debería ser no decreciente. Se calcula la secuencia
+     no decreciente más larga (LNDS): las tomas que quedan fuera
+     de TODAS las secuencias máximas son "probable error"; las
+     que están en algunas pero no en todas son "revisar" (el
+     descenso podría deberse a esta toma o a la vecina).
+  --------------------------------------------------------- */
+  function colLetter(i){
+    let out = ''; i++;
+    while(i > 0){ const m = (i-1) % 26; out = String.fromCharCode(65+m) + out; i = Math.floor((i-1)/26); }
+    return out;
+  }
+  function fmtTalla(t){ return String(+Number(t).toFixed(2)); }
+
+  function buildTomasIndex(){
+    state.tomasByDoc = new Map();
+    state.tallaCache = new Map();
+    state.rows.forEach(r=>{
+      if(r.talla === null || r.talla === undefined || !r.fechaToma) return;
+      if(!state.tomasByDoc.has(r.numeroDocumento)) state.tomasByDoc.set(r.numeroDocumento, []);
+      state.tomasByDoc.get(r.numeroDocumento).push(r);
+    });
+    state.tomasByDoc.forEach(list => list.sort((a,b)=> a.fechaToma - b.fechaToma));
+  }
+
+  function analyzeTallas(doc){
+    if(state.tallaCache.has(doc)) return state.tallaCache.get(doc);
+    const list = state.tomasByDoc.get(doc) || [];
+    const n = list.length;
+    const tomas = list.map((r,i)=>({ row:r, delta: i ? Math.round((r.talla - list[i-1].talla)*100)/100 : null, status:'ok' }));
+    const res = { tomas, inconsistente:false, maxDrop:0, sospechosas:0 };
+    if(n >= 2){
+      const f = new Array(n).fill(1), cf = new Array(n).fill(1);
+      const g = new Array(n).fill(1), cg = new Array(n).fill(1);
+      for(let i=0;i<n;i++){
+        for(let j=0;j<i;j++){
+          if(list[j].talla <= list[i].talla){
+            if(f[j]+1 > f[i]){ f[i] = f[j]+1; cf[i] = cf[j]; }
+            else if(f[j]+1 === f[i]){ cf[i] += cf[j]; }
+          }
+        }
+      }
+      for(let i=n-1;i>=0;i--){
+        for(let j=i+1;j<n;j++){
+          if(list[j].talla >= list[i].talla){
+            if(g[j]+1 > g[i]){ g[i] = g[j]+1; cg[i] = cg[j]; }
+            else if(g[j]+1 === g[i]){ cg[i] += cg[j]; }
+          }
+        }
+      }
+      const L = Math.max(...f);
+      let total = 0;
+      for(let i=0;i<n;i++) if(f[i] === L) total += cf[i];
+      for(let i=0;i<n;i++){
+        const through = (f[i] + g[i] - 1 === L) ? cf[i]*cg[i] : 0;
+        tomas[i].status = through === 0 ? 'error' : (through === total ? 'ok' : 'revisar');
+      }
+      for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+        const drop = list[i].talla - list[j].talla;
+        if(drop > res.maxDrop) res.maxDrop = Math.round(drop*100)/100;
+      }
+      res.inconsistente = res.maxDrop > 0;
+      if(!res.inconsistente) tomas.forEach(t => t.status = 'ok');
+      res.sospechosas = tomas.filter(t => t.status !== 'ok').length;
+    }
+    state.tallaCache.set(doc, res);
+    return res;
+  }
+
+  const TALLA_STATUS_TXT = { ok:'Coherente', revisar:'Revisar', error:'Probable error' };
+
+  function filteredTallasRows(){
+    const f = state.filters;
+    const search = normalize(f.search);
+    const min = f.tallaMin === '' ? 0 : Number(f.tallaMin);
+    const out = [];
+    state.latestRows.forEach(r=>{
+      if(f.contrato && r.contrato !== f.contrato) return;
+      if(f.unidad && r.unidadLabel !== f.unidad) return;
+      if(f.vinculo === 'vinculado' && !esVinculado(r)) return;
+      if(f.vinculo === 'desvinculado' && esVinculado(r)) return;
+      if(search && !(normalize(r.nombreCompleto).includes(search) || normalize(r.numeroDocumento).includes(search))) return;
+      const a = analyzeTallas(r.numeroDocumento);
+      if(!a.inconsistente || a.maxDrop < min) return;
+      out.push({ r, a });
+    });
+    return out.sort((x,y)=> (y.a.maxDrop - x.a.maxDrop) || x.r.nombreCompleto.localeCompare(y.r.nombreCompleto));
+  }
+
+  function tallaChip(t){
+    const r = t.row;
+    const cls = t.status === 'error' ? 't-error' : (t.status === 'revisar' ? 't-revisar' : '');
+    const d = t.delta === null ? '' : ` (${t.delta > 0 ? '+' : ''}${fmtTalla(t.delta)})`;
+    return `<button type="button" class="talla-chip ${cls} btn-ver-detalle-row" data-doc="${escapeHtml(r.numeroDocumento)}" data-time="${r.fechaToma.getTime()}" title="${TALLA_STATUS_TXT[t.status]}${d}">${fmtDate(r.fechaToma)} · <b>${fmtTalla(r.talla)} cm</b></button>`;
+  }
+
+  function renderTallas(){
+    const cardsWrap = document.getElementById('tallasCards');
+    const wrap = document.getElementById('tallasWrap');
+    const note = document.getElementById('tallasColNote');
+    note.textContent = state.tallaColumn === null ? '' : `Talla leída de la columna ${colLetter(state.tallaColumn)}.`;
+
+    if(!state.rows.length){
+      cardsWrap.innerHTML = '';
+      wrap.innerHTML = `<div class="empty"><div class="big">Aún no hay datos</div>Sube un reporte para validar las tallas.<br><button type="button" class="btn" id="btnIrCargarTallas">&#8593; Cargar reporte</button></div>`;
+      const goBtn = document.getElementById('btnIrCargarTallas');
+      if(goBtn) goBtn.addEventListener('click', ()=> switchView('cargar'));
+      return;
+    }
+
+    const items = filteredTallasRows();
+    const sospechosas = items.reduce((acc,x)=> acc + x.a.sospechosas, 0);
+    const maxDrop = items.reduce((m,x)=> Math.max(m, x.a.maxDrop), 0);
+    cardsWrap.innerHTML = `
+      <div class="card danger"><div class="num">${items.length}</div><div class="lbl">Beneficiarios con talla inconsistente</div></div>
+      <div class="card gold"><div class="num">${sospechosas}</div><div class="lbl">Tomas a revisar</div></div>
+      <div class="card"><div class="num">${maxDrop ? fmtTalla(maxDrop) + ' cm' : '—'}</div><div class="lbl">Mayor descenso detectado</div></div>`;
+
+    if(!items.length){
+      wrap.innerHTML = `<div class="empty"><div class="big">Sin tallas inconsistentes</div>Ningún beneficiario tiene una talla menor que la de una toma anterior${zanFiltersActive() ? ' con los filtros actuales' : ''}.</div>`;
+      return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(items.length / TABLE_PAGE_SIZE));
+    if(state.tallasPage > totalPages) state.tallasPage = totalPages;
+    if(state.tallasPage < 1) state.tallasPage = 1;
+    const start = (state.tallasPage - 1) * TABLE_PAGE_SIZE;
+    const page = items.slice(start, start + TABLE_PAGE_SIZE);
+
+    wrap.innerHTML = `<div class="table-scroll"><table>
+      <thead><tr>
+        <th>Beneficiario</th><th>Contrato</th><th>Unidad</th>
+        <th>Todas las tomas (fecha · talla)</th><th>Mayor descenso</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${page.map(({r,a})=>`
+          <tr>
+            <td class="name-cell">${escapeHtml(r.nombreCompleto)}<div class="sub">${escapeHtml(r.tipoDocumento)} ${escapeHtml(r.numeroDocumento)}</div></td>
+            <td>${escapeHtml(r.contrato)}</td>
+            <td>${escapeHtml(r.unidadLabel)}</td>
+            <td><div class="tallas-chips">${a.tomas.map(tallaChip).join('')}</div></td>
+            <td><span class="badge vencida">&minus;${fmtTalla(a.maxDrop)} cm</span></td>
+            <td><button type="button" class="btn secondary sm btn-ver-detalle" data-doc="${escapeHtml(r.numeroDocumento)}">Ver detalles</button></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table></div>
+    <div class="pagination">
+      <span class="pg-info">Mostrando ${start+1}–${Math.min(start+TABLE_PAGE_SIZE, items.length)} de ${items.length}</span>
+      <div class="pg-controls">
+        <button type="button" class="btn secondary sm" id="pgPrevTallas" ${state.tallasPage<=1?'disabled':''}>&#8592; Anterior</button>
+        <span class="pg-page">Página ${state.tallasPage} de ${totalPages}</span>
+        <button type="button" class="btn secondary sm" id="pgNextTallas" ${state.tallasPage>=totalPages?'disabled':''}>Siguiente &#8594;</button>
+      </div>
+    </div>`;
+    const pv = document.getElementById('pgPrevTallas'), nx = document.getElementById('pgNextTallas');
+    if(pv) pv.addEventListener('click', ()=>{ state.tallasPage--; renderTallas(); });
+    if(nx) nx.addEventListener('click', ()=>{ state.tallasPage++; renderTallas(); });
+  }
+
+  // Comparativo de tomas según talla, para el modal "Ver detalles".
+  function tallaCompareHtml(actual){
+    const a = analyzeTallas(actual.numeroDocumento);
+    const title = `<div class="detail-section-title">Comparativo de tomas según talla</div>`;
+    if(a.tomas.length < 2){
+      return `<div class="detail-compare">${title}<p class="cmp-note" style="margin:0;">Solo hay una toma cargada para este beneficiario; no hay con qué comparar la talla.</p></div>`;
+    }
+    const nota = a.inconsistente
+      ? `La talla baja entre tomas (mayor descenso: <b>${fmtTalla(a.maxDrop)} cm</b>). Las filas en amarillo o rojo son las que conviene verificar contra el registro original.`
+      : `Las tallas crecen o se mantienen entre tomas: no se detectan descensos.`;
+    return `<div class="detail-compare">${title}
+      <p class="cmp-note">${nota}</p>
+      <div class="table-scroll"><table class="cmp-table">
+        <thead><tr><th>Fecha</th><th>Talla</th><th>Variación</th><th>Peso</th><th>Estado nutricional</th><th>Revisión</th></tr></thead>
+        <tbody>
+          ${a.tomas.map(t=>{
+            const r = t.row;
+            const isActual = r === actual;
+            const dTxt = t.delta === null ? '—' : (t.delta < 0 ? `<span class="cmp-down">&#9660; ${fmtTalla(t.delta)} cm</span>` : (t.delta > 0 ? `<span class="cmp-up">+${fmtTalla(t.delta)} cm</span>` : '0'));
+            return `<tr class="${t.status==='ok'?'':'cmp-'+t.status} ${isActual?'cmp-actual':''}">
+              <td>${fmtDate(r.fechaToma)}${isActual ? ' <span class="sub" style="color:var(--primary);font-weight:700;">&#9664; esta toma</span>' : ''}</td>
+              <td><b>${fmtTalla(r.talla)} cm</b></td>
+              <td>${dTxt}</td>
+              <td>${r.peso != null ? escapeHtml(String(r.peso)) + ' kg' : '—'}</td>
+              <td><span class="badge estado ${estadoSeverityClass(r.estado)}">${escapeHtml(r.estado)}</span></td>
+              <td><span class="badge cmp-${t.status}">${TALLA_STATUS_TXT[t.status]}</span></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+  }
+
   function urgLabel(r){
     if(r.urgencia==='vencida') return `Vencida hace ${Math.abs(r.diasRestantes)} d`;
     if(r.urgencia==='proxima') return r.diasRestantes===0 ? 'Hoy' : `En ${r.diasRestantes} d`;
@@ -1687,6 +2184,18 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
   document.getElementById('fUnidadDesmejoras').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
   document.getElementById('fVinculoDesmejoras').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
   document.getElementById('fVinculoCal').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
+
+  document.getElementById('fSearchFlag').addEventListener('input', e=> onFilterChange('search', e.target.value));
+  document.getElementById('fContratoFlag').addEventListener('change', e=> onFilterChange('contrato', e.target.value));
+  document.getElementById('fUnidadFlag').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
+  document.getElementById('fFlag').addEventListener('change', e=> onFilterChange('flag', e.target.value));
+  document.getElementById('fVinculoFlag').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
+
+  document.getElementById('fSearchTallas').addEventListener('input', e=> onFilterChange('search', e.target.value));
+  document.getElementById('fContratoTallas').addEventListener('change', e=> onFilterChange('contrato', e.target.value));
+  document.getElementById('fUnidadTallas').addEventListener('change', e=> onFilterChange('unidad', e.target.value));
+  document.getElementById('fTallaMin').addEventListener('change', e=> onFilterChange('tallaMin', e.target.value));
+  document.getElementById('fVinculoTallas').addEventListener('change', e=> onFilterChange('vinculo', e.target.value));
 
   /* ---------------------------------------------------------
      CALENDARIO
@@ -2274,6 +2783,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
             ${itemBadge('Estado Peso / Edad', r.estadoPesoEdad, estadoSeverityClass(r.estadoPesoEdad))}
             ${itemBadge('Estado Peso / Talla', r.estadoPesoTalla, estadoSeverityClass(r.estadoPesoTalla))}
             ${itemBadge('Estado IMC', r.estadoIMC, estadoSeverityClass(r.estadoIMC))}
+            ${r.flag ? `<div class="detail-item"><div class="lbl">FLAG</div>${flagBadge(r.flag)}<div class="detail-name" style="font-size:11px;margin-top:4px;">${escapeHtml(flagTexto(r.flag))}</div></div>` : itemVal('FLAG', '0 (sin alerta)')}
           </div>
         </div>
 
@@ -2286,6 +2796,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
           </div>
         </div>
       </div>
+      ${tallaCompareHtml(r)}
     `;
     document.getElementById('detailModalOverlay').classList.add('open');
     zanOnDetail(r);
@@ -2344,6 +2855,8 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     if(document.getElementById('view-calendario').classList.contains('active')) renderCalendar();
     if(document.getElementById('view-mejoras').classList.contains('active')) renderMejoras();
     if(document.getElementById('view-desmejoras').classList.contains('active')) renderDesmejoras();
+    if(document.getElementById('view-flag').classList.contains('active')) renderFlag();
+    if(document.getElementById('view-tallas').classList.contains('active')) renderTallas();
   }
 
   /* ---------------------------------------------------------
@@ -2465,7 +2978,7 @@ const ZAN_SPRITES = {
   function zanView(){ const v = document.querySelector('.view.active'); return v ? v.id.replace('view-','') : 'tablero'; }
   function zanFiltersActive(){
     const f = state.filters;
-    return !!(f.search || f.contrato || f.unidad || (f.estados && f.estados.length) || f.urgencia || f.vinculo ||
+    return !!(f.search || f.flag !== '' || f.tallaMin !== '' || f.contrato || f.unidad || (f.estados && f.estados.length) || f.urgencia || f.vinculo ||
               f.vistaTomas !== 'ultima' || (f.contratosMejoras && f.contratosMejoras.length) || (f.contratosDesmejoras && f.contratosDesmejoras.length));
   }
   function zanNum(sel){ const el = document.querySelector(sel); return el ? (parseInt(el.textContent,10) || 0) : 0; }
@@ -2477,6 +2990,8 @@ const ZAN_SPRITES = {
     switch(zanView()){
       case 'mejoras':    return zanNum('#mejorasCards .num');
       case 'desmejoras': return zanNum('#desmejorasCards .num');
+      case 'flag':       return filteredFlagRows().length;
+      case 'tallas':     return filteredTallasRows().length;
       case 'calendario': return zanMonthRows().length;
       default:           return filteredRows().length;
     }
@@ -2527,6 +3042,21 @@ const ZAN_SPRITES = {
       const n = zanNum('#desmejorasCards .num');
       if(n > 0){ setZanState('alert'); zanShow(`<b>${zanPl(n,'beneficiario empeoró','beneficiarios empeoraron')}</b> su estado nutricional. Conviene revisar su ficha con <b>Ver detalles</b>. ⚠️`, ['goMejoras']); }
       else { setZanState('happy'); zanShow('¡Bien! No detecto desmejoras con los filtros actuales. 🎉', zanFiltersActive() ? ['limpiar'] : ['goMejoras']); }
+      return;
+    }
+    if(view === 'tallas'){
+      zanSetPills(2);
+      const n = filteredTallasRows().length;
+      if(n > 0){ setZanState('alert'); zanShow(`<b>${zanPl(n,'beneficiario tiene','beneficiarios tienen')}</b> una talla menor que la de una toma anterior. Haz clic en una fecha para revisar esa toma, o en <b>Ver detalles</b> para ver el comparativo. 📏`, zanFiltersActive() ? ['limpiar'] : ['goPanorama']); }
+      else { setZanState('happy'); zanShow(zanFiltersActive() ? 'No hay tallas inconsistentes con los filtros actuales.' : '¡Bien! Las tallas crecen de forma coherente entre tomas. 🎉', zanFiltersActive() ? ['limpiar'] : ['goPanorama']); }
+      return;
+    }
+    if(view === 'flag'){
+      zanSetPills(2);
+      if(state.flagColumn === null){ setZanState('error'); zanShow('El reporte cargado <b>no trae columna FLAG</b> (ni título "FLAG" ni columna BB). 😿', ['goCargar']); return; }
+      const n = filteredFlagRows().length;
+      if(n > 0){ setZanState('alert'); zanShow(`<b>${zanPl(n,'beneficiario tiene','beneficiarios tienen')}</b> un FLAG distinto de 0 en su toma más reciente: valores fuera de rango que conviene verificar. ⚑`, zanFiltersActive() ? ['limpiar'] : ['goDesm']); }
+      else { setZanState('happy'); zanShow(zanFiltersActive() ? 'No hay FLAG con los filtros actuales.' : '¡Bien! Ninguna toma reciente tiene FLAG distinto de 0. 🎉', zanFiltersActive() ? ['limpiar'] : ['goPanorama']); }
       return;
     }
     if(view === 'calendario'){
@@ -2641,14 +3171,18 @@ const ZAN_SPRITES = {
 
   /* ---------- acciones de los botones de la burbuja ---------- */
   function zanClearFilters(){
-    state.filters = { search:'', contrato:'', unidad:'', estados:[], urgencia:'', vinculo:'', vistaTomas:'ultima', contratosMejoras:[], contratosDesmejoras:[] };
+    state.filters = { search:'', contrato:'', unidad:'', estados:[], urgencia:'', vinculo:'', vistaTomas:'ultima', contratosMejoras:[], contratosDesmejoras:[], flag:'', tallaMin:'' };
     state.tablePage = 1;
+    state.flagPage = 1;
+    state.tallasPage = 1;
     syncFilterInputs();
     renderTable();
     const v = zanView();
     if(v === 'calendario') renderCalendar();
     if(v === 'mejoras') renderMejoras();
     if(v === 'desmejoras') renderDesmejoras();
+    if(v === 'flag') renderFlag();
+    if(v === 'tallas') renderTallas();
     zanErase('<b>Filtros limpios.</b> Volvemos a ver todo. 🧹');
   }
   const ZAN_ACTIONS = {
@@ -2727,6 +3261,8 @@ const ZAN_SPRITES = {
         const what = v === 'calendario' ? zanPl(n,'toma este mes','tomas este mes')
                    : v === 'mejoras' ? zanPl(n,'mejora','mejoras')
                    : v === 'desmejoras' ? zanPl(n,'desmejora','desmejoras')
+                   : v === 'flag' ? zanPl(n,'beneficiario con FLAG','beneficiarios con FLAG')
+                   : v === 'tallas' ? zanPl(n,'beneficiario con talla inconsistente','beneficiarios con talla inconsistente')
                    : zanPl(n,'beneficiario','beneficiarios');
         setZanState('watch');
         zanShow(`Mostrando <b>${what}</b> con los filtros aplicados. 🔎`, v === 'calendario' ? ['limpiar','pdf'] : ['limpiar','analizar']);
