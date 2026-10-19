@@ -547,7 +547,7 @@ const MF=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','sep
 const AN={thr:90,run:3,val:8094};const LONGRUN=8;   // racha de ≥8 inasistencias seguidas entre semanas pegadas: el margen se aplica una sola vez
 try{Object.assign(AN,JSON.parse(localStorage.getItem('uds_an2')||'{}'))}catch(e){}
 $('#athr').value=AN.thr;$('#arun').value=AN.run;$('#aval').value=AN.val;
-function setAn(){AN.thr=Math.min(100,Math.max(1,+$('#athr').value||90));AN.val=Math.max(0,Math.round(+$('#aval').value)||8094);AN.run=Math.max(2,+$('#arun').value||3);try{localStorage.setItem('uds_an2',JSON.stringify(AN))}catch(e){}renderAn()}
+function setAn(){AN.thr=Math.min(100,Math.max(1,+$('#athr').value||50));AN.val=Math.max(0,Math.round(+$('#aval').value)||8094);AN.run=Math.max(2,+$('#arun').value||3);try{localStorage.setItem('uds_an2',JSON.stringify(AN))}catch(e){}renderAn()}
 const money=n=>"$"+Math.round(n).toLocaleString("es-CO");
 const wkNum=d=>{if(!WK)return wkId(d)+1;const i=WK.W.findIndex(w=>w.includes(d));return i<0?wkId(d)+1:i+1};
 function wkDiscounts(){const out=[];if(!WK)return out;Object.entries(grp()).forEach(([c,rs])=>{const ds=WK.ds[c];if(!ds)return;WK.W.forEach((days,i)=>{const f=weekInfo(ds,days);if(f.desc)out.push({c,u:rs[0].uds,i,f})})});return out}
