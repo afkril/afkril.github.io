@@ -1,0 +1,348 @@
+/* ==================== GESTIÓN DE OPERADORES ==================== */
+/* Tabla dinámica para crear, editar y eliminar operadores desde un solo lugar. */
+
+.go-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.go-header-text .editor-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.go-btn-agregar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 0.55rem;
+    border: none;
+    background: var(--gradient-primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 8px 20px -8px rgba(37, 99, 235, 0.6);
+}
+
+.go-btn-agregar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px -8px rgba(37, 99, 235, 0.75);
+}
+
+/* ---------- Barra de filtros ---------- */
+.go-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.85rem;
+    margin-bottom: 1rem;
+    align-items: flex-end;
+}
+
+.go-toolbar .form-group {
+    margin-bottom: 0;
+}
+
+.go-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 180px;
+}
+
+.go-search-wrap input {
+    width: 100%;
+    padding: 0.55rem 0.75rem 0.55rem 2.1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+}
+
+.go-search-icon {
+    position: absolute;
+    left: 0.65rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.go-toolbar select {
+    min-width: 150px;
+}
+
+.go-count-pill {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    padding: 0.5rem 0.1rem;
+}
+
+/* ---------- Tabla ---------- */
+.go-table-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.go-table-scroll {
+    overflow-x: auto;
+}
+
+.go-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    min-width: 720px;
+}
+
+.go-table thead tr {
+    background: var(--bg-dark);
+}
+
+.go-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+}
+
+.go-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.go-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.go-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.go-table tbody tr:hover {
+    background: var(--bg-hover);
+}
+
+.go-operador-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.go-avatar {
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.75rem;
+    color: #fff;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.go-operador-nombre {
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.go-operador-codigo {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-family: monospace;
+}
+
+.go-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.4rem;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.go-color-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.go-color-swatch {
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 0.35rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.go-color-hex {
+    font-size: 0.72rem;
+    font-family: monospace;
+    color: var(--text-secondary);
+}
+
+.go-productos-count {
+    font-weight: 700;
+    color: #22d3ee;
+}
+
+.go-actions-cell {
+    display: flex;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.go-action-btn {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    background: var(--bg-dark);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s ease;
+}
+
+.go-action-btn.go-edit {
+    color: #60a5fa;
+    border-color: rgba(96, 165, 250, 0.3);
+}
+
+.go-action-btn.go-edit:hover {
+    background: rgba(96, 165, 250, 0.12);
+    border-color: #60a5fa;
+}
+
+.go-action-btn.go-delete {
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.3);
+}
+
+.go-action-btn.go-delete:hover {
+    background: rgba(248, 113, 113, 0.12);
+    border-color: #f87171;
+}
+
+/* ---------- Estado vacío ---------- */
+.go-empty-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.go-empty-state .go-empty-icon {
+    font-size: 2.4rem;
+    margin-bottom: 0.6rem;
+    opacity: 0.7;
+}
+
+/* ---------- Paginación ---------- */
+.go-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.go-pagination-btns {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.go-pagination-btns button {
+    min-width: 2rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.4rem;
+    border: 1px solid var(--border);
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+.go-pagination-btns button.active {
+    background: var(--gradient-primary);
+    border-color: transparent;
+    color: #fff;
+    font-weight: 700;
+}
+
+.go-pagination-btns button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ---------- Selector de colores rápido (modal) ---------- */
+.go-color-dots {
+    display: flex;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.go-color-dot {
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    transition: transform 0.1s ease;
+}
+
+.go-color-dot:hover {
+    transform: scale(1.15);
+}
+
+.go-readonly-note {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 0.35rem;
+}
+
+@media (max-width: 640px) {
+    .go-toolbar select,
+    .go-search-wrap {
+        width: 100%;
+        min-width: 0;
+    }
+}

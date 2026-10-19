@@ -1,0 +1,525 @@
+/* =====================================================================
+   INTERCAMBIOS EN LAS LISTAS DE MERCADO (semanal y mensual)
+   Botón sutil ⇄ junto al producto  +  Drawer lateral  +  badge "Intercambiado"
+   No altera la estructura de columnas de las tablas: todo vive dentro de
+   la celda "Producto" (.product-name).
+   ===================================================================== */
+
+/* ---------- 1. Celda de producto: texto + botón sutil + badge ---------- */
+
+.product-name .pn-text {
+    min-width: 0;
+}
+
+/* Botón sutil ⇄ (junto al nombre del alimento) */
+.swap-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    opacity: 0.45;
+    cursor: pointer;
+    /* El margen negativo evita que el botón haga más alta la fila de la tabla */
+    margin-block: -3px;
+    transition: opacity .15s, background .15s, color .15s, border-color .15s;
+}
+.swap-btn svg {
+    width: 13px;
+    height: 13px;
+    transition: transform .3s ease;
+}
+tr:hover .swap-btn,
+.swap-btn:focus-visible {
+    opacity: 1;
+}
+.swap-btn:hover {
+    opacity: 1;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.14);
+    border-color: rgba(245, 158, 11, 0.38);
+}
+.swap-btn:hover svg {
+    transform: rotate(180deg);
+}
+.swap-btn:focus-visible,
+.swap-badge:focus-visible {
+    outline: 2px solid #f59e0b;
+    outline-offset: 1px;
+}
+/* En pantallas táctiles no existe hover: el botón se deja algo más visible */
+@media (hover: none) {
+    .swap-btn { opacity: 0.7; width: 26px; height: 26px; margin-block: -5px; }
+}
+
+/* El contenedor del badge no genera caja propia: el badge participa
+   directamente del flex de .product-name y no deja huecos cuando está vacío */
+.swap-slot {
+    display: contents;
+}
+
+/* Marca visual distintiva: badge brillante "🔄 Intercambiado" */
+.swap-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-shrink: 0;
+    padding: 0.12rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid rgba(251, 191, 36, 0.6);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.30), rgba(249, 115, 22, 0.24));
+    color: #fde68a;
+    font: inherit;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+    white-space: nowrap;
+    text-shadow: 0 0 6px rgba(251, 191, 36, 0.35);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.30), inset 0 0 6px rgba(251, 191, 36, 0.12);
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+}
+.swap-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.55), inset 0 0 6px rgba(251, 191, 36, 0.18);
+}
+/* Cuando se acaba de guardar el intercambio: aparece con un destello */
+.swap-badge.is-new {
+    animation: swapBadgePop .75s cubic-bezier(.2, .9, .3, 1.4) 1;
+}
+@keyframes swapBadgePop {
+    0%   { transform: scale(.55); opacity: 0; box-shadow: 0 0 0 0 rgba(251, 191, 36, .8); }
+    55%  { transform: scale(1.12); opacity: 1; box-shadow: 0 0 0 8px rgba(251, 191, 36, 0); }
+    100% { transform: scale(1); }
+}
+
+/* Fila intercambiada: tinte ámbar suave (background-image conserva el color
+   sólido de las columnas fijas de la tabla mensual) */
+tr.row-swapped > td {
+    background-image: linear-gradient(rgba(245, 158, 11, 0.07), rgba(245, 158, 11, 0.07));
+}
+/* Destello de la fila que acaba de cambiar */
+tr.swap-flash > td {
+    animation: swapRowFlash 1.9s ease-out 1;
+}
+@keyframes swapRowFlash {
+    from { box-shadow: inset 0 0 0 999px rgba(251, 191, 36, 0.36); }
+    to   { box-shadow: inset 0 0 0 999px rgba(251, 191, 36, 0); }
+}
+
+/* Tabla mensual: la primera columna es angosta y fija (sticky). El nombre se
+   recorta con puntos suspensivos y el badge baja a su propia línea. */
+.monthly-table .product-name {
+    flex-wrap: wrap;
+    column-gap: 0.3rem;
+    row-gap: 0;
+}
+.monthly-table .product-name .pn-text {
+    flex: 0 1 auto;
+    /* Deja sitio al botón en la MISMA línea (así la altura de las filas no cambia):
+       barra(3px) + 2 huecos(.3rem) + botón(20px). El nombre completo sigue en el tooltip. */
+    max-width: calc(100% - 2.05rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.monthly-table .swap-btn {
+    width: 20px;
+    height: 20px;
+    margin-block: -2px;
+}
+@media (hover: none) {
+    .monthly-table .swap-btn { width: 22px; height: 22px; margin-block: -3px; }
+    .monthly-table .product-name .pn-text { max-width: calc(100% - 2.3rem); }
+}
+.monthly-table .swap-slot:not(:empty) {
+    display: block;
+    flex: 0 0 100%;
+    margin: 2px 0 1px 0;
+}
+.monthly-table .swap-badge {
+    font-size: 0.58rem;
+    padding: 0.08rem 0.45rem;
+}
+
+/* Tema claro */
+[data-theme="light"] .swap-badge {
+    color: #92400e;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border-color: #f59e0b;
+    text-shadow: none;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.35);
+}
+[data-theme="light"] tr.row-swapped > td {
+    background-image: linear-gradient(rgba(245, 158, 11, 0.10), rgba(245, 158, 11, 0.10));
+}
+
+/* ---------- 2. Drawer lateral (cristal / oscuro) ---------- */
+
+.swap-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    /* Velo ligero y SIN desenfoque: la tabla sigue visible detrás */
+    background: rgba(2, 6, 23, 0.34);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .28s ease, visibility 0s linear .28s;
+}
+.swap-overlay.open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .28s ease;
+}
+
+.swap-drawer {
+    --sw-glass: rgba(15, 23, 42, 0.76);
+    --sw-glass-border: rgba(255, 255, 255, 0.10);
+    --sw-field: rgba(2, 6, 23, 0.55);
+    --sw-soft: rgba(255, 255, 255, 0.045);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1401;
+    width: min(420px, 100vw);
+    display: flex;
+    flex-direction: column;
+    color: var(--text-primary);
+    color-scheme: dark;
+    background: var(--sw-glass);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+    border-left: 1px solid var(--sw-glass-border);
+    box-shadow: -24px 0 60px rgba(0, 0, 0, 0.45);
+    transform: translateX(104%);
+    visibility: hidden;
+    transition: transform .32s cubic-bezier(.4, 0, .2, 1), visibility 0s linear .32s;
+}
+.swap-drawer.open {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform .32s cubic-bezier(.4, 0, .2, 1), visibility 0s;
+}
+/* Filo de luz ámbar en el borde izquierdo */
+.swap-drawer::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, #f59e0b, #fb923c 45%, rgba(251, 146, 60, 0));
+    pointer-events: none;
+}
+.swap-drawer [hidden] { display: none !important; }
+
+[data-theme="light"] .swap-drawer {
+    --sw-glass: rgba(255, 255, 255, 0.82);
+    --sw-glass-border: rgba(15, 23, 42, 0.12);
+    --sw-field: rgba(255, 255, 255, 0.95);
+    --sw-soft: rgba(15, 23, 42, 0.04);
+    color-scheme: light;
+    box-shadow: -24px 0 60px rgba(15, 23, 42, 0.18);
+}
+
+/* Encabezado */
+.swap-dr-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--sw-glass-border);
+}
+.swap-dr-icon {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    font-size: 1.15rem;
+    border-radius: 0.65rem;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.32), rgba(249, 115, 22, 0.22));
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    box-shadow: 0 0 14px rgba(251, 191, 36, 0.25);
+}
+.swap-dr-heading { flex: 1; min-width: 0; }
+.swap-dr-title {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.swap-dr-sub {
+    margin-top: 2px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+.swap-dr-close {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--sw-glass-border);
+    background: var(--sw-soft);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all .2s;
+}
+.swap-dr-close:hover {
+    background: var(--danger);
+    border-color: transparent;
+    color: #fff;
+}
+
+/* Cuerpo */
+.swap-dr-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Tarjeta del producto */
+.swap-prod {
+    --swap-cat-rgb: 245, 158, 11;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--sw-glass-border);
+    border-left: 3px solid rgb(var(--swap-cat-rgb));
+    background: var(--sw-soft);
+}
+.swap-prod-ico {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+    border-radius: 0.65rem;
+    background: rgba(var(--swap-cat-rgb), 0.16);
+    border: 1px solid rgba(var(--swap-cat-rgb), 0.35);
+}
+.swap-prod-info { min-width: 0; }
+.swap-prod-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+.swap-prod-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+}
+.swap-chip {
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--sw-glass-border);
+    background: rgba(148, 163, 184, 0.14);
+    color: var(--text-secondary);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.swap-chip-cat {
+    color: rgb(var(--swap-cat-rgb));
+    border-color: rgba(var(--swap-cat-rgb), 0.4);
+    background: rgba(var(--swap-cat-rgb), 0.12);
+}
+
+/* Avisos (directorio abierto / sin directorio) */
+.swap-note {
+    padding: 0.5rem 0.7rem;
+    border-radius: 0.5rem;
+    font-size: 0.72rem;
+    line-height: 1.45;
+}
+.swap-note-ok {
+    color: #818cf8;
+    background: rgba(99, 102, 241, 0.09);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+}
+.swap-note-warn {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.09);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+[data-theme="light"] .swap-note-ok   { color: #4f46e5; }
+[data-theme="light"] .swap-note-warn { color: #b45309; }
+
+/* Secciones */
+.swap-label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+.swap-label-hint {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    opacity: 0.85;
+}
+
+/* Intercambios ya registrados para este producto */
+.swap-current {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.6rem;
+    margin-bottom: 0.4rem;
+    border-radius: 0.55rem;
+    background: rgba(245, 158, 11, 0.09);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+.swap-current-arrow { color: #f59e0b; font-weight: 700; }
+.swap-current-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.swap-current-remove {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.10);
+    color: #ef4444;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all .15s;
+}
+.swap-current-remove:hover { background: #ef4444; color: #fff; }
+
+/* Campos */
+.swap-field {
+    display: block;
+    width: 100%;
+    padding: 0.62rem 0.75rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--sw-glass-border);
+    background: var(--sw-field);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.86rem;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+.swap-field:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22);
+}
+.swap-field + .swap-field { margin-top: 0.5rem; }
+.swap-error {
+    min-height: 1.1rem;
+    margin-top: 0.35rem;
+    font-size: 0.72rem;
+    color: #f87171;
+}
+
+/* Pie: vista previa + acciones */
+.swap-dr-footer {
+    padding: 0.85rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--sw-glass-border);
+    background: var(--sw-soft);
+}
+.swap-dr-preview {
+    margin-bottom: 0.7rem;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: var(--text-secondary);
+}
+.swap-dr-preview b { color: var(--text-primary); }
+.swap-dr-actions {
+    display: flex;
+    gap: 0.6rem;
+}
+.swap-dr-btn {
+    padding: 0.62rem 1rem;
+    border-radius: 0.6rem;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, opacity .15s, background .15s;
+}
+.swap-dr-btn-ghost {
+    flex: 0 0 auto;
+    border: 1px solid var(--sw-glass-border);
+    background: transparent;
+    color: var(--text-secondary);
+}
+.swap-dr-btn-ghost:hover { background: var(--sw-soft); color: var(--text-primary); }
+.swap-dr-btn-primary {
+    flex: 1;
+    border: none;
+    color: #fff;
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.32);
+}
+.swap-dr-btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+}
+.swap-dr-btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+.swap-dr-btn:focus-visible,
+.swap-dr-close:focus-visible,
+.swap-current-remove:focus-visible {
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+}
+
+/* ---------- 3. Accesibilidad y responsive ---------- */
+
+@media (max-width: 480px) {
+    .swap-drawer { width: 100vw; border-left: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .swap-overlay, .swap-drawer, .swap-btn, .swap-btn svg, .swap-badge { transition: none !important; }
+    .swap-badge.is-new, tr.swap-flash > td { animation: none !important; }
+}
+
+/* ---------- 4. Impresión ---------- */
+/* El botón y el drawer no se imprimen. El badge sí (es información de la
+   lista), en versión sobria y con el nombre del sustituto. */
+@media print {
+    .swap-btn, .swap-overlay, .swap-drawer { display: none !important; }
+    tr.row-swapped > td { background-image: none !important; }
+    tr.swap-flash > td, .swap-badge.is-new { animation: none !important; }
+    .swap-badge {
+        background: #fff !important;
+        color: #000 !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        font-size: 7pt !important;
+        padding: 0 4px !important;
+    }
+    .swap-badge::after {
+        content: ' \2192  ' attr(data-swap-to);
+        font-weight: 600;
+        white-space: normal;
+    }
+}
