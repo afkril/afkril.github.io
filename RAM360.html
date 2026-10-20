@@ -258,7 +258,7 @@ td{padding:7px 9px}th{padding:8px 9px}
         </div>
         <div class="kpis" id="detK"></div>
         <div class="wrap" id="detW"><table id="detT"></table></div><div id="detC" class="hide"></div>
-        <div class="legend"><span style="--c:var(--ok)">Asistió (X)</span><span style="--c:var(--warn)">Falla (-)</span><span style="--c:var(--gray)">Retiro</span><span style="--c:var(--card)">N/A: ingreso posterior (no cuenta)</span><span style="--c:var(--b)">Ajustado manualmente</span><span style="--c:transparent">Clic en una celda -, R o N/A para validarla</span><span style="--c:var(--sp)">Día especial</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:#fecaca">⚠ Error de marcación (asistencia en día libre)</span></div>
+        <div class="legend"><span style="--c:var(--ok)">Asistió (X)</span><span style="--c:var(--warn)">Falla (-)</span><span style="--c:var(--gray)">Retiro</span><span style="--c:var(--card)">N/A: ingreso posterior (no cuenta)</span><span style="--c:var(--b)">Ajustado manualmente</span><span style="--c:var(--b)">Azul N/A o R: ingreso/retiro de 1–2 días en la semana, cuenta como cupo</span><span style="--c:transparent">Clic en una celda -, R o N/A para validarla</span><span style="--c:var(--sp)">Día especial</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:#fecaca">⚠ Error de marcación (asistencia en día libre)</span></div>
       </div>
     </section>
   </div>
@@ -332,17 +332,30 @@ function autoDetect(silent){
 $('#year').onchange=()=>S.rows.length&&start();
 
 /* Cálculo por participante */
+/* Regla semanal: la ración se entrega por semana. Si un ingreso (N/A) o un retiro (R) deja solo 1 o 2 días sin
+   asistencia dentro de la MISMA semana de su primera / última asistencia, esos días cuentan como cupo y se
+   registran internamente como falla (ajuste semanal). Con 3 o más días en esa semana siguen siendo N/A / R. */
+const AJ_SEM=2;
+const wkIdx=d=>Math.floor((d-1+(dow(1)+6)%7)/7);
 function calc(r){
  const sv=svc(r.code);let first=0,last=0;
  sv.forEach(d=>{if(r.marks[d]){if(!first)first=d;last=d}});
- const ov=S.ov[r.key]||{},o={att:0,abs:0,ret:0,na:0,cell:{},man:{}};
- sv.forEach(d=>{let k;
-  if(r.marks[d])k='x';
-  else if(!first)k=r.active?'f':'r';          // sin ninguna asistencia en el mes
-  else if(d<first)k='n';                      // ingreso posterior: no aplica
-  else if(!r.active&&d>last)k='r';            // retiro
-  else k='f';
-  if(k!=='x'&&ov[d]){k=ov[d];o.man[d]=1}       // ajuste manual (solo f / r / n)
+ const ov=S.ov[r.key]||{},o={att:0,abs:0,ret:0,na:0,cell:{},man:{},aw:{},awN:0},K={};
+ sv.forEach(d=>{
+  if(r.marks[d])K[d]='x';
+  else if(!first)K[d]=r.active?'f':'r';       // sin ninguna asistencia en el mes
+  else if(d<first)K[d]='n';                   // ingreso posterior: no aplica
+  else if(!r.active&&d>last)K[d]='r';         // retiro
+  else K[d]='f';
+ });
+ if(first){
+  const wf=wkIdx(first),wl=wkIdx(last);
+  const nD=sv.filter(d=>K[d]==='n'&&wkIdx(d)===wf),rD=sv.filter(d=>K[d]==='r'&&wkIdx(d)===wl);
+  [[nD,'n'],[rD,'r']].forEach(([g,t])=>{if(g.length&&g.length<=AJ_SEM)g.forEach(d=>{K[d]='f';o.aw[d]=t})});   // cuenta como cupo (f) pero se muestra como N/A o R
+ }
+ sv.forEach(d=>{let k=K[d];
+  if(k!=='x'&&ov[d]){k=ov[d];o.man[d]=1;delete o.aw[d]}   // ajuste manual (solo f / r / n) tiene prioridad
+  else if(o.aw[d])o.awN++;
   o.cell[d]=k;o[{x:'att',f:'abs',r:'ret',n:'na'}[k]]++;
  });
  o.eff=r.active||o.ret===0;   // inactivo sin ningún día de retiro = participante completo del mes
@@ -367,8 +380,8 @@ document.addEventListener('click',e=>{
 document.addEventListener('keydown',e=>e.key==='Escape'&&$('#pop').classList.add('hide'));
 
 function stats(rows){
- const t={act:0,ina:0,att:0,abs:0,attR:0,absR:0,ret:0,na:0,cap:0,sys:0},ds=new Set();
- rows.forEach(r=>{const c=calc(r),n=svc(r.code).length;ds.add(n);t.sys+=r.sysAbs||0;t.na+=c.na;t.ret+=c.ret;
+ const t={act:0,ina:0,att:0,abs:0,attR:0,absR:0,ret:0,na:0,aw:0,cap:0,sys:0},ds=new Set();
+ rows.forEach(r=>{const c=calc(r),n=svc(r.code).length;ds.add(n);t.sys+=r.sysAbs||0;t.na+=c.na;t.ret+=c.ret;t.aw+=c.awN;
   if(c.eff){t.act++;t.att+=c.att;t.abs+=c.abs;t.cap+=n}else{t.ina++;t.attR+=c.att;t.absR+=c.abs}});
  t.att+=t.attR;t.abs+=t.absR;t.cap=t.att+t.abs; // cupo = Σ participantes inscritos cada día (X o falla; no R ni N/A)
   // el cupo se ocupa por activos y por quienes se retiraron
@@ -404,7 +417,7 @@ function renderDet(){
  const all=S.rows.filter(r=>r.code===c),s=stats(all);
  const rows=all.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.doc.toLowerCase().includes(q))&&(!st||(st==='I')===(!r.active&&calc(r).att===0)));
  const nErr=ERR.filter(e=>e.code===c).length;const au=[...uAuto(c)],nAdj=all.reduce((a,r)=>a+Object.keys(S.ov[r.key]||{}).length,0);
- $('#detK').innerHTML=kp([['Activos',s.act],['Retirados',s.ina],['Días servicio',s.days],['Cupo (Σ participantes por día)',s.cap],['Asistencias (incl. retirados)',s.att],['Inasistencias',s.abs],['No aplica (ingresos)',s.na],['Ajustes manuales',nAdj],['Errores de marcación',nErr]])+(au.length?`<div class="kpi"><b>${au.join(', ')}</b><span>Días sin atención en esta UDS (excluidos)</span></div>`:'')+
+ $('#detK').innerHTML=kp([['Activos',s.act],['Retirados',s.ina],['Días servicio',s.days],['Cupo (Σ participantes por día)',s.cap],['Asistencias (incl. retirados)',s.att],['Inasistencias',s.abs],['No aplica (ingresos)',s.na],['N/A·R de 1–2 días que cuentan (azul)',s.aw],['Ajustes manuales',nAdj],['Errores de marcación',nErr]])+(au.length?`<div class="kpi"><b>${au.join(', ')}</b><span>Días sin atención en esta UDS (excluidos)</span></div>`:'')+
   `<div class="kpi"><span class="chk ${s.ok?'ok':'bad'}">${s.ok?'Dentro del cupo ✔':'Supera el cupo ⚠'}</span></div>`;
  const N=nDays(),cs=all.map(calc),E={},Av={};
  for(let d=1;d<=N;d++){E[d]=cs.filter(o=>o.cell[d]==='x'||o.cell[d]==='f').length;Av[d]=cs.filter(o=>o.cell[d]==='x').length}
@@ -415,8 +428,8 @@ function renderDet(){
   h+=`<tr class="${o.eff?'':'ret'}"><td class="n">${i+1}</td><td>${esc(r.doc)}</td><td>${esc(r.name)}</td><td class="n">${r.active?'Activo':o.eff?'<span title="Inactivo en el sistema, pero con el mes completo: cuenta como activo">Activo*</span>':'Inactivo'}</td>`;
   for(let d=1;d<=N;d++){let cl,t,at='';
    if((isWk(d)||isSp(d))&&r.marks[d]){cl='ce';t='⚠';at=` title="Error de marcación: asistencia marcada en ${isWk(d)?'fin de semana':'día especial / sin servicio'}"`}else if(isWk(d)){cl='cw';t=''}else if(spDay(d,c)){cl='cs';t='–'}
-   else{const k=o.cell[d];cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];t={x:'X',f:'-',r:'R',n:'N/A'}[k];
-    if(k!=='x'){cl=(o.man[d]?'cm':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" title="Clic para validar" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
+   else{const k=o.cell[d];cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';
+    if(k!=='x'){cl=((o.man[d]||o.aw[d])?'cm':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" title="${o.aw[d]?'Ingreso/retiro de 1–2 días dentro de la semana: cuenta como cupo (falla interna). Clic para cambiar':'Clic para validar'}" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
    h+=`<td class="d ${cl}"${at}>${t}</td>`}
   h+=`<td class="n"><b>${o.att}</b></td><td class="n">${o.abs}</td><td class="n">${o.ret}</td><td class="n">${o.na}</td></tr>`});
  if(!rows.length)h+=`<tr><td colspan="${N+8}" class="empty">Sin resultados</td></tr>`;
@@ -537,7 +550,7 @@ const TS=[
  {i:IC.cal,t:'Días especiales',x:'Toque los <b>festivos o recesos</b> para excluirlos (azul). El último viernes ya viene marcado. Con el botón de la derecha puede <b>plegar</b> este panel.',s:'#dcard'},
  {i:IC.grid,t:'Consolidado',x:'Resumen por UDS: cupo, asistencias, inasistencias y %. Toque una UDS para ver su detalle.',s:'#v1',tab:1},
  {i:IC.s,t:'Detalle y filtros',x:'Elija la UDS, busque por nombre o documento y filtre <b>Activos</b> o <b>Retirados</b>. Las fallas salen en amarillo.',s:'#v2',tab:2},
- {i:IC.calc,t:'Cómo se cuenta',x:'<b>R</b> = días después de retirarse. <b>N/A</b> = días antes de ingresar. El cupo suma los niños inscritos cada día.'},
+ {i:IC.calc,t:'Cómo se cuenta',x:'<b>R</b> = días después de retirarse. <b>N/A</b> = días antes de ingresar. El cupo suma los niños inscritos cada día. <b>Regla semanal:</b> como la ración se entrega por semana, si un ingreso o retiro deja solo 1–2 días sin asistir dentro de esa misma semana, esos días se muestran en azul como N/A o R, pero cuentan como cupo (falla interna). Si usted edita una celda a mano, esa edición manda y no suma como caso especial.'},
  {i:IC.pen,t:'Editar casos especiales',x:'Toque una celda <b>-</b>, <b>R</b> o <b>N/A</b> y elija qué es en realidad. Queda en <b>azul</b>; los ajustes se guardan en este navegador.',s:'#v2',tab:2},
  {i:IC.cal,t:'Cupo por semana',x:'Muestra el cupo de cada UDS por semana: el valor que <b>más se repite</b> entre sus días (si empatan, el menor). Toque la <b>lupa</b> para ver los 5 días reales. Los días en blanco solo de una UDS se muestran como <b>descuentos</b> (cupo × días).',s:'#v3',tab:3},
  {i:IC.warn,t:'Errores de marcación',x:'Si un participante tiene <b>X en un día especial, sin servicio o fin de semana</b>, se marca como <b>error de digitación</b> (celda roja ⚠). No suma en asistencias ni cupo y queda listado con su observación en la pestaña <b>Errores de marcación</b>, con descarga a Excel.',s:'#v4',tab:4}
@@ -615,7 +628,7 @@ function renderCards(){const on=S.cards;$('#detW').classList.toggle('hide',on);$
  $('#detC').innerHTML=rows.map(r=>{const o=calc(r);let g='';
   for(let d=1;d<=N;d++){const w=isWk(d),sp=spDay(d,c);let cl,t,at='';
    if((w||isSp(d))&&r.marks[d]){cl='ce';t='⚠'}else if(w)continue;else if(sp){cl='cs';t='–'}
-   else{const k=o.cell[d];cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(k!=='x'){cl=(o.man[d]?'cm':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
+   else{const k=o.cell[d];cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';if(k!=='x'){cl=((o.man[d]||o.aw[d])?'cm':cl)+' ed';at=` data-i="${r.i}" data-d="${d}"${o.aw[d]?' title="Ingreso/retiro de 1–2 días: cuenta como cupo"':''} tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
    g+=`<span class="mc ${cl}"${at}>${t}<small>${d} ${WD[dow(d)]}</small></span>`}
   return`<article class="pc"><b>${esc(r.name)}</b><small>${esc(r.doc)} · ${r.active?'Activo':o.eff?'Activo*':'Inactivo'}</small><div class="mg">${g}</div><div class="ps"><span>✔ ${o.att}</span><span>Falla ${o.abs}</span><span>R ${o.ret}</span><span>N/A ${o.na}</span></div></article>`}).join('')||'<div class="empty">Sin resultados</div>'}
 
