@@ -58,6 +58,14 @@
             }, 0);
         }
 
+        // Raciones descontadas (días × cupos de cada novedad) de una semana.
+        function calcularRacionesDescuentoSemana(s, soloActivos = true) {
+            return getDescuentosSemana(s).reduce((acc, d) => {
+                if (soloActivos && !(d.activo && descuentosGlobalActivo)) return acc;
+                return acc + (parseFloat(d.dias) || 0) * (parseFloat(d.cupos) || 0);
+            }, 0);
+        }
+
         // ===== MODAL AGREGAR / EDITAR NOVEDAD =====
 
         function abrirModalDescuento(s, idEdit = null) {

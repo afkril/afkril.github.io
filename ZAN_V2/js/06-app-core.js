@@ -1207,7 +1207,7 @@
 
             let tPres = 0, tProdCL = 0, tProdOtros = 0;
             let racionesPorSemana = {};
-            let totalRacionesMes = 0;
+            let totalRacionesMes = 0, totalRacionesBrutas = 0, totalRacionesDescontadas = 0;
 
             for (let s = 1; s <= semanas; s++) {
                 const pVal = document.getElementById(`pres-${s}`);
@@ -1215,18 +1215,25 @@
 
                 const dias = parseFloat(document.getElementById(`dias-${s}`)?.value) || 0;
                 const cupos = parseFloat(document.getElementById(`cupos-${s}`)?.value) || 0;
-                const racionesSemana = dias * cupos;
+                const racionesBrutas = dias * cupos;
+                const racionesDesc = (typeof calcularRacionesDescuentoSemana === 'function')
+                    ? calcularRacionesDescuentoSemana(s, true) : 0;
+                const racionesSemana = Math.max(0, racionesBrutas - racionesDesc);
                 racionesPorSemana[s] = {
                     dias: dias,
                     cupos: cupos,
+                    brutas: racionesBrutas,
+                    descontadas: racionesDesc,
                     raciones: racionesSemana
                 };
                 totalRacionesMes += racionesSemana;
+                totalRacionesBrutas += racionesBrutas;
+                totalRacionesDescontadas += racionesDesc;
 
                 productosBase.forEach((p, i) => {
                     const cantInput = document.getElementById(`cant-${s}-${p.id}`);
                     const valInput = document.getElementById(`val-${s}-${p.id}`);
-                    
+
                     if (!cantInput || !valInput) return;
 
                     const cant = parseFloat(cantInput.value) || 0;
@@ -1262,7 +1269,10 @@
             }
 
             const tDist = tDistBruto - totalDescuentoActivo;
-            const porcCL = tPres > 0 ? (tProdCL / tPres) * 100 : 0;
+            // Presupuesto final del mes (con descuentos): base para todos los porcentajes
+            const tPresOriginal = tPres;
+            const tPresNeto = tPres - totalDescuentoActivo;
+            const porcCL = tPresNeto > 0 ? (tProdCL / tPresNeto) * 100 : 0;
             const ledColor = porcCL >= 30 ? 'var(--success)' : 'var(--danger)';
 
             let htmlRaciones = '';
@@ -1270,11 +1280,22 @@
                 const r = racionesPorSemana[s];
                 if (r.dias > 0 || r.cupos > 0) {
                     htmlRaciones += `
-                        <div class="raciones-semana">
-                            <span style="color: var(--text-dim);">Semana ${s}:</span>
-                            <span style="color: var(--accent-cyan); font-weight: bold;">
-                                ${r.dias} días × ${r.cupos} cupos = <span style="color: var(--primary-gold);">${r.raciones.toLocaleString()} raciones</span>
-                            </span>
+                        <div class="raciones-semana" style="flex-direction:column; align-items:stretch; gap:3px;">
+                            <div style="display:flex; justify-content:space-between; gap:8px;">
+                                <span style="color: var(--text-dim);">Semana ${s}:</span>
+                                <span style="color: var(--accent-cyan); font-weight: bold;">
+                                    ${r.dias} días × ${r.cupos} cupos = <span style="color: var(--primary-gold);">${r.brutas.toLocaleString()} raciones</span>
+                                </span>
+                            </div>
+                            ${r.descontadas > 0 ? `
+                            <div style="display:flex; justify-content:space-between; gap:8px; font-size:10px;">
+                                <span style="color: var(--danger);"><i class="fa-solid fa-user-minus"></i> Descuento aplicado</span>
+                                <span style="color: var(--danger); font-weight:bold;">-${r.descontadas.toLocaleString()} raciones</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; gap:8px; font-size:10.5px;">
+                                <span style="color: var(--text-dim);">Raciones netas</span>
+                                <span style="color: var(--success); font-weight:bold;">${r.raciones.toLocaleString()}</span>
+                            </div>` : ''}
                         </div>
                     `;
                 }
@@ -1291,7 +1312,7 @@
                 if (productosDelProv.length === 0) return;
 
                 const totalProv = productosDelProv.reduce((sum, [_, datos]) => sum + datos.valor, 0);
-                const porcProv = tPres > 0 ? ((totalProv / tPres) * 100).toFixed(1) : 0;
+                const porcProv = tPresNeto > 0 ? ((totalProv / tPresNeto) * 100).toFixed(1) : 0;
 
                 htmlProveedores += `
                     <div class="resumen-proveedor" style="border-color: ${prov.color}60;">
@@ -1308,7 +1329,7 @@
                         </div>
                         <div class="resumen-proveedor-content" id="resumen-prov-${prov.id}">
                             ${productosDelProv.map(([nombre, datos]) => {
-                                const porcProd = tPres > 0 ? ((datos.valor / tPres) * 100).toFixed(2) : 0;
+                                const porcProd = tPresNeto > 0 ? ((datos.valor / tPresNeto) * 100).toFixed(2) : 0;
                                 return `
                                     <div class="producto-resumen">
                                         <span style="font-weight:500;">${nombre}</span>
@@ -1360,21 +1381,21 @@
                             <tr style="color:var(--accent-cyan);">
                                 <td><b>TOTAL COMPRAS LOCALES (CL)</b></td>
                                 <td style="text-align:right;"><b>${formatter.format(tProdCL)}</b></td>
-                                <td style="text-align:right; color:var(--success);"><b>${tPres > 0 ? ((tProdCL/tPres)*100).toFixed(1) : 0}%</b></td>
+                                <td style="text-align:right; color:var(--success);"><b>${tPresNeto > 0 ? ((tProdCL/tPresNeto)*100).toFixed(1) : 0}%</b></td>
                             </tr>
                             <tr style="color:var(--text-dim);">
                                 <td>OTROS PRODUCTOS</td>
                                 <td style="text-align:right;">${formatter.format(tProdOtros)}</td>
-                                <td style="text-align:right;">${tPres > 0 ? ((tProdOtros/tPres)*100).toFixed(1) : 0}%</td>
+                                <td style="text-align:right;">${tPresNeto > 0 ? ((tProdOtros/tPresNeto)*100).toFixed(1) : 0}%</td>
                             </tr>
                             <tr style="color:var(--success);">
                                 <td><b>DISTRIBUIDORA</b></td>
                                 <td style="text-align:right;"><b>${formatter.format(tDist)}</b></td>
-                                <td style="text-align:right; color:var(--success);"><b>${tPres > 0 ? ((tDist/tPres)*100).toFixed(1) : 0}%</b></td>
+                                <td style="text-align:right; color:var(--success);"><b>${tPresNeto > 0 ? ((tDist/tPresNeto)*100).toFixed(1) : 0}%</b></td>
                             </tr>
                             ${totalDescuentoActivo > 0 ? `
                             <tr style="color:var(--danger); font-size:9px;">
-                                <td colspan="2">↳ Ya incluye descuento por novedades (${semanasConDescuento} semana${semanasConDescuento !== 1 ? 's' : ''})</td>
+                                <td colspan="2">↳ Ya descontado del presupuesto (novedades, ${semanasConDescuento} semana${semanasConDescuento !== 1 ? 's' : ''})</td>
                                 <td style="text-align:right;">-${formatter.format(totalDescuentoActivo)}</td>
                             </tr>` : ''}
                         </table>
@@ -1417,8 +1438,11 @@
                         </div>
                         ${htmlRaciones || '<div style="color: var(--text-dim); text-align: center; padding: 1px;">No hay datos de días/cupos ingresados</div>'}
                         <div class="raciones-total">
-                            <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 5px;">TOTAL RACIONES DEL MES</div>
+                            <div style="font-size: 10px; color: var(--text-dim); margin-bottom: 5px;">TOTAL RACIONES DEL MES${totalRacionesDescontadas > 0 ? ' (NETAS)' : ''}</div>
                             <div class="raciones-total-valor">${totalRacionesMes.toLocaleString()}</div>
+                            ${totalRacionesDescontadas > 0 ? `<div style="font-size: 10px; color: var(--text-dim); margin-top:4px;">
+                                ${totalRacionesBrutas.toLocaleString()} originales · <span style="color:var(--danger);">-${totalRacionesDescontadas.toLocaleString()} descontadas</span>
+                            </div>` : ''}
                             <div style="font-size: 10px; color: var(--text-dim); margin-top: 5px;">
                                 ${Object.values(racionesPorSemana).filter(r => r.raciones > 0).length} semanas con datos
                             </div>
@@ -1426,11 +1450,18 @@
                     </div>
 
                     <div style="margin-top:15px; text-align:right; border-top:2px solid var(--primary-gold); padding-top:10px;">
-                        <small style="color:var(--text-dim);">PRESUPUESTO TOTAL MES</small>
-                        <div style="font-size:1.5em; color:var(--primary-gold); font-weight:bold;">${formatter.format(tPres)}</div>
+                        ${totalDescuentoActivo > 0 ? `
+                        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--text-dim);">
+                            <span>Presupuesto original</span><span>${formatter.format(tPresOriginal)}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:11px; color:var(--danger); margin-bottom:6px;">
+                            <span>Descuento por novedades</span><span>-${formatter.format(totalDescuentoActivo)}</span>
+                        </div>` : ''}
+                        <small style="color:var(--text-dim);">PRESUPUESTO TOTAL MES${totalDescuentoActivo > 0 ? ' (CON DESCUENTOS)' : ''}</small>
+                        <div style="font-size:1.5em; color:var(--primary-gold); font-weight:bold;">${formatter.format(tPresNeto)}</div>
                         <div style="font-size:10px; color:var(--text-dim); margin-top:5px;">
                             ${totalDescuentoActivo > 0
-                                ? `100% distribuido entre compras, distribuidora y -${formatter.format(totalDescuentoActivo)} de descuento por novedades`
+                                ? `100% distribuido entre compras y distribuidora · porcentajes calculados sobre el presupuesto con descuentos`
                                 : '100% distribuido entre compras y distribuidora'}
                         </div>
                     </div>
@@ -1446,7 +1477,7 @@
                     provId: datos.proveedor
                 }));
 
-            renderChart(datosGrafico, tDist, totalDescuentoActivo);
+            renderChart(datosGrafico, tDist, 0);
         }
 
         function toggleResumenProv(id) {
@@ -1776,7 +1807,7 @@
             let semanasConDescuentoExport = 0;
             let totalesPorProducto = {};
             let racionesPorSemana = {};
-            let totalRacionesMes = 0;
+            let totalRacionesMes = 0, totalRacionesBrutas = 0, totalRacionesDescontadas = 0;
             const descuentosDisponiblesExport = typeof calcularTotalDescuentosSemana === 'function';
             const descuentosActivosGlobalExport = typeof descuentosGlobalActivo === 'undefined' ? true : descuentosGlobalActivo;
 
@@ -1804,17 +1835,24 @@
 
                 const dias = parseFloat(document.getElementById(`dias-${s}`)?.value) || 0;
                 const cupos = parseFloat(document.getElementById(`cupos-${s}`)?.value) || 0;
-                const racionesSemana = dias * cupos;
+                const racionesBrutasS = dias * cupos;
+                const racionesDescS = (typeof calcularRacionesDescuentoSemana === 'function') ? calcularRacionesDescuentoSemana(s, true) : 0;
+                const racionesSemana = Math.max(0, racionesBrutasS - racionesDescS);
                 racionesPorSemana[s] = {
                     dias: dias,
                     cupos: cupos,
+                    brutas: racionesBrutasS,
+                    descontadas: racionesDescS,
                     raciones: racionesSemana,
                     presupuesto: dias * cupos * valorCupoBase,
+                    presupuestoNeto: dias * cupos * valorCupoBase - descuentoSemana,
                     distNeta: distNeta,
                     distBruta: distNeta + descuentoSemana,
                     descuento: descuentoSemana
                 };
                 totalRacionesMes += racionesSemana;
+                totalRacionesBrutas += racionesBrutasS;
+                totalRacionesDescontadas += racionesDescS;
 
                 productosBase.forEach((p, i) => {
                     const cantInput = document.getElementById(`cant-${s}-${p.id}`);
@@ -1835,7 +1873,8 @@
                 });
             }
 
-            const totalGeneral = tPresTotal;
+            const totalOriginal = tPresTotal;
+            const totalGeneral = tPresTotal - tDescuentoTotal; // presupuesto final con descuentos
             const porcCLTotal = totalGeneral > 0 ? (tProdCL / totalGeneral * 100).toFixed(2) : 0;
             const porcOtrosTotal = totalGeneral > 0 ? (tProdOtros / totalGeneral * 100).toFixed(2) : 0;
             const porcDistTotal = totalGeneral > 0 ? (tDistTotal / totalGeneral * 100).toFixed(2) : 0;
@@ -1850,12 +1889,16 @@
                 ["Valor cupo HCB:", valorCupoBase],
                 [],
                 ["TOTALES RESUMEN"],
-                ["Presupuesto Total Mes:", totalGeneral, "100%"],
+                ["Presupuesto Total Mes (original):", totalOriginal, ""],
+                ["Descuento por novedades:", -tDescuentoTotal, ""],
+                ["Presupuesto Total Mes (con descuentos):", totalGeneral, "100%"],
                 ["Compras Locales (CL):", tProdCL, porcCLTotal + "%"],
                 ["Otros Productos:", tProdOtros, porcOtrosTotal + "%"],
                 ["Distribuidora (neta, con descuento aplicado):", tDistTotal, porcDistTotal + "%"],
-                ["Total Raciones Mes:", totalRacionesMes],
-                ["Suma Verificación:", tProdCL + tProdOtros + tDistTotal, "Debe ser igual al Presupuesto"],
+                ["Raciones originales Mes:", totalRacionesBrutas],
+                ["Raciones descontadas:", -totalRacionesDescontadas],
+                ["Total Raciones Mes (netas):", totalRacionesMes],
+                ["Suma Verificación:", tProdCL + tProdOtros + tDistTotal, "Debe ser igual al Presupuesto con descuentos"],
                 [],
                 ["DESCUENTO POR NOVEDADES (SISTEMA SEMANAL)"],
                 ["¿Se aplicó descuento?:", tDescuentoTotal > 0 ? "SÍ" : "NO"],
@@ -1976,29 +2019,29 @@
             }
 
             wsResumen.push([]);
-            wsResumen.push(["TOTALES", "", "", "", "", totalGeneral, "", "100%", porcCLTotal + "%"]);
+            wsResumen.push(["TOTALES (presupuesto con descuentos)", "", "", "", "", totalGeneral, "", "100%", porcCLTotal + "%"]);
             wsResumen.push(["", "", "", "", "", "", "", "", ""]);
             wsResumen.push(["DESGLOSE", "VALOR", "% DEL TOTAL", "RACIONES", "", "", "", "", ""]);
             wsResumen.push(["Compras Locales (CL)", tProdCL, porcCLTotal + "%", "", "", "", "", "", ""]);
             wsResumen.push(["Otros Productos", tProdOtros, porcOtrosTotal + "%", "", "", "", "", "", ""]);
             wsResumen.push(["Distribuidora (neta)", tDistTotal, porcDistTotal + "%", "", "", "", "", "", ""]);
             wsResumen.push(["Descuento Novedades (aplicado)", tDescuentoTotal > 0 ? -tDescuentoTotal : 0, tDescuentoTotal > 0 && totalGeneral > 0 ? '-' + (tDescuentoTotal / totalGeneral * 100).toFixed(2) + '%' : '0%', "", "", "", "", "", ""]);
-            wsResumen.push(["Total Raciones Mes", "", "", totalRacionesMes, "", "", "", "", ""]);
+            wsResumen.push(["Total Raciones Mes (netas)", "", "", totalRacionesMes, "", "", "", "", ""]);
             wsResumen.push(["TOTAL VERIFICACIÓN", tProdCL + tProdOtros + tDistTotal, (parseFloat(porcCLTotal) + parseFloat(porcOtrosTotal) + parseFloat(porcDistTotal)).toFixed(2) + "%", "", "", "", "", "", ""]);
 
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumen), "Resumen por Producto");
 
             // HOJA 4: RESUMEN DE RACIONES
-            const wsRaciones = [["SEMANA", "DÍAS", "CUPOS", "RACIONES", "PRESUPUESTO", "VALOR_CUPO_HCB", "¿DESCUENTO_APLICADO?", "VALOR_DESCUENTO", "DISTRIBUIDORA_NETA"]];
+            const wsRaciones = [["SEMANA", "DÍAS", "CUPOS", "RACIONES_ORIGINALES", "RACIONES_DESCONTADAS", "RACIONES_NETAS", "PRESUPUESTO_ORIGINAL", "VALOR_CUPO_HCB", "¿DESCUENTO_APLICADO?", "VALOR_DESCUENTO", "PRESUPUESTO_NETO", "DISTRIBUIDORA_NETA"]];
             
             for (let s = 1; s <= semanas; s++) {
-                const r = racionesPorSemana[s] || { dias: 0, cupos: 0, raciones: 0, presupuesto: 0, descuento: 0, distNeta: 0 };
-                wsRaciones.push([s, r.dias, r.cupos, r.raciones, r.presupuesto, valorCupoBase, r.descuento > 0 ? 'SI' : 'NO', r.descuento, r.distNeta]);
+                const r = racionesPorSemana[s] || { dias: 0, cupos: 0, brutas: 0, descontadas: 0, raciones: 0, presupuesto: 0, presupuestoNeto: 0, descuento: 0, distNeta: 0 };
+                wsRaciones.push([s, r.dias, r.cupos, r.brutas, r.descontadas, r.raciones, r.presupuesto, valorCupoBase, r.descuento > 0 ? 'SI' : 'NO', r.descuento, r.presupuestoNeto, r.distNeta]);
             }
             
             wsRaciones.push([]);
-            wsRaciones.push(["TOTALES", "", "", totalRacionesMes, tPresTotal, "", semanasConDescuentoExport > 0 ? 'SI' : 'NO', tDescuentoTotal, tDistTotal]);
-            wsRaciones.push(["Promedio raciones/semana", "", "", semanas > 0 ? (totalRacionesMes / semanas).toFixed(2) : 0, "", "", "", "", ""]);
+            wsRaciones.push(["TOTALES", "", "", totalRacionesBrutas, totalRacionesDescontadas, totalRacionesMes, tPresTotal, "", semanasConDescuentoExport > 0 ? 'SI' : 'NO', tDescuentoTotal, totalGeneral, tDistTotal]);
+            wsRaciones.push(["Promedio raciones netas/semana", "", "", "", "", semanas > 0 ? (totalRacionesMes / semanas).toFixed(2) : 0, "", "", "", "", "", ""]);
 
             XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsRaciones), "Resumen Raciones");
 
