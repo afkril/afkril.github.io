@@ -440,6 +440,10 @@
   .adm-top select,.adm-login input{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font:inherit;font-size:.82rem;background:#fff;}
   .adm-btn{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font:inherit;font-size:.82rem;color:var(--ink-soft);}
   .adm-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .adm-btn.danger{background:var(--danger);color:#fff;border-color:var(--danger);}
+  .adm-btn:disabled{opacity:.45;cursor:not-allowed;}
+  .adm-login .ok{color:var(--primary);font-size:.82rem;line-height:1.5;}
+  .adm-login p{font-size:.8rem;color:var(--ink-soft);line-height:1.5;}
   .adm-login{max-width:340px;margin:12vh auto;background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);}
   .adm-login .err{color:var(--danger);font-size:.78rem;}
   .adm-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
@@ -675,6 +679,7 @@
               <option value="vinculado">Solo vinculados</option>
               <option value="desvinculado">Solo desvinculados</option>
             </select>
+            <button type="button" class="btn" id="btnPdfTallas">&#128196; Generar PDF</button>
           </div>
         </div>
         <div class="legend">
@@ -2126,6 +2131,266 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     if(nx) nx.addEventListener('click', ()=>{ state.tallasPage++; renderTallas(); });
   }
 
+  /* ---------------------------------------------------------
+     PDF: INFORME DE TALLAS INCONSISTENTES
+     Mismo diseño que el PDF de tomas programadas (encabezado verde,
+     tarjetas resumen, tablas con insignias de color, pie de página).
+  --------------------------------------------------------- */
+  const TALLA_PDF_COLORS = {
+    ok:      { bg:[227,236,229], text:[46,107,87] },
+    revisar: { bg:[245,235,216], text:[184,132,46] },
+    error:   { bg:[246,226,220], text:[173,59,39] }
+  };
+
+  // Rango esperado para una toma dudosa: entre la mayor talla coherente
+  // anterior y la menor talla coherente posterior.
+  function tallaRangoEsperado(tomas, idx){
+    let lo = null, hi = null;
+    for(let i=0;i<idx;i++) if(tomas[i].status==='ok') lo = lo===null ? tomas[i].row.talla : Math.max(lo, tomas[i].row.talla);
+    for(let i=idx+1;i<tomas.length;i++) if(tomas[i].status==='ok') hi = hi===null ? tomas[i].row.talla : Math.min(hi, tomas[i].row.talla);
+    if(lo!==null && hi!==null) return lo===hi ? `${fmtTalla(lo)} cm` : `${fmtTalla(lo)} – ${fmtTalla(hi)} cm`;
+    if(lo!==null) return `desde ${fmtTalla(lo)} cm`;
+    if(hi!==null) return `hasta ${fmtTalla(hi)} cm`;
+    return '—';
+  }
+
+  function generateTallasPdf(){
+    const items = filteredTallasRows();
+    if(!items.length){
+      zanTemp('sad', ZAN_CONFIG.infoMs, 'No hay tallas inconsistentes con esos filtros para generar el informe. 😿', ['limpiar']);
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'landscape', unit:'pt', format:'letter' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 34;
+
+    const totalErrores = items.reduce((n,x)=> n + x.a.tomas.filter(t=>t.status==='error').length, 0);
+    const totalRevisar = items.reduce((n,x)=> n + x.a.tomas.filter(t=>t.status==='revisar').length, 0);
+    const maxDrop = items.reduce((m,x)=> Math.max(m, x.a.maxDrop), 0);
+
+    // ---- Encabezado ----
+    doc.setFillColor(31,75,63);
+    doc.rect(0,0,pageWidth,64,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(16);
+    doc.text('Seguimiento Nutricional', margin, 28);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10.5);
+    doc.text('Informe de tallas inconsistentes', margin, 44);
+    doc.setFontSize(9.5);
+    doc.text(`Generado el ${fmtDate(new Date())}`, pageWidth-margin, 24, { align:'right' });
+    doc.setFont('helvetica','bold');
+    doc.text(`${items.length} ${items.length===1?'beneficiario':'beneficiarios'} a corregir`, pageWidth-margin, 40, { align:'right' });
+
+    // ---- Filtros aplicados ----
+    let y = 82;
+    doc.setTextColor(27,36,29);
+    doc.setFontSize(10);
+    doc.setFont('helvetica','bold');
+    doc.text('Filtros aplicados', margin, y);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    y += 15;
+    const f = state.filters;
+    const filtroLineas = [
+      `Contrato: ${f.contrato || 'Todos'}`,
+      `Unidad: ${f.unidad || 'Todas'}`,
+      `Descenso mínimo: ${f.tallaMin ? f.tallaMin + ' cm o más' : 'Cualquiera'}`,
+      `Vínculo: ${f.vinculo === 'vinculado' ? 'Solo vinculados' : (f.vinculo === 'desvinculado' ? 'Solo desvinculados' : 'Vinculados y desvinculados')}`
+    ];
+    if(f.search) filtroLineas.push(`Búsqueda: "${f.search}"`);
+    filtroLineas.forEach(line=>{ doc.text(line, margin, y); y += 13; });
+
+    // ---- Tarjetas resumen ----
+    const cards = [
+      { label:'Beneficiarios con talla inconsistente', value: items.length, color:[31,75,63] },
+      { label:'Tomas con probable error', value: totalErrores, color:[173,59,39] },
+      { label:'Tomas a revisar', value: totalRevisar, color:[184,132,46] },
+      { label:'Mayor descenso detectado', value: fmtTalla(maxDrop) + ' cm', color:[46,107,87] }
+    ];
+    const cw = 100, ch = 48, gap = 8;
+    const cardsTotalW = cards.length * cw + (cards.length-1) * gap;
+    let cx = pageWidth - margin - cardsTotalW;
+    const cardsY = 74;
+    cards.forEach(c=>{
+      doc.setDrawColor(220,226,214);
+      doc.setFillColor(245,246,241);
+      doc.roundedRect(cx, cardsY, cw, ch, 5, 5, 'FD');
+      doc.setTextColor(c.color[0],c.color[1],c.color[2]);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(15);
+      doc.text(String(c.value), cx+10, cardsY+20);
+      doc.setTextColor(91,100,89);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7.5);
+      doc.text(c.label, cx+10, cardsY+31, { maxWidth: cw-16 });
+      cx += cw + gap;
+    });
+    y = Math.max(y, cardsY + ch) + 14;
+
+    // ---- Cómo leer el informe ----
+    doc.setFillColor(250,250,248);
+    doc.setDrawColor(220,226,214);
+    doc.roundedRect(margin, y, pageWidth - margin*2, 46, 5, 5, 'FD');
+    doc.setTextColor(31,75,63);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.text('Cómo leer este informe', margin+10, y+14);
+    doc.setTextColor(27,36,29);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8.2);
+    doc.text(
+      'La talla de un beneficiario no debería disminuir entre tomas. Se calcula la secuencia creciente más larga: las tomas que quedan fuera son "Probable error" ' +
+      'y las que podrían ser esta toma o la vecina quedan como "Revisar". El rango esperado indica entre qué valores debería estar la talla según las tomas coherentes. ' +
+      'Verifique cada caso contra el registro original antes de corregir.',
+      margin+10, y+25, { maxWidth: pageWidth - margin*2 - 20 }
+    );
+    y += 46 + 14;
+
+    // ---- Sección 1: resumen general ----
+    doc.setTextColor(31,75,63);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text('1. Resumen general de beneficiarios', margin, y);
+    y += 6;
+
+    const resumenBody = items.map(({r,a},i)=>{
+      const err = a.tomas.filter(t=>t.status==='error').length;
+      const rev = a.tomas.filter(t=>t.status==='revisar').length;
+      return [
+        String(i+1),
+        r.nombreCompleto,
+        `${r.tipoDocumento} ${r.numeroDocumento}`,
+        r.contrato,
+        r.unidadLabel,
+        String(a.tomas.length),
+        String(err),
+        String(rev),
+        `-${fmtTalla(a.maxDrop)} cm`
+      ];
+    });
+    doc.autoTable({
+      startY: y,
+      head: [['#','Beneficiario','Documento','Contrato','Unidad','Tomas','Prob. error','A revisar','Mayor descenso']],
+      body: resumenBody,
+      margin: { top:40, left: margin, right: margin, bottom: 40 },
+      styles: { font:'helvetica', fontSize:8.5, cellPadding:5, textColor:[27,36,29], lineColor:[220,226,214], lineWidth:0.5, overflow:'linebreak' },
+      headStyles: { fillColor:[31,75,63], textColor:255, fontStyle:'bold', fontSize:8.5 },
+      alternateRowStyles: { fillColor:[250,250,248] },
+      columnStyles: {
+        0:{ cellWidth:26, halign:'center' }, 1:{ cellWidth:196 }, 2:{ cellWidth:90 }, 3:{ cellWidth:62 }, 4:{ cellWidth:150 },
+        5:{ cellWidth:42, halign:'center' }, 6:{ cellWidth:56, halign:'center' }, 7:{ cellWidth:52, halign:'center' }, 8:{ cellWidth:66, halign:'center' }
+      },
+      didParseCell: (data)=>{
+        if(data.section !== 'body') return;
+        if(data.column.index === 6 && data.cell.raw !== '0'){
+          const c = TALLA_PDF_COLORS.error;
+          data.cell.styles.fillColor = c.bg; data.cell.styles.textColor = c.text; data.cell.styles.fontStyle = 'bold';
+        }
+        if(data.column.index === 7 && data.cell.raw !== '0'){
+          const c = TALLA_PDF_COLORS.revisar;
+          data.cell.styles.fillColor = c.bg; data.cell.styles.textColor = c.text; data.cell.styles.fontStyle = 'bold';
+        }
+        if(data.column.index === 8){
+          const c = TALLA_PDF_COLORS.error;
+          data.cell.styles.fillColor = c.bg; data.cell.styles.textColor = c.text; data.cell.styles.fontStyle = 'bold';
+        }
+      }
+    });
+
+    // ---- Sección 2: detalle por beneficiario ----
+    doc.addPage();
+    y = 50;
+    doc.setTextColor(31,75,63);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text('2. Detalle de tomas por beneficiario', margin, y);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(91,100,89);
+    doc.text('Cada tabla lista todas las tomas en orden de fecha; las filas en amarillo o rojo son las que conviene corregir.', margin, y+13);
+    y += 24;
+
+    const body = [];
+    items.forEach(({r,a},i)=>{
+      body.push([{
+        content: `${i+1}. ${r.nombreCompleto}   ·   ${r.tipoDocumento} ${r.numeroDocumento}   ·   ${r.contrato}   ·   ${r.unidadLabel}   ·   Mayor descenso: -${fmtTalla(a.maxDrop)} cm`,
+        colSpan: 8,
+        styles: { fillColor:[227,236,229], textColor:[31,75,63], fontStyle:'bold', fontSize:9, halign:'left' }
+      }]);
+      a.tomas.forEach((t,idx)=>{
+        const row = t.row;
+        const varTxt = t.delta === null ? '—' : (t.delta > 0 ? `+${fmtTalla(t.delta)} cm` : (t.delta < 0 ? `${fmtTalla(t.delta)} cm` : '0 cm'));
+        body.push([
+          String(idx+1),
+          fmtDate(row.fechaToma),
+          `${fmtTalla(row.talla)} cm`,
+          varTxt,
+          row.peso != null ? `${row.peso} kg` : '—',
+          row.estado || 'Sin dato',
+          t.status === 'ok' ? '—' : tallaRangoEsperado(a.tomas, idx),
+          TALLA_STATUS_TXT[t.status]
+        ]);
+      });
+    });
+
+    doc.autoTable({
+      startY: y,
+      head: [['N°','Fecha de toma','Talla','Variación','Peso','Estado nutricional','Rango esperado','Revisión']],
+      body,
+      margin: { top:40, left: margin, right: margin, bottom: 40 },
+      styles: { font:'helvetica', fontSize:8.5, cellPadding:4.5, textColor:[27,36,29], lineColor:[220,226,214], lineWidth:0.5, overflow:'linebreak' },
+      headStyles: { fillColor:[31,75,63], textColor:255, fontStyle:'bold', fontSize:8.5 },
+      columnStyles: {
+        0:{ cellWidth:30, halign:'center' }, 1:{ cellWidth:90 }, 2:{ cellWidth:70 }, 3:{ cellWidth:80 },
+        4:{ cellWidth:70 }, 5:{ cellWidth:170 }, 6:{ cellWidth:110 }, 7:{ cellWidth:90 }
+      },
+      didParseCell: (data)=>{
+        if(data.section !== 'body') return;
+        if(data.row.raw.length === 1) return; // banda de beneficiario
+        const estadoTxt = data.row.raw[7];
+        const key = Object.keys(TALLA_STATUS_TXT).find(k=> TALLA_STATUS_TXT[k] === estadoTxt) || 'ok';
+        if(key !== 'ok'){
+          const c = TALLA_PDF_COLORS[key];
+          data.cell.styles.fillColor = key === 'error' ? [252,240,237] : [251,245,231];
+          if(data.column.index === 2 || data.column.index === 6){ data.cell.styles.fontStyle = 'bold'; data.cell.styles.textColor = c.text; }
+        }
+        if(data.column.index === 3 && String(data.cell.raw).startsWith('-')){
+          data.cell.styles.textColor = TALLA_PDF_COLORS.error.text; data.cell.styles.fontStyle = 'bold';
+        }
+        if(data.column.index === 5){
+          const col = SEVERITY_PDF_COLORS[estadoSeverityClass(data.cell.raw)] || SEVERITY_PDF_COLORS['sev-default'];
+          data.cell.styles.fillColor = col.bg; data.cell.styles.textColor = col.text; data.cell.styles.fontStyle = 'bold';
+        }
+        if(data.column.index === 7){
+          const c = TALLA_PDF_COLORS[key];
+          data.cell.styles.fillColor = c.bg; data.cell.styles.textColor = c.text; data.cell.styles.fontStyle = 'bold';
+        }
+      }
+    });
+
+    // ---- Pie de página ----
+    const totalPages = doc.internal.getNumberOfPages();
+    for(let i=1; i<=totalPages; i++){
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(139,146,132);
+      doc.text(`Página ${i} de ${totalPages}`, pageWidth-margin, pageHeight-16, { align:'right' });
+      doc.text('Seguimiento Nutricional · Tallas inconsistentes', margin, pageHeight-16);
+    }
+
+    const d = new Date();
+    const stamp = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    doc.save(`tallas-inconsistentes-${stamp}.pdf`);
+    track('pdf_tallas', { beneficiarios: items.length, errores: totalErrores, revisar: totalRevisar,
+      contratos: tcount(items.map(x=>x.r), r => r.contrato) });
+    zanTemp('done', ZAN_CONFIG.doneMs, `<b>¡Informe generado!</b> ${zanPl(items.length,'beneficiario con talla inconsistente','beneficiarios con talla inconsistente')} en el PDF. Revisa tus descargas. 📄`);
+  }
+  document.getElementById('btnPdfTallas').addEventListener('click', generateTallasPdf);
+
   // Comparativo de tomas según talla, para el modal "Ver detalles".
   function tallaCompareHtml(actual){
     const a = analyzeTallas(actual.numeroDocumento);
@@ -3352,7 +3617,7 @@ const ZAN_SPRITES = {
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, setDoc, doc, getDocs, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, setDoc, doc, getDocs, query, orderBy, limit, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const app = initializeApp({
@@ -3468,7 +3733,7 @@ async function loadPanel() {
   root.innerHTML = `
   <div class="adm-top"><h2>📊 Panel administrativo · Seguimiento Nutricional <small style="color:var(--ink-faint);font-weight:400;">· ${esc(user.email)}</small></h2>
     <select id="admDays"><option value="1">Hoy (24 h)</option><option value="7">7 días</option><option value="30">30 días</option><option value="90">90 días</option><option value="0">Todo</option></select>
-    <button class="adm-btn" id="admRef" type="button">↻ Actualizar</button><button class="adm-btn" id="admOut" type="button">Salir</button><button class="adm-btn primary" id="admX" type="button">Cerrar</button></div>
+    <button class="adm-btn" id="admRef" type="button">↻ Actualizar</button><button class="adm-btn danger" id="admClean" type="button">🗑 Limpiar registros</button><button class="adm-btn" id="admOut" type="button">Salir</button><button class="adm-btn primary" id="admX" type="button">Cerrar</button></div>
   <div class="adm-cards">
     <div class="adm-card"><b>${se.length}</b><span>Sesiones</span></div>
     <div class="adm-card"><b>${ips.size}</b><span>IPs distintas</span></div>
@@ -3506,6 +3771,55 @@ async function loadPanel() {
   $('admDays').value = String(days);
   $('admDays').onchange = e => { days = +e.target.value; loadPanel(); };
   $('admRef').onclick = loadPanel; $('admX').onclick = close; $('admOut').onclick = () => signOut(auth);
+  $('admClean').onclick = cleanView;
+}
+
+/* ---------- Limpieza general de registros ---------- */
+// Borra por lotes los documentos de una colección (todos, o solo los anteriores a un corte).
+async function purge(name, field, cutoff, onProg) {
+  let n = 0;
+  for (;;) {
+    const q = cutoff
+      ? query(collection(db, name), where(field, '<', cutoff), limit(400))
+      : query(collection(db, name), limit(400));
+    const snap = await getDocs(q);
+    if (snap.empty) break;
+    const b = writeBatch(db);
+    snap.docs.forEach(d => b.delete(d.ref));
+    await b.commit();
+    n += snap.size; onProg && onProg(n);
+  }
+  return n;
+}
+function cleanView() {
+  root.innerHTML = `<div class="adm-login" style="max-width:440px;"><h3>🗑 Limpiar registros guardados</h3>
+    <p>Elimina de forma <b>permanente</b> el historial de uso guardado en Firestore: <b>sesiones</b> y <b>eventos</b> (reportes cargados, PDF generados, vistas, filtros, manual, ajustes). No afecta los reportes de beneficiarios ni la configuración de la app. Esta acción no se puede deshacer.</p>
+    <select id="admCleanScope"><option value="0">Todos los registros (limpieza general)</option><option value="7">Solo anteriores a 7 días</option><option value="30">Solo anteriores a 30 días</option><option value="90">Solo anteriores a 90 días</option></select>
+    <input id="admCleanConfirm" type="text" placeholder="Escribe LIMPIAR para confirmar" autocomplete="off">
+    <div class="err" id="admCleanMsg"></div>
+    <button class="adm-btn danger" id="admCleanGo" type="button" disabled>Eliminar registros</button>
+    <button class="adm-btn" id="admCleanBack" type="button">Cancelar</button></div>`;
+  const go = $('admCleanGo'), msg = $('admCleanMsg');
+  $('admCleanBack').onclick = loadPanel;
+  $('admCleanConfirm').oninput = e => { go.disabled = e.target.value.trim().toUpperCase() !== 'LIMPIAR'; };
+  go.onclick = async () => {
+    const d = +$('admCleanScope').value, cutoff = d ? Date.now() - d * 864e5 : 0;
+    go.disabled = true; $('admCleanBack').disabled = true; $('admCleanScope').disabled = true; $('admCleanConfirm').disabled = true;
+    msg.className = 'ok'; msg.textContent = 'Eliminando… no cierres esta ventana.';
+    let ne = 0, ns = 0;
+    try {
+      ne = await purge('nutri_events', 'ts', cutoff, n => { msg.textContent = `Eliminando eventos… ${n.toLocaleString()}`; });
+      ns = await purge('nutri_sessions', 'start', cutoff, n => { msg.textContent = `Eliminando sesiones… ${n.toLocaleString()}`; });
+    } catch (e) {
+      msg.className = 'err';
+      msg.innerHTML = `No se pudo completar: ${esc(e.code || e.message)}<br>Eliminados antes del error: ${ne.toLocaleString()} eventos y ${ns.toLocaleString()} sesiones. Revisa que las reglas de Firestore permitan <b>delete</b> a tu correo admin.`;
+      $('admCleanBack').disabled = false; return;
+    }
+    root.innerHTML = `<div class="adm-login"><h3>✅ Limpieza completada</h3>
+      <div class="ok">Se eliminaron <b>${ne.toLocaleString()}</b> eventos y <b>${ns.toLocaleString()}</b> sesiones${d ? ' anteriores a ' + d + ' días' : ''}.</div>
+      <button class="adm-btn primary" id="admCleanDone" type="button">Volver al panel</button></div>`;
+    $('admCleanDone').onclick = loadPanel;
+  };
 }
 
 </script>
