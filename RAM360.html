@@ -385,6 +385,20 @@ body.nc #nav button[id^="t"].on::after{top:11px;bottom:11px}
 @media(max-width:560px){.sm-h{flex-wrap:wrap}.sm-ac{order:3;width:100%;margin-left:0;justify-content:stretch}.sm-ac .btn{flex:1;justify-content:center}.sm-ac .legend{display:none}}
 /* panel compacto: ocultar textos del botón Ver resumen (el id de .rt los volvía a mostrar) */
 body.nc #nav .nlab,body.nc #nav button.sres .rt,body.nc #nav button.sres small{display:none!important}
+/* v18 · Consolidado compacto */
+table.cons{font-size:12.5px}
+table.cons th{padding:6px 8px;font-size:11.5px;position:static}
+table.cons td{padding:3px 8px;line-height:1.25}
+table.cons td.un{max-width:260px;overflow:hidden;text-overflow:ellipsis}
+table.cons td.cp{display:flex;align-items:center;gap:8px;border-bottom:0;min-width:118px;padding-top:5px}
+table.cons td.cp .bar{height:6px;width:64px;min-width:64px;flex:none}
+table.cons td.cp span{font-variant-numeric:tabular-nums;min-width:36px;text-align:right}
+table.cons tfoot td{padding:5px 8px}
+table.cons tbody tr:hover td{background:var(--g3)}
+/* v18 · Días especiales: todo el encabezado pliega/despliega */
+#dcard .dh{cursor:pointer;user-select:none}
+#dcard.fold{cursor:pointer}
+#dcard.fold:hover{background:var(--g3)}
 /* Resumen automático: tarjeta protagonista */
 .sumbar.hero{background:linear-gradient(135deg,var(--g),#16A394 60%,var(--b));color:var(--onG);padding:20px 24px;border-radius:20px;box-shadow:0 12px 30px rgba(15,159,143,.32);gap:20px}
 .sumbar.hero h3{color:var(--onG);font-size:17px;margin:0 0 4px}
@@ -429,7 +443,7 @@ button.ws.add{border-bottom:0;border-radius:14px 14px 0 0;background:none;min-he
   <div id="app" class="hide">
     <div id="wsb" class="wsb hide" role="group" aria-label="Contratos cargados"></div>
     <div class="card" id="dcard">
-      <h3 class="dh"><span>Días especiales (festivos, recesos, último viernes): no suman <button class="q" onclick="hlp(2,this)" aria-label="Ayuda de esta sección">?</button> <span id="dsum"></span></span><button class="fold" id="dfold" onclick="togD()">▾ Plegar</button></h3>
+      <h3 class="dh"><span>Días especiales (festivos, recesos, último viernes): no suman <button class="q" onclick="hlp(2,this)" aria-label="Ayuda de esta sección">?</button> <span id="dsum"></span></span><button class="fold" id="dfold" type="button" aria-expanded="true">▾ Plegar</button></h3>
       <div id="dbody"><div class="chips" id="chips"></div><div id="pendB"></div>
       <div class="legend"><span style="--c:var(--b)">Día especial (excluido)</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:var(--card)">Día de servicio</span>
         <a href="#" onclick="autoDetect();return false" style="color:var(--b)">Detectar días sin ninguna asistencia</a></div></div>
@@ -604,7 +618,8 @@ function refresh(){AUTO={};calcErr();chips();renderCons();renderDet();renderWk()
 function chips(){let h='';for(let d=1;d<=nDays();d++){const w=isWk(d);h+=w?`<div class="chip wk" aria-hidden="true">${d}<i>${WD[dow(d)]}</i></div>`:`<button type="button" class="chip ${isSp(d)?'sp':''} ${S.pend.has(d)&&isSp(d)?'pn':''} ${S.hol.has(d)&&isSp(d)?'hol':''}" title="${esc(S.hol.get(d)||(S.pend.has(d)&&isSp(d)?'Sin ninguna marca: por confirmar':d===S.lf?'Último viernes':''))}" aria-pressed="${isSp(d)}" aria-label="Día ${d} ${WDL[dow(d)]}: ${isSp(d)?'especial, excluido':'de servicio'}" onclick="togg(${d})">${d}<i>${WD[dow(d)]}</i></button>`}
  $('#chips').innerHTML=h;pendUI();const l=[...S.special].sort((a,b)=>a-b);$('#dsum').textContent='— '+(l.length?l.join(', '):'ninguno')}
 function togD(f,ns){const c=$('#dcard'),on=f===undefined?!c.classList.contains('fold'):f;c.classList.toggle('fold',on);
- $('#dfold').textContent=on?'▸ Desplegar':'▾ Plegar';if(!ns)try{localStorage.setItem('uds_dfold',on?'1':'0')}catch(e){}}
+ $('#dfold').textContent=on?'▸ Desplegar':'▾ Plegar';$('#dfold').setAttribute('aria-expanded',!on);if(!ns)try{localStorage.setItem('uds_dfold',on?'1':'0')}catch(e){}}
+$('#dcard').addEventListener('click',e=>{if(e.target.closest('button.q'))return;const c=$('#dcard');if(c.classList.contains('fold')||e.target.closest('.dh'))togD()});
 function togg(d){S.special.has(d)?S.special.delete(d):S.special.add(d);S.pend.delete(d);refresh()}
 function tab(n){[1,2,3,4,5,6,7].forEach(i=>{const on=i===n;$('#v'+i).classList.toggle('hide',!on);const b=$('#t'+i);b.classList.toggle('on',on);b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1});
  $('#dcard').classList.toggle('hide',n!==1);   // "Días especiales" solo en Consolidado
@@ -618,10 +633,10 @@ function renderCons(){
  const g={};S.rows.forEach(r=>(g[r.code]??=[]).push(r));
  const T=stats(S.rows);
  let h=`<div class="kpis">${kp([['Días de servicio',T.days],['Participantes activos',T.act],['Cupo máximo (activos × días)',T.cap],['Asistencias',T.att],['Inasistencias',T.abs],['Retirados',T.ina],['Cumplimiento',T.pct+'%'],['Errores de marcación',ERR.length]])}</div>
- <div class="card"><h3>Consolidado por UDS <button class=\"q\" onclick=\"tut(3)\">?</button></h3><div class="wrap"><table><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th>Activos</th><th>Retirados</th><th>Días</th><th>Cupo máx.</th><th>Asistencias</th><th>Inasist.</th><th>Incl. de retirados</th><th>Cumpl.</th><th>Err. marc.</th><th>Control</th></tr></thead><tbody>`;
+ <div class="card"><h3>Consolidado por UDS <button class=\"q\" onclick=\"tut(3)\">?</button></h3><div class="wrap"><table class="cons"><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th>Activos</th><th>Retirados</th><th>Días</th><th>Cupo máx.</th><th>Asistencias</th><th>Inasist.</th><th>Incl. de retirados</th><th>Cumpl.</th><th>Err. marc.</th><th>Control</th></tr></thead><tbody>`;
  Object.entries(g).forEach(([c,rs])=>{const s=stats(rs);
-  h+=`<tr class="link" onclick="goDet('${esc(c)}')"><td>${esc(c)}</td><td>${esc(rs[0].uds)}</td><td class="n">${s.act}</td><td class="n">${s.ina}</td><td class="n">${s.days}</td><td class="n">${s.cap}</td><td class="n"><b>${s.att}</b></td><td class="n">${s.abs}</td><td class="n">${s.attR}</td>
-  <td><div class="bar"><div style="width:${s.pct}%"></div></div>${s.pct}%</td><td class="n">${(()=>{const n=ERR.filter(e=>e.code===c).length;return n?`<span class="chk bad">${n}</span>`:'0'})()}</td><td class="n">${s.ok?'✔':'⚠'}</td></tr>`});
+  h+=`<tr class="link" onclick="goDet('${esc(c)}')"><td>${esc(c)}</td><td class="un" title="${esc(rs[0].uds)}">${esc(rs[0].uds)}</td><td class="n">${s.act}</td><td class="n">${s.ina}</td><td class="n">${s.days}</td><td class="n">${s.cap}</td><td class="n"><b>${s.att}</b></td><td class="n">${s.abs}</td><td class="n">${s.attR}</td>
+  <td class="cp"><div class="bar"><div style="width:${s.pct}%"></div></div><span>${s.pct}%</span></td><td class="n">${(()=>{const n=ERR.filter(e=>e.code===c).length;return n?`<span class="chk bad">${n}</span>`:'0'})()}</td><td class="n">${s.ok?'✔':'⚠'}</td></tr>`});
  h+=`</tbody><tfoot><tr><td colspan="2">TOTAL</td><td class="n">${T.act}</td><td class="n">${T.ina}</td><td class="n">${T.days}</td><td class="n">${T.cap}</td><td class="n">${T.att}</td><td class="n">${T.abs}</td><td class="n">${T.attR}</td><td class="n">${T.pct}%</td><td class="n">${ERR.length}</td><td class="n">${T.ok?'✔':'⚠'}</td></tr></tfoot></table></div></div>`;
  $('#v1').innerHTML=h;
 }
@@ -804,7 +819,7 @@ function demo(){
 const TS=[
  {i:IC.up,t:'Cargue el reporte',x:'Pulse <b>Cargar Excel</b> y suba el reporte Cuéntame RAM <b>tal cual lo genera el sistema</b> (.xlsx). Lee todas las UDS solo.',s:'header .hl'},
  {i:IC.pal,t:'Qué significa cada marca',x:'<span class="sw cx">X</span> asistió &nbsp;<span class="sw cf">-</span> falla (cuenta) &nbsp;<span class="sw cr">R</span> retiro &nbsp;<span class="sw cn">N/A</span> no aplica &nbsp;<span class="sw cs">–</span> especial &nbsp;<span class="sw" style="background:#fecaca;color:#7f1d1d">⚠</span> error de marcación. <b>R y N/A no cuentan.</b>'},
- {i:IC.cal,t:'Días especiales',x:'Toque los <b>festivos o recesos</b> para excluirlos (azul). El último viernes ya viene marcado. Con el botón de la derecha puede <b>plegar</b> este panel.',s:'#dcard',tab:1},
+ {i:IC.cal,t:'Días especiales',x:'Toque los <b>festivos o recesos</b> para excluirlos (azul). El último viernes ya viene marcado. Toque el <b>encabezado</b> del panel (o el botón de la derecha) para <b>plegarlo o desplegarlo</b>; se despliega solo cuando aparece una alerta de días.',s:'#dcard',tab:1},
  {i:IC.grid,t:'Consolidado',x:'Resumen por UDS: cupo, asistencias, inasistencias y %. Toque una UDS para ver su detalle.',s:'#v1',tab:1},
  {i:IC.s,t:'Detalle y filtros',x:'Elija la UDS, busque por nombre o documento y filtre <b>Activos</b> o <b>Retirados</b>. Las fallas salen en amarillo.',s:'#v2',tab:2},
  {i:IC.calc,t:'Cómo se cuenta',x:'<b>R</b> = días después de retirarse. <b>N/A</b> = días antes de ingresar. El cupo suma los niños inscritos cada día. Los <b>N/A</b> nunca suman: no son asistencia, inasistencia, cupo ni valor a facturar. <b>Regla semanal (solo retiros):</b> si un retiro deja solo 1–2 días sin asistir dentro de su última semana, esos días se muestran en rosa como R, pero cuentan como cupo (falla interna). Si se cargó el reporte del Cuéntame con la fecha exacta de desvinculación, esta regla no aplica: hasta esa fecha son inasistencias y los días posteriores son retiro (R). Si usted edita una celda a mano, esa edición manda y no suma como caso especial.'},
@@ -995,10 +1010,12 @@ function holidaysCO(y){const E=easterCO(y),P=(dt,k)=>new Date(dt.getFullYear(),d
  [[1,6,'Reyes Magos'],[3,19,'San José'],[6,29,'San Pedro y San Pablo'],[8,15,'Asunción de la Virgen'],[10,12,'Día de la Raza'],[11,1,'Todos los Santos'],[11,11,'Independencia de Cartagena']].forEach(([m,d,n])=>{const x=M(new Date(y,m-1,d));H.push({m:x.getMonth()+1,d:x.getDate(),n})});
  [[P(E,-3),'Jueves Santo'],[P(E,-2),'Viernes Santo'],[M(P(E,39)),'Ascensión del Señor'],[M(P(E,60)),'Corpus Christi'],[M(P(E,68)),'Sagrado Corazón']].forEach(([x,n])=>H.push({m:x.getMonth()+1,d:x.getDate(),n}));
  return H}
+let pendSig='';
 function pendUI(){const el=$('#pendB');if(!el)return;let h='';
  const hl=[...S.hol.entries()].filter(([d])=>isSp(d)).sort((a,b)=>a[0]-b[0]);
  if(hl.length)h+=`<div class="legend" style="margin:8px 0 0"><span style="--c:var(--g)">Festivos de Colombia (cargados automáticamente): ${hl.map(([d,n])=>d+' · '+esc(n)).join(' — ')}</span></div>`;
  const pd=[...S.pend].filter(d=>isSp(d)).sort((a,b)=>a-b);
+ {const sig=pd.join(',');if(pd.length&&sig!==pendSig)togD(false,1);pendSig=sig}
  if(pd.length)h+=`<div class="pendb" role="alert"><b>⚠ Ninguna UDS tiene marcas el día ${pd.join(', ')}.</b> Se están excluyendo del cupo automáticamente. Confirme si son días especiales (receso, cierre) o si faltó digitar la asistencia:<div class="row" style="margin:8px 0 0"><button type="button" class="btn alt" onclick="pendOk()">Son especiales: confirmar</button><button type="button" class="btn alt" onclick="pendSvc()">Son de servicio: falta digitar</button></div></div>`;
  el.innerHTML=h}
 function pendOk(){S.pend.clear();refresh()}
