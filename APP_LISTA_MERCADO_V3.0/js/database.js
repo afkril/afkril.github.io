@@ -2,7 +2,7 @@
 		
 		const baseDatabase = {
 			neiva: {
-				titulo: "Regional Neiva",
+				titulo: "Centro Zonal Neiva",
 				modalidades: {
 					hcb: {
 						titulo: "HCB - Hogares Comunitarios de Bienestar",
@@ -96,7 +96,7 @@
 				}
 			},
 			gaitana: {
-				titulo: "Regional Gaitana",
+				titulo: "Centro Zonal Gaitana",
 				modalidades: {
 					hcb: {
 						titulo: "HCB - Hogares Comunitarios de Bienestar",

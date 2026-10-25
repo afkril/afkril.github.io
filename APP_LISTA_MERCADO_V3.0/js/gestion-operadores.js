@@ -25,7 +25,7 @@ function goPoblarFiltroRegional() {
 	const sel = document.getElementById('goFiltroRegional');
 	if (!sel) return;
 	const valorPrevio = sel.value;
-	sel.innerHTML = '<option value="">Todas las regionales</option>' +
+	sel.innerHTML = '<option value="">Todos los centros zonales</option>' +
 		Object.keys(regionales).map(r => `<option value="${r}">${regionales[r].titulo}</option>`).join('');
 	sel.value = valorPrevio || '';
 }

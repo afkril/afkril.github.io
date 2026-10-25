@@ -422,7 +422,7 @@ async function guardarMinutaOperador() {
 
 	const tieneOperadores = Object.keys(regionales[regional]?.modalidades?.[modalidad]?.operadores || {}).length > 0;
 	if (!regional || !modalidad || (tieneOperadores && !op) || !node) {
-		showToast('Seleccione Regional, Modalidad y Operador (o cree uno en Gestión de Operadores)', 'error');
+		showToast('Seleccione Centro Zonal, Modalidad y Operador (o cree uno en Gestión de Operadores)', 'error');
 		return;
 	}
 	if (nueva && !meta.vigencia) {

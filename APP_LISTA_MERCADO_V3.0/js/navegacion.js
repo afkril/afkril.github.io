@@ -233,8 +233,8 @@
 			}
 			actualizarSelectorOperador();
 			limpiarVistas();
-			showToast(`Regional: ${regionales[regional].titulo}`, 'success');
-			showToast(`Regional cambiada a: ${regionales[regional].titulo}. Genere una nueva lista.`, 'success');
+			showToast(`Centro Zonal: ${regionales[regional].titulo}`, 'success');
+			showToast(`Centro Zonal cambiado a: ${regionales[regional].titulo}. Genere una nueva lista.`, 'success');
 			actualizarIndicadorEstado();
 		}
 		
@@ -260,7 +260,7 @@
 			const modCorta = currentModalidad ? currentModalidad.toUpperCase() : '';
 			const opNombre = currentOperador ? (operadoresNombres[currentOperador] || currentOperador.toUpperCase()) : null;
 
-			const partes = [regionales[currentRegional].titulo.replace('Regional ', ''), modCorta];
+			const partes = [regionales[currentRegional].titulo.replace('Centro Zonal ', ''), modCorta];
 			if (opNombre) partes.push(opNombre);
 			if (typeof currentVersionMinuta !== 'undefined' && currentVersionMinuta !== 'v1') partes.push('V' + vmNumero(currentVersionMinuta));
 			valueEl.textContent = partes.join(' · ');

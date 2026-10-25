@@ -73,7 +73,7 @@
                     title: 'Bienvenido a App · Lista Mercado',
                     text: 'Este recorrido rápido te muestra todo lo que puedes hacer: generar listas semanales y mensuales, el sistema de actas, proveedores, minutas y operadores. También puedes saltar directo a un tema desde el botón de ayuda.'
                 },
-                { selector: '#profileChipBtn', title: 'Perfil activo', text: 'Todo lo que generes usa la Regional, Modalidad y Operador seleccionados aquí. Puedes cambiarlo cuando lo necesites.' },
+                { selector: '#profileChipBtn', title: 'Perfil activo', text: 'Todo lo que generes usa la Centro Zonal, Modalidad y Operador seleccionados aquí. Puedes cambiarlo cuando lo necesites.' },
                 { section: 'calculator', selector: '[data-section="calculator"]', title: 'Minutas Semanales', text: 'Genera la lista de mercado de una semana según cupos, minuta y días de entrega.' },
                 { section: 'calculator', selector: '#btnGenerar', title: 'Generar lista semanal', text: 'Define cupos, semana y días arriba, y pulsa aquí para calcular la lista automáticamente.' },
                 { section: 'monthly', selector: '[data-section="monthly"]', title: 'Listado Mensual', text: 'Consolida varias semanas en una sola lista de compras del mes completo.' },
@@ -83,7 +83,7 @@
                 { section: 'directorio', selector: '#tab-dir-sticky-bar', fallbackSelector: '#tab-dir-empty-state', title: 'Paso 3 · Generar actas', text: 'Ajusta coberturas y datos de cada UDS, y genera las actas por separado o unificadas en un solo Excel.', fallbackText: 'Cuando cargues UDS aquí podrás ajustar coberturas y generar las actas por separado o unificadas.' },
                 { section: 'proveedores', selector: '[data-section="proveedores"]', title: 'Proveedores', text: 'Registra a quienes entregan los alimentos, para reutilizarlos rápido al configurar el Directorio.' },
                 { section: 'cargue', selector: '[data-section="cargue"]', title: 'Agregar Minutas', text: 'Carga la minuta (gramajes) propia de cada operador, por Excel o JSON.' },
-                { section: 'gestion-operadores', selector: '[data-section="gestion-operadores"]', title: 'Gestión de Operadores', text: 'Crea, edita y elimina operadores de todas las Regionales y Modalidades desde una sola tabla.' },
+                { section: 'gestion-operadores', selector: '[data-section="gestion-operadores"]', title: 'Gestión de Operadores', text: 'Crea, edita y elimina operadores de todas las Centros Zonales y Modalidades desde una sola tabla.' },
                 { section: 'editor', selector: '[data-section="editor"]', title: 'Editor de Gramajes', text: 'Ajusta los gramajes base de la minuta patrón por producto y por menú.' },
                 { section: 'calendar', selector: '[data-section="calendar"]', title: 'Calendario Festivos', text: 'Consulta días hábiles y festivos de Colombia para planear tus entregas.' },
                 { section: 'saved', selector: '[data-section="saved"]', title: 'Guardadas', text: 'Aquí encuentras todas las listas semanales y mensuales que hayas guardado.' },
@@ -96,10 +96,10 @@
             label: 'Elegir Perfil',
             onExit: function () { safeCall('togglePerfilModal', false); },
             steps: [
-                { before: function () { safeCall('togglePerfilModal', false); }, selector: '#profileChipBtn', title: 'Tu perfil activo', text: 'Este chip muestra la Regional, Modalidad y Operador con los que trabajas ahora. Todo lo que generes usa este contexto. Haz clic para cambiarlo.' },
-                { before: function () { safeCall('togglePerfilModal', true); }, delay: 200, selector: '.perfil-modal-body .perfil-step:nth-of-type(1)', title: 'Regional', text: 'Elige la Regional: NEIVA o GAITANA. Cada una tiene sus propios operadores y datos.' },
+                { before: function () { safeCall('togglePerfilModal', false); }, selector: '#profileChipBtn', title: 'Tu perfil activo', text: 'Este chip muestra la Centro Zonal, Modalidad y Operador con los que trabajas ahora. Todo lo que generes usa este contexto. Haz clic para cambiarlo.' },
+                { before: function () { safeCall('togglePerfilModal', true); }, delay: 200, selector: '.perfil-modal-body .perfil-step:nth-of-type(1)', title: 'Centro Zonal', text: 'Elige la Centro Zonal: NEIVA o GAITANA. Cada una tiene sus propios operadores y datos.' },
                 { before: function () { safeCall('togglePerfilModal', true); }, selector: '.perfil-modal-body .perfil-step:nth-of-type(2)', title: 'Modalidad', text: 'Elige la modalidad del servicio: HCB, CDI o HI. Cambia los productos y gramajes disponibles.' },
-                { before: function () { safeCall('togglePerfilModal', true); }, selector: '#perfilStepOperador', title: 'Operador', text: 'Si la modalidad lo requiere, selecciona el operador. Solo se muestran los creados para esa Regional y Modalidad.' },
+                { before: function () { safeCall('togglePerfilModal', true); }, selector: '#perfilStepOperador', title: 'Operador', text: 'Si la modalidad lo requiere, selecciona el operador. Solo se muestran los creados para esa Centro Zonal y Modalidad.' },
                 { before: function () { safeCall('togglePerfilModal', true); }, selector: '.perfil-modal-done', title: 'Guardar selección', text: 'Pulsa "Listo" para aplicar el perfil. Lo verás reflejado en el chip y en el indicador de configuración de cada sección.' }
             ]
         },
@@ -111,7 +111,7 @@
                 { section: 'calculator', selector: '#num-p', title: 'Cupos (niños)', text: 'Ingresa el número de cupos o niños beneficiarios. Cada cantidad se calcula multiplicando el gramaje por este número.' },
                 { section: 'calculator', selector: '#sem', title: 'Minuta / Semana', text: 'Elige la semana de la minuta patrón a usar (Semana 1 a 5). Cada una tiene su propio ciclo de menús (M1-M5, M6-M10, etc.).' },
                 { section: 'calculator', selector: '.days-selector', title: 'Días a incluir', text: 'Marca los días de entrega. Puedes desmarcar festivos o días no laborales.' },
-                { section: 'calculator', selector: '#statusIndicator', title: 'Perfil activo', text: 'Aquí ves la Regional, Modalidad y Operador con los que se generará la lista. Si no es el correcto, cámbialo desde el chip de perfil.' },
+                { section: 'calculator', selector: '#statusIndicator', title: 'Perfil activo', text: 'Aquí ves la Centro Zonal, Modalidad y Operador con los que se generará la lista. Si no es el correcto, cámbialo desde el chip de perfil.' },
                 { section: 'calculator', selector: '#btnGenerar', title: 'Generar lista', text: 'Con todo listo, pulsa "Generar" y la app calculará automáticamente los productos y cantidades por categoría.' },
                 { section: 'calculator', selector: '#resultContainer .table-actions', fallbackSelector: '#weeklyEmptyState', title: 'Exportar y guardar', text: 'Ya generada, exporta a Excel o guarda la lista para consultarla luego en "Guardadas".', fallbackText: 'Cuando generes la lista, aquí aparecerán los botones para exportar a Excel o guardar la lista.' }
             ]
@@ -156,7 +156,7 @@
             icon: ICONS.gramajes,
             label: 'Editar Minutas',
             steps: [
-                { section: 'editor', selector: '#editorInfo', title: 'Editor de Gramajes', text: 'Edita los gramajes (cantidad de cada producto por niño) de la minuta patrón, según la Regional y Modalidad activas.' },
+                { section: 'editor', selector: '#editorInfo', title: 'Editor de Gramajes', text: 'Edita los gramajes (cantidad de cada producto por niño) de la minuta patrón, según la Centro Zonal y Modalidad activas.' },
                 { section: 'editor', selector: '#editorProductSelect', title: 'Elegir producto', text: 'Selecciona el producto a editar. Verás su categoría y unidad de medida automáticamente.' },
                 { section: 'editor', selector: '#matrixContainer', title: 'Matriz de gramajes', text: 'Ajusta el gramaje del producto para cada Menú (M1 a M25), organizados por semana. Los cambios quedan marcados hasta que los guardes.' },
                 { section: 'editor', selector: '#btnGuardarFirebase', title: 'Guardar en Firebase', text: 'Guarda los cambios para que se apliquen de inmediato en la generación de listas semanales y mensuales.' },
@@ -168,7 +168,7 @@
             icon: ICONS.cargue,
             label: 'Agregar Minutas',
             steps: [
-                { section: 'cargue', selector: '.cm-card-target', title: 'Elige el operador destino', text: 'Selecciona Regional, Modalidad y Operador al que le vas a cargar su minuta propia. El estado de productos actuales se muestra en la tarjeta.' },
+                { section: 'cargue', selector: '.cm-card-target', title: 'Elige el operador destino', text: 'Selecciona Centro Zonal, Modalidad y Operador al que le vas a cargar su minuta propia. El estado de productos actuales se muestra en la tarjeta.' },
                 { section: 'cargue', selector: '#cargueModo', title: 'Modo de carga', text: '"Agregar" suma productos nuevos sin borrar los existentes. "Reemplazar" borra la minuta actual del operador y la sustituye por completo.' },
                 { section: 'cargue', selector: '.cm-tabs', title: 'Excel o JSON', text: 'Carga la minuta subiendo un archivo Excel (columnas Producto, Categoría, Unidad, M1..M25) o pegando un JSON con el mismo formato.' },
                 { section: 'cargue', selector: '.cm-file-wrapper', title: 'Subir archivo', text: 'Selecciona el archivo Excel del operador. Puedes descargar antes la plantilla para no equivocarte con las columnas.' },
@@ -183,12 +183,12 @@
             label: 'Gestionar Operadores',
             onExit: function () { safeCall('goCerrarModal'); },
             steps: [
-                { section: 'gestion-operadores', before: function () { safeCall('goCerrarModal'); }, selector: '.go-btn-agregar', title: 'Crear operador', text: 'Pulsa aquí para abrir el formulario y crear un nuevo operador: Regional, Modalidad, nombre, código y color identificador.' },
-                { section: 'gestion-operadores', before: function () { safeCall('goAbrirModalAgregar'); }, delay: 180, selector: '#goModalRegional', title: 'Regional y Modalidad', text: 'Elige la Regional y Modalidad del nuevo operador. Estos datos no se podrán cambiar después de creado.' },
+                { section: 'gestion-operadores', before: function () { safeCall('goCerrarModal'); }, selector: '.go-btn-agregar', title: 'Crear operador', text: 'Pulsa aquí para abrir el formulario y crear un nuevo operador: Centro Zonal, Modalidad, nombre, código y color identificador.' },
+                { section: 'gestion-operadores', before: function () { safeCall('goAbrirModalAgregar'); }, delay: 180, selector: '#goModalRegional', title: 'Centro Zonal y Modalidad', text: 'Elige la Centro Zonal y Modalidad del nuevo operador. Estos datos no se podrán cambiar después de creado.' },
                 { section: 'gestion-operadores', before: function () { safeCall('goAbrirModalAgregar'); }, selector: '#goModalNombre', title: 'Nombre y código', text: 'Escribe el nombre del operador. El código interno se genera solo y debe ser único dentro de la misma modalidad.' },
                 { section: 'gestion-operadores', before: function () { safeCall('goAbrirModalAgregar'); }, selector: '#goModalColor', title: 'Color identificador', text: 'Elige un color para reconocer rápido al operador en tablas y botones de toda la app.' },
                 { section: 'gestion-operadores', before: function () { safeCall('goAbrirModalAgregar'); }, selector: '#goModalBtnGuardar', title: 'Crear operador', text: 'Al guardar, el operador queda disponible en el chip de perfil, en "Agregar Minutas" y en el Editor de Gramajes.' },
-                { section: 'gestion-operadores', before: function () { safeCall('goCerrarModal'); }, selector: '.go-table-wrap', fallbackSelector: '.go-empty-state', title: 'Editar o eliminar', text: 'En la tabla, usa las acciones de cada fila para editar los datos de un operador o eliminarlo. Los filtros de arriba ayudan a encontrarlo por Regional, Modalidad o nombre.', fallbackText: 'Cuando existan operadores, la tabla aparecerá aquí con acciones por fila para editar o eliminar cada uno.' }
+                { section: 'gestion-operadores', before: function () { safeCall('goCerrarModal'); }, selector: '.go-table-wrap', fallbackSelector: '.go-empty-state', title: 'Editar o eliminar', text: 'En la tabla, usa las acciones de cada fila para editar los datos de un operador o eliminarlo. Los filtros de arriba ayudan a encontrarlo por Centro Zonal, Modalidad o nombre.', fallbackText: 'Cuando existan operadores, la tabla aparecerá aquí con acciones por fila para editar o eliminar cada uno.' }
             ]
         },
 

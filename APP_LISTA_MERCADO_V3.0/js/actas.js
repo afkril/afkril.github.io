@@ -3338,7 +3338,7 @@ document.addEventListener('keydown', function(e) {
                     var cs = _configCompatExp.configSemanal;
                     rows.push([]);
                     rows.push(['🗓️ CONFIGURACIÓN DE GENERACIÓN SEMANAL']);
-                    rows.push(['Regional App', cs.regional||'', 'Modalidad App', cs.modalidad||'']);
+                    rows.push(['Centro Zonal App', cs.regional||'', 'Modalidad App', cs.modalidad||'']);
                     rows.push(['Operador', cs.operador||'', 'Semana', cs.semana||'']);
                     rows.push(['Versión Minuta', (d.versionMinuta || cs.versionMinuta || 'v1'), '', '']);
                     rows.push(['Niños', cs.ninos||'', 'Días', (cs.dias||[]).join(',')]);
@@ -3458,7 +3458,7 @@ document.addEventListener('keydown', function(e) {
                             }
                             if (seccionActual === 'config') {
                                 var cfgFieldMap = {
-                                    'Regional App':'regional', 'Modalidad App':'modalidad', 'Operador':'operador',
+                                    'Centro Zonal App':'regional', 'Regional App':'regional', 'Modalidad App':'modalidad', 'Operador':'operador',
                                     'Semana':'semana', 'Niños':'ninos', 'Días':'dias',
                                     'Modo Leche Semanal':'lecheModoSemanal', 'Modo Yogurt Semanal':'yogurtModoSemanal',
                                     'Versión Minuta':'versionMinuta'

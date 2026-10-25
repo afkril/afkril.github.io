@@ -621,7 +621,7 @@
 				<div style="margin-bottom: 0.875rem;">
 					<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; font-weight: 600;">📋 Acción</div>
 					${seccion('accion', 'Acción', reg.accion)}
-					${seccion('reg', 'Regional', reg.regional?.toUpperCase())}
+					${seccion('reg', 'Centro Zonal', reg.regional?.toUpperCase())}
 					${seccion('mod', 'Modalidad', reg.modalidad?.toUpperCase())}
 					${seccion('tipo', 'Tipo de lista', reg.tipo?.toUpperCase())}
 					${seccion('sem', 'Semana', reg.detalles?.semana ? `Semana ${reg.detalles.semana}` : null)}
@@ -677,7 +677,7 @@
 				'Pantalla': reg.deviceInfo?.pantalla || 'N/A',
 				'Zona Horaria': reg.deviceInfo?.timezone || 'N/A',
 				'Acción': reg.accion,
-				'Regional': (reg.regional || '').toUpperCase(),
+				'Centro Zonal': (reg.regional || '').toUpperCase(),
 				'Modalidad': (reg.modalidad || 'N/A').toUpperCase(),
 				'Tipo': (reg.tipo || '').toUpperCase(),
 				'Semana(s)': reg.detalles?.semana || (reg.detalles?.semanas ? reg.detalles.semanas.join(', ') : ''),

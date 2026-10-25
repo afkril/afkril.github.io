@@ -74,7 +74,7 @@ const INI_ACCIONES_AUDITORIA = {
 function iniNombreRegional(codigo) {
 	try {
 		if (typeof regionales !== 'undefined' && regionales[codigo]?.titulo) {
-			return regionales[codigo].titulo.replace('Regional ', '');
+			return regionales[codigo].titulo.replace('Centro Zonal ', '');
 		}
 	} catch (e) { /* silencioso */ }
 	return codigo || '';
@@ -138,7 +138,7 @@ function renderInicioActividad() {
 // ---------------------------------------------------------------
 const INI_TIPS = [
 	'Puedes seleccionar varios días al generar tu lista para ahorrar tiempo.',
-	'Cambia de Regional u Operador desde el chip "Perfil activo" sin perder tu configuración.',
+	'Cambia de Centro Zonal u Operador desde el chip "Perfil activo" sin perder tu configuración.',
 	'El Editor de Gramajes te permite ajustar cantidades por producto y por modalidad.',
 	'Guarda tus listas generadas para reutilizarlas o compararlas más adelante en "Guardadas".',
 	'En el Listado Mensual puedes combinar varias semanas en una sola lista consolidada.',
@@ -181,13 +181,13 @@ function renderInicioConfig() {
 	const cont = document.getElementById('iniConfigStrip');
 	if (!cont || typeof regionales === 'undefined') return;
 
-	const regTitulo = (regionales[currentRegional]?.titulo || currentRegional).replace('Regional ', '');
+	const regTitulo = (regionales[currentRegional]?.titulo || currentRegional).replace('Centro Zonal ', '');
 	const regColor = currentRegional === 'gaitana' ? '#10b981' : '#3b82f6';
 	const modSiglas = currentModalidad ? currentModalidad.toUpperCase() : '—';
 	const opNombre = currentOperador ? (operadoresNombres[currentOperador] || currentOperador.toUpperCase()) : null;
 
 	const chips = [
-		{ icon: '<circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/>', label: 'Regional', value: regTitulo.toUpperCase(), color: regColor },
+		{ icon: '<circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/>', label: 'Centro Zonal', value: regTitulo.toUpperCase(), color: regColor },
 		{ icon: '<path d="M3 9l9-6 9 6-9 6-9-6z"/><path d="M3 9v6l9 6 9-6V9"/>', label: 'Modalidad', value: modSiglas, color: '#8b5cf6' }
 	];
 	if (opNombre) {

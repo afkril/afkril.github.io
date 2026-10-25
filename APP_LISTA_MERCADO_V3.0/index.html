@@ -154,8 +154,8 @@
             <span>App|ListaMercado</span>
         </div>
 
-        <!-- ══════════ Chip de Perfil Activo (Regional · Modalidad · Operador) ══════════ -->
-        <button style="position:relative" class="profile-chip" id="profileChipBtn" onclick="togglePerfilModal(true)" type="button" title="Cambiar Regional / Modalidad / Operador">
+        <!-- ══════════ Chip de Perfil Activo (Centro Zonal · Modalidad · Operador) ══════════ -->
+        <button style="position:relative" class="profile-chip" id="profileChipBtn" onclick="togglePerfilModal(true)" type="button" title="Cambiar Centro Zonal / Modalidad / Operador">
             
 			<span class="profile-chip-dot" id="profileChipDot"></span>
             <span class="profile-chip-text">
@@ -278,7 +278,7 @@
         </div>
 		
 		
-		<!-- MODAL "CAMBIAR PERFIL" (Regional / Modalidad / Operador) -->
+		<!-- MODAL "CAMBIAR PERFIL" (Centro Zonal / Modalidad / Operador) -->
 		<div id="perfil-modal-overlay" class="perfil-modal-overlay" onclick="if(event.target===this) togglePerfilModal(false)">
 			<div class="perfil-modal-card">
 				<div class="perfil-modal-header">
@@ -287,7 +287,7 @@
 					</div>
 					<div class="perfil-modal-header-text">
 						<div class="perfil-modal-title">Cambiar Perfil</div>
-						<div class="perfil-modal-subtitle">Regional, modalidad y operador activos</div>
+						<div class="perfil-modal-subtitle">Centro Zonal, modalidad y operador activos</div>
 					</div>
 					<button class="perfil-modal-close" onclick="togglePerfilModal(false)" type="button" title="Cerrar">
 						<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -296,7 +296,7 @@
 
 				<div class="perfil-modal-body">
 					<div class="perfil-step">
-						<div class="perfil-step-title"><span class="perfil-step-num">1</span> Regional</div>
+						<div class="perfil-step-title"><span class="perfil-step-num">1</span> Centro Zonal</div>
 						<div class="reg-row">
 							<button class="reg-btn active" onclick="cambiarRegional('neiva')" id="btnNeiva">NEIVA</button>
 							<button class="reg-btn" onclick="cambiarRegional('gaitana')" id="btnGaitana">GAITANA</button>
@@ -363,7 +363,7 @@
 						<span class="profile-modal-field-value" id="profile-modal-email"></span>
 					</div>
 					<div class="profile-modal-field">
-						<span class="profile-modal-field-label">Regional / Modalidad activa</span>
+						<span class="profile-modal-field-label">Centro Zonal / Modalidad activa</span>
 						<span class="profile-modal-field-value" id="profile-modal-regional"></span>
 					</div>
 					<div class="profile-modal-field">
@@ -443,12 +443,12 @@
 							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-hoy-fecha">—</div>
 						</div>
 						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #2563eb;">
-							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Regional Neiva</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Centro Zonal Neiva</div>
 							<div style="font-size: 1.75rem; font-weight: 800; color: #60a5fa;" id="stat-neiva">0</div>
 							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-neiva-pct">—</div>
 						</div>
 						<div style="background: var(--bg-card); padding: 0.875rem 1rem; border-radius: 0.75rem; border-left: 4px solid #059669;">
-							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Regional Gaitana</div>
+							<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.25rem;">Centro Zonal Gaitana</div>
 							<div style="font-size: 1.75rem; font-weight: 800; color: #34d399;" id="stat-gaitana">0</div>
 							<div style="font-size: 0.65rem; color: var(--text-secondary);" id="stat-gaitana-pct">—</div>
 						</div>
@@ -500,7 +500,7 @@
 						<div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.625rem; font-weight: 600;">🔍 Filtros de búsqueda</div>
 						<div style="display: flex; gap: 0.625rem; flex-wrap: wrap; align-items: flex-end;">
 							<div class="form-group" style="margin: 0;">
-								<label class="form-label">Regional</label>
+								<label class="form-label">Centro Zonal</label>
 								<select class="form-select" id="admin-filter-regional" onchange="filtrarRegistros()" style="min-width: 110px;">
 									<option value="todos">Todas</option>
 									<option value="neiva">Neiva</option>
@@ -567,7 +567,7 @@
 									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">IP</th>
 									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Dispositivo</th>
 									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Acción</th>
-									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Regional</th>
+									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Centro Zonal</th>
 									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Tipo</th>
 									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Modalidad</th>
 									<th style="padding: 0.625rem 0.75rem; text-align: left; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); font-weight: 600;">Detalles</th>
@@ -682,7 +682,7 @@
                         </div>
                     </div>
 
-                    <div class="status-indicator" id="statusIndicator" title="Regional y Modalidad activas">
+                    <div class="status-indicator" id="statusIndicator" title="Centro Zonal y Modalidad activas">
 						<span class="status-label">Config:</span>
 						<span class="status-badge reg-neiva" id="statusRegional">🏢 NEIVA</span>
 						<span class="status-divider"></span>
@@ -816,7 +816,7 @@
                         <label class="form-label">Selecciona las semanas y dias a incluir</label>
                     </div>
 
-                    <div class="status-indicator" id="statusIndicatorMensual" title="Regional y Modalidad activas">
+                    <div class="status-indicator" id="statusIndicatorMensual" title="Centro Zonal y Modalidad activas">
 						<span class="status-label">Config:</span>
 						<span class="status-badge reg-neiva" id="statusRegionalMensual">🏢 NEIVA</span>
 						<span class="status-divider"></span>
@@ -1061,7 +1061,7 @@
 					<span>Editor de Gramajes</span>
 				</div>
 				<div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-					Modifica los gramajes por menú, regional y modalidad. Los cambios se guardan en Firebase.
+					Modifica los gramajes por menú, centro zonal y modalidad. Los cambios se guardan en Firebase.
 				</div>
 			</div>
 
@@ -1083,10 +1083,10 @@
 				</div>
 			</div>
 
-			<!-- Info de Regional y Modalidad activa -->
+			<!-- Info de Centro Zonal y Modalidad activa -->
 			<div class="editor-info no-print" id="editorInfo">
 				<div class="editor-info-item">
-					<span class="editor-info-label">🏢 Regional:</span>
+					<span class="editor-info-label">🏢 Centro Zonal:</span>
 					<span class="editor-info-value" id="editorRegional">NEIVA</span>
 				</div>
 				<div class="editor-info-item">
@@ -1264,7 +1264,7 @@
 				<div class="empty-icon">⚖️</div>
 				<p>Seleccione un producto para editar sus gramajes</p>
 				<p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
-					Los cambios se aplicarán a la modalidad y regional actual
+					Los cambios se aplicarán a la modalidad y centro zonal actual
 				</p>
 			</div>
 		</div>
@@ -1306,10 +1306,10 @@
 					<div class="config-row" style="gap: 0.75rem; flex-wrap: wrap;">
 						<div class="form-group" style="flex:1; min-width: 140px; position:relative;">
 							<span class="badge-nuevo">Nuevo</span>
-							<label class="form-label">Regional</label>
+							<label class="form-label">Centro Zonal</label>
 							<select class="form-select" id="cargueRegional" onchange="poblarCargueModalidades()">
-								<option value="neiva">Regional Neiva</option>
-								<option value="gaitana">Regional Gaitana</option>
+								<option value="neiva">Centro Zonal Neiva</option>
+								<option value="gaitana">Centro Zonal Gaitana</option>
 							</select>
 						</div>
 						<div class="form-group" style="flex:1; min-width: 160px;">
@@ -1439,10 +1439,10 @@
 				</div>
 				<div class="config-row" style="gap: 0.75rem; flex-wrap: wrap;">
 					<div class="form-group" style="min-width: 160px; flex:1;">
-						<label class="form-label">Regional origen</label>
+						<label class="form-label">Centro Zonal origen</label>
 						<select class="form-select" id="copiaOrigenRegional" onchange="poblarCopiaOrigenModalidades()">
-							<option value="neiva">Regional Neiva</option>
-							<option value="gaitana">Regional Gaitana</option>
+							<option value="neiva">Centro Zonal Neiva</option>
+							<option value="gaitana">Centro Zonal Gaitana</option>
 						</select>
 					</div>
 					<div class="form-group" style="min-width: 180px; flex:1;">
@@ -1477,7 +1477,7 @@
 						<span>Gestión de Operadores</span>
 					</div>
 					<div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-						Cree, edite y elimine operadores de todas las regionales y modalidades desde una sola tabla.
+						Cree, edite y elimine operadores de todos los centros zonales y modalidades desde una sola tabla.
 					</div>
 				</div>
 				<button type="button" class="go-btn-agregar" onclick="goAbrirModalAgregar()">
@@ -1492,9 +1492,9 @@
 					<input type="text" id="goBusqueda" placeholder="Buscar por nombre o código..." oninput="goCambioBusqueda()">
 				</div>
 				<div class="form-group">
-					<label class="form-label" style="margin-bottom:0.25rem;">Regional</label>
+					<label class="form-label" style="margin-bottom:0.25rem;">Centro Zonal</label>
 					<select class="form-select" id="goFiltroRegional" onchange="goCambioFiltroRegional()">
-						<option value="">Todas las regionales</option>
+						<option value="">Todos los centros zonales</option>
 					</select>
 				</div>
 				<div class="form-group">
@@ -1514,7 +1514,7 @@
 						<thead>
 							<tr>
 								<th>Operador</th>
-								<th>Regional</th>
+								<th>Centro Zonal</th>
 								<th>Modalidad</th>
 								<th>Color</th>
 						
@@ -1542,10 +1542,10 @@
 				</div>
 				<div class="config-row" style="gap: 0.75rem; flex-wrap: wrap;">
 					<div class="form-group" style="min-width: 160px; flex:1;">
-						<label class="form-label">Regional</label>
+						<label class="form-label">Centro Zonal</label>
 						<select class="form-select" id="goModalRegional" onchange="goPoblarModalidadesModal()">
-							<option value="neiva">Regional Neiva</option>
-							<option value="gaitana">Regional Gaitana</option>
+							<option value="neiva">Centro Zonal Neiva</option>
+							<option value="gaitana">Centro Zonal Gaitana</option>
 						</select>
 					</div>
 					<div class="form-group" style="min-width: 180px; flex:1;">
@@ -1582,7 +1582,7 @@
 					</div>
 				</div>
 				<div class="go-readonly-note" id="goCodigoNota">El código se usa internamente y no se puede repetir dentro de la misma modalidad.</div>
-				<div class="go-readonly-note" id="goRegModNota" style="display:none;">La regional, modalidad y código no se pueden cambiar una vez creado el operador. Para moverlo, elimínelo y créelo de nuevo en el destino correcto.</div>
+				<div class="go-readonly-note" id="goRegModNota" style="display:none;">El centro zonal, modalidad y código no se pueden cambiar una vez creado el operador. Para moverlo, elimínelo y créelo de nuevo en el destino correcto.</div>
 				<div style="margin-top: 1rem; display:flex; justify-content:flex-end; gap:0.5rem;">
 					<button class="btn btn-secondary" onclick="goCerrarModal()">Cancelar</button>
 					<button class="btn btn-success" id="goModalBtnGuardar" onclick="goGuardarOperador()">➕ Crear operador</button>
@@ -2224,7 +2224,7 @@
                 </select>
             </div>
             <div>
-                <label class="sm-label">Regional</label>
+                <label class="sm-label">Centro Zonal</label>
                 <input class="sm-input" id="sm-regional-display" type="text" readonly style="opacity:.6;cursor:default;">
             </div>
             <div>
@@ -3075,6 +3075,7 @@
     <script src="js/intercambios-listado.js"></script>
     <script src="js/confirm-dialog.js"></script>
     <script src="js/tutorial.js"></script>
+    <script src="js/badges-nuevo.js"></script>
     <!-- MODAL CONFIGURACIÓN DE FORMATO DE ACTA -->
     <div id="config-acta-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:9995;backdrop-filter:blur(4px);" onclick="cerrarConfigActaFormato()"></div>
     <div id="config-acta-panel" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
