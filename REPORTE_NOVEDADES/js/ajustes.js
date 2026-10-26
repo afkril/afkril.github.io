@@ -12,8 +12,9 @@ const AjustesModule = (() => {
     let _modalidadesTemp = {};
     let _regionalesTemp = {};
     let _currentStep = 1;
+    let _clavesExistentes = { admin: null, formulario: null }; // claves guardadas (el wizard ya no tiene esos campos)
     let _idEditadoManualmente = false;
-    const TOTAL_STEPS = 5;
+    const TOTAL_STEPS = 4;
 
     const REGIONALES  = ['Regional Neiva', 'Regional Gaitana'];
     const MODALIDADES = ['HCB', 'FAMI', 'HI', 'CDI', 'FAMIBIENVENIR'];
@@ -129,6 +130,7 @@ const AjustesModule = (() => {
 
     function nuevaAsociacion() {
         _asociacionEditando = null;
+        _clavesExistentes = { admin: null, formulario: null };
         _contratosTemp = {}; _unidadesTemp = {}; _coloresTemp = {};
         _modalidadesTemp = {}; _regionalesTemp = {};
         _currentStep = 1;
@@ -167,17 +169,27 @@ const AjustesModule = (() => {
             _currentStep = 1;
             _idEditadoManualmente = true;
 
-            document.getElementById('ajustesInputId').value = id;
-            document.getElementById('ajustesInputId').disabled = true;
-            document.getElementById('ajustesInputNombre').value = datos.nombre || '';
-            document.getElementById('ajustesInputSubtitulo').value = datos.subtitulo || '';
-            document.getElementById('ajustesInputLogo').value = datos.logo_url || '';
-            document.getElementById('ajustesInputGoogle').value = datos.google_url || '';
-            document.getElementById('ajustesInputPasswordAdmin').value = datos.password_admin || 'ZAN';
-            document.getElementById('ajustesInputPasswordFormulario').value = datos.password_formulario || '';
+            const _set = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val; };
+            _set('ajustesInputId', id);
+            const idEl = document.getElementById('ajustesInputId');
+            if (idEl) idEl.disabled = true;
+            _set('ajustesInputNombre', datos.nombre || '');
+            _set('ajustesInputSubtitulo', datos.subtitulo || '');
+            _set('ajustesInputLogo', datos.logo_url || '');
+            _set('ajustesInputGoogle', datos.google_url || '');
+            _set('ajustesInputPasswordAdmin', datos.password_admin || 'ZAN');
+            _set('ajustesInputPasswordFormulario', datos.password_formulario || '');
 
-            checkStrength(document.getElementById('ajustesInputPasswordFormulario'), 'strengthForm');
-            checkStrength(document.getElementById('ajustesInputPasswordAdmin'), 'strengthAdmin');
+            // Conservar las claves actuales: si el wizard no tiene esos campos, no se deben pisar al guardar
+            _clavesExistentes = {
+                admin: datos.password_admin || 'ZAN',
+                formulario: datos.password_formulario || ''
+            };
+
+            const _pf = document.getElementById('ajustesInputPasswordFormulario');
+            const _pa = document.getElementById('ajustesInputPasswordAdmin');
+            if (_pf) checkStrength(_pf, 'strengthForm');
+            if (_pa) checkStrength(_pa, 'strengthAdmin');
 
             document.getElementById('wizardTitulo').textContent = 'Editar: ' + (datos.nombre || id);
             _mostrarVistaWizard();
@@ -233,7 +245,7 @@ const AjustesModule = (() => {
 
     function updateWizardUI() {
         // Título de paso
-        const titles = ['Información', 'Accesos', 'Contratos', 'UDS', 'Finalizar'];
+        const titles = ['Información', 'Contratos', 'UDS', 'Finalizar'];
         document.getElementById('wizardSubtitulo').textContent = `Paso ${_currentStep} de ${TOTAL_STEPS}: ${titles[_currentStep - 1]}`;
 
         // Wizard dots
@@ -267,12 +279,12 @@ const AjustesModule = (() => {
         if (btnAtras) btnAtras.style.visibility = _currentStep === 1 ? 'hidden' : 'visible';
         if (btnCont) btnCont.textContent = _currentStep === TOTAL_STEPS ? '💾 Guardar Organización' : 'Continuar →';
 
-        // Si es paso 3, renderizar contratos
-        if (_currentStep === 3) renderContratos();
-        // Si es paso 4, poblar select de contratos
-        if (_currentStep === 4) poblarSelectContratosUDS();
-        // Si es paso 5, generar resumen
-        if (_currentStep === 5) generarResumen();
+        // Si es paso 2, renderizar contratos
+        if (_currentStep === 2) renderContratos();
+        // Si es paso 3, poblar select de contratos
+        if (_currentStep === 3) poblarSelectContratosUDS();
+        // Si es paso 4, generar resumen
+        if (_currentStep === 4) generarResumen();
     }
 
     // ═══════════════════════════════════════════
@@ -479,7 +491,7 @@ const AjustesModule = (() => {
     }
 
     function irAUnidades(codigo) {
-        _currentStep = 4;
+        _currentStep = 3;
         updateWizardUI();
         setTimeout(() => {
             const sel = document.getElementById('ajustesSelectContratoUDS');
@@ -576,8 +588,10 @@ const AjustesModule = (() => {
         const detalle = document.getElementById('resumenDetalle');
         const id = document.getElementById('ajustesInputId')?.value || '—';
         const ciudad = document.getElementById('ajustesInputSubtitulo')?.value || '—';
-        const passForm = document.getElementById('ajustesInputPasswordFormulario')?.value ? 'Configurado ✅' : 'Sin clave (acceso libre)';
-        const passAdmin = document.getElementById('ajustesInputPasswordAdmin')?.value ? 'Configurado ✅' : 'Sin clave';
+        const _vF = document.getElementById('ajustesInputPasswordFormulario')?.value ?? (_asociacionEditando ? _clavesExistentes.formulario : '');
+        const passForm = _vF ? 'Configurado ✅' : 'Sin clave (acceso libre)';
+        const _vA = document.getElementById('ajustesInputPasswordAdmin')?.value ?? (_asociacionEditando ? _clavesExistentes.admin : 'ZAN');
+        const passAdmin = _vA ? 'Configurado ✅' : 'Sin clave';
 
         let contratosText = Object.entries(_contratosTemp).map(([cod, label]) => {
             const reg = _regionalesTemp[cod] || '—';
@@ -608,8 +622,12 @@ const AjustesModule = (() => {
         if (!id)     { showToast('El ID es obligatorio', 'warning'); _currentStep = 1; updateWizardUI(); return; }
         if (!nombre) { showToast('El nombre es obligatorio', 'warning'); _currentStep = 1; updateWizardUI(); return; }
 
-        const passwordAdmin      = document.getElementById('ajustesInputPasswordAdmin')?.value?.trim();
-        const passwordFormulario  = document.getElementById('ajustesInputPasswordFormulario')?.value?.trim();
+        const elPassAdmin = document.getElementById('ajustesInputPasswordAdmin');
+        const elPassForm  = document.getElementById('ajustesInputPasswordFormulario');
+        const passwordAdmin      = elPassAdmin ? elPassAdmin.value.trim()
+                                 : (_asociacionEditando ? _clavesExistentes.admin : undefined);
+        const passwordFormulario = elPassForm ? elPassForm.value.trim()
+                                 : (_asociacionEditando ? _clavesExistentes.formulario : undefined);
 
         const datos = {
             nombre, subtitulo, logo_url, google_url,
