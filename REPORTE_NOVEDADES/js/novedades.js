@@ -128,7 +128,7 @@ function marcarTodosCargados() {
                 return;
             }
 
-            showToast(`⏳ Procesando ${pendientesFiltrados.length} novedades...`, 'info');
+            showToast(`Procesando ${pendientesFiltrados.length} novedades...`, 'info');
 
             let actualizados = 0;
             const fechaActual = new Date().toISOString();
@@ -154,7 +154,7 @@ function marcarTodosCargados() {
 
             Promise.all(promesas)
                 .then(() => {
-                    showToast(`✅ ${actualizados} novedades marcadas como cargadas al CUENTAME`, 'success');
+                    showToast(`${actualizados} novedades marcadas como cargadas al CUENTAME`, 'success');
                     filterNovelties();
                     updatePendientesIndicator();
                 })
@@ -233,11 +233,11 @@ function archivarTodosCargados() {
                 return;
             }
 
-            if (!confirm(`⚠️ ¿Está seguro de ARCHIVAR ${cargadosFiltrados.length} novedades?\n\nSolo se archivarán las que estén marcadas como "Cargado al CUENTAME".\n\nEsta acción moverá los registros a la sección de Archivados.`)) {
+            if (!confirm(`¿Está seguro de ARCHIVAR ${cargadosFiltrados.length} novedades?\n\nSolo se archivarán las que estén marcadas como "Cargado al CUENTAME".\n\nEsta acción moverá los registros a la sección de Archivados.`)) {
                 return;
             }
 
-            showToast(`⏳ Archivando ${cargadosFiltrados.length} novedades...`, 'info');
+            showToast(`Archivando ${cargadosFiltrados.length} novedades...`, 'info');
 
             let archivados = 0;
             let errores = 0;
@@ -268,9 +268,9 @@ function archivarTodosCargados() {
             Promise.all(promesas)
                 .then(() => {
                     if (errores > 0) {
-                        showToast(`⚠️ ${archivados} archivados, ${errores} errores`, 'warning');
+                        showToast(`${archivados} archivados, ${errores} errores`, 'warning');
                     } else {
-                        showToast(`🗃️ ${archivados} novedades archivadas correctamente`, 'success');
+                        showToast(`${archivados} novedades archivadas correctamente`, 'success');
                     }
                     filterNovelties();
                     updatePendientesIndicator();
@@ -327,7 +327,7 @@ function toggleCuentame(id) {
                 cuentameDate: newStatus === 'cargado' ? new Date().toISOString() : null
             })
             .then(() => {
-                showToast(newStatus === 'cargado' ? '✓ Marcado como cargado al CUENTAME' : '⏳ Marcado como pendiente', 'success');
+                showToast(newStatus === 'cargado' ? 'Marcado como cargado al CUENTAME' : 'Marcado como pendiente', 'success');
                 loadNoveltiesTable();
                 updatePendientesIndicator();
             })
@@ -339,7 +339,7 @@ function archivarNovelty(id) {
             if (!novelty) return;
             
             if (novelty.cuentameStatus !== 'cargado') {
-                showToast('⚠️ Solo se pueden archivar novedades marcadas como "Cargado al CUENTAME"', 'warning');
+                showToast('Solo se pueden archivar novedades marcadas como "Cargado al CUENTAME"', 'warning');
                 return;
             }
             
@@ -355,7 +355,7 @@ function archivarNovelty(id) {
             archivedRef.set(archivedData)
                 .then(() => database.ref(`${AsociacionesModule.getRef('novelties')}/${id}`).remove())
                 .then(() => {
-                    showToast('🗃️ Novedad archivada correctamente', 'success');
+                    showToast('Novedad archivada correctamente', 'success');
                     loadNoveltiesTable();
                     updatePendientesIndicator();
                 })
@@ -545,7 +545,7 @@ function renderTable(novelties) {
                 }
                 // Badge nutrición pendiente
                 if ((n.type === 'ingreso' || n.type === 'ambos' || n.hasIngreso) && n.nutricion?.pendiente) {
-                    tipoBadge += ' <span style="background:#f59e0b;color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;" title="Datos nutricionales pendientes">🍎⏳</span>';
+                    tipoBadge += ' <span style="background:#f59e0b;color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;" title="Datos nutricionales pendientes"><i class=ic-apple></i><i class=ic-hourglass></i></span>';
                 }
                 
                 let docDisplay = n.document || '-';
@@ -579,9 +579,9 @@ function renderTable(novelties) {
                 docsToCheck.forEach(doc => {
                     const dup = checkDuplicate(doc, n.id);
                     if (dup) {
-                        // ✅ INTEGRACIÓN: al hacer clic abre el modal global de Duplicados
+                        // INTEGRACIÓN: al hacer clic abre el modal global de Duplicados
                         // con el timeline horizontal de TODOS los operadores
-                        duplicadoHTML += `<span class="duplicado-badge" onclick="event.stopPropagation();DuplicadosModule.abrirModalCaso('${doc}')" title="Ver historial completo de movimientos">⚠️ DUP</span> `;
+                        duplicadoHTML += `<span class="duplicado-badge" onclick="event.stopPropagation();DuplicadosModule.abrirModalCaso('${doc}')" title="Ver historial completo de movimientos"><i class=ic-triangle-alert></i> DUP</span> `;
                     }
                 });
                 
@@ -632,20 +632,20 @@ function renderTable(novelties) {
                             <button type="button" class="row-actions-btn" onclick="toggleRowActionsMenu(event, '${n.id}')" title="Acciones">⋮</button>
                             <div class="row-actions-menu" id="rowActions-${n.id}">
                                 <button class="dropdown-item" onclick="closeRowActionsMenus(); viewNovelty('${n.id}')">
-                                    <span class="dropdown-item-icon">👁️</span> Ver
+                                    <span class="dropdown-item-icon"><i class=ic-eye></i></span> Ver
                                 </button>
                                 <button class="dropdown-item" onclick="closeRowActionsMenus(); SeguimientoModule.abrirRespuestaRapida('${n.id}')">
-                                    <span class="dropdown-item-icon">📧</span> Responder
+                                    <span class="dropdown-item-icon"><i class=ic-mail></i></span> Responder
                                 </button>
                                 <button class="dropdown-item" onclick="closeRowActionsMenus(); archivarNovelty('${n.id}')" ${isCargado ? '' : 'disabled title="Solo se puede archivar si está Cargado"'}>
-                                    <span class="dropdown-item-icon">🗃️</span> Archivar
+                                    <span class="dropdown-item-icon"><i class=ic-archive></i></span> Archivar
                                 </button>
                                 <button class="dropdown-item" onclick="closeRowActionsMenus(); abrirEditNutricion('${n.id}')" ${necesitaNutricion ? '' : 'disabled title="No hay datos nutricionales pendientes"'}>
-                                    <span class="dropdown-item-icon">🍎</span> Nutrición
+                                    <span class="dropdown-item-icon"><i class=ic-apple></i></span> Nutrición
                                 </button>
                                 <div class="dropdown-divider"></div>
                                 <button class="dropdown-item dropdown-item--danger" onclick="closeRowActionsMenus(); deleteNovelty('${n.id}')">
-                                    <span class="dropdown-item-icon">🗑️</span> Eliminar
+                                    <span class="dropdown-item-icon"><i class=ic-trash-2></i></span> Eliminar
                                 </button>
                             </div>
                         </div>
@@ -663,10 +663,10 @@ function getContractColor(contract) {
 
 // ══════════ ESTADO (chips) ══════════
 const ESTADOS_CUENTAME = {
-    cargado:        { key: 'cargado',       emoji: '🟢', label: 'Cargado' },
-    pendiente:      { key: 'pendiente',     emoji: '🟠', label: 'Pendiente' },
-    error:          { key: 'error',         emoji: '🔴', label: 'Error' },
-    otro_operador:  { key: 'otro-operador', emoji: '🔵', label: 'Otro Operador' }
+    cargado:        { key: 'cargado',       emoji: '<i class=ic-dot-green></i>', label: 'Cargado' },
+    pendiente:      { key: 'pendiente',     emoji: '<i class=ic-dot-orange></i>', label: 'Pendiente' },
+    error:          { key: 'error',         emoji: '<i class=ic-dot-red></i>', label: 'Error' },
+    otro_operador:  { key: 'otro-operador', emoji: '<i class=ic-dot-blue></i>', label: 'Otro Operador' }
 };
 
 function getEstadoInfo(status) {
@@ -917,7 +917,7 @@ function renderArchivedTable(novelties) {
                 row.innerHTML = `
                     <td>
                         <div class="estado-fecha-cell">
-                            <div class="estado-chip estado-chip--cargado" style="cursor:default;">✓ Archivado</div>
+                            <div class="estado-chip estado-chip--cargado" style="cursor:default;"><i class=ic-check></i> Archivado</div>
                             <div class="fecha-registro-sub">${new Date(n.archivedDate).toLocaleDateString('es-CO')}</div>
                         </div>
                     </td>
@@ -1060,7 +1060,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
         <div class="novelty-summary-header">
             <div class="novelty-summary-main">
                 <div class="novelty-avatar">
-                    👤
+                    <i class=ic-user></i>
                 </div>
                 <div class="novelty-person">
                     <div class="novelty-person-name">
@@ -1089,7 +1089,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                     isArchived
                     ? `
                         <span class="novelty-status-badge ${estadoClase}">
-                            ${isCargado ? '✓' : '⏳'} ${estadoTexto}
+                            ${isCargado ? '<i class=ic-check></i>' : '<i class=ic-hourglass></i>'} ${estadoTexto}
                         </span>
                     `
                     : `
@@ -1119,19 +1119,19 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
 
         <!--<div class="novelty-summary-info">
             <div>
-                <span>📅 Registrado</span>
+                <span><i class=ic-calendar></i> Registrado</span>
                 <strong>${fechaRegistro}</strong>
             </div>
             <div>
-                <span>🏫 UDS</span>
+                <span><i class=ic-school></i> UDS</span>
                 <strong>${udsName}</strong>
             </div>
             <div>
-                <span>🔢 Código UDS</span>
+                <span><i class=ic-hash></i> Código UDS</span>
                 <strong>${udsCode || '-'}</strong>
             </div>
             <div>
-                <span>📄 Contrato</span>
+                <span><i class=ic-file-text></i> Contrato</span>
                 <strong>${contract}</strong>
             </div>
         </div>-->
@@ -1149,7 +1149,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                 data-tab="general"
                 onclick="switchNoveltyTab('general')">
 
-                <span class="tab-icon">📋</span>
+                <span class="tab-icon"><i class=ic-clipboard-list></i></span>
                 <span>Información</span>
 
             </button>
@@ -1163,7 +1163,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                         data-tab="retiro"
                         onclick="switchNoveltyTab('retiro')">
 
-                        <span class="tab-icon">🔴</span>
+                        <span class="tab-icon"><i class=ic-dot-red></i></span>
                         <span>Retiro</span>
 
                     </button>
@@ -1180,7 +1180,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                         data-tab="ingreso"
                         onclick="switchNoveltyTab('ingreso')">
 
-                        <span class="tab-icon">🟢</span>
+                        <span class="tab-icon"><i class=ic-dot-green></i></span>
                         <span>Ingreso</span>
 
                     </button>
@@ -1197,7 +1197,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                         data-tab="acudiente"
                         onclick="switchNoveltyTab('acudiente')">
 
-                        <span class="tab-icon">👨‍👩‍👧</span>
+                        <span class="tab-icon"><i class=ic-users-round></i></span>
                         <span>Acudiente</span>
 
                     </button>
@@ -1214,7 +1214,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                         data-tab="nutricional"
                         onclick="switchNoveltyTab('nutricional')">
 
-                        <span class="tab-icon">🥗</span>
+                        <span class="tab-icon"><i class=ic-salad></i></span>
                         <span>Nutricional</span>
 
                     </button>
@@ -1231,7 +1231,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                         data-tab="discapacidad"
                         onclick="switchNoveltyTab('discapacidad')">
 
-                        <span class="tab-icon">♿</span>
+                        <span class="tab-icon"><i class=ic-accessibility></i></span>
                         <span>Discapacidad</span>
 
                     </button>
@@ -1245,7 +1245,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                 data-tab="comunicacion"
                 onclick="switchNoveltyTab('comunicacion')">
 
-                <span class="tab-icon">📧</span>
+                <span class="tab-icon"><i class=ic-mail></i></span>
                 <span>Comunicación</span>
 
             </button>
@@ -1391,7 +1391,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                         ? SeguimientoModule.renderPanelComunicacion(novelty)
                         : `
                             <div class="novelty-empty-state">
-                                <div>📧</div>
+                                <div><i class=ic-mail></i></div>
                                 <strong>Sin módulo de comunicación</strong>
                                 <span>No fue posible cargar el seguimiento.</span>
                             </div>
@@ -1436,7 +1436,7 @@ function renderGeneralTab(
             </div>
 
             <span class="novelty-section-icon">
-                📋
+                <i class=ic-clipboard-list></i>
             </span>
 
         </div>
@@ -1445,42 +1445,42 @@ function renderGeneralTab(
         <div class="novelty-data-grid grid-3col">
 
             <div class="novelty-data-card">
-                <span>📄 Contrato</span>
+                <span><i class=ic-file-text></i> Contrato</span>
                 <strong>${contract}</strong>
             </div>
 
             <div class="novelty-data-card">
-                <span>🏫 UDS</span>
+                <span><i class=ic-school></i> UDS</span>
                 <strong>${udsName}</strong>
             </div>
 
             <div class="novelty-data-card">
-                <span>🔢 Código UDS</span>
+                <span><i class=ic-hash></i> Código UDS</span>
                 <strong>${udsCode || '-'}</strong>
             </div>
 
             <div class="novelty-data-card">
-                <span>🌎 Regional</span>
+                <span><i class=ic-globe></i> Regional</span>
                 <strong>${novelty.regional || '-'}</strong>
             </div>
 
             <div class="novelty-data-card">
-                <span>📅 Fecha del reporte</span>
+                <span><i class=ic-calendar></i> Fecha del reporte</span>
                 <strong>${fechaRegistro}</strong>
             </div>
 
             <div class="novelty-data-card">
-                <span>🏷️ Tipo de novedad</span>
+                <span><i class=ic-tag></i> Tipo de novedad</span>
                 <strong class="type-text ${tipo.toLowerCase()}">
                     ${tipo}
                 </strong>
             </div>
             <!--<div class="novelty-data-card">
-                <span>📊 Estado CUÉNTAME</span>
+                <span><i class=ic-chart-column></i> Estado CUÉNTAME</span>
                 <strong>${estado}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>🆔 ID del reporte</span>
+                <span><i class=ic-id-card></i> ID del reporte</span>
                 <strong>${novelty.id || '-'}</strong>
             </div><-->
         </div>
@@ -1488,7 +1488,7 @@ function renderGeneralTab(
             <div class="action-summary-icon">
                 ${
                     novelty.cuentameStatus === 'cargado'
-                        ? '✓'
+                        ? '<i class=ic-check></i>'
                         : '!'
                 }
             </div>
@@ -1573,12 +1573,12 @@ function renderRetiroTab(novelty) {
                 </h3>
             </div>
             <span class="novelty-section-icon retiro">
-                🔴
+                <i class=ic-dot-red></i>
             </span>
         </div>
         <div class="novelty-person-highlight retiro">
             <div class="person-big-icon">
-                👤
+                <i class=ic-user></i>
             </div>
             <div>
                 <span>
@@ -1594,15 +1594,15 @@ function renderRetiroTab(novelty) {
         </div>
         <div class="novelty-data-grid">
             <div class="novelty-data-card">
-                <span>🆔 Documento</span>
+                <span><i class=ic-id-card></i> Documento</span>
                 <strong>${documento}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>👤 Nombre completo</span>
+                <span><i class=ic-user></i> Nombre completo</span>
                 <strong>${nombre.toUpperCase()}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>📅 Fecha de retiro</span>
+                <span><i class=ic-calendar></i> Fecha de retiro</span>
                 <strong>
                     ${formatDateDMY(
                         r.retiroDate ||
@@ -1612,11 +1612,11 @@ function renderRetiroTab(novelty) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>⚧ Género</span>
+                <span><i class=ic-venus-and-mars></i> Género</span>
                 <strong>${genero}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>🧒 Tipo de beneficiario</span>
+                <span><i class=ic-user-round></i> Tipo de beneficiario</span>
                 <strong>${tipoBeneficiarioLabel(r.tipoBeneficiario)}</strong>
             </div>
         </div>
@@ -1649,12 +1649,12 @@ function renderIngresoTab(novelty) {
                 </h3>
             </div>
             <span class="novelty-section-icon ingreso">
-                🟢
+                <i class=ic-dot-green></i>
             </span>
         </div>
         <div class="novelty-person-highlight ingreso">
             <div class="person-big-icon">
-                👶
+                <i class=ic-baby></i>
             </div>
             <div>
                 <span>
@@ -1670,21 +1670,21 @@ function renderIngresoTab(novelty) {
         </div>
         <div class="novelty-data-grid">
             <div class="novelty-data-card">
-                <span>👤 Nombre</span>
+                <span><i class=ic-user></i> Nombre</span>
                 <strong>${nombre.toUpperCase()}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>🆔 Documento</span>
+                <span><i class=ic-id-card></i> Documento</span>
                 <strong>${documento}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>📏 Edad</span>
+                <span><i class=ic-ruler></i> Edad</span>
                 <strong>
                     ${i.age || novelty.age || '-'}
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>🎂 Fecha nacimiento</span>
+                <span><i class=ic-cake></i> Fecha nacimiento</span>
                 <strong>
                     ${formatDateDMY(
                         i.dob ||
@@ -1695,7 +1695,7 @@ function renderIngresoTab(novelty) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>📅 Fecha ingreso</span>
+                <span><i class=ic-calendar></i> Fecha ingreso</span>
                 <strong>
                     ${formatDateDMY(
                         i.ingresoDate ||
@@ -1705,11 +1705,11 @@ function renderIngresoTab(novelty) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>⚧ Género</span>
+                <span><i class=ic-venus-and-mars></i> Género</span>
                 <strong>${genero}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>🧒 Tipo de beneficiario</span>
+                <span><i class=ic-user-round></i> Tipo de beneficiario</span>
                 <strong>${tipoBeneficiarioLabel((i.tipoBeneficiario || novelty.tipoBeneficiario))}</strong>
             </div>
         </div>
@@ -1730,12 +1730,12 @@ function renderAcudienteTab(novelty) {
                 </h3>
             </div>
             <span class="novelty-section-icon acudiente">
-                👨‍👩‍👧
+                <i class=ic-users-round></i>
             </span>
         </div>
         <div class="novelty-data-grid grid-3col">
             <div class="novelty-data-card wide">
-                <span>👤 Nombre del acudiente</span>
+                <span><i class=ic-user></i> Nombre del acudiente</span>
                 <strong>
                     ${
                         i.acudiente ||
@@ -1745,7 +1745,7 @@ function renderAcudienteTab(novelty) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>🆔 Documento</span>
+                <span><i class=ic-id-card></i> Documento</span>
                 <strong>
                     ${
                         i.acudienteDoc ||
@@ -1755,7 +1755,7 @@ function renderAcudienteTab(novelty) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>🎂 Fecha nacimiento</span>
+                <span><i class=ic-cake></i> Fecha nacimiento</span>
                 <strong>
                     ${formatDateDMY(
                         i.acudienteDOB ||
@@ -1765,7 +1765,7 @@ function renderAcudienteTab(novelty) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>📞 Teléfono</span>
+                <span><i class=ic-phone></i> Teléfono</span>
 
                 <strong>
                     ${
@@ -1776,7 +1776,7 @@ function renderAcudienteTab(novelty) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>📍 Comuna</span>
+                <span><i class=ic-map-pin></i> Comuna</span>
 
                 <strong>
                     ${
@@ -1787,7 +1787,7 @@ function renderAcudienteTab(novelty) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>🏘️ Barrio</span>
+                <span><i class=ic-building></i> Barrio</span>
                 <strong>
                     ${
                         i.barrio ||
@@ -1797,7 +1797,7 @@ function renderAcudienteTab(novelty) {
                 </strong>
             </div>
             <div class="novelty-data-card wide">
-                <span>🏠 Dirección</span>
+                <span><i class=ic-house></i> Dirección</span>
 
                 <strong>
                     ${
@@ -1816,14 +1816,14 @@ function renderPrematurezInfoHTML(nutricion) {
     return `
         <div class="novelty-data-grid" style="margin-top:10px;">
             <div class="novelty-data-card wide">
-                <span>🍼 Antecedente de prematurez</span>
+                <span><i class=ic-milk></i> Antecedente de prematurez</span>
                 <strong>${tiene === 'SI' ? 'SÍ' : 'NO'}</strong>
             </div>
             ${
                 tiene === 'SI'
                 ? `
                     <div class="novelty-data-card">
-                        <span>📆 Edad gestacional al nacer</span>
+                        <span><i class=ic-calendar-days></i> Edad gestacional al nacer</span>
                         <strong>${nutricion.edadGestacional ? nutricion.edadGestacional + ' semanas' : '-'}</strong>
                     </div>
                 `
@@ -1845,7 +1845,7 @@ function renderNutricionalTab(novelty, isArchived) {
     if (!nutricion) {
         return `
             <div class="novelty-empty-state">
-                <div>🥗</div>
+                <div><i class=ic-salad></i></div>
                 <strong>
                     Sin seguimiento nutricional
                 </strong>
@@ -1866,7 +1866,7 @@ function renderNutricionalTab(novelty, isArchived) {
                         onclick="abrirEditNutricion('${novelty.id}')"
                         class="nutri-edit-btn">
 
-                        ✏️ Editar
+                        <i class=ic-pencil></i> Editar
 
                     </button>
                 `
@@ -1887,7 +1887,7 @@ function renderNutricionalTab(novelty, isArchived) {
             <div class="nutri-pending-box">
 
                 <div class="nutri-pending-icon">
-                    ⏳
+                    <i class=ic-hourglass></i>
                 </div>
 
                 <strong>
@@ -1917,7 +1917,7 @@ function renderNutricionalTab(novelty, isArchived) {
                     onclick="abrirEditNutricion('${novelty.id}')"
                     class="nutri-edit-btn">
 
-                    ✏️ Editar
+                    <i class=ic-pencil></i> Editar
                 </button>
             `
             : '';
@@ -1946,7 +1946,7 @@ function renderNutricionalTab(novelty, isArchived) {
         </div>
         <div class="novelty-data-grid">
             <div class="novelty-data-card">
-                <span>📅 Fecha valoración</span>
+                <span><i class=ic-calendar></i> Fecha valoración</span>
                 <strong>
                     ${formatDateDMY(
                         nutricion.fecha || '-'
@@ -1954,7 +1954,7 @@ function renderNutricionalTab(novelty, isArchived) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>⚖️ Peso</span>
+                <span><i class=ic-scale></i> Peso</span>
                 <strong>
                     ${
                         nutricion.peso
@@ -1964,7 +1964,7 @@ function renderNutricionalTab(novelty, isArchived) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>📏 Talla</span>
+                <span><i class=ic-ruler></i> Talla</span>
                 <strong>
                     ${
                         nutricion.talla
@@ -1974,7 +1974,7 @@ function renderNutricionalTab(novelty, isArchived) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>💪 Perímetro braquial</span>
+                <span><i class=ic-biceps-flexed></i> Perímetro braquial</span>
                 <strong>
                     ${
                         nutricion.perimetroBraquial
@@ -1984,13 +1984,13 @@ function renderNutricionalTab(novelty, isArchived) {
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>🏥 Régimen</span>
+                <span><i class=ic-hospital></i> Régimen</span>
                 <strong>
                     ${nutricion.regimen || '-'}
                 </strong>
             </div>
             <div class="novelty-data-card">
-                <span>🏥 EPS</span>
+                <span><i class=ic-hospital></i> EPS</span>
                 <strong>
                     ${nutricion.eps || '-'}
                 </strong>
@@ -2008,7 +2008,7 @@ function renderDiscapacidadTab(novelty) {
     if (!d || !d.tiene) {
         return `
             <div class="novelty-empty-state">
-                <div>♿</div>
+                <div><i class=ic-accessibility></i></div>
                 <strong>
                     Sin datos de discapacidad
                 </strong>
@@ -2032,12 +2032,12 @@ function renderDiscapacidadTab(novelty) {
                     </h3>
                 </div>
                 <span class="novelty-section-icon discapacidad">
-                    ♿
+                    <i class=ic-accessibility></i>
                 </span>
             </div>
             <div class="novelty-data-grid">
                 <div class="novelty-data-card wide">
-                    <span>♿ ¿Tiene discapacidad?</span>
+                    <span><i class=ic-accessibility></i> ¿Tiene discapacidad?</span>
                     <strong>NO</strong>
                 </div>
             </div>
@@ -2060,48 +2060,48 @@ function renderDiscapacidadTab(novelty) {
                 </h3>
             </div>
             <span class="novelty-section-icon discapacidad">
-                ♿
+                <i class=ic-accessibility></i>
             </span>
         </div>
         <div class="novelty-data-grid grid-3col">
             <div class="novelty-data-card wide">
-                <span>♿ ¿Tiene discapacidad?</span>
+                <span><i class=ic-accessibility></i> ¿Tiene discapacidad?</span>
                 <strong>SÍ</strong>
             </div>
             <div class="novelty-data-card">
-                <span>📋 Certificada</span>
+                <span><i class=ic-clipboard-list></i> Certificada</span>
                 <strong>${d.certificada || '-'}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>🏥 Entidad que certifica</span>
+                <span><i class=ic-hospital></i> Entidad que certifica</span>
                 <strong>${d.entidadCertifica || '-'}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>📝 Registro de localización</span>
+                <span><i class=ic-file-pen></i> Registro de localización</span>
                 <strong>${d.registroLocalizacion || '-'}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>🤝 Requiere ayuda de otra persona</span>
+                <span><i class=ic-handshake></i> Requiere ayuda de otra persona</span>
                 <strong>${d.requiereAyudaPersona || '-'}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>🦽 Requiere ayuda técnica</span>
+                <span><i class=ic-wrench></i> Requiere ayuda técnica</span>
                 <strong>${d.requiereAyudaTecnica || '-'}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>🦽 Cuenta con ayuda técnica</span>
+                <span><i class=ic-wrench></i> Cuenta con ayuda técnica</span>
                 <strong>${d.cuentaAyudaTecnica || '-'}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>💆 Requiere terapia/rehabilitación</span>
+                <span><i class=ic-heart-pulse></i> Requiere terapia/rehabilitación</span>
                 <strong>${d.requiereTerapia || '-'}</strong>
             </div>
             <div class="novelty-data-card">
-                <span>💆 Recibe terapia/rehabilitación</span>
+                <span><i class=ic-heart-pulse></i> Recibe terapia/rehabilitación</span>
                 <strong>${d.recibeTerapia || '-'}</strong>
             </div>
             <div class="novelty-data-card wide">
-                <span>🏷️ Categorías de discapacidad</span>
+                <span><i class=ic-tag></i> Categorías de discapacidad</span>
                 <strong>${categorias}</strong>
             </div>
         </div>
@@ -2114,15 +2114,15 @@ function renderNutricionEspecialTab(n) {
     const card = (t, val) => `
             <div class="novelty-data-card"><span>${t}</span><strong>${val}</strong></div>`;
     const campos = gest ? [
-        card('🩺 Controles prenatales', v(n.controlesPrenatales)),
-        card('⚖️ Peso', v(n.peso, 'kg')),
-        card('📏 Talla', v(n.talla, 'cm'))
+        card('<i class=ic-stethoscope></i> Controles prenatales', v(n.controlesPrenatales)),
+        card('<i class=ic-scale></i> Peso', v(n.peso, 'kg')),
+        card('<i class=ic-ruler></i> Talla', v(n.talla, 'cm'))
     ] : [
-        card('⚖️ Peso al ingresar', v(n.peso, 'kg')),
-        card('📏 Talla al ingresar', v(n.talla, 'cm')),
-        card('⚖️ Peso al nacer', v(n.pesoNacer, 'kg')),
-        card('📏 Talla al nacer', v(n.tallaNacer, 'cm')),
-        card('🗓️ Semanas de gestación', v(n.semanasGestacion))
+        card('<i class=ic-scale></i> Peso al ingresar', v(n.peso, 'kg')),
+        card('<i class=ic-ruler></i> Talla al ingresar', v(n.talla, 'cm')),
+        card('<i class=ic-scale></i> Peso al nacer', v(n.pesoNacer, 'kg')),
+        card('<i class=ic-ruler></i> Talla al nacer', v(n.tallaNacer, 'cm')),
+        card('<i class=ic-calendar-range></i> Semanas de gestación', v(n.semanasGestacion))
     ];
     return `
         <div class="novelty-section-title">
@@ -2133,8 +2133,8 @@ function renderNutricionEspecialTab(n) {
         </div>
         <div class="novelty-data-grid">
             ${campos.join('')}
-            ${card('🏥 Régimen', v(n.regimen))}
-            ${card('🏥 EPS', v(n.eps))}
+            ${card('<i class=ic-hospital></i> Régimen', v(n.regimen))}
+            ${card('<i class=ic-hospital></i> EPS', v(n.eps))}
         </div>
         <p style="font-size:.8rem;opacity:.7;margin-top:10px">No aplica tabla OMS ni estado nutricional para este tipo de beneficiario.</p>
     `;
@@ -2195,7 +2195,7 @@ function generatePlainTextFive(novelty, isArchived, udsName, udsCode) {
     text += `> CÓDIGO UDS:       ${udsCode || 'N/A'}\n`;
     text += `> FECHA REGISTRO:   ${fechaRegistro}\n`;
     text += `> TIPO DE NOVEDAD:  ${novelty.type === 'ambos' ? 'RETIRO + INGRESO (AMBOS)' : novelty.type?.toUpperCase() || 'N/A'}\n`;
-    text += `> ESTADO CUENTAME:  ${novelty.cuentameStatus === 'cargado' ? '✓ CARGADO' : '⏳ PENDIENTE'}\n`;
+    text += `> ESTADO CUENTAME:  ${novelty.cuentameStatus === 'cargado' ? 'CARGADO' : 'PENDIENTE'}\n`;
     
     if (isArchived) {
         text += `> FECHA ARCHIVO:    ${novelty.archivedDate ? new Date(novelty.archivedDate).toLocaleString('es-CO') : '-'}\n`;
@@ -2210,8 +2210,8 @@ function generatePlainTextFive(novelty, isArchived, udsName, udsCode) {
         text += `  - Nombre:         ${r.name ? r.name.toUpperCase() : 'N/A'}\n`;
         text += `  - Fecha Retiro:   ${formatDateDMY(r.retiroDate || novelty.retiroDate || '-')}\n`;
         text += `  - Género:         ${r.gender === 'M' ? 'Masculino' : r.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
-        text += `  - Ram Diligenciado: ${r.ramFileName ? '📎 ' + r.ramFileName : 'No adjuntado'}\n`;
-        text += `  - Formato Retiro Voluntario: ${r.formatoFileName ? '📎 ' + r.formatoFileName : 'No adjuntado'}\n`;
+        text += `  - Ram Diligenciado: ${r.ramFileName ? '' + r.ramFileName : 'No adjuntado'}\n`;
+        text += `  - Formato Retiro Voluntario: ${r.formatoFileName ? '' + r.formatoFileName : 'No adjuntado'}\n`;
     }
 
     if (novelty.type === 'ingreso' || novelty.type === 'ambos' || novelty.hasIngreso) {
@@ -2283,12 +2283,12 @@ function updateViewMode() {
     if (isPlainView) {
         cardsView.classList.add('hidden');
         plainView.classList.remove('hidden');
-        icon.textContent = '🎴';
+        icon.innerHTML = '<i class=ic-file-text></i>';
         text.textContent = 'Vista Tarjetas';
     } else {
         cardsView.classList.remove('hidden');
         plainView.classList.add('hidden');
-        icon.textContent = '📝';
+        icon.innerHTML = '<i class=ic-file-pen></i>';
         text.textContent = 'Texto Plano';
     }
 }
@@ -2337,7 +2337,7 @@ function deleteArchivedNovelty(id) {
                             return data;
                         });
                     }
-                    showToast('🗑️ Registro movido a la Papelera de Reciclaje', 'success');
+                    showToast('Registro movido a la Papelera de Reciclaje', 'success');
                     loadResumenStats();
                     if (typeof updatePapeleraBadge === 'function') updatePapeleraBadge();
                 })
@@ -2351,7 +2351,7 @@ function eliminarTodosArchivados() {
                 return;
             }
             
-            const confirmacion = prompt(`⚠️ ATENCIÓN ⚠️\n\n` +
+            const confirmacion = prompt(`ATENCIÓN\n\n` +
                 `Está a punto de mover a la Papelera de Reciclaje ${count} novedades archivadas.\n` +
                 `Desde la papelera podrá restaurarlas, o se eliminarán definitivamente a los 7 días.\n\n` +
                 `Para confirmar, escriba ELIMINAR en mayúsculas:`);
@@ -2369,7 +2369,7 @@ function eliminarTodosArchivados() {
                 return;
             }
             
-            showToast('⏳ Moviendo todos los archivados a la papelera...', 'info');
+            showToast('Moviendo todos los archivados a la papelera...', 'info');
 
             const itemsAMover = archivedNovelties.slice();
             const promesas = itemsAMover.map(n => PapeleraModule.moverAPapelera(n, n.id, 'archivadas'));
@@ -2378,7 +2378,7 @@ function eliminarTodosArchivados() {
             Promise.all(promesas)
                 .then(() => database.ref(path).remove())
                 .then(() => {
-                    showToast(`🗑️ ${count} archivados movidos a la Papelera de Reciclaje`, 'success');
+                    showToast(`${count} archivados movidos a la Papelera de Reciclaje`, 'success');
                     archivedNovelties = [];
                     filterArchivedNovelties();
                     if (typeof OfflineModule !== 'undefined' && OfflineModule.patchCache) {
@@ -2422,7 +2422,7 @@ function deleteNovelty(id) {
             PapeleraModule.moverAPapelera(novelty, id, 'activas')
                 .then(() => database.ref(`${AsociacionesModule.getRef('novelties')}/${id}`).remove())
                 .then(() => {
-                    showToast('🗑️ Registro movido a la Papelera de Reciclaje', 'success');
+                    showToast('Registro movido a la Papelera de Reciclaje', 'success');
                     loadNoveltiesTable();
                     updatePendientesIndicator();
                     if (typeof updatePapeleraBadge === 'function') updatePapeleraBadge();
@@ -2466,9 +2466,9 @@ function checkExistingBeneficiary(document, type) {
             if (existing) {
                 const ubicacion = duplicateActive ? 'activas' : 'archivadas';
                 if (type === 'ingreso') {
-                    showToast(`⚠️ Beneficiario ya existe en ${existing.udsName} (${ubicacion})`, "warning");
+                    showToast(`Beneficiario ya existe en ${existing.udsName} (${ubicacion})`, "warning");
                 } else if (type === 'retiro') {
-                    showToast(`ℹ️ Beneficiario encontrado en base de datos (${ubicacion})`, "info");
+                    showToast(`Beneficiario encontrado en base de datos (${ubicacion})`, "info");
                 }
             }
         }
@@ -2743,7 +2743,7 @@ function validarEdadGestacional(input) {
     const valor = parseFloat(input.value);
     if (isNaN(valor) || valor < 3 || valor > 36) {
         input.classList.add('input-error');
-        showToast('⚠️ La edad gestacional debe estar entre 3 y 36 semanas', 'warning');
+        showToast('La edad gestacional debe estar entre 3 y 36 semanas', 'warning');
     } else {
         input.classList.remove('input-error');
     }
@@ -2819,7 +2819,7 @@ function limpiarFormularioManual() {
         return;
     }
 
-    resetFormularioCompleto({ toastMsg: '🧹 Formulario limpio', toastType: 'info' });
+    resetFormularioCompleto({ toastMsg: 'Formulario limpio', toastType: 'info' });
 }
 
 /* ============================================================
@@ -2939,7 +2939,7 @@ function initDropzones() {
         const updateName = () => {
             if (input.files && input.files.length > 0) {
                 zone.classList.add('has-file');
-                if (nameEl) nameEl.textContent = '📄 ' + input.files[0].name;
+                if (nameEl) nameEl.textContent = '' + input.files[0].name;
             } else {
                 zone.classList.remove('has-file');
                 if (nameEl) nameEl.textContent = '';
@@ -3121,7 +3121,7 @@ function formatData() {
                     formData += tbTexto;
                 } else if (isNutrPend) {
                     formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
-                    formData += `  ⏳ DATO PENDIENTE - Se completará desde el panel de administración\n`;
+                    formData += `  DATO PENDIENTE - Se completará desde el panel de administración\n`;
                 } else if (nutricionFecha && nutricionFecha.value) {
                     formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
                     formData += `  - F. Valoración:      ${formatDateDMY(nutricionFecha.value)}\n`;
@@ -3159,7 +3159,7 @@ function formatData() {
             }
             
             if (!tieneRetiro && !tieneIngreso) {
-                formData += `[ ⚠️ NO SE SELECCIONÓ RETIRO NI INGRESO ]\n`;
+                formData += `[ NO SE SELECCIONÓ RETIRO NI INGRESO ]\n`;
             }
             
             formData += `\n------------------------------------------\n`;
@@ -3177,7 +3177,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // Verificar que hay perfil activo
                     if (!AsociacionesModule.getPerfilActivo()) {
-                        showToast('⚠️ Selecciona una asociación antes de reportar', 'warning');
+                        showToast('Selecciona una asociación antes de reportar', 'warning');
                         AsociacionesModule.mostrarSelectorAsociaciones();
                         return;
                     }
@@ -3191,7 +3191,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const hoyCierre = new Date();
                         const diaCierre = hoyCierre.getDate();
                         if (diaCierre >= configBloqueo.fechaInicio && diaCierre <= configBloqueo.fechaFin) {
-                            showToast('🔒 El sistema está en periodo de cierre de mes. No se pueden registrar novedades.', 'error');
+                            showToast('El sistema está en periodo de cierre de mes. No se pueden registrar novedades.', 'error');
                             return;
                         }
                     }
@@ -3216,7 +3216,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // VALIDACIONES GENERALES (siempre aplican)
                     // ============================================
                     if (!contract.value) {
-                        showToast("❌ Seleccione el CONTRATO", "error");
+                        showToast("Seleccione el CONTRATO", "error");
                         contract?.classList.add('input-error');
                         contract?.focus();
                         return;
@@ -3224,7 +3224,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     contract?.classList.remove('input-error');
 
                     if (!uds.value) {
-                        showToast("❌ Seleccione la UDS", "error");
+                        showToast("Seleccione la UDS", "error");
                         uds?.classList.add('input-error');
                         uds?.focus();
                         return;
@@ -3232,7 +3232,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     uds?.classList.remove('input-error');
 
                     if (!isRetiro && !isIngreso) {
-                        showToast("❌ Seleccione al menos una acción: RETIRO o INGRESO", "error");
+                        showToast("Seleccione al menos una acción: RETIRO o INGRESO", "error");
                         return;
                     }
 
@@ -3255,7 +3255,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Documento obligatorio
                         if (!retiroDocNumber || !retiroDocNumber.value.trim()) {
-                            showToast("❌ El DOCUMENTO del beneficiario a retirar es OBLIGATORIO", "error");
+                            showToast("El DOCUMENTO del beneficiario a retirar es OBLIGATORIO", "error");
                             retiroDocNumber?.classList.add('input-error');
                             retiroDocNumber?.focus();
                             return;
@@ -3271,7 +3271,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Nombre obligatorio
                         if (!retiroFullName || !retiroFullName.value.trim()) {
-                            showToast("❌ El NOMBRE del beneficiario a retirar es OBLIGATORIO", "error");
+                            showToast("El NOMBRE del beneficiario a retirar es OBLIGATORIO", "error");
                             retiroFullName?.classList.add('input-error');
                             retiroFullName?.focus();
                             return;
@@ -3288,7 +3288,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Fecha de retiro obligatoria
                         if (!retiroDate || !retiroDate.value) {
-                            showToast("❌ La FECHA DE RETIRO es OBLIGATORIA", "error");
+                            showToast("La FECHA DE RETIRO es OBLIGATORIA", "error");
                             retiroDate?.classList.add('input-error');
                             retiroDate?.focus();
                             return;
@@ -3297,7 +3297,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Género obligatorio
                         if (!retiroGender) {
-                            showToast("❌ Seleccione el GÉNERO del beneficiario a retirar", "error");
+                            showToast("Seleccione el GÉNERO del beneficiario a retirar", "error");
                             // Scroll al campo
                             document.getElementById('sectionRetiro')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             return;
@@ -3305,7 +3305,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Formato de Retiro Voluntario obligatorio
                         if (!formatoFileInput || !formatoFileInput.files || formatoFileInput.files.length === 0) {
-                            showToast("❌ Debe adjuntar el FORMATO DE RETIRO VOLUNTARIO", "error");
+                            showToast("Debe adjuntar el FORMATO DE RETIRO VOLUNTARIO", "error");
                             formatoFileInput?.closest('.dropzone')?.classList.add('input-error');
                             document.getElementById('sectionRetiro')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             return;
@@ -3339,7 +3339,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Documento obligatorio
                         if (!ingresoDocNumber || !ingresoDocNumber.value.trim()) {
-                            showToast("❌ El DOCUMENTO del beneficiario es OBLIGATORIO", "error");
+                            showToast("El DOCUMENTO del beneficiario es OBLIGATORIO", "error");
                             ingresoDocNumber?.classList.add('input-error');
                             ingresoDocNumber?.focus();
                             return;
@@ -3355,7 +3355,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Nombre obligatorio
                         if (!ingresoFullName || !ingresoFullName.value.trim()) {
-                            showToast("❌ El NOMBRE del beneficiario es OBLIGATORIO", "error");
+                            showToast("El NOMBRE del beneficiario es OBLIGATORIO", "error");
                             ingresoFullName?.classList.add('input-error');
                             ingresoFullName?.focus();
                             return;
@@ -3372,7 +3372,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Fecha de nacimiento obligatoria
                         if (!ingresoDOB || !ingresoDOB.value) {
-                            showToast("❌ La FECHA DE NACIMIENTO es OBLIGATORIA", "error");
+                            showToast("La FECHA DE NACIMIENTO es OBLIGATORIA", "error");
                             ingresoDOB?.classList.add('input-error');
                             ingresoDOB?.focus();
                             return;
@@ -3381,14 +3381,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Género obligatorio
                         if (!ingresoGender) {
-                            showToast("❌ Seleccione el GÉNERO del beneficiario", "error");
+                            showToast("Seleccione el GÉNERO del beneficiario", "error");
                             document.getElementById('sectionIngreso')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             return;
                         }
 
                         // Fecha de ingreso obligatoria
                         if (!ingresoDate || !ingresoDate.value) {
-                            showToast("❌ La FECHA DE INGRESO es OBLIGATORIA", "error");
+                            showToast("La FECHA DE INGRESO es OBLIGATORIA", "error");
                             ingresoDate?.classList.add('input-error');
                             ingresoDate?.focus();
                             return;
@@ -3397,7 +3397,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Comuna obligatoria
                         if (!ingresoComuna || !ingresoComuna.value) {
-                            showToast("❌ La COMUNA es OBLIGATORIA", "error");
+                            showToast("La COMUNA es OBLIGATORIA", "error");
                             ingresoComuna?.classList.add('input-error');
                             ingresoComuna?.focus();
                             return;
@@ -3406,7 +3406,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Barrio obligatorio
                         if (!ingresoBarrio || !ingresoBarrio.value.trim()) {
-                            showToast("❌ El BARRIO es OBLIGATORIO", "error");
+                            showToast("El BARRIO es OBLIGATORIO", "error");
                             ingresoBarrio?.classList.add('input-error');
                             ingresoBarrio?.focus();
                             return;
@@ -3415,7 +3415,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Dirección obligatoria
                         if (!ingresoAddress || !ingresoAddress.value.trim()) {
-                            showToast("❌ La DIRECCIÓN es OBLIGATORIA", "error");
+                            showToast("La DIRECCIÓN es OBLIGATORIA", "error");
                             ingresoAddress?.classList.add('input-error');
                             ingresoAddress?.focus();
                             return;
@@ -3424,7 +3424,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Teléfono obligatorio
                         if (!ingresoPhone || !ingresoPhone.value.trim()) {
-                            showToast("❌ El TELÉFONO de contacto es OBLIGATORIO", "error");
+                            showToast("El TELÉFONO de contacto es OBLIGATORIO", "error");
                             ingresoPhone?.classList.add('input-error');
                             ingresoPhone?.focus();
                             return;
@@ -3433,7 +3433,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Acudiente obligatorio
                         if (!omitAcud && (!acudienteName || !acudienteName.value.trim())) {
-                            showToast("❌ El NOMBRE del acudiente es OBLIGATORIO", "error");
+                            showToast("El NOMBRE del acudiente es OBLIGATORIO", "error");
                             acudienteName?.classList.add('input-error');
                             acudienteName?.focus();
                             return;
@@ -3443,7 +3443,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Documento del acudiente obligatorio
                         const acudienteDoc = document.getElementById('acudienteDoc');
                         if (!omitAcud && (!acudienteDoc || !acudienteDoc.value.trim())) {
-                            showToast("❌ El DOCUMENTO del acudiente es OBLIGATORIO", "error");
+                            showToast("El DOCUMENTO del acudiente es OBLIGATORIO", "error");
                             acudienteDoc?.classList.add('input-error');
                             acudienteDoc?.focus();
                             return;
@@ -3453,7 +3453,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Fecha de nacimiento del acudiente obligatoria
                         const acudienteDOBCheck = document.getElementById('acudienteDOB');
                         if (!omitAcud && (!acudienteDOBCheck || !acudienteDOBCheck.value)) {
-                            showToast("❌ La FECHA DE NACIMIENTO del acudiente es OBLIGATORIA", "error");
+                            showToast("La FECHA DE NACIMIENTO del acudiente es OBLIGATORIA", "error");
                             acudienteDOBCheck?.classList.add('input-error');
                             acudienteDOBCheck?.focus();
                             return;
@@ -3482,28 +3482,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         if (!isNutricionPendiente) {
                             if (!nutricionPeso || !nutricionPeso.value) {
-                                showToast("❌ El PESO es obligatorio para el seguimiento nutricional", "error");
+                                showToast("El PESO es obligatorio para el seguimiento nutricional", "error");
                                 nutricionPeso?.classList.add('input-error');
                                 nutricionPeso?.focus();
                                 return;
                             }
                             
                             if (!nutricionTalla || !nutricionTalla.value) {
-                                showToast("❌ La TALLA es obligatoria para el seguimiento nutricional", "error");
+                                showToast("La TALLA es obligatoria para el seguimiento nutricional", "error");
                                 nutricionTalla?.classList.add('input-error');
                                 nutricionTalla?.focus();
                                 return;
                             }
                             
                             if (!nutricionFecha || !nutricionFecha.value) {
-                                showToast("❌ La FECHA DE VALORACIÓN es obligatoria", "error");
+                                showToast("La FECHA DE VALORACIÓN es obligatoria", "error");
                                 nutricionFecha?.classList.add('input-error');
                                 nutricionFecha?.focus();
                                 return;
                             }
 
                             if (!nutricionPerimetroBraquial || !nutricionPerimetroBraquial.value) {
-                                showToast("❌ El PERÍMETRO BRAQUIAL es obligatorio", "error");
+                                showToast("El PERÍMETRO BRAQUIAL es obligatorio", "error");
                                 nutricionPerimetroBraquial?.classList.add('input-error');
                                 nutricionPerimetroBraquial?.focus();
                                 return;
@@ -3515,21 +3515,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         const perimetroBraquial = parseFloat(nutricionPerimetroBraquial.value);
 
                         if (peso < 5 || peso > 30.5) {
-                            showToast("❌ El peso debe estar entre 5 y 30.5 kg", "error");
+                            showToast("El peso debe estar entre 5 y 30.5 kg", "error");
                             nutricionPeso.classList.add('input-error');
                             return;
                         }
                         nutricionPeso.classList.remove('input-error');
 
                         if (talla < 50 || talla > 130.5) {
-                            showToast("❌ La talla debe estar entre 50 y 130.5 cm", "error");
+                            showToast("La talla debe estar entre 50 y 130.5 cm", "error");
                             nutricionTalla.classList.add('input-error');
                             return;
                         }
                         nutricionTalla.classList.remove('input-error');
 
                         if (perimetroBraquial < 6 || perimetroBraquial > 30) {
-                            showToast("❌ El perímetro braquial debe estar entre 6 y 30 cm", "error");
+                            showToast("El perímetro braquial debe estar entre 6 y 30 cm", "error");
                             nutricionPerimetroBraquial.classList.add('input-error');
                             return;
                         }
@@ -3544,7 +3544,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (requierePrematurez) {
                             const antecedentePrematurezCheck = document.querySelector('input[name="antecedente_prematurez"]:checked');
                             if (!antecedentePrematurezCheck) {
-                                showToast("❌ Indique el ANTECEDENTE DE PREMATUREZ", "error");
+                                showToast("Indique el ANTECEDENTE DE PREMATUREZ", "error");
                                 prematurezWrapperCheck.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 return;
                             }
@@ -3554,14 +3554,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                 const edadGestacionalVal = parseFloat(edadGestacionalInput?.value);
 
                                 if (!edadGestacionalInput || edadGestacionalInput.value === '') {
-                                    showToast("❌ Indique la EDAD GESTACIONAL AL NACER", "error");
+                                    showToast("Indique la EDAD GESTACIONAL AL NACER", "error");
                                     edadGestacionalInput?.classList.add('input-error');
                                     edadGestacionalInput?.focus();
                                     return;
                                 }
 
                                 if (isNaN(edadGestacionalVal) || edadGestacionalVal < 3 || edadGestacionalVal > 36) {
-                                    showToast("❌ La EDAD GESTACIONAL debe estar entre 3 y 36 semanas", "error");
+                                    showToast("La EDAD GESTACIONAL debe estar entre 3 y 36 semanas", "error");
                                     edadGestacionalInput.classList.add('input-error');
                                     edadGestacionalInput.focus();
                                     return;
@@ -3575,7 +3575,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         // ============================================
                         const discapTiene = document.querySelector('input[name="_discapacidadTiene"]:checked');
                         if (!discapTiene) {
-                            showToast("❌ Indique si el beneficiario TIENE DISCAPACIDAD", "error");
+                            showToast("Indique si el beneficiario TIENE DISCAPACIDAD", "error");
                             document.getElementById('discapacidadFieldsWrapper')?.closest('.cf-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             return;
                         }
@@ -3584,7 +3584,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const reqDiscapRadio = (name, label) => {
                                 const val = document.querySelector(`input[name="${name}"]:checked`);
                                 if (!val) {
-                                    showToast(`❌ Responda: ${label}`, "error");
+                                    showToast(`Responda: ${label}`, "error");
                                     document.getElementById('discapacidadFieldsWrapper')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                     return false;
                                 }
@@ -3595,7 +3595,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             const discapEntidad = document.getElementById('discapacidadEntidad');
                             if (!discapEntidad || !discapEntidad.value) {
-                                showToast("❌ Seleccione la ENTIDAD que certifica la discapacidad", "error");
+                                showToast("Seleccione la ENTIDAD que certifica la discapacidad", "error");
                                 discapEntidad?.classList.add('input-error');
                                 discapEntidad?.focus();
                                 return;
@@ -3610,7 +3610,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             const discapCategoriaSelect = document.getElementById('discapacidadCategoria');
                             if (!discapCategoriaSelect || !discapCategoriaSelect.value) {
-                                showToast("❌ Seleccione la CATEGORÍA DE DISCAPACIDAD", "error");
+                                showToast("Seleccione la CATEGORÍA DE DISCAPACIDAD", "error");
                                 discapCategoriaSelect?.classList.add('input-error');
                                 discapCategoriaSelect?.focus();
                                 return;
@@ -3633,7 +3633,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             dIngreso.setMinutes(dIngreso.getMinutes() + dIngreso.getTimezoneOffset());
 
                             if (dRetiro >= dIngreso) {
-                                showToast("❌ La fecha de retiro debe ser anterior a la fecha de ingreso", "error");
+                                showToast("La fecha de retiro debe ser anterior a la fecha de ingreso", "error");
                                 retiroDate.classList.add('input-error');
                                 ingresoDate.classList.add('input-error');
                                 return;
@@ -3697,7 +3697,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							tipoBeneficiario: (typeof TipoBeneficiario !== 'undefined') ? TipoBeneficiario.tipoRetiro() : ''
 						};
 						
-						// ✅ CORREGIDO: Asignar documento y nombre PRINCIPAL desde retiro
+						// CORREGIDO: Asignar documento y nombre PRINCIPAL desde retiro
 						noveltyData.document = noveltyData.retiro.document;
 						noveltyData.name = noveltyData.retiro.name;
 					}	
@@ -3735,7 +3735,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							ingresoDate: ingresoDate?.value || ''
 						};
 						
-						// ✅ CORREGIDO: Solo asignar documento/name principal si NO hay retiro
+						// CORREGIDO: Solo asignar documento/name principal si NO hay retiro
 						// (si hay ambos, ya se asignó desde retiro arriba)
 						if (!isRetiro) {
 							noveltyData.document = noveltyData.ingreso.document;
@@ -3761,7 +3761,7 @@ document.addEventListener('DOMContentLoaded', function() {
 							perimetroBraquial: nutricionPerimetroBraquial?.value || '',
 							regimen: nutricionRegimen?.value || '',
 							eps: nutricionEPS?.value || '',
-							estadoNutricional: nutricionPendienteFlag?.checked ? '⏳ Pendiente' : (nutricionStatus?.textContent || 'No calculado'),
+							estadoNutricional: nutricionPendienteFlag?.checked ? 'Pendiente' : (nutricionStatus?.textContent || 'No calculado'),
 							antecedentePrematurez: prematurezData.aplica ? (prematurezData.tiene || '') : '',
 							edadGestacional: (prematurezData.aplica && prematurezData.tiene === 'SI') ? prematurezData.edadGestacional : ''
 						};
@@ -3942,11 +3942,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 // toast pequeño que no bloquea el formulario.
                                 if (estado === 'correo') {
                                     EnvioProgresoUI.ocultar(700);
-                                    setTimeout(() => EnvioProgresoUI.miniToast('📧 Enviando notificación por correo…'), 750);
+                                    setTimeout(() => EnvioProgresoUI.miniToast('Enviando notificación por correo…'), 750);
                                 } else if (estado === 'correo-ok') {
-                                    EnvioProgresoUI.miniToast('✅ Correo enviado correctamente', 3000);
+                                    EnvioProgresoUI.miniToast('Correo enviado correctamente', 3000);
                                 } else if (estado === 'correo-error') {
-                                    EnvioProgresoUI.miniToast('⚠️ El correo tardó en salir, se reintentará solo', 4000);
+                                    EnvioProgresoUI.miniToast('El correo tardó en salir, se reintentará solo', 4000);
                                 }
                             }
                         });
@@ -3960,7 +3960,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             mostrarResumenEnvio();
                             setTimeout(() => {
                                 resetFormularioCompleto({
-                                    toastMsg: '📥 Conexión inestable: el registro se guardó de forma segura y se enviará solo cuando la señal se estabilice.',
+                                    toastMsg: 'Conexión inestable: el registro se guardó de forma segura y se enviará solo cuando la señal se estabilice.',
                                     toastType: 'info'
                                 });
                             }, 500);
@@ -3973,12 +3973,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Confirmado en Firebase (el correo ya va en segundo plano,
                         // reportado por onProgress; no se espera aquí)
-                        console.log('✅ Firebase OK, clave:', resultado.key);
+                        console.log('Firebase OK, clave:', resultado.key);
                         EnvioProgresoUI.ocultar(300);
                         mostrarResumenEnvio();
                         setTimeout(() => {
                             resetFormularioCompleto({
-                                toastMsg: '✅ ¡Éxito! Reporte enviado correctamente.',
+                                toastMsg: '¡Éxito! Reporte enviado correctamente.',
                                 toastType: 'success'
                             });
                         }, 500);
@@ -4029,20 +4029,20 @@ async function enviarAGoogle(data, btn) {
 					body: formBody
 				});
 
-				// ✅ MOSTRAR PANEL DE RESUMEN ANTES DE LIMPIAR
+				// MOSTRAR PANEL DE RESUMEN ANTES DE LIMPIAR
 				mostrarResumenEnvio();
 				
 				// Pequeña pausa para que el usuario vea el resumen antes de limpiar
 				setTimeout(() => {
 					resetFormularioCompleto({
-						toastMsg: '✅ ¡Éxito! Reporte enviado correctamente.',
+						toastMsg: '¡Éxito! Reporte enviado correctamente.',
 						toastType: 'success'
 					});
 				}, 500);
 
 			} catch (error) {
 				console.error('Error envío:', error);
-				showToast("❌ Error de conexión con Google Apps Script.", "error");
+				showToast("Error de conexión con Google Apps Script.", "error");
 				throw error;
 			} finally {
 				if (btn) {
@@ -4101,16 +4101,16 @@ function construirResumenEnvio() {
 			html += `
 				<div class="resumen-info-general">
 					<div class="resumen-info-item">
-						<span class="resumen-info-label">📋 Contrato</span>
+						<span class="resumen-info-label"><i class=ic-clipboard-list></i> Contrato</span>
 						<span class="resumen-info-valor">${contract || 'No seleccionado'}</span>
 					</div>
 					<div class="resumen-info-item">
-						<span class="resumen-info-label">🏫 UDS</span>
+						<span class="resumen-info-label"><i class=ic-school></i> UDS</span>
 						<span class="resumen-info-valor">${udsName || 'No seleccionada'}</span>
 					</div>
 					${udsCode ? `
 					<div class="resumen-info-item">
-						<span class="resumen-info-label">🔢 Código</span>
+						<span class="resumen-info-label"><i class=ic-hash></i> Código</span>
 						<span class="resumen-info-valor" style="font-family: monospace;">${udsCode}</span>
 					</div>
 					` : ''}
@@ -4121,13 +4121,13 @@ function construirResumenEnvio() {
 			let tipoBadge = '';
 			let tipoClass = '';
 			if (checkRetiro && checkIngreso) {
-				tipoBadge = '<span class="resumen-tipo-badge ambos">🔄 AMBOS</span>';
+				tipoBadge = '<span class="resumen-tipo-badge ambos"><i class=ic-refresh-cw></i> AMBOS</span>';
 				tipoClass = 'ambos';
 			} else if (checkRetiro) {
-				tipoBadge = '<span class="resumen-tipo-badge retiro">👤 RETIRO</span>';
+				tipoBadge = '<span class="resumen-tipo-badge retiro"><i class=ic-user></i> RETIRO</span>';
 				tipoClass = 'retiro';
 			} else if (checkIngreso) {
-				tipoBadge = '<span class="resumen-tipo-badge ingreso">👶 INGRESO</span>';
+				tipoBadge = '<span class="resumen-tipo-badge ingreso"><i class=ic-baby></i> INGRESO</span>';
 				tipoClass = 'ingreso';
 			}
 			
@@ -4142,25 +4142,25 @@ function construirResumenEnvio() {
 				html += `
 					<div class="resumen-seccion-card resumen-seccion-retiro">
 						<div class="resumen-seccion-header">
-							<div class="resumen-seccion-icon">👤</div>
+							<div class="resumen-seccion-icon"><i class=ic-user></i></div>
 							<h4 class="resumen-seccion-title">Datos de Retiro</h4>
 							${tipoClass === 'retiro' ? tipoBadge : ''}
 						</div>
 						<div class="resumen-datos-grid">
 							<div class="resumen-dato-full">
-								<div class="resumen-dato-label">👤 Nombre del Beneficiario</div>
+								<div class="resumen-dato-label"><i class=ic-user></i> Nombre del Beneficiario</div>
 								<div class="resumen-dato-valor destacado">${retiroFullName.toUpperCase() || 'No ingresado'}</div>
 							</div>
 							<div>
-								<div class="resumen-dato-label">🆔 Documento</div>
+								<div class="resumen-dato-label"><i class=ic-id-card></i> Documento</div>
 								<div class="resumen-dato-valor documento">${retiroDocType} ${retiroDocNumber}</div>
 							</div>
 							<div>
-								<div class="resumen-dato-label">⚧ Género</div>
+								<div class="resumen-dato-label"><i class=ic-venus-and-mars></i> Género</div>
 								<div class="resumen-dato-valor">${retiroGender === 'M' ? 'Masculino' : retiroGender === 'F' ? 'Femenino' : 'No seleccionado'}</div>
 							</div>
 							<div class="resumen-dato-full">
-								<div class="resumen-dato-label">📅 Fecha de Retiro</div>
+								<div class="resumen-dato-label"><i class=ic-calendar></i> Fecha de Retiro</div>
 								<div class="resumen-dato-valor">${retiroDate || 'No ingresada'}</div>
 							</div>
 						</div>
@@ -4185,49 +4185,49 @@ function construirResumenEnvio() {
 				html += `
 					<div class="resumen-seccion-card resumen-seccion-ingreso">
 						<div class="resumen-seccion-header">
-							<div class="resumen-seccion-icon">👶</div>
+							<div class="resumen-seccion-icon"><i class=ic-baby></i></div>
 							<h4 class="resumen-seccion-title">Datos del Niño</h4>
 							${tipoClass === 'ingreso' ? tipoBadge : ''}
 						</div>
 						<div class="resumen-datos-grid">
 							<div class="resumen-dato-full">
-								<div class="resumen-dato-label">👤 Nombre Completo</div>
+								<div class="resumen-dato-label"><i class=ic-user></i> Nombre Completo</div>
 								<div class="resumen-dato-valor destacado">${ingresoFullName.toUpperCase() || 'No ingresado'}</div>
 							</div>
 							<div>
-								<div class="resumen-dato-label">🆔 Documento</div>
+								<div class="resumen-dato-label"><i class=ic-id-card></i> Documento</div>
 								<div class="resumen-dato-valor documento">${ingresoDocType} ${ingresoDocNumber}</div>
 							</div>
 							<div>
-								<div class="resumen-dato-label">⚧ Género</div>
+								<div class="resumen-dato-label"><i class=ic-venus-and-mars></i> Género</div>
 								<div class="resumen-dato-valor">${ingresoGender === 'M' ? 'Masculino' : ingresoGender === 'F' ? 'Femenino' : 'No seleccionado'}</div>
 							</div>
 							<div>
-								<div class="resumen-dato-label">🎂 Fecha Nacimiento</div>
+								<div class="resumen-dato-label"><i class=ic-cake></i> Fecha Nacimiento</div>
 								<div class="resumen-dato-valor">${ingresoDOB || 'No ingresada'}</div>
 							</div>
 							<div>
-								<div class="resumen-dato-label">📏 Edad Calculada</div>
+								<div class="resumen-dato-label"><i class=ic-ruler></i> Edad Calculada</div>
 								<div class="resumen-dato-valor destacado">${displayAge !== 'Esperando fechas...' ? displayAge : 'No calculada'}</div>
 							</div>
 							<div>
-								<div class="resumen-dato-label">📅 Fecha Ingreso</div>
+								<div class="resumen-dato-label"><i class=ic-calendar></i> Fecha Ingreso</div>
 								<div class="resumen-dato-valor">${ingresoDate || 'No ingresada'}</div>
 							</div>
 							<div>
-								<div class="resumen-dato-label">📍 Comuna</div>
+								<div class="resumen-dato-label"><i class=ic-map-pin></i> Comuna</div>
 								<div class="resumen-dato-valor">${ingresoComuna || 'No seleccionada'}</div>
 							</div>
 							<div>
-								<div class="resumen-dato-label">🏘️ Barrio</div>
+								<div class="resumen-dato-label"><i class=ic-building></i> Barrio</div>
 								<div class="resumen-dato-valor">${ingresoBarrio || 'No ingresado'}</div>
 							</div>
 							<div class="resumen-dato-full">
-								<div class="resumen-dato-label">🏠 Dirección</div>
+								<div class="resumen-dato-label"><i class=ic-house></i> Dirección</div>
 								<div class="resumen-dato-valor">${ingresoAddress || 'No ingresada'}</div>
 							</div>
 							<div class="resumen-dato-full">
-								<div class="resumen-dato-label">📞 Teléfono</div>
+								<div class="resumen-dato-label"><i class=ic-phone></i> Teléfono</div>
 								<div class="resumen-dato-valor">${ingresoPhone || 'No ingresado'}</div>
 							</div>
 						</div>
@@ -4243,20 +4243,20 @@ function construirResumenEnvio() {
 					html += `
 						<div class="resumen-seccion-card resumen-seccion-acudiente">
 							<div class="resumen-seccion-header">
-								<div class="resumen-seccion-icon">👨‍👩‍👧</div>
+								<div class="resumen-seccion-icon"><i class=ic-users-round></i></div>
 								<h4 class="resumen-seccion-title">Datos del Acudiente</h4>
 							</div>
 							<div class="resumen-datos-grid">
 								<div class="resumen-dato-full">
-									<div class="resumen-dato-label">👤 Nombre</div>
+									<div class="resumen-dato-label"><i class=ic-user></i> Nombre</div>
 									<div class="resumen-dato-valor">${acudienteName.toUpperCase() || 'No ingresado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">🆔 Documento</div>
+									<div class="resumen-dato-label"><i class=ic-id-card></i> Documento</div>
 									<div class="resumen-dato-valor documento">${acudienteDoc || 'No ingresado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">🎂 Fecha Nacimiento</div>
+									<div class="resumen-dato-label"><i class=ic-cake></i> Fecha Nacimiento</div>
 									<div class="resumen-dato-valor">${acudienteDOB || 'No ingresada'}</div>
 								</div>
 							</div>
@@ -4287,36 +4287,36 @@ function construirResumenEnvio() {
 					html += `
 						<div class="resumen-seccion-card resumen-seccion-nutricional">
 							<div class="resumen-seccion-header">
-								<div class="resumen-seccion-icon">🍎</div>
+								<div class="resumen-seccion-icon"><i class=ic-apple></i></div>
 								<h4 class="resumen-seccion-title">Seguimiento Nutricional</h4>
 							</div>
 							<div class="resumen-datos-grid">
 								<div>
-									<div class="resumen-dato-label">📅 Fecha Valoración</div>
+									<div class="resumen-dato-label"><i class=ic-calendar></i> Fecha Valoración</div>
 									<div class="resumen-dato-valor">${nutricionFecha || 'No ingresada'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">⚖️ Peso</div>
+									<div class="resumen-dato-label"><i class=ic-scale></i> Peso</div>
 									<div class="resumen-dato-valor destacado">${nutricionPeso ? nutricionPeso + ' kg' : '-'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">📏 Talla</div>
+									<div class="resumen-dato-label"><i class=ic-ruler></i> Talla</div>
 									<div class="resumen-dato-valor destacado">${nutricionTalla ? nutricionTalla + ' cm' : '-'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">💪 Perímetro Braquial</div>
+									<div class="resumen-dato-label"><i class=ic-biceps-flexed></i> Perímetro Braquial</div>
 									<div class="resumen-dato-valor">${nutricionPerimetroBraquial ? nutricionPerimetroBraquial + ' cm' : '-'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">🏥 Régimen</div>
+									<div class="resumen-dato-label"><i class=ic-hospital></i> Régimen</div>
 									<div class="resumen-dato-valor">${nutricionRegimen || 'No seleccionado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">🏥 EPS</div>
+									<div class="resumen-dato-label"><i class=ic-hospital></i> EPS</div>
 									<div class="resumen-dato-valor">${nutricionEPS || 'No ingresada'}</div>
 								</div>
 								<div class="resumen-dato-full">
-									<div class="resumen-dato-label">📊 Estado Nutricional</div>
+									<div class="resumen-dato-label"><i class=ic-chart-column></i> Estado Nutricional</div>
 									<div class="resumen-estado-nutricional" style="background: ${estadoBg}; color: ${estadoColor}; border: 1px solid ${estadoColor};">
 										${nutricionStatus || 'No calculado'}
 									</div>
@@ -4335,17 +4335,17 @@ function construirResumenEnvio() {
 					html += `
 						<div class="resumen-seccion-card resumen-seccion-nutricional">
 							<div class="resumen-seccion-header">
-								<div class="resumen-seccion-icon">🍼</div>
+								<div class="resumen-seccion-icon"><i class=ic-milk></i></div>
 								<h4 class="resumen-seccion-title">Antecedente de Prematurez</h4>
 							</div>
 							<div class="resumen-datos-grid">
 								<div>
-									<div class="resumen-dato-label">🍼 Antecedente de prematurez</div>
+									<div class="resumen-dato-label"><i class=ic-milk></i> Antecedente de prematurez</div>
 									<div class="resumen-dato-valor destacado">${antecedentePrematurezVal === 'SI' ? 'SÍ' : 'NO'}</div>
 								</div>
 								${antecedentePrematurezVal === 'SI' ? `
 								<div>
-									<div class="resumen-dato-label">📆 Edad Gestacional al nacer</div>
+									<div class="resumen-dato-label"><i class=ic-calendar-days></i> Edad Gestacional al nacer</div>
 									<div class="resumen-dato-valor">${edadGestacionalVal ? edadGestacionalVal + ' semanas' : '-'}</div>
 								</div>
 								` : ''}
@@ -4371,49 +4371,49 @@ function construirResumenEnvio() {
 					html += `
 						<div class="resumen-seccion-card resumen-seccion-discapacidad">
 							<div class="resumen-seccion-header">
-								<div class="resumen-seccion-icon">♿</div>
+								<div class="resumen-seccion-icon"><i class=ic-accessibility></i></div>
 								<h4 class="resumen-seccion-title">Discapacidad</h4>
 							</div>
 							<div class="resumen-datos-grid">
 								<div class="resumen-dato-full">
-									<div class="resumen-dato-label">♿ ¿Tiene discapacidad?</div>
+									<div class="resumen-dato-label"><i class=ic-accessibility></i> ¿Tiene discapacidad?</div>
 									<div class="resumen-dato-valor destacado">${discapTieneEl === 'SI' ? 'SÍ' : 'NO'}</div>
 								</div>
 								${discapTieneEl === 'SI' ? `
 								<div>
-									<div class="resumen-dato-label">📋 Certificada</div>
+									<div class="resumen-dato-label"><i class=ic-clipboard-list></i> Certificada</div>
 									<div class="resumen-dato-valor">${discapCertificada || 'No indicado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">🏥 Entidad que certifica</div>
+									<div class="resumen-dato-label"><i class=ic-hospital></i> Entidad que certifica</div>
 									<div class="resumen-dato-valor">${discapEntidad || 'No indicado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">📝 Registro de localización</div>
+									<div class="resumen-dato-label"><i class=ic-file-pen></i> Registro de localización</div>
 									<div class="resumen-dato-valor">${discapRegistro || 'No indicado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">🤝 Requiere ayuda de otra persona</div>
+									<div class="resumen-dato-label"><i class=ic-handshake></i> Requiere ayuda de otra persona</div>
 									<div class="resumen-dato-valor">${discapAyudaPersona || 'No indicado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">🦽 Requiere ayuda técnica</div>
+									<div class="resumen-dato-label"><i class=ic-wrench></i> Requiere ayuda técnica</div>
 									<div class="resumen-dato-valor">${discapRequiereAyudaTecnica || 'No indicado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">🦽 Cuenta con ayuda técnica</div>
+									<div class="resumen-dato-label"><i class=ic-wrench></i> Cuenta con ayuda técnica</div>
 									<div class="resumen-dato-valor">${discapCuentaAyudaTecnica || 'No indicado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">💆 Requiere terapia/rehabilitación</div>
+									<div class="resumen-dato-label"><i class=ic-heart-pulse></i> Requiere terapia/rehabilitación</div>
 									<div class="resumen-dato-valor">${discapRequiereTerapia || 'No indicado'}</div>
 								</div>
 								<div>
-									<div class="resumen-dato-label">💆 Recibe terapia/rehabilitación</div>
+									<div class="resumen-dato-label"><i class=ic-heart-pulse></i> Recibe terapia/rehabilitación</div>
 									<div class="resumen-dato-valor">${discapRecibeTerapia || 'No indicado'}</div>
 								</div>
 								<div class="resumen-dato-full">
-									<div class="resumen-dato-label">🏷️ Categorías de discapacidad</div>
+									<div class="resumen-dato-label"><i class=ic-tag></i> Categorías de discapacidad</div>
 									<div class="resumen-dato-valor">${discapCategoriasArr.join(', ') || 'Ninguna'}</div>
 								</div>
 								` : ''}

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nueva versión | AppI Reporte Novedades</title>
 
+<link rel="stylesheet" href="css/icons.css">
 <style>
 :root {
   --blue:#2563eb;
@@ -383,7 +384,7 @@ h1 strong {color:var(--blue)}
     if (remaining <= 0) {
       clearInterval(timer);
 
-      count.textContent = "✓";
+      count.innerHTML = "<i class=ic-check></i>";
       status.textContent = "Abriendo la nueva versión...";
       circle.style.background =
         "conic-gradient(var(--green) 360deg, var(--green) 360deg)";

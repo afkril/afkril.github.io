@@ -66,7 +66,7 @@ const AjustesModule = (() => {
 
     function abrirPanelAjustes() {
         ClaveModal.mostrar({
-            icono: '⚙️',
+            icono: '<i class=ic-settings></i>',
             titulo: 'Panel de Configuración del Sistema',
             subtitulo: 'Gestión de organizaciones y seguridad',
             onSubmit: async (password) => {
@@ -264,7 +264,7 @@ const AjustesModule = (() => {
             wrap.classList.remove('done', 'active');
             if (step < _currentStep) {
                 wrap.classList.add('done');
-                dot.textContent = '✓'; dot.className = 'cw-step-dot done';
+                dot.innerHTML = '<i class=ic-check></i>'; dot.className = 'cw-step-dot done';
                 if (conn) conn.classList.add('done');
             } else if (step === _currentStep) {
                 wrap.classList.add('active');
@@ -285,7 +285,7 @@ const AjustesModule = (() => {
         const btnAtras = document.getElementById('btnWizardAtras');
         const btnCont = document.getElementById('btnWizardContinuar');
         if (btnAtras) btnAtras.style.visibility = _currentStep === 1 ? 'hidden' : 'visible';
-        if (btnCont) btnCont.textContent = _currentStep === TOTAL_STEPS ? '💾 Guardar Organización' : 'Continuar →';
+        if (btnCont) btnCont.innerHTML = _currentStep === TOTAL_STEPS ? '<i class=ic-save></i> Guardar Organización' : 'Continuar →';
 
         // Si es paso 2, renderizar contratos
         if (_currentStep === 2) renderContratos();
@@ -302,14 +302,14 @@ const AjustesModule = (() => {
     async function cargarListaAsociaciones() {
         const lista = document.getElementById('listaAsociaciones');
         if (!lista) return;
-        lista.innerHTML = '<div class="ajustes-loading">⏳ Cargando organizaciones...</div>';
+        lista.innerHTML = '<div class="ajustes-loading"><i class=ic-hourglass></i> Cargando organizaciones...</div>';
 
         try {
             const asociaciones = await AsociacionesModule.cargarAsociaciones();
             const entries = Object.entries(asociaciones);
 
             if (entries.length === 0) {
-                lista.innerHTML = `<div class="ajustes-empty">No hay organizaciones registradas. Crea la primera. 👇</div>`;
+                lista.innerHTML = `<div class="ajustes-empty">No hay organizaciones registradas. Crea la primera.</div>`;
                 return;
             }
 
@@ -322,25 +322,25 @@ const AjustesModule = (() => {
                 <div class="config-org-item" id="item-asoc-${id}">
                     <div class="config-org-logo">
                         ${datos.logo_url
-                            ? `<img src="${datos.logo_url}" alt="${datos.nombre}" onerror="this.outerHTML='🏢'">`
-                            : '🏢'}
+                            ? `<img src="${datos.logo_url}" alt="${datos.nombre}" onerror="this.outerHTML='<i class=ic-building-2></i>'">`
+                            : '<i class=ic-building-2></i>'}
                     </div>
                     <div class="config-org-info">
                         <div class="config-org-name">${datos.nombre || id}</div>
                         <div class="config-org-meta">
                             ID: <code>${id}</code> · ${numContratos} contrato(s)${numInactivos ? ` (${numInactivos} inactivo${numInactivos > 1 ? 's' : ''})` : ''} · ${numUDS} UDS
-                            ${datos.google_url ? '· ✅ Google URL' : '· ⚠️ Sin Google URL'}
+                            ${datos.google_url ? '· <i class=ic-circle-check></i> Google URL' : '· <i class=ic-triangle-alert></i> Sin Google URL'}
                         </div>
                     </div>
                     <div class="config-org-actions">
-                        <button class="config-center-btn-primary" style="padding:7px 14px;font-size:12px" onclick="AjustesModule.editarAsociacion('${id}')">✏️ Editar</button>
-                        <button class="config-center-btn-secondary" style="padding:7px 12px;font-size:12px;color:#ef4444;border-color:#fecaca" onclick="AjustesModule.confirmarEliminarAsociacion('${id}', '${(datos.nombre||'').replace(/'/g,"\'")}')">🗑️</button>
+                        <button class="config-center-btn-primary" style="padding:7px 14px;font-size:12px" onclick="AjustesModule.editarAsociacion('${id}')"><i class=ic-pencil></i> Editar</button>
+                        <button class="config-center-btn-secondary" style="padding:7px 12px;font-size:12px;color:#ef4444;border-color:#fecaca" onclick="AjustesModule.confirmarEliminarAsociacion('${id}', '${(datos.nombre||'').replace(/'/g,"\'")}')"><i class=ic-trash-2></i></button>
                     </div>
                 </div>
                 `;
             }).join('');
         } catch(e) {
-            lista.innerHTML = `<div class="ajustes-empty">❌ Error: ${e.message}</div>`;
+            lista.innerHTML = `<div class="ajustes-empty"><i class=ic-circle-x></i> Error: ${e.message}</div>`;
         }
     }
 
@@ -367,7 +367,7 @@ const AjustesModule = (() => {
                 <div class="contract-info">
                     <button type="button" class="contract-color" title="Cambiar color" style="background:${color};border-color:${color}" onclick="AjustesModule.toggleColorPicker('${codigo}', this)"></button>
                     <div>
-                        <div class="contract-name">📄 ${label || codigo}
+                        <div class="contract-name"><i class=ic-file-text></i> ${label || codigo}
                             <span class="contract-estado-badge ${activo ? 'is-activo' : 'is-inactivo'}">${activo ? 'Activo' : 'Inactivo'}</span>
                         </div>
                         <div class="contract-meta">${codigo} · ${regional} · ${modal}</div>
@@ -376,10 +376,10 @@ const AjustesModule = (() => {
                 <div class="contract-actions">
                     <button type="button" class="contract-toggle-btn ${activo ? 'is-activo' : 'is-inactivo'}"
                         title="${activo ? 'Desactivar: deja de aparecer en el formulario de novedades (el historial se conserva)' : 'Activar: vuelve a aparecer en el formulario de novedades'}"
-                        onclick="AjustesModule.toggleEstadoContrato('${codigo}')">${activo ? '⏸ Desactivar' : '▶ Activar'}</button>
-                    <button onclick="AjustesModule.toggleColorPicker('${codigo}', this)">🎨 Color</button>
-                    <button onclick="AjustesModule.irAUnidades('${codigo}')">📦 UDS (${numUDS})</button>
-                    <button onclick="AjustesModule.quitarContrato('${codigo}')" style="color:#ef4444">🗑️</button>
+                        onclick="AjustesModule.toggleEstadoContrato('${codigo}')">${activo ? '<i class=ic-pause></i> Desactivar' : '<i class=ic-play></i> Activar'}</button>
+                    <button onclick="AjustesModule.toggleColorPicker('${codigo}', this)"><i class=ic-palette></i> Color</button>
+                    <button onclick="AjustesModule.irAUnidades('${codigo}')"><i class=ic-package></i> UDS (${numUDS})</button>
+                    <button onclick="AjustesModule.quitarContrato('${codigo}')" style="color:#ef4444"><i class=ic-trash-2></i></button>
                 </div>
             </div>
             `;
@@ -442,7 +442,7 @@ const AjustesModule = (() => {
         popover.innerHTML = `
             <div class="color-popover-header">
                 <div class="color-popover-title">Color del contrato</div>
-                <button type="button" class="color-popover-close" title="Cerrar" onclick="AjustesModule.cerrarColorPicker()">✕</button>
+                <button type="button" class="color-popover-close" title="Cerrar" onclick="AjustesModule.cerrarColorPicker()"><i class=ic-x></i></button>
             </div>
             <div class="color-popover-grid">
                 ${CONTRACT_PALETTE.map(c => `
@@ -553,7 +553,7 @@ const AjustesModule = (() => {
         const current = sel.value;
         sel.innerHTML = '<option value="">— Selecciona un contrato —</option>' +
             Object.entries(_contratosTemp).map(([codigo, label]) =>
-                `<option value="${codigo}">📄 ${label || codigo} — ${_regionalesTemp[codigo]||'—'} · ${_modalidadesTemp[codigo]||'—'}</option>`
+                `<option value="${codigo}"><i class=ic-file-text></i> ${label || codigo} — ${_regionalesTemp[codigo]||'—'} · ${_modalidadesTemp[codigo]||'—'}</option>`
             ).join('');
         if (current && _contratosTemp[current]) sel.value = current;
         cambiarContratoUDS();
@@ -585,7 +585,7 @@ const AjustesModule = (() => {
             <tr>
                 <td>${u.nombre}</td>
                 <td><code>${u.codigo}</code></td>
-                <td><button onclick="AjustesModule.quitarUnidad('${codigo}', ${i})" style="background:transparent;border:none;cursor:pointer;color:#ef4444;font-size:13px">🗑️</button></td>
+                <td><button onclick="AjustesModule.quitarUnidad('${codigo}', ${i})" style="background:transparent;border:none;cursor:pointer;color:#ef4444;font-size:13px"><i class=ic-trash-2></i></button></td>
             </tr>
         `).join('');
     }
@@ -643,7 +643,7 @@ const AjustesModule = (() => {
         const destinosPrevios = new Set([...cont.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value));
 
         selOrigen.innerHTML = '<option value="">— Selecciona contrato origen —</option>' +
-            codigos.map(c => `<option value="${c}">📄 ${_etiquetaContrato(c)} · ${_listaUDS(c).length} UDS</option>`).join('');
+            codigos.map(c => `<option value="${c}"><i class=ic-file-text></i> ${_etiquetaContrato(c)} · ${_listaUDS(c).length} UDS</option>`).join('');
         if (origenPrevio && _contratosTemp[origenPrevio]) selOrigen.value = origenPrevio;
 
         _renderDestinosUDS(destinosPrevios);
@@ -714,7 +714,7 @@ const AjustesModule = (() => {
         poblarSelectContratosUDS();
         const sel = document.getElementById('ajustesSelectContratoUDS');
         if (sel && sel.value) renderTablaUDS(sel.value);
-        showToast(`📋 ${agregadas} UDS copiadas a ${destinos.length} contrato(s)` + (omitidas ? ` · ${omitidas} ya existían` : '') + '. Recuerda guardar la organización.', 'success', 4500);
+        showToast(`${agregadas} UDS copiadas a ${destinos.length} contrato(s)` + (omitidas ? ` · ${omitidas} ya existían` : '') + '. Recuerda guardar la organización.', 'success', 4500);
     }
 
     // ═══════════════════════════════════════════
@@ -735,9 +735,9 @@ const AjustesModule = (() => {
         const id = document.getElementById('ajustesInputId')?.value || '—';
         const ciudad = document.getElementById('ajustesInputSubtitulo')?.value || '—';
         const _vF = document.getElementById('ajustesInputPasswordFormulario')?.value ?? (_asociacionEditando ? _clavesExistentes.formulario : '');
-        const passForm = _vF ? 'Configurado ✅' : 'Sin clave (acceso libre)';
+        const passForm = _vF ? 'Configurado' : 'Sin clave (acceso libre)';
         const _vA = document.getElementById('ajustesInputPasswordAdmin')?.value ?? (_asociacionEditando ? _clavesExistentes.admin : 'ZAN');
-        const passAdmin = _vA ? 'Configurado ✅' : 'Sin clave';
+        const passAdmin = _vA ? 'Configurado' : 'Sin clave';
 
         let contratosText = Object.entries(_contratosTemp).map(([cod, label]) => {
             const reg = _regionalesTemp[cod] || '—';
@@ -789,18 +789,18 @@ const AjustesModule = (() => {
         };
 
         const btnGuardar = document.getElementById('btnWizardContinuar');
-        if (btnGuardar) { btnGuardar.disabled = true; btnGuardar.textContent = '⏳ Guardando...'; }
+        if (btnGuardar) { btnGuardar.disabled = true; btnGuardar.innerHTML = '<i class=ic-hourglass></i> Guardando...'; }
 
         try {
             await AsociacionesModule.guardarAsociacion(id, datos);
-            showToast(`✅ Organización "${nombre}" guardada`, 'success');
+            showToast(`Organización "${nombre}" guardada`, 'success');
             cerrarFormularioAsociacion();
             setNav('organizaciones');
             await cargarListaAsociaciones();
         } catch(e) {
             showToast('Error al guardar: ' + e.message, 'error');
         } finally {
-            if (btnGuardar) { btnGuardar.disabled = false; btnGuardar.textContent = '💾 Guardar Organización'; }
+            if (btnGuardar) { btnGuardar.disabled = false; btnGuardar.innerHTML = '<i class=ic-save></i> Guardar Organización'; }
         }
     }
 
@@ -816,14 +816,14 @@ const AjustesModule = (() => {
     // ═══════════════════════════════════════════
 
     function confirmarEliminarAsociacion(id, nombre) {
-        if (!confirm(`⚠️ ¿Eliminar la organización "${nombre}"?\n\nSe elimina el perfil pero NO los datos de novedades/archivados en Firebase.`)) return;
+        if (!confirm(`¿Eliminar la organización "${nombre}"?\n\nSe elimina el perfil pero NO los datos de novedades/archivados en Firebase.`)) return;
         eliminarAsociacion(id, nombre);
     }
 
     async function eliminarAsociacion(id, nombre) {
         try {
             await AsociacionesModule.eliminarAsociacion(id);
-            showToast(`🗑️ Organización "${nombre}" eliminada`, 'success');
+            showToast(`Organización "${nombre}" eliminada`, 'success');
             await cargarListaAsociaciones();
         } catch(e) {
             showToast('Error al eliminar: ' + e.message, 'error');
@@ -838,7 +838,7 @@ const AjustesModule = (() => {
         const input = document.getElementById(inputId);
         if (!input) return;
         input.type = input.type === 'password' ? 'text' : 'password';
-        btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+        btn.innerHTML = input.type === 'password' ? '<i class=ic-eye></i>' : '<i class=ic-eye-off></i>';
     }
 
     function genPass(inputId, barId) {
@@ -903,7 +903,7 @@ const AjustesModule = (() => {
 
         try {
             await AsociacionesModule.guardarPasswordAjustes(nueva);
-            showToast('✅ Contraseña maestra actualizada', 'success');
+            showToast('Contraseña maestra actualizada', 'success');
             document.getElementById('ajustesNuevaPassSistema').value = '';
         } catch(e) {
             showToast('Error: ' + e.message, 'error');

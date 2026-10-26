@@ -107,17 +107,17 @@ const PrivacidadOperador = (() => {
         ov.innerHTML = `
         <div class="priv-box" role="dialog" aria-modal="true" aria-labelledby="privTitulo">
             <div class="priv-head">
-                <div style="font-size:1.5rem">🛡️</div>
+                <div style="font-size:1.5rem"><i class=ic-shield></i></div>
                 <h2 id="privTitulo">Política de Privacidad y Tratamiento de Datos
                     <small>APP-NOVEDADES · Actualizada el ${FECHA_TXT}</small></h2>
-                <button type="button" class="priv-x" id="privX" title="Cerrar" aria-label="Cerrar">✕</button>
+                <button type="button" class="priv-x" id="privX" title="Cerrar" aria-label="Cerrar"><i class=ic-x></i></button>
             </div>
             <div class="priv-scroll" id="privScroll" tabindex="0">${TEXTO}
                 <p style="margin-top:14px"><a href="privacidad.html" target="_blank" rel="noopener">Abrir esta política en una página aparte</a></p>
             </div>
             <div class="priv-foot">
                 <div id="privModoAceptar">
-                    <p class="priv-hint" id="privHint">⬇ Baje hasta el final del texto para poder aceptar.</p>
+                    <p class="priv-hint" id="privHint"><i class=ic-arrow-down></i> Baje hasta el final del texto para poder aceptar.</p>
                     <label class="priv-check">
                         <input type="checkbox" id="privCheck" disabled>
                         <span>He leído la política y autorizo el tratamiento de los datos personales que registre, incluidos los de niños, niñas y adolescentes y los datos de salud, para la finalidad descrita.</span>
@@ -142,7 +142,7 @@ const PrivacidadOperador = (() => {
         function revisarFinal() {
             if (chk.disabled && sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 12) {
                 chk.disabled = false;
-                hint.textContent = '✔ Ya puede marcar la casilla y aceptar.';
+                hint.innerHTML = '<i class=ic-check></i> Ya puede marcar la casilla y aceptar.';
                 hint.style.color = '#15803d';
             }
         }
@@ -152,7 +152,7 @@ const PrivacidadOperador = (() => {
             if (!chk.checked) return;
             guardarAceptacion();
             cerrar();
-            if (typeof showToast === 'function') showToast('✅ Política de datos aceptada', 'success');
+            if (typeof showToast === 'function') showToast('Política de datos aceptada', 'success');
         });
         ov.querySelector('#privX').addEventListener('click', cerrar);
         ov.querySelector('#privCerrar').addEventListener('click', cerrar);
@@ -183,13 +183,13 @@ const PrivacidadOperador = (() => {
         if (lectura) {
             const f = new Date(acept.fecha);
             ov.querySelector('#privEstado').textContent =
-                '✔ Aceptada en este dispositivo el ' + (isNaN(f) ? '—' : f.toLocaleDateString('es-CO'));
+                'Aceptada en este dispositivo el ' + (isNaN(f) ? '—' : f.toLocaleDateString('es-CO'));
         } else {
             const chk = ov.querySelector('#privCheck');
             chk.checked = false; chk.disabled = true;
             ov.querySelector('#privOk').disabled = true;
             const h = ov.querySelector('#privHint');
-            h.textContent = '⬇ Baje hasta el final del texto para poder aceptar.'; h.style.color = '';
+            h.innerHTML = '<i class=ic-arrow-down></i> Baje hasta el final del texto para poder aceptar.'; h.style.color = '';
         }
         ov.dataset.prevOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';

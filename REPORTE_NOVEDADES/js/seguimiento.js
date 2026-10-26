@@ -33,23 +33,23 @@
 const SeguimientoModule = (() => {
 
     const ESTADOS_DEFAULT = {
-        pendiente:         { emoji: '🟠', label: 'Pendiente de revisión',     color: '#f59e0b',
+        pendiente:         { emoji: '<i class=ic-dot-orange></i>', label: 'Pendiente de revisión',     color: '#f59e0b',
             mensaje: 'Su solicitud de {{tipo}} correspondiente a {{nombre}} fue recibida correctamente y actualmente se encuentra en proceso de revisión.' },
-        en_proceso:        { emoji: '🔵', label: 'En proceso de vinculación', color: '#3b82f6',
+        en_proceso:        { emoji: '<i class=ic-dot-blue></i>', label: 'En proceso de vinculación', color: '#3b82f6',
             mensaje: 'La novedad de {{tipo}} de {{nombre}} ha sido validada y actualmente se encuentra en proceso de vinculación del participante.' },
-        vinculado:         { emoji: '🟢', label: 'Vinculación realizada',     color: '#10b981',
+        vinculado:         { emoji: '<i class=ic-dot-green></i>', label: 'Vinculación realizada',     color: '#10b981',
             mensaje: 'Se informa que el proceso de vinculación de {{nombre}} fue realizado satisfactoriamente.\n\nLa novedad queda registrada como finalizada.' },
-        duplicado:         { emoji: '🔴', label: 'Participante duplicado',    color: '#ef4444',
+        duplicado:         { emoji: '<i class=ic-dot-red></i>', label: 'Participante duplicado',    color: '#ef4444',
             mensaje: 'Durante la validación se identificó que {{nombre}} ya se encuentra registrado en el sistema. Por favor verificar la información reportada.' },
-        info_incompleta:   { emoji: '🟡', label: 'Información incompleta',   color: '#ca8a04',
+        info_incompleta:   { emoji: '<i class=ic-dot-yellow></i>', label: 'Información incompleta',   color: '#ca8a04',
             mensaje: 'Para continuar con el proceso de {{tipo}} de {{nombre}} es necesario completar la siguiente información. Por favor enviar los documentos o datos faltantes a la mayor brevedad.' },
-        pendiente_soporte: { emoji: '🟣', label: 'Pendiente por soporte',     color: '#a855f7',
+        pendiente_soporte: { emoji: '<i class=ic-dot-purple></i>', label: 'Pendiente por soporte',     color: '#a855f7',
             mensaje: 'Para continuar con el proceso de {{nombre}} se requiere adjuntar el documento solicitado.' },
-        no_procede:        { emoji: '⚫', label: 'Novedad no procedente',     color: '#475569',
+        no_procede:        { emoji: '<i class=ic-dot-black></i>', label: 'Novedad no procedente',     color: '#475569',
             mensaje: 'La novedad de {{tipo}} reportada para {{nombre}} no puede ser procesada. Por favor comunicarse con el área administrativa para más información.' },
-        desvinculacion_pendiente: { emoji: '🟤', label: 'Desvinculación pendiente', color: '#b45309',
+        desvinculacion_pendiente: { emoji: '<i class=ic-dot-brown></i>', label: 'Desvinculación pendiente', color: '#b45309',
             mensaje: 'El proceso de desvinculación de {{nombre}} se encuentra pendiente de gestión. Le notificaremos tan pronto como se complete el trámite.' },
-        desvinculacion_realizada: { emoji: '🟥', label: 'Desvinculación realizada', color: '#be123c',
+        desvinculacion_realizada: { emoji: '<i class=ic-dot-crimson></i>', label: 'Desvinculación realizada', color: '#be123c',
             mensaje: 'Se informa que el proceso de desvinculación del participante fue realizado satisfactoriamente.\n\nLa novedad queda registrada como finalizada.' }
     };
 
@@ -87,7 +87,7 @@ const SeguimientoModule = (() => {
         getPlantillas()[key].mensaje = mensaje;
         try {
             await database.ref(`${AsociacionesModule.getRef('plantillasRespuesta')}/${key}/mensaje`).set(mensaje);
-            showToast('💾 Plantilla guardada', 'success');
+            showToast('Plantilla guardada', 'success');
         } catch (e) {
             showToast('Error al guardar plantilla: ' + e.message, 'error');
         }
@@ -202,8 +202,8 @@ const SeguimientoModule = (() => {
     // ── Badges usados en la tabla de Novedades Activas ──────────
     function badgeComunicacion(n) {
         const hist = _historialArray(n);
-        if (hist.length === 0) return `<span class="comm-badge comm-badge--sin">⚪ Sin enviar</span>`;
-        return `<span class="comm-badge comm-badge--enviado">🟡 Enviado (${hist.length})</span>`;
+        if (hist.length === 0) return `<span class="comm-badge comm-badge--sin"><i class=ic-dot-gray></i> Sin enviar</span>`;
+        return `<span class="comm-badge comm-badge--enviado"><i class=ic-dot-yellow></i> Enviado (${hist.length})</span>`;
     }
 
     function chipEstadoInterno(n) {
@@ -213,7 +213,7 @@ const SeguimientoModule = (() => {
     }
 
     function botonResponder(id) {
-        return `<button type="button" class="comm-reply-btn" onclick="event.stopPropagation(); SeguimientoModule.abrirRespuestaRapida('${id}')">📧 Responder</button>`;
+        return `<button type="button" class="comm-reply-btn" onclick="event.stopPropagation(); SeguimientoModule.abrirRespuestaRapida('${id}')"><i class=ic-mail></i> Responder</button>`;
     }
 
     // ── Modal de Respuesta Rápida (inyectado dinámicamente) ──────
@@ -225,7 +225,7 @@ const SeguimientoModule = (() => {
           <div class="quick-reply-modal">
             <button class="qr2-close" onclick="SeguimientoModule.cerrarRespuestaRapida()" title="Cerrar">×</button>
             <div class="qr2-sidebar">
-                <div class="qr2-sidebar-icon">📨</div>
+                <div class="qr2-sidebar-icon"><i class=ic-send></i></div>
                 <h2>Responder<br>novedad</h2>
                 <p>Responde de forma rápida y efectiva</p>
                 <div class="qr2-illustration">
@@ -237,7 +237,7 @@ const SeguimientoModule = (() => {
                     </svg>
                 </div>
                 <div class="qr2-tip">
-                    <div class="qr2-tip-icon">💡</div>
+                    <div class="qr2-tip-icon"><i class=ic-lightbulb></i></div>
                     <div>
                         <strong>Tip</strong>
                         <p>Tu respuesta será enviada al correo del solicitante en cuanto la envíes.</p>
@@ -286,7 +286,7 @@ const SeguimientoModule = (() => {
         const estadoActual = novelty.seguimiento?.estadoInterno || 'pendiente';
         const opciones = Object.keys(getPlantillas()).map(key => {
             const info = getEstadoSeg(key);
-            return `<option value="${key}" ${key === estadoActual ? 'selected' : ''}>${info.emoji} ${info.label}</option>`;
+            return `<option value="${key}" ${key === estadoActual ? 'selected' : ''}>${info.label}</option>`;
         }).join('');
         const d = _datosExtra(novelty);
         const color = _tipoColor(novelty);
@@ -295,7 +295,7 @@ const SeguimientoModule = (() => {
         return `
         <button class="qr2-close qr2-close--mobile" onclick="SeguimientoModule.cerrarRespuestaRapida()" title="Cerrar">×</button>
         <div class="qr2-main-head">
-            <div class="qr2-main-icon">📧</div>
+            <div class="qr2-main-icon"><i class=ic-mail></i></div>
             <div>
                 <h3>Responder novedad</h3>
                 <p>Completa la información para enviar una respuesta rápida.</p>
@@ -303,7 +303,7 @@ const SeguimientoModule = (() => {
         </div>
 
         <!--<div class="qr2-section">
-            <div class="qr2-section-title">🔓 1. Información de la respuesta</div>
+            <div class="qr2-section-title"><i class=ic-lock-open></i> 1. Información de la respuesta</div>
             <div class="qr2-summary-strip">
                 <div class="qr2-summary-item">
                     <span class="qr2-summary-label">Tipo</span>
@@ -332,7 +332,7 @@ const SeguimientoModule = (() => {
             <div class="qr-field">
                 <label>Para (Correo del solicitante) *</label>
                 <input type="email" id="qrTo" value="${correo}" placeholder="correo@ejemplo.com">
-                ${!correo ? '<small class="qr-warning">⚠️ Esta novedad no tiene correo de respuesta registrado. Escríbelo manualmente.</small>' : ''}
+                ${!correo ? '<small class="qr-warning"><i class=ic-triangle-alert></i> Esta novedad no tiene correo de respuesta registrado. Escríbelo manualmente.</small>' : ''}
             </div>
             <div class="qr-field">
                 <label>Beneficiario</label>
@@ -357,8 +357,8 @@ const SeguimientoModule = (() => {
         </div>
 
         <div class="qr-actions">
-            <button class="qr-btn-cancel" onclick="SeguimientoModule.cerrarRespuestaRapida()">✕ Cancelar</button>
-            <button class="qr-btn-send" onclick="SeguimientoModule.enviarRespuesta()">📧 Enviar respuesta</button>
+            <button class="qr-btn-cancel" onclick="SeguimientoModule.cerrarRespuestaRapida()"><i class=ic-x></i> Cancelar</button>
+            <button class="qr-btn-send" onclick="SeguimientoModule.enviarRespuesta()"><i class=ic-mail></i> Enviar respuesta</button>
         </div>`;
     }
 
@@ -369,13 +369,13 @@ const SeguimientoModule = (() => {
         const fecha = _fechaDisplay(novelty, d);
 
         return `
-        <div class="qr2-aside-title">ℹ️ Resumen de la novedad</div>
+        <div class="qr2-aside-title"><i class=ic-info></i> Resumen de la novedad</div>
         <div class="qr2-aside-rows">
-            <div class="qr2-aside-row"><span>🏷️ Tipo:</span><strong><i class="qr2-dot" style="background:${color}"></i>${_tipoDe(novelty)}</strong></div>
-            <div class="qr2-aside-row"><span>📄 Contrato:</span><strong>${d.contrato}</strong></div>
-            <div class="qr2-aside-row"><span>🔢 Código UDS:</span><strong>${d.codigoUds}</strong></div>
-            <div class="qr2-aside-row"><span>🌎 Regional:</span><strong>${d.regional}</strong></div>
-            <div class="qr2-aside-row"><span>${novelty.type === 'ambos' ? '📅 Fechas:' : '📅 Fecha:'}</span><strong>${fecha || 'N/A'}</strong></div>
+            <div class="qr2-aside-row"><span><i class=ic-tag></i> Tipo:</span><strong><i class="qr2-dot" style="background:${color}"></i>${_tipoDe(novelty)}</strong></div>
+            <div class="qr2-aside-row"><span><i class=ic-file-text></i> Contrato:</span><strong>${d.contrato}</strong></div>
+            <div class="qr2-aside-row"><span><i class=ic-hash></i> Código UDS:</span><strong>${d.codigoUds}</strong></div>
+            <div class="qr2-aside-row"><span><i class=ic-globe></i> Regional:</span><strong>${d.regional}</strong></div>
+            <div class="qr2-aside-row"><span>${novelty.type === 'ambos' ? '<i class=ic-calendar></i> Fechas:' : '<i class=ic-calendar></i> Fecha:'}</span><strong>${fecha || 'N/A'}</strong></div>
         </div>
 
         <hr class="qr2-aside-divider">
@@ -396,7 +396,7 @@ const SeguimientoModule = (() => {
         <hr class="qr2-aside-divider">
 
 
-        <a href="#" class="qr2-aside-link" onclick="event.preventDefault(); SeguimientoModule.verDetalleDesdeRespuesta();">👁️ Ver detalles completos</a>`;
+        <a href="#" class="qr2-aside-link" onclick="event.preventDefault(); SeguimientoModule.verDetalleDesdeRespuesta();"><i class=ic-eye></i> Ver detalles completos</a>`;
     }
 
     function actualizarResumenLateral() { _actualizarAside(); }
@@ -528,8 +528,8 @@ const SeguimientoModule = (() => {
         const asunto = document.getElementById('qrAsunto')?.value?.trim();
         const mensaje = document.getElementById('qrMensaje')?.value?.trim();
 
-        if (!to) { showToast('❌ Falta el correo de destino', 'error'); return; }
-        if (!mensaje) { showToast('❌ El mensaje no puede estar vacío', 'error'); return; }
+        if (!to) { showToast('Falta el correo de destino', 'error'); return; }
+        if (!mensaje) { showToast('El mensaje no puede estar vacío', 'error'); return; }
 
         const btn = document.querySelector('.qr-btn-send');
         if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
@@ -566,7 +566,7 @@ const SeguimientoModule = (() => {
                 resultado: googleUrl ? 'enviado' : 'solo_registrado'
             });
 
-            showToast('📧 Respuesta enviada', 'success');
+            showToast('Respuesta enviada', 'success');
             cerrarRespuestaRapida();
             if (typeof loadNoveltiesTable === 'function') loadNoveltiesTable();
 
@@ -577,9 +577,9 @@ const SeguimientoModule = (() => {
             }
         } catch (e) {
             console.error(e);
-            showToast('❌ Error al enviar: ' + e.message, 'error');
+            showToast('Error al enviar: ' + e.message, 'error');
         } finally {
-            if (btn) { btn.disabled = false; btn.textContent = '📧 Enviar respuesta'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class=ic-mail></i> Enviar respuesta'; }
         }
     }
 
@@ -595,8 +595,8 @@ const SeguimientoModule = (() => {
                     <span>${getEstadoSeg(h.estadoInterno).emoji} ${getEstadoSeg(h.estadoInterno).label}</span>
                     <span class="seg-hist-actions">
                         <span class="seg-hist-fecha">${new Date(h.fecha).toLocaleString('es-CO')}</span>
-                        <button type="button" class="seg-hist-btn" title="Minimizar / expandir" onclick="event.stopPropagation(); SeguimientoModule.toggleHistorialItem('${h.pushId}')">▾</button>
-                        <button type="button" class="seg-hist-btn seg-hist-btn--del" title="Eliminar esta respuesta" onclick="event.stopPropagation(); SeguimientoModule.eliminarHistorialItem('${novelty.id}','${h.pushId}')">🗑️</button>
+                        <button type="button" class="seg-hist-btn" title="Minimizar / expandir" onclick="event.stopPropagation(); SeguimientoModule.toggleHistorialItem('${h.pushId}')"><i class=ic-chevron-down></i></button>
+                        <button type="button" class="seg-hist-btn seg-hist-btn--del" title="Eliminar esta respuesta" onclick="event.stopPropagation(); SeguimientoModule.eliminarHistorialItem('${novelty.id}','${h.pushId}')"><i class=ic-trash-2></i></button>
                     </span>
                 </div>
                 <div class="seg-hist-body">
@@ -608,23 +608,23 @@ const SeguimientoModule = (() => {
         return `
         <div class="detail-card-compact card-seguimiento-c" style="grid-column: 1 / -1;">
             <div class="card-header-c">
-                <div class="card-icon-c">📧</div>
+                <div class="card-icon-c"><i class=ic-mail></i></div>
                 <h4 class="card-title-c">Seguimiento y Comunicación</h4>
                 ${chipEstadoInterno(novelty)}
             </div>
             <div class="data-grid-c">
                 <div class="data-item-c full-width-c">
-                    <span class="data-label-c">📧 Correo de respuesta</span>
+                    <span class="data-label-c"><i class=ic-mail></i> Correo de respuesta</span>
                     <span class="data-value-c">${correo || '<em style="color:#94a3b8">No registrado</em>'}</span>
                 </div>
-                <div class="data-item-c"><span class="data-label-c">🆔 RC</span><span class="data-value-c">${d.rc}</span></div>
-                <div class="data-item-c"><span class="data-label-c">🔢 Código UDS</span><span class="data-value-c">${d.codigoUds}</span></div>
-                <div class="data-item-c"><span class="data-label-c">📄 Contrato</span><span class="data-value-c">${d.contrato}</span></div>
-                <div class="data-item-c"><span class="data-label-c">🌎 Regional</span><span class="data-value-c">${d.regional}</span></div>
+                <div class="data-item-c"><span class="data-label-c"><i class=ic-id-card></i> RC</span><span class="data-value-c">${d.rc}</span></div>
+                <div class="data-item-c"><span class="data-label-c"><i class=ic-hash></i> Código UDS</span><span class="data-value-c">${d.codigoUds}</span></div>
+                <div class="data-item-c"><span class="data-label-c"><i class=ic-file-text></i> Contrato</span><span class="data-value-c">${d.contrato}</span></div>
+                <div class="data-item-c"><span class="data-label-c"><i class=ic-globe></i> Regional</span><span class="data-value-c">${d.regional}</span></div>
             </div>
             <div class="seg-hist-list">${historialHTML}</div>
             <div class="seg-panel-actions">
-                <button class="qr-btn-send" onclick="SeguimientoModule.abrirRespuestaRapida('${novelty.id}')">📧 Responder / Cambiar estado</button>
+                <button class="qr-btn-send" onclick="SeguimientoModule.abrirRespuestaRapida('${novelty.id}')"><i class=ic-mail></i> Responder / Cambiar estado</button>
             </div>
         </div>`;
     }
@@ -645,7 +645,7 @@ const SeguimientoModule = (() => {
                 delete novelty.seguimiento.historial[pushId];
             }
 
-            showToast('🗑️ Respuesta eliminada del historial', 'success');
+            showToast('Respuesta eliminada del historial', 'success');
 
             if (typeof currentNoveltyData !== 'undefined' && currentNoveltyData && currentNoveltyData.id === novedadId
                 && typeof viewNoveltyDetails === 'function') {
@@ -665,7 +665,7 @@ const SeguimientoModule = (() => {
         const plantillas = getPlantillas();
         wrap.innerHTML = `
         <div class="config-bloqueo-card">
-            <h3 class="config-bloqueo-title"><span>📧</span> Plantillas de Respuesta a Novedades</h3>
+            <h3 class="config-bloqueo-title"><span><i class=ic-mail></i></span> Plantillas de Respuesta a Novedades</h3>
             <div style="font-size:12px;color:#78716c;margin-bottom:14px;">
                 Este texto se sugiere automáticamente al elegir el estado en "Responder". Puedes usar
                 <code>{{nombre}}</code>, <code>{{rc}}</code>, <code>{{fecha}}</code>, <code>{{tipo}}</code>,
@@ -682,13 +682,13 @@ const SeguimientoModule = (() => {
                 <div class="plantilla-row">
                     <label class="plantilla-label" style="color:${info.color}">${info.emoji} ${info.label}</label>
                     <textarea id="plantilla-${key}" rows="2">${info.mensaje}</textarea>
-                    <button class="qr-btn-cancel" onclick="SeguimientoModule.guardarPlantilla('${key}', document.getElementById('plantilla-${key}').value)">💾 Guardar</button>
+                    <button class="qr-btn-cancel" onclick="SeguimientoModule.guardarPlantilla('${key}', document.getElementById('plantilla-${key}').value)"><i class=ic-save></i> Guardar</button>
                 </div>`;
             }).join('')}
         </div>`;
     }
 
-    // ── 📬 Bandeja de Seguimiento (sección propia del sidebar) ──────
+    // ── Bandeja de Seguimiento (sección propia del sidebar) ──────
     const GRUPOS = {
         enProceso:  ['en_proceso', 'pendiente_soporte', 'desvinculacion_pendiente'],
         esperando:  ['info_incompleta'],
@@ -736,7 +736,7 @@ const SeguimientoModule = (() => {
             <td>${ultima ? new Date(ultima.fecha).toLocaleString('es-CO') : '<em style="color:#94a3b8">Sin actividad</em>'}</td>
             <td>
                 ${botonResponder(n.id)}
-                <button type="button" class="comm-reply-btn" style="background:#475569" onclick="event.stopPropagation(); SeguimientoModule.verDetalleDesdeBandeja('${n.id}')">👁️ Ver</button>
+                <button type="button" class="comm-reply-btn" style="background:#475569" onclick="event.stopPropagation(); SeguimientoModule.verDetalleDesdeBandeja('${n.id}')"><i class=ic-eye></i> Ver</button>
             </td>
         </tr>`;
     }
@@ -752,7 +752,7 @@ const SeguimientoModule = (() => {
                 const info = getEstadoSeg(key);
                 const opt = document.createElement('option');
                 opt.value = key;
-                opt.textContent = `${info.emoji} ${info.label}`;
+                opt.textContent = info.label;
                 selEstado.appendChild(opt);
             });
             selEstado.dataset.poblado = '1';
@@ -760,11 +760,11 @@ const SeguimientoModule = (() => {
 
         const s = calcularEstadisticas();
         statsWrap.innerHTML = `
-            <div class="seg-stat-card seg-stat-card--amber"><div class="seg-stat-num">${s.pendientes}</div><div class="seg-stat-label">🟠 Pendientes de respuesta</div></div>
-            <div class="seg-stat-card seg-stat-card--blue"><div class="seg-stat-num">${s.enProceso}</div><div class="seg-stat-label">🔵 En proceso</div></div>
-            <div class="seg-stat-card seg-stat-card--yellow"><div class="seg-stat-num">${s.esperando}</div><div class="seg-stat-label">🟡 Esperando información</div></div>
-            <div class="seg-stat-card seg-stat-card--green"><div class="seg-stat-num">${s.finalizadas}</div><div class="seg-stat-label">🟢 Finalizadas</div></div>
-            <div class="seg-stat-card seg-stat-card--slate"><div class="seg-stat-num">${s.correos}</div><div class="seg-stat-label">📧 Correos enviados</div></div>
+            <div class="seg-stat-card seg-stat-card--amber"><div class="seg-stat-num">${s.pendientes}</div><div class="seg-stat-label"><i class=ic-dot-orange></i> Pendientes de respuesta</div></div>
+            <div class="seg-stat-card seg-stat-card--blue"><div class="seg-stat-num">${s.enProceso}</div><div class="seg-stat-label"><i class=ic-dot-blue></i> En proceso</div></div>
+            <div class="seg-stat-card seg-stat-card--yellow"><div class="seg-stat-num">${s.esperando}</div><div class="seg-stat-label"><i class=ic-dot-yellow></i> Esperando información</div></div>
+            <div class="seg-stat-card seg-stat-card--green"><div class="seg-stat-num">${s.finalizadas}</div><div class="seg-stat-label"><i class=ic-dot-green></i> Finalizadas</div></div>
+            <div class="seg-stat-card seg-stat-card--slate"><div class="seg-stat-num">${s.correos}</div><div class="seg-stat-label"><i class=ic-mail></i> Correos enviados</div></div>
         `;
 
         let todas = _todasLasNovedades();

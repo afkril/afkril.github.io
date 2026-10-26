@@ -361,7 +361,7 @@ function calcularRangoOMS(talla, peso, genero, edadMeses = null) {
 				const tallaEsperadaMax = getTallaMaximaEsperada(edadMeses);
 				
 				if (talla < tallaEsperadaMin || talla > tallaEsperadaMax) {
-					console.warn(`⚠️ Talla ${talla}cm no corresponde a edad ${edadMeses} meses (rango esperado: ${tallaEsperadaMin}-${tallaEsperadaMax}cm)`);
+					console.warn(`Talla ${talla}cm no corresponde a edad ${edadMeses} meses (rango esperado: ${tallaEsperadaMin}-${tallaEsperadaMax}cm)`);
 					// Podrías retornar un estado especial o continuar con advertencia
 				}
 			}
@@ -475,7 +475,7 @@ function validarRangoNutricion(input, min, max) {
 			
 			if (valor < min || valor > max) {
 				input.classList.add('input-error');
-				showToast(`⚠️ Valor fuera de rango para 2-5 años: ${min} - ${max}`, 'warning');
+				showToast(`Valor fuera de rango para 2-5 años: ${min} - ${max}`, 'warning');
 			} else {
 				input.classList.remove('input-error');
 			}
@@ -541,7 +541,7 @@ function calcularEstadoNutricional() {
 			
 			let advertenciaHTML = '';
 			if (!validacionEdad.valido) {
-				advertenciaHTML = `<div style="color: #F39C12; font-size: 11px; margin-top: 8px; padding: 8px; background: #FEF3C7; border-radius: 6px; border: 1px solid #FCD34D;">⚠️ ${validacionEdad.mensaje}</div>`;
+				advertenciaHTML = `<div style="color: #F39C12; font-size: 11px; margin-top: 8px; padding: 8px; background: #FEF3C7; border-radius: 6px; border: 1px solid #FCD34D;"><i class=ic-triangle-alert></i> ${validacionEdad.mensaje}</div>`;
 			}
             
             if (indicator) {
@@ -598,7 +598,7 @@ function abrirModalGrafica() {
             content.classList.add(genero === 'M' ? 'boy' : 'girl');
             
             const title = document.getElementById('modalGraficaTitle');
-            const icon = genero === 'M' ? '👦' : '👧';
+            const icon = genero === 'M' ? '' : '';
             title.textContent = `Gráfica Peso/Talla OMS - ${genero === 'M' ? 'NIÑOS' : 'NIÑAS'} ${icon}`;
             
             modal.classList.add('active');
@@ -907,7 +907,7 @@ function dibujarGraficaEnModal(genero) {
 				if (edadMeses !== null) {
 					const validacion = mostrarAdvertenciaEdad(edadMeses);
 					if (!validacion.valido) {
-						advertenciaHTML = `<div style="color: #F39C12; font-size: 11px; margin-top: 8px; padding: 8px; background: #FEF3C7; border-radius: 6px; border: 1px solid #FCD34D;">⚠️ ${validacion.mensaje}</div>`;
+						advertenciaHTML = `<div style="color: #F39C12; font-size: 11px; margin-top: 8px; padding: 8px; background: #FEF3C7; border-radius: 6px; border: 1px solid #FCD34D;"><i class=ic-triangle-alert></i> ${validacion.mensaje}</div>`;
 					}
 				}
 				
@@ -949,13 +949,13 @@ function mostrarAdvertenciaEdad(edadMeses) {
 				if (edadMeses < 24) {
 					return {
 						valido: false,
-						mensaje: `⚠️ Edad ${Math.floor(edadMeses/12)} años ${edadMeses%12} meses: Las tablas OMS son para 2-5 años`,
+						mensaje: `Edad ${Math.floor(edadMeses/12)} años ${edadMeses%12} meses: Las tablas OMS son para 2-5 años`,
 						tipo: 'warning'
 					};
 				} else if (edadMeses > 72) { // 6 años = 72 meses, damos margen
 					return {
 						valido: false,
-						mensaje: `⚠️ Edad ${Math.floor(edadMeses/12)} años: Recomendado usar tablas 5-10 años`,
+						mensaje: `Edad ${Math.floor(edadMeses/12)} años: Recomendado usar tablas 5-10 años`,
 						tipo: 'warning'
 					};
 				}
@@ -997,7 +997,7 @@ function abrirEditNutricion(noveltyId) {
     modal.innerHTML = `
         <div style="background:white;border-radius:20px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
             <div style="background:linear-gradient(135deg,#f59e0b,#d97706);padding:18px 22px;display:flex;align-items:center;gap:12px;">
-                <span style="font-size:24px;">🍎</span>
+                <span style="font-size:24px;"><i class=ic-apple></i></span>
                 <div>
                     <h3 style="color:white;font-weight:800;font-size:16px;margin:0;">Completar Datos Nutricionales</h3>
                     <p style="color:#fef3c7;font-size:12px;margin:2px 0 0;">${novelty.ingreso?.name || novelty.name || 'Beneficiario'}</p>
@@ -1043,7 +1043,7 @@ function abrirEditNutricion(noveltyId) {
             </div>
             <div style="padding:0 22px 22px;display:flex;gap:10px;justify-content:flex-end;">
                 <button onclick="document.getElementById('editNutricionModal').remove()" style="padding:10px 20px;border:2px solid #e2e8f0;background:white;color:#64748b;border-radius:12px;font-weight:700;cursor:pointer;">Cancelar</button>
-                <button onclick="guardarEditNutricion('${noveltyId}')" style="padding:10px 24px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:12px;font-weight:800;cursor:pointer;font-size:14px;">💾 Guardar</button>
+                <button onclick="guardarEditNutricion('${noveltyId}')" style="padding:10px 24px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;border:none;border-radius:12px;font-weight:800;cursor:pointer;font-size:14px;"><i class=ic-save></i> Guardar</button>
             </div>
         </div>
     `;
@@ -1059,10 +1059,10 @@ async function guardarEditNutricion(noveltyId) {
     const regimen = document.getElementById('en_regimen')?.value;
     const eps = document.getElementById('en_eps')?.value;
 
-    if (!fecha) { showToast('❌ La fecha de valoración es obligatoria', 'error'); return; }
-    if (!peso || peso < 5 || peso > 30) { showToast('❌ Peso inválido (5-30 kg)', 'error'); return; }
-    if (!talla || talla < 65 || talla > 120) { showToast('❌ Talla inválida (65-120 cm)', 'error'); return; }
-    if (!perimetro || perimetro < 6 || perimetro > 30) { showToast('❌ Perímetro braquial inválido (6-30 cm)', 'error'); return; }
+    if (!fecha) { showToast('La fecha de valoración es obligatoria', 'error'); return; }
+    if (!peso || peso < 5 || peso > 30) { showToast('Peso inválido (5-30 kg)', 'error'); return; }
+    if (!talla || talla < 65 || talla > 120) { showToast('Talla inválida (65-120 cm)', 'error'); return; }
+    if (!perimetro || perimetro < 6 || perimetro > 30) { showToast('Perímetro braquial inválido (6-30 cm)', 'error'); return; }
 
     // Calculate estado nutricional using existing logic
     const novelty = currentNovelties.find(n => n.id === noveltyId);
@@ -1091,7 +1091,7 @@ async function guardarEditNutricion(noveltyId) {
         const idx = currentNovelties.findIndex(n => n.id === noveltyId);
         if (idx !== -1) currentNovelties[idx].nutricion = nutricionData;
 
-        showToast('✅ Datos nutricionales guardados correctamente', 'success');
+        showToast('Datos nutricionales guardados correctamente', 'success');
         document.getElementById('editNutricionModal')?.remove();
 
         // Refresh current modal if open
@@ -1110,7 +1110,7 @@ async function guardarEditNutricion(noveltyId) {
 
         loadNovelties();
     } catch(err) {
-        showToast('❌ Error al guardar: ' + err.message, 'error');
+        showToast('Error al guardar: ' + err.message, 'error');
     }
 }
 
@@ -1193,7 +1193,7 @@ function initNutricionalSection() {
 }
 
 async function cargarDatosNutricionales() {
-    showToast('🍎 Cargando datos nutricionales...', 'info');
+    showToast('Cargando datos nutricionales...', 'info');
     
     try {
         const [activasSnap, archivadasSnap] = await Promise.all([
@@ -1221,10 +1221,10 @@ async function cargarDatosNutricionales() {
         // Aplicar filtros iniciales
         filterNutricionalData();
         
-        showToast(`✅ ${datosNutricionales.length} registros nutricionales cargados`, 'success');
+        showToast(`${datosNutricionales.length} registros nutricionales cargados`, 'success');
     } catch (error) {
         console.error('Error cargando datos nutricionales:', error);
-        showToast('❌ Error al cargar datos nutricionales', 'error');
+        showToast('Error al cargar datos nutricionales', 'error');
     }
 }
 
@@ -2072,44 +2072,44 @@ function renderizarCardNino(nino) {
             </div>
             <div class="nino-datos">
                 <div class="nino-dato">
-                    <span class="nino-dato-label">📄 Documento</span>
+                    <span class="nino-dato-label"><i class=ic-file-text></i> Documento</span>
                     <span class="nino-dato-valor">${nino.tipoDoc} ${nino.documento}</span>
                 </div>
                 <div class="nino-dato">
-                    <span class="nino-dato-label">🎂 Edad</span>
+                    <span class="nino-dato-label"><i class=ic-cake></i> Edad</span>
                     <span class="nino-dato-valor">${nino.edad}</span>
                 </div>
                 <div class="nino-dato">
-                    <span class="nino-dato-label">⚖️ Peso</span>
+                    <span class="nino-dato-label"><i class=ic-scale></i> Peso</span>
                     <span class="nino-dato-valor" style="color: ${colorEstado}; font-weight: 700;">${nino.peso ? nino.peso + ' kg' : '-'}</span>
                 </div>
                 <div class="nino-dato">
-                    <span class="nino-dato-label">📏 Talla</span>
+                    <span class="nino-dato-label"><i class=ic-ruler></i> Talla</span>
                     <span class="nino-dato-valor" style="color: ${colorEstado}; font-weight: 700;">${nino.talla ? nino.talla + ' cm' : '-'}</span>
                 </div>
                 <div class="nino-dato">
-                    <span class="nino-dato-label">💪 Perímetro Braquial</span>
+                    <span class="nino-dato-label"><i class=ic-biceps-flexed></i> Perímetro Braquial</span>
                     <span class="nino-dato-valor">${nino.perimetroBraquial ? nino.perimetroBraquial + ' cm' : '-'}</span>
                 </div>
                 <div class="nino-dato">
-                    <span class="nino-dato-label">🏫 UDS</span>
+                    <span class="nino-dato-label"><i class=ic-school></i> UDS</span>
                     <span class="nino-dato-valor" style="font-size: 10px;">${nino.udsName}</span>
                 </div>
                 <div class="nino-dato">
-                    <span class="nino-dato-label">📋 Contrato</span>
+                    <span class="nino-dato-label"><i class=ic-clipboard-list></i> Contrato</span>
                     <span class="nino-dato-valor" style="color: ${COLORES_GRAFICAS.contratos[nino.contract] || '#64748b'}; font-weight: 600;">${nino.contract}</span>
                 </div>
                 <div class="nino-dato">
-                    <span class="nino-dato-label">📅 Valoración</span>
+                    <span class="nino-dato-label"><i class=ic-calendar></i> Valoración</span>
                     <span class="nino-dato-valor">${nino.fechaValoracion || '-'}</span>
                 </div>
             </div>
             <div class="nino-actions" onclick="event.stopPropagation()">
                 <button class="btn-ver-grafica" onclick="verGraficaIndividual('${nino.id}', '${nino.tipo}')">
-                    📊 Ver Gráfica OMS
+                    <i class=ic-chart-column></i> Ver Gráfica OMS
                 </button>
                 <button class="btn-ver-detalles" onclick="verDetalleNino('${nino.id}', '${nino.tipo}')">
-                    👁️ Ver Detalles
+                    <i class=ic-eye></i> Ver Detalles
                 </button>
             </div>
         </div>
@@ -2147,7 +2147,7 @@ function renderizarTablaNutricional() {
                 <td style="color: #fbbf24; font-weight: 700;">${n.talla ? n.talla + ' cm' : '-'}</td>
                 <td><span style="color: ${colorEstado}; font-weight: 600;">${n.estadoNutricional}</span></td>
                 <td>
-                    <button onclick="verGraficaIndividual('${n.id}', '${n.tipo}')" class="text-emerald-400 hover:text-emerald-300 text-xs font-bold mr-2" style="background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 4px;">📊 OMS</button>
+                    <button onclick="verGraficaIndividual('${n.id}', '${n.tipo}')" class="text-emerald-400 hover:text-emerald-300 text-xs font-bold mr-2" style="background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 4px;"><i class=ic-chart-column></i> OMS</button>
                     <button onclick="verDetalleNino('${n.id}', '${n.tipo}')" class="text-blue-400 hover:text-blue-300 text-xs font-bold" style="background: rgba(59, 130, 246, 0.1); padding: 4px 8px; border-radius: 4px;">Ver</button>
                 </td>
             </tr>
@@ -2326,27 +2326,27 @@ function dibujarGraficaIndividualCanvas(nino) {
 			
 			infoBar.innerHTML = `
 				<div class="info-nino-item">
-					<span class="info-nino-label">⚖️ Peso</span>
+					<span class="info-nino-label"><i class=ic-scale></i> Peso</span>
 					<span class="info-nino-valor" style="color: #fbbf24; font-size: 18px;">${peso} kg</span>
 				</div>
 				<div class="info-nino-item">
-					<span class="info-nino-label">📏 Talla</span>
+					<span class="info-nino-label"><i class=ic-ruler></i> Talla</span>
 					<span class="info-nino-valor" style="color: #fbbf24; font-size: 18px;">${talla} cm</span>
 				</div>
 				<div class="info-nino-item">
-					<span class="info-nino-label">📊 Estado</span>
+					<span class="info-nino-label"><i class=ic-chart-column></i> Estado</span>
 					<span class="info-nino-valor" style="color: ${colorEstado}; font-size: 16px;">${nino.estadoNutricional || 'No calculado'}</span>
 				</div>
 				<div class="info-nino-item">
-					<span class="info-nino-label">💪 Perímetro Braquial</span>
+					<span class="info-nino-label"><i class=ic-biceps-flexed></i> Perímetro Braquial</span>
 					<span class="info-nino-valor">${nino.perimetroBraquial ? nino.perimetroBraquial + ' cm' : 'No registrado'}</span>
 				</div>
 				<div class="info-nino-item">
-					<span class="info-nino-label">🏫 UDS</span>
+					<span class="info-nino-label"><i class=ic-school></i> UDS</span>
 					<span class="info-nino-valor" style="font-size: 12px;">${nino.udsName}</span>
 				</div>
 				<div class="info-nino-item">
-					<span class="info-nino-label">📋 Contrato</span>
+					<span class="info-nino-label"><i class=ic-clipboard-list></i> Contrato</span>
 					<span class="info-nino-valor" style="color: ${COLORES_GRAFICAS.contratos[nino.contract] || '#64748b'};">${nino.contract}</span>
 				</div>
 			`;
@@ -2408,7 +2408,7 @@ function verDetalleNino(id, tipo) {
 	}
 
 function refreshNutricionalData() {
-    showToast('🔄 Actualizando datos...', 'info');
+    showToast('Actualizando datos...', 'info');
     cargarDatosNutricionales();
 }
 
@@ -2500,7 +2500,7 @@ function abrirModalGraficaOMSAdmin() {
 			content.classList.add(Genero === 'M' ? 'boy' : 'girl');
 			
 			const Title = document.getElementById('modalGraficaTitle');
-			const Icon = Genero === 'M' ? '👦' : '👧';
+			const Icon = Genero === 'M' ? '' : '';
 			Title.textContent = `Gráfica Peso/Talla OMS - ${Genero === 'M' ? 'NIÑOS' : 'NIÑAS'} ${Icon}`;
 			
 			modal.classList.add('active');

@@ -54,7 +54,7 @@ function showToast(message, type = 'info', duration = 2500) {
             if (!container) return;
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            const icons = { success: '✅', error: '❌', warning: '⚠', info: 'ℹ' };
+            const icons = { success: '<i class=ic-circle-check></i>', error: '<i class=ic-circle-x></i>', warning: '<i class=ic-triangle-alert></i>', info: '<i class=ic-info></i>' };
             toast.innerHTML = `<span style="font-weight:bold">${icons[type]}</span><span>${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), duration);
@@ -130,9 +130,9 @@ const EnvioProgresoUI = (() => {
                 preparando: 'Preparando información…',
                 guardando: 'Guardando en el sistema…',
                 encolado: 'Conexión inestable: guardado en este dispositivo…',
-                correo: 'Guardado ✅ — enviando notificación por correo…',
+                correo: 'Guardado — enviando notificación por correo…',
                 'correo-ok': '¡Listo! Correo enviado.',
-                'correo-error': 'Guardado ✅ (el correo se reintentará solo)',
+                'correo-error': 'Guardado (el correo se reintentará solo)',
                 listo: '¡Listo!'
             }[estado] || 'Procesando…';
         }

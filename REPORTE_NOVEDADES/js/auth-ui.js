@@ -136,7 +136,7 @@ const AuthUI = (() => {
         _setCargando('authRecuperarBtn', true, 'Enviar enlace', 'Enviando...');
         try {
             await AuthModule.recuperarPassword(email);
-            _mostrarMensaje('authRecuperarMsg', '✅ Te enviamos un correo con el enlace para restablecer tu contraseña.', 'success');
+            _mostrarMensaje('authRecuperarMsg', 'Te enviamos un correo con el enlace para restablecer tu contraseña.', 'success');
         } catch (e) {
             _mostrarMensaje('authRecuperarMsg', e.message, 'error');
         } finally {
@@ -189,7 +189,7 @@ const AuthUI = (() => {
         _setCargando('cambiarPassUsuarioBtn', true, 'Guardar', 'Guardando...');
         try {
             await AuthModule.cambiarPassword(actual, nueva);
-            _mostrarMensaje('cambiarPassUsuarioMsg', '✅ Contraseña actualizada.', 'success');
+            _mostrarMensaje('cambiarPassUsuarioMsg', 'Contraseña actualizada.', 'success');
             setTimeout(cerrarCambiarPasswordUsuario, 1200);
         } catch (e) {
             _mostrarMensaje('cambiarPassUsuarioMsg', e.message, 'error');

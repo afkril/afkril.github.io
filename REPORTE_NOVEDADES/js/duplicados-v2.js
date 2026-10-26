@@ -255,18 +255,18 @@ const DuplicadosModule = (function () {
             && (!caso.ultimoIngreso || _fechaOrden(caso.ultimoRetiro) >= _fechaOrden(caso.ultimoIngreso));
 
         return `
-            <div class="dup-warning-header">⚠️ Participante Duplicado${caso.nombre ? ' — ' + _esc(caso.nombre) : ''}</div>
+            <div class="dup-warning-header"><i class=ic-triangle-alert></i> Participante Duplicado${caso.nombre ? ' — ' + _esc(caso.nombre) : ''}</div>
             ${linea(caso.ultimoIngreso, 'Último Ingreso')}
             ${linea(caso.ultimoRetiro, 'Último Retiro')}
-            ${activo ? '<div class="dup-line dup-line--danger">🔴 Este participante tiene un INGRESO ACTIVO registrado, sin retiro posterior.</div>' : ''}
-            ${tipoCampo === 'ingreso' && retiradoRecientemente ? '<div class="dup-line dup-line--muted">🟠 Este documento figura como <strong>RETIRADO</strong> en su último movimiento. Al autocompletar se cargará al menos el nombre y el género.</div>' : ''}
+            ${activo ? '<div class="dup-line dup-line--danger"><i class=ic-dot-red></i> Este participante tiene un INGRESO ACTIVO registrado, sin retiro posterior.</div>' : ''}
+            ${tipoCampo === 'ingreso' && retiradoRecientemente ? '<div class="dup-line dup-line--muted"><i class=ic-dot-orange></i> Este documento figura como <strong>RETIRADO</strong> en su último movimiento. Al autocompletar se cargará al menos el nombre y el género.</div>' : ''}
             <div class="dup-line dup-line--muted">Operador(es): ${caso.operadores.map(_esc).join(', ') || 'N/A'} · ${caso.eventos.length} movimiento(s)</div>
             <div class="dup-warning-actions">
                 <button type="button" onclick="DuplicadosModule.abrirModalCaso('${caso.documento}')" class="dup-warning-btn dup-warning-btn-blue">
-                    📋 Ver Línea de Tiempo
+                    <i class=ic-clipboard-list></i> Ver Línea de Tiempo
                 </button>
                 <button type="button" onclick="DuplicadosModule.autocompletar('${tipoCampo}')" class="dup-warning-btn dup-warning-btn-purple">
-                    🧩 Autocompletar
+                    <i class=ic-puzzle></i> Autocompletar
                 </button>
             </div>
         `;
@@ -286,7 +286,7 @@ const DuplicadosModule = (function () {
         _debounceTimers[tipoCampo] = setTimeout(async () => {
             if (box) {
                 box.classList.remove('hidden');
-                box.innerHTML = '<span class="dup-loading">🔎 Verificando en toda la base de datos…</span>';
+                box.innerHTML = '<span class="dup-loading"><i class=ic-search></i> Verificando en toda la base de datos…</span>';
             }
             let caso = null;
             try {
@@ -311,7 +311,7 @@ const DuplicadosModule = (function () {
             box.classList.remove('hidden');
             box.innerHTML = _renderCajaAdvertencia(caso, tipoCampo);
             if (typeof showToast === 'function') {
-                showToast(`⚠️ Participante Duplicado — ${caso.eventos.length} movimiento(s) encontrados`, 'warning', 3500);
+                showToast(`Participante Duplicado — ${caso.eventos.length} movimiento(s) encontrados`, 'warning', 3500);
             }
         }, 450);
     }
@@ -394,7 +394,7 @@ const DuplicadosModule = (function () {
         if (typeof showToast === 'function') {
             showToast(
                 llenados > 0
-                    ? `✅ ${llenados} campo(s) autocompletado(s) desde un registro anterior. Verifica que la dirección y demás datos sigan siendo correctos.`
+                    ? `${llenados} campo(s) autocompletado(s) desde un registro anterior. Verifica que la dirección y demás datos sigan siendo correctos.`
                     : 'El registro encontrado no tenía datos adicionales para autocompletar.',
                 llenados > 0 ? 'success' : 'info',
                 4500
@@ -405,10 +405,10 @@ const DuplicadosModule = (function () {
     // ── Badges de categoría ─────────────────────────────────
     function _badgeCategoria(cat) {
         switch (cat) {
-            case 'operador': return '<span class="dup-badge dup-badge--purple">🔁 Cambio de Operador</span>';
-            case 'uds_mismo_contrato': return '<span class="dup-badge dup-badge--blue">📍 Cambio de UDS</span>';
-            case 'uds_distinto_contrato': return '<span class="dup-badge dup-badge--orange">📄 UDS + Contrato</span>';
-            default: return '<span class="dup-badge dup-badge--gray">🔄 Múltiples</span>';
+            case 'operador': return '<span class="dup-badge dup-badge--purple"><i class=ic-repeat></i> Cambio de Operador</span>';
+            case 'uds_mismo_contrato': return '<span class="dup-badge dup-badge--blue"><i class=ic-map-pin></i> Cambio de UDS</span>';
+            case 'uds_distinto_contrato': return '<span class="dup-badge dup-badge--orange"><i class=ic-file-text></i> UDS + Contrato</span>';
+            default: return '<span class="dup-badge dup-badge--gray"><i class=ic-refresh-cw></i> Múltiples</span>';
         }
     }
 
@@ -425,12 +425,12 @@ const DuplicadosModule = (function () {
 
     function _iconoPorTipoMovimiento(tipo) {
         switch(tipo) {
-            case 'Ingreso': return '➕';
-            case 'Retiro': return '➖';
-            case 'Traslado': return '↔️';
-            case 'Cambio de UDS': return '🔄';
-            case 'Reingreso': return '🔁';
-            default: return '●';
+            case 'Ingreso': return '<i class=ic-plus></i>';
+            case 'Retiro': return '<i class=ic-minus></i>';
+            case 'Traslado': return '<i class=ic-arrow-left-right></i>';
+            case 'Cambio de UDS': return '<i class=ic-refresh-cw></i>';
+            case 'Reingreso': return '<i class=ic-repeat></i>';
+            default: return '<i class=ic-circle-dot></i>';
         }
     }
 
@@ -467,23 +467,23 @@ const DuplicadosModule = (function () {
                         </div>
                         <div class="dup-h-tooltip-body">
                             <div class="dup-h-tooltip-row">
-                                <span class="dup-h-tooltip-label">👤 Nombre</span>
+                                <span class="dup-h-tooltip-label"><i class=ic-user></i> Nombre</span>
                                 <span class="dup-h-tooltip-val">${_esc(ev.nombre || 'Sin nombre')}</span>
                             </div>
                             <div class="dup-h-tooltip-row">
-                                <span class="dup-h-tooltip-label">🏢 UDS</span>
+                                <span class="dup-h-tooltip-label"><i class=ic-building-2></i> UDS</span>
                                 <span class="dup-h-tooltip-val">${_esc(ev.udsName || 'N/A')}</span>
                             </div>
                             <div class="dup-h-tooltip-row">
-                                <span class="dup-h-tooltip-label">📄 Contrato</span>
+                                <span class="dup-h-tooltip-label"><i class=ic-file-text></i> Contrato</span>
                                 <span class="dup-h-tooltip-val">${_esc(ev.contrato || 'N/A')}</span>
                             </div>
                             <div class="dup-h-tooltip-row">
-                                <span class="dup-h-tooltip-label">🌐 Operador</span>
+                                <span class="dup-h-tooltip-label"><i class=ic-globe></i> Operador</span>
                                 <span class="dup-h-tooltip-val">${_esc(ev.operadorNombre)} ${ev.origen === 'archivadas' ? '(Archivado)' : ''}</span>
                             </div>
                             <div class="dup-h-tooltip-row">
-                                <span class="dup-h-tooltip-label">📍 Regional</span>
+                                <span class="dup-h-tooltip-label"><i class=ic-map-pin></i> Regional</span>
                                 <span class="dup-h-tooltip-val">${_esc(ev.regional || 'N/A')} / ${_esc(ev.modalidad || 'N/A')}</span>
                             </div>
                         </div>
@@ -510,7 +510,7 @@ const DuplicadosModule = (function () {
                 <div class="dup-case-header" onclick="DuplicadosModule.toggleCaso('${caso.id}')">
                     <div class="dup-case-main">
                         <div class="dup-case-avatar">
-                            <span>👤</span>
+                            <span><i class=ic-user></i></span>
                         </div>
                         <div class="dup-case-info">
                             <div class="dup-case-nombre">${_esc(caso.nombre) || 'Sin nombre registrado'}</div>
@@ -587,7 +587,7 @@ const DuplicadosModule = (function () {
         if (!casos.length) {
             container.innerHTML = `
                 <div class="dup-empty">
-                    <div style="font-size:3rem;margin-bottom:12px;">✅</div>
+                    <div style="font-size:3rem;margin-bottom:12px;"><i class=ic-circle-check></i></div>
                     <div style="font-size:1.1rem;font-weight:700;color:#1e293b;margin-bottom:6px;">No hay duplicados</div>
                     <div style="color:#64748b;font-size:0.9rem;">No se encontraron participantes duplicados en la base de datos.</div>
                 </div>
@@ -637,7 +637,7 @@ const DuplicadosModule = (function () {
         if (container) {
             container.innerHTML = `
                 <div class="dup-loading-panel">
-                    <div style="font-size:2rem;margin-bottom:12px;">⏳</div>
+                    <div style="font-size:2rem;margin-bottom:12px;"><i class=ic-hourglass></i></div>
                     <div>Cruzando información de todos los operadores…</div>
                 </div>
             `;
@@ -650,7 +650,7 @@ const DuplicadosModule = (function () {
         } catch (e) {
             console.error('[Duplicados] Error generando panel:', e);
             if (container) {
-                container.innerHTML = `<div class="dup-empty">❌ Error al cargar: ${_esc(e.message)}</div>`;
+                container.innerHTML = `<div class="dup-empty"><i class=ic-circle-x></i> Error al cargar: ${_esc(e.message)}</div>`;
             }
         }
     }
@@ -673,7 +673,7 @@ const DuplicadosModule = (function () {
                 <div class="dup-modal-box" onclick="event.stopPropagation()">
                     <div class="dup-modal-header">
                         <div class="dup-modal-header-info">
-                            <div class="dup-modal-avatar">👤</div>
+                            <div class="dup-modal-avatar"><i class=ic-user></i></div>
                             <div>
                                 <h3 class="dup-modal-title" id="dupModalNombre">Cargando...</h3>
                                 <p class="dup-modal-subtitle" id="dupModalDoc">Documento: —</p>

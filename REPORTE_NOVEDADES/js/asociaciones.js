@@ -134,7 +134,7 @@ const AsociacionesModule = (() => {
             await db.ref(`${PATHS.ajustes}/password`).set('JER2024');
         }
 
-        console.log('[Asociaciones] Datos JER sembrados ✅');
+        console.log('[Asociaciones] Datos JER sembrados');
     }
 
     // ── Obtener ruta Firebase dinámica ─────────────────────────
@@ -284,7 +284,7 @@ const AsociacionesModule = (() => {
         const el = (id) => document.getElementById(id);
 
         if (el('headerNombreAsoc')) el('headerNombreAsoc').textContent = perfil.nombre || '';
-        if (el('adminNombreAsoc'))  el('adminNombreAsoc').textContent  = `🏢 ${perfil.nombre || perfil.id}`;
+        if (el('adminNombreAsoc'))  el('adminNombreAsoc').textContent  = `${perfil.nombre || perfil.id}`;
         if (el('indicadorPerfil'))  el('indicadorPerfil').textContent  = perfil.nombre || '';
         if (el('footerNombreAsoc')) el('footerNombreAsoc').textContent = perfil.subtitulo ? `${perfil.nombre} - ${perfil.subtitulo}` : (perfil.nombre || 'Asociación JER');
 
@@ -412,7 +412,7 @@ const AsociacionesModule = (() => {
         if (!modal || !grid) return;
 
         modal.style.display = 'flex';
-        grid.innerHTML = '<div class="asoc-loading">⏳ Cargando asociaciones...</div>';
+        grid.innerHTML = '<div class="asoc-loading"><i class=ic-hourglass></i> Cargando asociaciones...</div>';
 
         // Barra de usuario logeado (correo + cambiar contraseña + cerrar sesión)
         const authBar = document.getElementById('authUserBar');
@@ -421,7 +421,7 @@ const AsociacionesModule = (() => {
             if (authLogeado) {
                 const u = AuthModule.getUsuario();
                 const elEmail = document.getElementById('authUserBarEmail');
-                if (elEmail) elEmail.textContent = '👤 ' + (u && u.email ? u.email : '');
+                if (elEmail) elEmail.textContent = '' + (u && u.email ? u.email : '');
                 authBar.style.display = 'flex';
             } else {
                 authBar.style.display = 'none';
@@ -442,12 +442,12 @@ const AsociacionesModule = (() => {
             if (lista.length === 0) {
                 grid.innerHTML = authLogeado
                     ? `<div class="asoc-empty">
-                        <div style="font-size:2.5rem">🔒</div>
+                        <div style="font-size:2.5rem"><i class=ic-lock></i></div>
                         <p>Tu cuenta aún no tiene ningún operador asignado.</p>
                         <p style="font-size:12px;color:#94a3b8">Usa la pestaña "Registrarme" con tu mismo correo para vincular un operador.</p>
                     </div>`
                     : `<div class="asoc-empty">
-                        <div style="font-size:2.5rem">🏢</div>
+                        <div style="font-size:2.5rem"><i class=ic-building-2></i></div>
                         <p>No hay asociaciones configuradas.</p>
                         <p style="font-size:12px;color:#94a3b8">Usa el Panel de Ajustes para crear la primera.</p>
                     </div>`;
@@ -488,7 +488,7 @@ const AsociacionesModule = (() => {
                         ${tieneImg
                             ? `<img src="${datos.logo_url}" alt="${datos.nombre}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
                             : ''}
-                        <div class="asoc-card-logo-fallback" style="${tieneImg ? 'display:none' : ''}">🏢</div>
+                        <div class="asoc-card-logo-fallback" style="${tieneImg ? 'display:none' : ''}"><i class=ic-building-2></i></div>
                     </div>
                     <div class="asoc-card-nombre">${datos.nombre || id}</div>
                     ${ubicacion ? `
@@ -497,13 +497,13 @@ const AsociacionesModule = (() => {
                         ${ubicacion}
                     </div>` : ''}
                     <div class="asoc-card-contratos-wrap">
-                        <div class="asoc-card-contratos-icon">📄</div>
+                        <div class="asoc-card-contratos-icon"><i class=ic-file-text></i></div>
                         <div>
                             <div class="asoc-card-contratos-label">Contratos activos</div>
                             <div class="asoc-card-contratos-value">${numContratos} contrato${numContratos !== 1 ? 's' : ''}</div>
                         </div>
                     </div>
-                    ${(datos.password_formulario && !authLogeado) ? '<div class="asoc-card-lock">🔑 Requiere clave de acceso</div>' : ''}
+                    ${(datos.password_formulario && !authLogeado) ? '<div class="asoc-card-lock"><i class=ic-key-round></i> Requiere clave de acceso</div>' : ''}
                     <div class="asoc-card-btn">
                         Seleccionar
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
@@ -512,7 +512,7 @@ const AsociacionesModule = (() => {
                 grid.appendChild(card);
             });
         } catch(e) {
-            grid.innerHTML = `<div class="asoc-empty">❌ Error al cargar asociaciones.<br><small>${e.message}</small></div>`;
+            grid.innerHTML = `<div class="asoc-empty"><i class=ic-circle-x></i> Error al cargar asociaciones.<br><small>${e.message}</small></div>`;
         }
     }
 
@@ -534,7 +534,7 @@ const AsociacionesModule = (() => {
             const clave = datos.password_formulario || '';
             if (clave.trim() !== '') {
                 ClaveModal.mostrar({
-                    icono: '🔑',
+                    icono: '<i class=ic-key-round></i>',
                     titulo: 'Clave de acceso',
                     subtitulo: datos.nombre || id,
                     onSubmit: async (ingresada) => {
@@ -559,7 +559,7 @@ const AsociacionesModule = (() => {
         activarPerfil(id, datos);
         const modal = document.getElementById('modalSelectorAsociacion');
         if (modal) modal.style.display = 'none';
-        showToast(`✅ Perfil: ${datos.nombre}`, 'success');
+        showToast(`Perfil: ${datos.nombre}`, 'success');
 
         // index.html ya no tiene formulario propio (vive aparte en las
         // páginas de operador fijo, ej. Jer.html): al elegir el operador
@@ -653,7 +653,7 @@ const AsociacionesModule = (() => {
             document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;
                 height:100vh;font-family:sans-serif;text-align:center;padding:20px;color:#334155;">
                 <div>
-                    <div style="font-size:3rem">❌</div>
+                    <div style="font-size:3rem"><i class=ic-circle-x></i></div>
                     <h2 style="margin:12px 0 4px">Operador no encontrado</h2>
                     <p style="color:#64748b">El ID "${id}" no existe o fue eliminado. Contacta al administrador.</p>
                 </div>
@@ -674,7 +674,7 @@ const AsociacionesModule = (() => {
         if (typeof database === 'undefined') {
             console.error('[Asociaciones] Firebase no disponible tras 5s');
             const grid = document.getElementById('gridAsociaciones');
-            if (grid) grid.innerHTML = '<div class="asoc-empty">❌ Error de conexión con Firebase.</div>';
+            if (grid) grid.innerHTML = '<div class="asoc-empty"><i class=ic-circle-x></i> Error de conexión con Firebase.</div>';
             return;
         }
 

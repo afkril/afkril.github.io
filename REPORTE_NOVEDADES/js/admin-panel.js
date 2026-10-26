@@ -17,7 +17,7 @@ async function promptAdminAccess() {
             }
             const perfil = AsociacionesModule.getPerfilActivo();
             ClaveModal.mostrar({
-                icono: '🛡️',
+                icono: '<i class=ic-shield></i>',
                 titulo: 'Acceso Administrador',
                 subtitulo: perfil ? perfil.nombre : '',
                 onSubmit: async (password) => {
@@ -25,7 +25,7 @@ async function promptAdminAccess() {
                     if (password !== correcta) return false;
                     AsociacionesModule.marcarAdminAutenticado();
                     openAdminPanel();
-                    showToast("✅ Acceso concedido", "success");
+                    showToast("Acceso concedido", "success");
                     return true;
                 }
             });
@@ -85,7 +85,7 @@ function closeAdminPanel() {
 function cerrarSesionAdmin() {
             AsociacionesModule.cerrarSesionAdmin();
             closeAdminPanel();
-            showToast('🔒 Sesión admin cerrada', 'info');
+            showToast('Sesión admin cerrada', 'info');
         }
 
 function switchTab(tab) {
@@ -249,7 +249,7 @@ function verificarBloqueo() {
 
 async function accesoAdminDesdeBloqueo() {
             ClaveModal.mostrar({
-                icono: '🔒',
+                icono: '<i class=ic-lock></i>',
                 titulo: 'Acceso Administrador',
                 subtitulo: 'Desactivar bloqueo del formulario',
                 onSubmit: async (password) => {
@@ -261,7 +261,7 @@ async function accesoAdminDesdeBloqueo() {
                     const configRef = database.ref(AsociacionesModule.getRef('configBloqueo'));
                     configRef.set(configBloqueo)
                         .then(() => {
-                            showToast("✅ Bloqueo desactivado", "success");
+                            showToast("Bloqueo desactivado", "success");
                             actualizarUIConfigBloqueo();
                             verificarBloqueo();
                             setTimeout(() => {

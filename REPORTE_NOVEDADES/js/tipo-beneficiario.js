@@ -131,7 +131,7 @@ const TipoBeneficiario = (() => {
         if (tit) tit.textContent = gest ? 'Datos de la Persona Gestante'
                                   : m6 ? 'Datos del Menor de 6 meses'
                                   : 'Seguimiento Nutricional';
-        if (ico) ico.textContent = gest ? '🤰' : m6 ? '👶' : '🍎';
+        if (ico) ico.innerHTML = gest ? '<i class=ic-baby></i>' : m6 ? '<i class=ic-baby></i>' : '<i class=ic-apple></i>';
 
         // Acudiente: la persona gestante es su propia beneficiaria
         mostrar('cardAcudiente', !gest);
@@ -157,8 +157,8 @@ const TipoBeneficiario = (() => {
         if (tipo()) return null;
         const ops = opcionesPorModalidad($('modalidadSelect') ? $('modalidadSelect').value : '');
         return {
-            msg: ops.length ? '❌ Seleccione el TIPO DE BENEFICIARIO antes de continuar'
-                            : '❌ Seleccione primero la MODALIDAD',
+            msg: ops.length ? 'Seleccione el TIPO DE BENEFICIARIO antes de continuar'
+                            : 'Seleccione primero la MODALIDAD',
             el: $('tbOpciones')
         };
     }
@@ -167,8 +167,8 @@ const TipoBeneficiario = (() => {
         if (tipoRetiro()) return null;
         const ops = opcionesPorModalidad($('modalidadSelect') ? $('modalidadSelect').value : '');
         return {
-            msg: ops.length ? '❌ Seleccione el TIPO DE BENEFICIARIO del retiro'
-                            : '❌ Seleccione primero la MODALIDAD',
+            msg: ops.length ? 'Seleccione el TIPO DE BENEFICIARIO del retiro'
+                            : 'Seleccione primero la MODALIDAD',
             el: $('tbOpcionesRetiro')
         };
     }
@@ -176,12 +176,12 @@ const TipoBeneficiario = (() => {
     function rango(id, nombre, min, max, entero) {
         const el = $(id);
         const v = el ? el.value.trim() : '';
-        if (v === '') return { msg: `❌ ${nombre} es obligatorio`, el };
+        if (v === '') return { msg: `${nombre} es obligatorio`, el };
         const n = parseFloat(v);
         if (isNaN(n) || n < min || n > max)
-            return { msg: `❌ ${nombre} debe estar entre ${min} y ${max}`, el };
+            return { msg: `${nombre} debe estar entre ${min} y ${max}`, el };
         if (entero && !Number.isInteger(n))
-            return { msg: `❌ ${nombre} debe ser un número entero`, el };
+            return { msg: `${nombre} debe ser un número entero`, el };
         return null;
     }
 
@@ -201,9 +201,9 @@ const TipoBeneficiario = (() => {
         ];
         for (const c of chequeos) { const e = c(); if (e) return e; }
         const reg = $('nutricionRegimen');
-        if (!reg || !reg.value) return { msg: '❌ Seleccione el RÉGIMEN de salud', el: reg };
+        if (!reg || !reg.value) return { msg: 'Seleccione el RÉGIMEN de salud', el: reg };
         const eps = $('nutricionEPS');
-        if (!eps || !eps.value.trim()) return { msg: '❌ Escriba la EPS', el: eps };
+        if (!eps || !eps.value.trim()) return { msg: 'Escriba la EPS', el: eps };
         return null;
     }
 

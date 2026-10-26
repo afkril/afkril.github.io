@@ -142,11 +142,11 @@ const ConsultaUDSModule = (() => {
                 EnvioProgresoUI.setEstado(estado);
                 if (estado === 'correo') {
                     EnvioProgresoUI.ocultar(500);
-                    setTimeout(() => EnvioProgresoUI.miniToast('📧 Enviando notificación por correo…'), 550);
+                    setTimeout(() => EnvioProgresoUI.miniToast('Enviando notificación por correo…'), 550);
                 } else if (estado === 'correo-ok') {
-                    EnvioProgresoUI.miniToast('✅ Correo enviado correctamente', 3000);
+                    EnvioProgresoUI.miniToast('Correo enviado correctamente', 3000);
                 } else if (estado === 'correo-error') {
-                    EnvioProgresoUI.miniToast('⚠️ El correo tardó en salir, se reintentará solo', 4000);
+                    EnvioProgresoUI.miniToast('El correo tardó en salir, se reintentará solo', 4000);
                 }
             }
         });
@@ -444,11 +444,11 @@ const ConsultaUDSModule = (() => {
         const btnAccion = document.getElementById('consultaUdsFichaBtnAccion');
         if (btnAccion) {
             if (esActivo) {
-                btnAccion.textContent = '🚪 Reportar retiro';
+                btnAccion.innerHTML = '<i class=ic-log-out></i> Reportar retiro';
                 btnAccion.className = 'cuds-ficha-btn-accion cuds-ficha-btn-accion--retiro';
                 btnAccion.onclick = () => abrirModalRetiro();
             } else {
-                btnAccion.textContent = '🔄 Reingreso';
+                btnAccion.innerHTML = '<i class=ic-refresh-cw></i> Reingreso';
                 btnAccion.className = 'cuds-ficha-btn-accion cuds-ficha-btn-accion--reingreso';
                 btnAccion.onclick = () => abrirModalReingreso();
             }
@@ -459,7 +459,7 @@ const ConsultaUDSModule = (() => {
         const docsBox = document.getElementById('consultaUdsFichaDocumentos');
         if (docsBox) {
             docsBox.innerHTML = ramFile
-                ? `<div class="cuds-ficha-doc-item">📎 ${_esc(ramFile)}</div>`
+                ? `<div class="cuds-ficha-doc-item"><i class=ic-paperclip></i> ${_esc(ramFile)}</div>`
                 : `<div class="cuds-ficha-doc-empty">No hay documentos registrados en el sistema para este participante.</div>`;
         }
 
@@ -599,8 +599,8 @@ const ConsultaUDSModule = (() => {
             cerrarModalRetiro();
             cerrarFicha();
             showToast(r.offline
-                ? '📥 Sin conexión: el retiro se guardó en este dispositivo y se enviará cuando vuelva la señal.'
-                : '✅ Retiro reportado correctamente.', r.offline ? 'info' : 'success');
+                ? 'Sin conexión: el retiro se guardó en este dispositivo y se enviará cuando vuelva la señal.'
+                : 'Retiro reportado correctamente.', r.offline ? 'info' : 'success');
         } catch (e) {
             console.error('[ConsultaUDS] Error al reportar retiro:', e);
             if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.ocultar(0);
@@ -783,8 +783,8 @@ const ConsultaUDSModule = (() => {
             cerrarModalReingreso();
             cerrarFicha();
             showToast(r.offline
-                ? '📥 Sin conexión: el reingreso se guardó en este dispositivo y se enviará cuando vuelva la señal.'
-                : '✅ Reingreso registrado correctamente.', r.offline ? 'info' : 'success');
+                ? 'Sin conexión: el reingreso se guardó en este dispositivo y se enviará cuando vuelva la señal.'
+                : 'Reingreso registrado correctamente.', r.offline ? 'info' : 'success');
         } catch (e) {
             console.error('[ConsultaUDS] Error al reportar reingreso:', e);
             if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.ocultar(0);

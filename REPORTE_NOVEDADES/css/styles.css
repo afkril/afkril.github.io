@@ -1154,7 +1154,7 @@
         }
 
         .theme-toggle::after {
-            content: '☀️';
+            content: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2714%27 height=%2714%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23f59e0b%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%224%22 /%3E %3Cpath d=%22M12 2v2%22 /%3E %3Cpath d=%22M12 20v2%22 /%3E %3Cpath d=%22m4.93 4.93 1.41 1.41%22 /%3E %3Cpath d=%22m17.66 17.66 1.41 1.41%22 /%3E %3Cpath d=%22M2 12h2%22 /%3E %3Cpath d=%22M20 12h2%22 /%3E %3Cpath d=%22m6.34 17.66-1.41 1.41%22 /%3E %3Cpath d=%22m19.07 4.93-1.41 1.41%22 /%3E%3C/svg%3E");
             position: absolute;
             top: 3px;
             left: 3px;
@@ -1170,7 +1170,7 @@
         }
 
         .theme-toggle.active::after {
-            content: '🌙';
+            content: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2714%27 height=%2714%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23475569%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%22M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401%22 /%3E%3C/svg%3E");
             transform: translateX(30px);
         }
 
@@ -1529,7 +1529,7 @@
         }
 
         .cuentame-check.checked::after {
-            content: '✓';
+            content: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2714%27 height=%2714%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%23ffffff%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3E%3Cpath d=%22M20 6 9 17l-5-5%22 /%3E%3C/svg%3E");
             color: white;
             font-weight: bold;
             font-size: 14px;
@@ -4968,7 +4968,7 @@ body.dark-mode .qr-info-extra { background: rgba(255,255,255,0.04); border-color
 .qr-info-item strong { color: #0f172a; font-weight: 700; text-align: right; }
 body.dark-mode .qr-info-item strong { color: #e2e8f0; }
 
-/* 📬 Bandeja de Seguimiento */
+/* Bandeja de Seguimiento */
 .seg-stats-row {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;
 }

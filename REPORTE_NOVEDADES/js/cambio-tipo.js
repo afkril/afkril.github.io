@@ -129,18 +129,18 @@ const CambioTipoModule = (() => {
         ov.innerHTML = `
         <div class="ct-box" role="dialog" aria-modal="true" aria-labelledby="ctTitulo">
             <div class="ct-head">
-                <div class="ct-icon">🔄</div>
+                <div class="ct-icon"><i class=ic-refresh-cw></i></div>
                 <div style="flex:1">
                     <h2 id="ctTitulo">Cambio de tipo de beneficiario</h2>
                     <p>Participantes activos que eran <b>menores de 6 meses</b> y ya cumplieron 6 meses: pasan a <b>6 meses a 5 años</b>.</p>
                 </div>
-                <button type="button" class="ct-x" id="ctCerrar" aria-label="Cerrar">✕</button>
+                <button type="button" class="ct-x" id="ctCerrar" aria-label="Cerrar"><i class=ic-x></i></button>
             </div>
             <div class="ct-tools">
                 <input type="search" id="ctBuscar" placeholder="Buscar por nombre, documento o UDS…">
                 <span id="ctResumen" class="ct-resumen"></span>
                 <button type="button" class="ct-btn" id="ctRecargar">↻ Actualizar</button>
-                <button type="button" class="ct-btn" id="ctExcel">⬇ Excel</button>
+                <button type="button" class="ct-btn" id="ctExcel"><i class=ic-download></i> Excel</button>
             </div>
             <div class="ct-body" id="ctBody"></div>
             <div class="ct-foot">Edad calculada con la fecha de nacimiento y la fecha de hoy. Tras cambiar el tipo en la plataforma, use <b>Marcar actualizado</b> para quitar el caso de la lista.</div>
@@ -168,7 +168,7 @@ const CambioTipoModule = (() => {
         const lista = filtrados();
         $('ctResumen').textContent = `${lista.length} de ${_casos.length} caso(s)`;
         if (!lista.length) {
-            $('ctBody').innerHTML = `<div class="ct-vacio">${_casos.length ? 'Sin resultados para la búsqueda.' : '✅ No hay menores de 6 meses activos que hayan superado los 6 meses.'}</div>`;
+            $('ctBody').innerHTML = `<div class="ct-vacio">${_casos.length ? 'Sin resultados para la búsqueda.' : '<i class=ic-circle-check></i> No hay menores de 6 meses activos que hayan superado los 6 meses.'}</div>`;
             return;
         }
         $('ctBody').innerHTML = `<div class="ct-tabla"><table>
@@ -194,7 +194,7 @@ const CambioTipoModule = (() => {
             });
             _casos = _casos.filter(x => x.id !== id);
             actualizarBadge(); pintar();
-            if (typeof showToast === 'function') showToast('✅ Caso marcado como actualizado', 'success');
+            if (typeof showToast === 'function') showToast('Caso marcado como actualizado', 'success');
         } catch (e) {
             if (typeof showToast === 'function') showToast('Error al guardar: ' + e.message, 'error');
         }

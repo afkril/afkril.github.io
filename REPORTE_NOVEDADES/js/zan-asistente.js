@@ -25,7 +25,7 @@
      sit       sentado: inactividad
      sleep     dormido: mucha inactividad
 
-   Minimizar: el botón ✕ del globo lo esconde 5 minutos (se guarda en
+   Minimizar: el botón del globo lo esconde 5 minutos (se guarda en
    localStorage, así que sobrevive a recargar la página) y luego reanuda solo.
    Todos los tiempos se ajustan en ZAN_OP_CONFIG.
    ========================================================================== */
@@ -97,7 +97,7 @@
         '<div class="zanop-bubble" role="status" aria-live="polite">' +
           '<div class="zanop-head">' +
             '<div class="zanop-name"><span>Zan</span><span class="zanop-badge">Asistente</span></div>' +
-            '<button type="button" class="zanop-min" id="zanOpMin" title="Minimizar (vuelvo en 5 minutos)" aria-label="Minimizar asistente">✕</button>' +
+            '<button type="button" class="zanop-min" id="zanOpMin" title="Minimizar (vuelvo en 5 minutos)" aria-label="Minimizar asistente"><i class=ic-x></i></button>' +
           '</div>' +
           '<div class="zanop-text" id="zanOpText"></div>' +
           '<div class="zanop-pills" id="zanOpPills">' +
@@ -276,7 +276,7 @@
 
       if (tbOn && TipoBeneficiario.esEspecial()) {
         var ne = TipoBeneficiario.validarNutricion();
-        if (ne) req.push(ne.msg.replace('❌ ', ''));
+        if (ne) req.push(ne.msg);
       } else if (!chk('nutricionPendiente')) {
         if (!val('nutricionFecha')) req.push('Fecha de valoración');
         if (!val('nutricionPeso')) req.push('Peso');
@@ -347,10 +347,10 @@
   };
 
   var WIZARD = [
-    ['regionalSelect', '<b>Paso 1 · Regional.</b> Elige la <b>Regional</b> donde se reporta la novedad. 📍'],
+    ['regionalSelect', '<b>Paso 1 · Regional.</b> Elige la <b>Regional</b> donde se reporta la novedad.'],
     ['modalidadSelect', '<b>Paso 2 · Modalidad.</b> Ahora dime la <b>Modalidad</b> (tipo de servicio) de tu UDS.'],
     ['contractNumber', '<b>Paso 3 · Contrato.</b> Selecciona el <b>Contrato</b> al que pertenece la UDS.'],
-    ['mainUdsDropdown', '<b>Paso 4 · UDS.</b> Elige tu <b>UDS</b>. Es la última parte de la ubicación. 🏫']
+    ['mainUdsDropdown', '<b>Paso 4 · UDS.</b> Elige tu <b>UDS</b>. Es la última parte de la ubicación.']
   ];
 
   // Calcula la guía base según el estado del formulario
@@ -371,7 +371,7 @@
     // 2) Qué reportar
     var R = chk('checkRetiro'), I = chk('checkIngreso');
     if (!R && !I) {
-      setBase('idle', '<b>Paso 5 · ¿Qué vas a reportar?</b> Marca <b>Retirar</b> o <b>Ingresar beneficiario</b> (puedes marcar los dos). 📝', 1);
+      setBase('idle', '<b>Paso 5 · ¿Qué vas a reportar?</b> Marca <b>Retirar</b> o <b>Ingresar beneficiario</b> (puedes marcar los dos).', 1);
       return;
     }
 
@@ -390,12 +390,12 @@
     // 4) Archivo obligatorio pendiente
     if (m.files.length) {
       setBase('attach',
-        '<b>¡Casi listo!</b> Solo falta adjuntar: <b>' + esc(m.files.join(', ')) + '</b>. Arrástralo al recuadro punteado o toca para elegirlo. 📎' + hint, 2);
+        '<b>¡Casi listo!</b> Solo falta adjuntar: <b>' + esc(m.files.join(', ')) + '</b>. Arrástralo al recuadro punteado o toca para elegirlo.' + hint, 2);
       return;
     }
     // 5) Todo completo
     var soft = m.soft.length ? '<div class="zanop-hint">Opcional: aún no adjuntas ' + esc(m.soft.join(' ni ')) + '. Si lo tienes, es buen momento.</div>' : '';
-    setBase('done', '<b>¡Formulario completo!</b> Revisa los datos y pulsa <b>Guardar Reporte</b>. ✅' + soft + hint, 3);
+    setBase('done', '<b>¡Formulario completo!</b> Revisa los datos y pulsa <b>Guardar Reporte</b>.' + soft + hint, 3);
   }
   var recomputeSoon = (function () {
     var t; return function () { clearTimeout(t); t = setTimeout(safe(recompute), 140); };
@@ -423,23 +423,23 @@
     if (type === 'error') {
       endBusy();
       if (/cierre de mes/.test(t)) {
-        return flash('error', '<b>Cierre de mes.</b> En estos días el sistema no recibe novedades. Intenta después de que termine el periodo. 🔒', CFG.problemMs);
+        return flash('error', '<b>Cierre de mes.</b> En estos días el sistema no recibe novedades. Intenta después de que termine el periodo.', CFG.problemMs);
       }
       if (/adjuntar|archivo|soporte|formato de retiro/.test(t)) {
-        return flash('attach', '<b>¡No olvides el archivo!</b> ' + c + '. Arrástralo al recuadro punteado (PDF o imagen, máx. 8 MB). 📎', CFG.problemMs);
+        return flash('attach', '<b>¡No olvides el archivo!</b> ' + c + '. Arrástralo al recuadro punteado (PDF o imagen, máx. 8 MB).', CFG.problemMs);
       }
       if (/obligatori|debe tener entre|nombre y apellidos|debe estar entre|debe ser anterior/.test(t)) {
         setTimeout(safe(function () {
           var lab = labelOf(offendingField());
           var body = /obligatori/.test(t) && lab
-            ? '<b>' + esc(lab) + '</b> es obligatorio. Lo marqué en rojo: escríbelo y seguimos. ✍️'
-            : c + '. Corrígelo en el campo marcado en rojo. ✍️';
+            ? '<b>' + esc(lab) + '</b> es obligatorio. Lo marqué en rojo: escríbelo y seguimos.'
+            : c + '. Corrígelo en el campo marcado en rojo.';
           flash('required', '<b>Campo obligatorio.</b> ' + body, CFG.problemMs);
         }), 90);
         return;
       }
       if (/seleccione|indique|responda|al menos una|asociacion/.test(t)) {
-        return flash('missing', '<b>Falta información.</b> ' + c + '. 🔎', CFG.problemMs);
+        return flash('missing', '<b>Falta información.</b> ' + c + '.', CFG.problemMs);
       }
       return flash('error', '<b>Algo no salió bien.</b> ' + c, CFG.problemMs);
     }
@@ -447,7 +447,7 @@
     if (type === 'success') {
       if (/reporte enviado|exito/.test(t)) {
         endBusy();
-        return flash('sent', '<b>¡Reporte enviado exitosamente!</b> 🎉 Quedó guardado y el resumen apareció en el panel lateral. ¿Seguimos con otro?', CFG.sentMs);
+        return flash('sent', '<b>¡Reporte enviado exitosamente!</b> Quedó guardado y el resumen apareció en el panel lateral. ¿Seguimos con otro?', CFG.sentMs);
       }
       if (/autocompletad/.test(t)) return; // lo maneja el wrapper de autocompletar
       return flash('happy', c, CFG.happyMs + 1200);
@@ -455,16 +455,16 @@
 
     if (type === 'warning') {
       if (/asociacion/.test(t)) return flash('missing', '<b>Falta información.</b> ' + c, CFG.problemMs);
-      if (/edad supera|5 anos/.test(t)) return flash('alert', '<b>¡Ojo con la edad!</b> Supera los 5 años (primera infancia). Verifica la fecha de nacimiento. 🎂', CFG.alertMs);
-      if (/ya existe/.test(t)) return flash('alert', '<b>Posible duplicado.</b> ' + c + '. Revisa el aviso bajo el documento. 👀', CFG.alertMs);
+      if (/edad supera|5 anos/.test(t)) return flash('alert', '<b>¡Ojo con la edad!</b> Supera los 5 años (primera infancia). Verifica la fecha de nacimiento.', CFG.alertMs);
+      if (/ya existe/.test(t)) return flash('alert', '<b>Posible duplicado.</b> ' + c + '. Revisa el aviso bajo el documento.', CFG.alertMs);
       return flash('alert', c, CFG.alertMs);
     }
 
     // info
-    if (/limpio/.test(t)) return flash('erase', '<b>Formulario limpio.</b> Borré todo lo escrito y volvemos al paso 1. 🧹', CFG.eraseMs + 1200);
+    if (/limpio/.test(t)) return flash('erase', '<b>Formulario limpio.</b> Borré todo lo escrito y volvemos al paso 1.', CFG.eraseMs + 1200);
     if (/conexion inestable|guardo de forma segura/.test(t)) {
       endBusy();
-      return flash('sad', '<b>Sin señal estable.</b> Tu reporte quedó guardado de forma segura y se enviará solo cuando vuelva la conexión. 📶', CFG.sentMs);
+      return flash('sad', '<b>Sin señal estable.</b> Tu reporte quedó guardado de forma segura y se enviará solo cuando vuelva la conexión.', CFG.sentMs);
     }
     if (/encontrado en base/.test(t)) return flash('data', '<b>Lo encontré en la base de datos.</b> ' + c, CFG.dataMs);
     if (/sin conexion|sin senal/.test(t)) return flash('sad', c, CFG.alertMs);
@@ -474,17 +474,17 @@
   // Errores mostrados con showFeedback (validación de fechas en tiempo real)
   var onFeedback = safe(function (msg, type) {
     if (type === 'success') return;
-    flash('alert', '<b>Revisa las fechas.</b> ' + esc(clean(msg)) + ' 📅', CFG.problemMs);
+    flash('alert', '<b>Revisa las fechas.</b> ' + esc(clean(msg)) + '', CFG.problemMs);
   });
 
   // ------------------------------------------------------------------------
   // ENVÍO (barra de progreso EnvioProgresoUI)
   // ------------------------------------------------------------------------
   var PROGRESS_MSG = {
-    preparando: 'Preparando tu reporte y comprimiendo los archivos… ⚙️',
-    guardando: 'Guardando en la base de datos. <b>No cierres la página.</b> 💾',
-    correo: '¡Guardado! Ahora envío el correo de notificación… 📧',
-    encolado: 'Sin confirmación a tiempo: lo dejo guardado en cola para reintentar. 📶'
+    preparando: 'Preparando tu reporte y comprimiendo los archivos…',
+    guardando: 'Guardando en la base de datos. <b>No cierres la página.</b>',
+    correo: '¡Guardado! Ahora envío el correo de notificación…',
+    encolado: 'Sin confirmación a tiempo: lo dejo guardado en cola para reintentar.'
   };
   function setBusy() {
     S.busy = true;
@@ -500,7 +500,7 @@
   var onProgress = safe(function (estado) {
     if (estado === 'preparando') setBusy();
     if (S.busy && PROGRESS_MSG[estado]) flash('thinking', PROGRESS_MSG[estado], 20000, 95);
-    if (estado === 'correo-error') flash('alert', 'El correo tardó en salir, pero <b>el reporte ya está guardado</b>. Se reintenta solo. 📧', CFG.alertMs, 65);
+    if (estado === 'correo-error') flash('alert', 'El correo tardó en salir, pero <b>el reporte ya está guardado</b>. Se reintenta solo.', CFG.alertMs, 65);
   });
 
   // ------------------------------------------------------------------------
@@ -537,9 +537,9 @@
         var n = document.querySelectorAll('.dup-autofilled').length;
         if (n > 0) {
           flash('data', '<b>Autocompleté ' + n + ' campo' + (n > 1 ? 's' : '') + '</b> con un registro anterior. ' +
-            'Verifica que la <b>dirección, teléfono y demás datos</b> sigan vigentes. 🗂️', CFG.dataMs + 2500);
+            'Verifica que la <b>dirección, teléfono y demás datos</b> sigan vigentes.', CFG.dataMs + 2500);
         } else {
-          flash('idle2', 'No encontré datos adicionales para autocompletar. Toca escribirlos a mano. ✍️', CFG.infoMs);
+          flash('idle2', 'No encontré datos adicionales para autocompletar. Toca escribirlos a mano.', CFG.infoMs);
         }
         recomputeSoon();
       });
@@ -555,11 +555,11 @@
         var now = Date.now();
         if (now - S.lastNutri < 6000) return;
         S.lastNutri = now;
-        flash('data', '<b>Estado nutricional calculado:</b> ' + esc(txt) + '. Puedes ver la posición en la curva con <b>Ver Gráfica OMS</b>. 📊', CFG.dataMs);
+        flash('data', '<b>Estado nutricional calculado:</b> ' + esc(txt) + '. Puedes ver la posición en la curva con <b>Ver Gráfica OMS</b>.', CFG.dataMs);
       }), 200);
     });
     wrap(window, 'abrirModalGrafica', function () {
-      flash('data', 'La gráfica OMS muestra en qué punto de la curva está el niño con su peso y talla. 📈', CFG.dataMs);
+      flash('data', 'La gráfica OMS muestra en qué punto de la curva está el niño con su peso y talla.', CFG.dataMs);
     });
   }
 
@@ -581,11 +581,11 @@
         var esRetiro = id === 'checkRetiro';
         if (el.checked) {
           flash('idle2', esRetiro
-            ? '<b>Retiro.</b> Pediré documento, nombre, fecha, género y el <b>formato de retiro voluntario</b> (adjunto). 📤'
-            : '<b>Ingreso.</b> Pediré datos del beneficiario, ubicación, acudiente, nutrición y discapacidad. 📥',
+            ? '<b>Retiro.</b> Pediré documento, nombre, fecha, género y el <b>formato de retiro voluntario</b> (adjunto).'
+            : '<b>Ingreso.</b> Pediré datos del beneficiario, ubicación, acudiente, nutrición y discapacidad.',
             CFG.infoMs + 1000);
         } else {
-          flash('erase', 'Quitaste <b>' + (esRetiro ? 'el Retiro' : 'el Ingreso') + '</b>: esa sección ya no se enviará. 🗑️', CFG.eraseMs + 600);
+          flash('erase', 'Quitaste <b>' + (esRetiro ? 'el Retiro' : 'el Ingreso') + '</b>: esa sección ya no se enviará.', CFG.eraseMs + 600);
         }
         recomputeSoon();
       }));
@@ -598,8 +598,8 @@
       el.addEventListener('change', safe(function () {
         if (!el.value) return;
         var all = WIZARD_IDS.every(function (i) { var e = $(i); return e && e.value; });
-        if (all) flash('happy', '<b>¡Ubicación completa!</b> Ya sé dónde reportar. Ahora elige qué vas a reportar. 🎯', CFG.happyMs + 1400);
-        else flash('happy', '¡Bien! ✔', CFG.happyMs);
+        if (all) flash('happy', '<b>¡Ubicación completa!</b> Ya sé dónde reportar. Ahora elige qué vas a reportar.', CFG.happyMs + 1400);
+        else flash('happy', '¡Bien!', CFG.happyMs);
         lastWizard = idx;
       }));
     });
@@ -609,9 +609,9 @@
       var t = e.target;
       if (t && t.type === 'file') {
         if (t.files && t.files.length) {
-          flash('happy', '<b>Archivo adjuntado:</b> ' + esc(t.files[0].name) + ' 📎✔', CFG.happyMs + 1200);
+          flash('happy', '<b>Archivo adjuntado:</b> ' + esc(t.files[0].name) + '', CFG.happyMs + 1200);
         } else {
-          flash('erase', 'Quitaste el archivo. Recuerda que el <b>formato de retiro</b> es obligatorio si reportas un retiro. 📎', CFG.eraseMs + 800);
+          flash('erase', 'Quitaste el archivo. Recuerda que el <b>formato de retiro</b> es obligatorio si reportas un retiro.', CFG.eraseMs + 800);
         }
       }
       recomputeSoon();
@@ -627,7 +627,7 @@
         prevLen[t.id] = now;
         if (was > 0 && now === 0 && Date.now() - S.lastErase > 6000 && t.type !== 'number') {
           S.lastErase = Date.now();
-          flash('erase', 'Borraste <b>' + esc(labelOf(t) || 'el campo') + '</b>. Escríbelo de nuevo cuando lo tengas. ✏️', CFG.eraseMs);
+          flash('erase', 'Borraste <b>' + esc(labelOf(t) || 'el campo') + '</b>. Escríbelo de nuevo cuando lo tengas.', CFG.eraseMs);
         }
       }
       recomputeSoon();
@@ -639,8 +639,8 @@
       var lab = labelOf(e.target) || (e.target.name || 'un campo');
       var isSel = e.target.tagName === 'SELECT';
       flash(isSel ? 'missing' : 'required',
-        isSel ? '<b>Falta información.</b> Selecciona una opción en <b>' + esc(lab) + '</b>. 🔎'
-              : '<b>Campo obligatorio.</b> Escribe <b>' + esc(lab) + '</b> para poder continuar. ✍️',
+        isSel ? '<b>Falta información.</b> Selecciona una opción en <b>' + esc(lab) + '</b>.'
+              : '<b>Campo obligatorio.</b> Escribe <b>' + esc(lab) + '</b> para poder continuar.',
         CFG.problemMs);
     }), true);
 
@@ -660,7 +660,7 @@
         if (sig === last) return;
         last = sig;
         flash('alert', '<b>Este documento ya aparece en la base de datos.</b> Lee el aviso bajo el campo' +
-          (box.querySelector('[onclick*="autocompletar"]') ? ' y, si quieres, usa <b>Autocompletar</b> para no escribir todo' : '') + '. 👀', CFG.alertMs + 1500);
+          (box.querySelector('[onclick*="autocompletar"]') ? ' y, si quieres, usa <b>Autocompletar</b> para no escribir todo' : '') + '.', CFG.alertMs + 1500);
       })).observe(box, { childList: true, attributes: true, attributeFilter: ['class'] });
     });
   }
@@ -668,10 +668,10 @@
   // Conexión
   function hookNetwork() {
     window.addEventListener('offline', safe(function () {
-      flash('sad', '<b>Perdí la conexión.</b> Puedes seguir llenando el formulario: si no hay señal al enviar, lo guardo y lo mando solo. 📶', CFG.sentMs, 62);
+      flash('sad', '<b>Perdí la conexión.</b> Puedes seguir llenando el formulario: si no hay señal al enviar, lo guardo y lo mando solo.', CFG.sentMs, 62);
     }));
     window.addEventListener('online', safe(function () {
-      flash('happy', '<b>¡Volvió la conexión!</b> Sincronizo lo pendiente. 🌐', CFG.infoMs, 62);
+      flash('happy', '<b>¡Volvió la conexión!</b> Sincronizo lo pendiente.', CFG.infoMs, 62);
     }));
   }
 
@@ -701,7 +701,7 @@
       'El <b>correo de respuesta</b> es donde te llega la contestación de la novedad.'
     ],
     general: [
-      'Si te estorbo, arrástrame a otro lado o minimízame con la ✕: vuelvo solo en 5 minutos. 🐾',
+      'Si te estorbo, arrástrame a otro lado o minimízame con la <i class=ic-x></i>: vuelvo solo en 5 minutos.',
       'Los campos con <b>*</b> son obligatorios; los que faltan te los marco en rojo al guardar.',
       'Antes de enviar, revisa el <b>documento</b> y los <b>nombres</b>: son los errores más comunes.'
     ]
@@ -743,7 +743,7 @@
     if (S.minimized) return;
     if (was === 'sit' || was === 'sleep') {
       S.temp = null;
-      flash('alert', was === 'sleep' ? '<b>¡Ya desperté!</b> ¿En qué seguimos? 👀' : '<b>¡Aquí sigo!</b> ¿Continuamos? 🐾', 1400, 20);
+      flash('alert', was === 'sleep' ? '<b>¡Ya desperté!</b> ¿En qué seguimos?' : '<b>¡Aquí sigo!</b> ¿Continuamos?', 1400, 20);
     }
   }
 
@@ -759,9 +759,9 @@
     if (S.busy || S.dragging || blocked()) { S.lastActivity = S.busy ? now : S.lastActivity; return; }
     var idle = now - S.lastActivity;
     if (idle >= CFG.sleepAfterMs) {
-      if (S.sprite !== 'sleep') { S.temp = null; setBase('sleep', '<b>Zzz…</b> Me dio sueño esperando. Toca cualquier cosa y despierto. 💤', S.base.step); }
+      if (S.sprite !== 'sleep') { S.temp = null; setBase('sleep', '<b>Zzz…</b> Me dio sueño esperando. Toca cualquier cosa y despierto.', S.base.step); }
     } else if (idle >= CFG.sitAfterMs) {
-      if (S.sprite !== 'sit' && S.sprite !== 'sleep') { S.temp = null; setBase('sit', '<b>Sigo por aquí.</b> Avísame cuando quieras continuar. 🪑', S.base.step); }
+      if (S.sprite !== 'sit' && S.sprite !== 'sleep') { S.temp = null; setBase('sit', '<b>Sigo por aquí.</b> Avísame cuando quieras continuar.', S.base.step); }
     } else {
       // Consejos
       var ae = document.activeElement;
@@ -772,7 +772,7 @@
         var tip = pickTip();
         if (tip) {
           S.lastTip = now;
-          flash('idle2', '<span class="zanop-tag">💡 Consejo</span> ' + tip, CFG.tipShowMs, 10);
+          flash('idle2', '<span class="zanop-tag"><i class=ic-lightbulb></i> Consejo</span> ' + tip, CFG.tipShowMs, 10);
         }
       }
     }
@@ -799,8 +799,8 @@
     S.sprite = null; S.html = '';
     recompute();
     flash('alert', auto
-      ? '<b>¡Ya volví!</b> Pasaron 5 minutos. Sigo aquí para ayudarte con la novedad. 👋'
-      : '<b>¡Aquí estoy!</b> Retomemos donde íbamos. 👋', 3500, 30);
+      ? '<b>¡Ya volví!</b> Pasaron 5 minutos. Sigo aquí para ayudarte con la novedad.'
+      : '<b>¡Aquí estoy!</b> Retomemos donde íbamos.', 3500, 30);
   }
 
   // ------------------------------------------------------------------------
@@ -842,7 +842,7 @@
         drag.moved = true; S.dragging = true;
         avatar.classList.add('is-dragging');
         setSprite('lifted');
-        setText('<b>¡Ey!</b> ¡Bájame con cuidado! 🙀 Suéltame donde no estorbe.', S.base.step);
+        setText('<b>¡Ey!</b> ¡Bájame con cuidado! Suéltame donde no estorbe.', S.base.step);
         showBubble('sticky');
       }
       root.style.left = (drag.left0 + dx) + 'px';
@@ -858,7 +858,7 @@
       if (moved) {
         S.dragging = false; savePosition();
         S.html = ''; S.sprite = null;
-        flash('happy', '<b>¡Gracias!</b> Aquí me quedo. 😺', 1800, 45);
+        flash('happy', '<b>¡Gracias!</b> Aquí me quedo.', 1800, 45);
       } else {
         // Clic simple: se sorprende un momento (o muestra el globo en móvil)
         if (isSmall() && sayEl.hidden) { showBubble('sticky'); return; }
@@ -869,7 +869,7 @@
     avatar.addEventListener('pointercancel', end);
     window.addEventListener('resize', safe(clampPosition));
   }
-  var pokes = ['<b>¡Ay!</b> Me asustaste. 😳 ¿Necesitas algo?', '<b>¿Sí?</b> Dime, ¿en qué te ayudo con la novedad? 🐾', '<b>¡Hey!</b> Estoy atento a tu formulario. 👀'];
+  var pokes = ['<b>¡Ay!</b> Me asustaste. ¿Necesitas algo?', '<b>¿Sí?</b> Dime, ¿en qué te ayudo con la novedad?', '<b>¡Hey!</b> Estoy atento a tu formulario.'];
   var pokeI = 0;
   function pickPoke() { return pokes[(pokeI++) % pokes.length]; }
 
@@ -905,7 +905,7 @@
 
     setSprite('idle');
     recompute();
-    flash('alert', '<b>¡Hola! Soy Zan.</b> 👋 Te acompaño a reportar tu novedad y te aviso si falta algo antes de enviarla.', 4500, 30);
+    flash('alert', '<b>¡Hola! Soy Zan.</b> Te acompaño a reportar tu novedad y te aviso si falta algo antes de enviarla.', 4500, 30);
   }
 
   // API pública (para que el programador pueda dar órdenes a Zan desde cualquier módulo)

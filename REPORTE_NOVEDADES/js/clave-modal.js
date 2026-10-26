@@ -24,7 +24,7 @@ const ClaveModal = (() => {
         const overlay    = document.getElementById('claveModalOverlay');
         const btn        = document.getElementById('claveModalBtnConfirmar');
 
-        if (icono)  icono.textContent  = opciones.icono || '🔐';
+        if (icono)  icono.innerHTML    = opciones.icono || '';
         if (titulo) titulo.textContent = opciones.titulo || 'Acceso protegido';
 
         if (subtitulo) {
@@ -42,7 +42,7 @@ const ClaveModal = (() => {
             input.placeholder = opciones.placeholder || '••••••••';
         }
         const toggleBtn = document.getElementById('claveModalToggleVer');
-        if (toggleBtn) toggleBtn.textContent = '👁️';
+        if (toggleBtn) toggleBtn.innerHTML = '<i class=ic-eye></i>';
 
         _ocultarError();
 
@@ -88,7 +88,7 @@ const ClaveModal = (() => {
             if (ok) {
                 ocultar();
             } else {
-                _mostrarError('❌ Contraseña incorrecta');
+                _mostrarError('Contraseña incorrecta');
                 _sacudir();
                 if (input) { input.value = ''; input.focus(); }
             }
@@ -106,7 +106,7 @@ const ClaveModal = (() => {
         if (!input) return;
         const verClave = input.type === 'password';
         input.type = verClave ? 'text' : 'password';
-        if (btn) btn.textContent = verClave ? '🙈' : '👁️';
+        if (btn) btn.innerHTML = verClave ? '<i class=ic-eye-off></i>' : '<i class=ic-eye></i>';
     }
 
     // ── Atajos de teclado ────────────────────────────────────────

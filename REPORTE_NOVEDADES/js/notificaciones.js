@@ -66,8 +66,8 @@ const NotificacionesModule = (() => {
             Notification.requestPermission().then((perm) => {
                 if (typeof showToast === 'function') {
                     showToast(perm === 'granted'
-                        ? '🔔 Notificaciones activadas'
-                        : '🔕 No se activaron las notificaciones del sistema (puedes seguir viéndolas en la campanita)', 'info');
+                        ? 'Notificaciones activadas'
+                        : 'No se activaron las notificaciones del sistema (puedes seguir viéndolas en la campanita)', 'info');
                 }
             });
         }
@@ -100,7 +100,7 @@ const NotificacionesModule = (() => {
             if (n.nutricion?.pendiente === true) {
                 _evaluarYAvisar(claveNutricion, ahora, () => ({
                     tipo: 'nutricion',
-                    icono: '🍎',
+                    icono: '<i class=ic-apple></i>',
                     titulo: 'Dato nutricional pendiente',
                     mensaje: `${_nombreDe(n)} necesita completar sus datos nutricionales.`,
                     novedadId: n.id
@@ -117,7 +117,7 @@ const NotificacionesModule = (() => {
                 const dias = _diasDesde(fechaRef);
                 _evaluarYAvisar(claveSinResolver, ahora, () => ({
                     tipo: 'sinresolver',
-                    icono: '⏳',
+                    icono: '<i class=ic-hourglass></i>',
                     titulo: 'Novedad sin resolver',
                     mensaje: `${_nombreDe(n)} lleva ${dias} días sin resolver.`,
                     novedadId: n.id
@@ -150,7 +150,7 @@ const NotificacionesModule = (() => {
 
         // Toast dentro de la app (siempre)
         if (typeof showToast === 'function') {
-            showToast(`${icono} ${titulo}`, 'warning');
+            showToast(titulo, 'warning');
         }
 
         // Notificación nativa del sistema — solo si el usuario cambió de
@@ -243,7 +243,7 @@ const NotificacionesModule = (() => {
                 <div class="notif-dropdown-header">
                     <span>Notificaciones</span>
                 </div>
-                <div class="notif-empty">🔕 Sin notificaciones por ahora</div>`;
+                <div class="notif-empty"><i class=ic-bell-off></i> Sin notificaciones por ahora</div>`;
             return;
         }
 
@@ -274,7 +274,7 @@ const NotificacionesModule = (() => {
         contenedor.className = 'notif-bell-container';
         contenedor.innerHTML = `
             <button id="notifBellBtn" class="notif-bell-btn" title="Notificaciones" onclick="NotificacionesModule.toggleDropdown()">
-                🔔<span id="notifBadge" class="notif-badge" style="display:none">0</span>
+                <i class=ic-bell></i><span id="notifBadge" class="notif-badge" style="display:none">0</span>
             </button>
             <div id="notifDropdown" class="notif-dropdown" style="display:none"></div>
         `;

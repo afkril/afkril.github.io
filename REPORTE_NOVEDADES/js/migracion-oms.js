@@ -17,7 +17,7 @@ const MigracionOMS = (() => {
         try {
             snap = await database.ref(refPath).once('value');
         } catch (e) {
-            log(`❌ Error leyendo ${refPath}: ${e.message}`);
+            log(`Error leyendo ${refPath}: ${e.message}`);
             return;
         }
         const val = snap.val();
@@ -80,12 +80,12 @@ const MigracionOMS = (() => {
         const stats = { totalRevisados: 0, cambiaran: 0, sinCambio: 0, sinDatos: 0, fueraDeRango: 0, errores: 0 };
 
         if (ids.length === 0) {
-            log('⚠️ No se encontraron asociaciones registradas.');
+            log('No se encontraron asociaciones registradas.');
         }
 
         for (const id of ids) {
             const nombre = (asociaciones[id] && asociaciones[id].nombre) || id;
-            log(`🔎 Analizando "${nombre}"...`);
+            log(`Analizando "${nombre}"...`);
             await _procesarColeccion(`novedades_${id}`, 'Activas', nombre, cambios, stats, log);
             await _procesarColeccion(`archivados_${id}`, 'Archivadas', nombre, cambios, stats, log);
         }
@@ -157,7 +157,7 @@ function abrirMigracionOMS() {
     modal.innerHTML = `
         <div style="background:white;border-radius:20px;width:100%;max-width:720px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
             <div style="background:linear-gradient(135deg,#0891b2,#0e7490);padding:18px 22px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
-                <span style="font-size:24px;">🩺</span>
+                <span style="font-size:24px;"><i class=ic-stethoscope></i></span>
                 <div>
                     <h3 style="color:white;font-weight:800;font-size:16px;margin:0;">Recalcular Estados Nutricionales (OMS)</h3>
                     <p style="color:#cffafe;font-size:12px;margin:2px 0 0;">Aplica el nuevo cálculo exacto OMS a todos los registros guardados</p>
@@ -167,7 +167,7 @@ function abrirMigracionOMS() {
 
             <div style="padding:20px 22px;overflow-y:auto;flex:1;">
                 <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:12.5px;color:#92400e;margin-bottom:16px;line-height:1.5;">
-                    ⚠️ Esto recalcula <strong>únicamente</strong> el campo <code>nutricion.estadoNutricional</code> de cada registro
+                    <i class=ic-triangle-alert></i> Esto recalcula <strong>únicamente</strong> el campo <code>nutricion.estadoNutricional</code> de cada registro
                     (activos y archivados, de <strong>todas</strong> las asociaciones), usando el método OMS exacto (LMS).
                     No modifica peso, talla ni ningún otro dato. Recomendado: exporta un respaldo desde Firebase Console antes de aplicar.
                 </div>
@@ -175,7 +175,7 @@ function abrirMigracionOMS() {
                 <div style="display:flex;gap:10px;margin-bottom:16px;">
                     <button id="migBtnAnalizar" onclick="_migAnalizarClick()"
                         style="flex:1;padding:12px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border:none;border-radius:12px;font-weight:800;cursor:pointer;font-size:14px;">
-                        🔍 Analizar (vista previa, no escribe nada)
+                        <i class=ic-search></i> Analizar (vista previa, no escribe nada)
                     </button>
                 </div>
 
@@ -206,18 +206,18 @@ async function _migAnalizarClick() {
     const resumenEl = document.getElementById('migResumen');
     if (logEl) { logEl.textContent = ''; logEl.style.display = 'block'; }
     if (resumenEl) resumenEl.style.display = 'none';
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Analizando...'; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class=ic-hourglass></i> Analizando...'; }
 
     try {
         const { cambios, stats } = await MigracionOMS.analizar(_migLogLine);
-        _migLogLine(`✅ Análisis completo. Registros revisados: ${stats.totalRevisados}`);
+        _migLogLine(`Análisis completo. Registros revisados: ${stats.totalRevisados}`);
         _migRenderResumen(cambios, stats);
     } catch (e) {
-        _migLogLine(`❌ Error durante el análisis: ${e.message}`);
-        showToast && showToast('❌ Error al analizar datos', 'error');
+        _migLogLine(`Error durante el análisis: ${e.message}`);
+        showToast && showToast('Error al analizar datos', 'error');
     } finally {
         MigracionOMS.setProcesando(false);
-        if (btn) { btn.disabled = false; btn.textContent = '🔍 Analizar (vista previa, no escribe nada)'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class=ic-search></i> Analizar (vista previa, no escribe nada)'; }
     }
 }
 
@@ -258,7 +258,7 @@ function _migRenderResumen(cambios, stats) {
 
         ${cambios.length === 0 ? `
             <div style="text-align:center;padding:20px;color:#64748b;font-size:13px;">
-                ✅ No hay registros que cambien. Todo ya está calculado con el método actual.
+                <i class=ic-circle-check></i> No hay registros que cambien. Todo ya está calculado con el método actual.
             </div>
         ` : `
             <div style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:16px;">
@@ -288,7 +288,7 @@ function _migRenderResumen(cambios, stats) {
                         style="flex:1;padding:9px 12px;border:2px solid #fca5a5;border-radius:10px;font-size:13px;box-sizing:border-box;">
                     <button id="migBtnAplicar" onclick="_migAplicarClick()" disabled
                         style="padding:9px 18px;background:#dc2626;color:white;border:none;border-radius:10px;font-weight:800;cursor:not-allowed;opacity:0.5;font-size:13px;white-space:nowrap;">
-                        ✅ Aplicar ${cambios.length} cambio(s)
+                        <i class=ic-circle-check></i> Aplicar ${cambios.length} cambio(s)
                     </button>
                 </div>
             </div>
@@ -313,27 +313,27 @@ async function _migAplicarClick() {
 
     MigracionOMS.setProcesando(true);
     btn.disabled = true;
-    btn.textContent = '⏳ Aplicando...';
+    btn.innerHTML = '<i class=ic-hourglass></i> Aplicando...';
 
     try {
         const { aplicados } = await MigracionOMS.aplicar(_migLogLine);
-        _migLogLine(`✅ Se actualizaron ${aplicados} registro(s) en Firebase.`);
-        showToast && showToast(`✅ ${aplicados} estado(s) nutricional(es) actualizados`, 'success');
+        _migLogLine(`Se actualizaron ${aplicados} registro(s) en Firebase.`);
+        showToast && showToast(`${aplicados} estado(s) nutricional(es) actualizados`, 'success');
         const resumenEl = document.getElementById('migResumen');
         if (resumenEl) {
             resumenEl.innerHTML = `
                 <div style="text-align:center;padding:24px;">
-                    <div style="font-size:36px;margin-bottom:8px;">✅</div>
+                    <div style="font-size:36px;margin-bottom:8px;"><i class=ic-circle-check></i></div>
                     <div style="font-size:15px;font-weight:800;color:#059669;">${aplicados} registro(s) actualizados correctamente</div>
                     <div style="font-size:12px;color:#64748b;margin-top:6px;">Puedes cerrar esta ventana. Los reportes ya reflejarán el nuevo cálculo.</div>
                 </div>
             `;
         }
     } catch (e) {
-        _migLogLine(`❌ Error al aplicar cambios: ${e.message}`);
-        showToast && showToast('❌ Error al aplicar cambios en Firebase', 'error');
+        _migLogLine(`Error al aplicar cambios: ${e.message}`);
+        showToast && showToast('Error al aplicar cambios en Firebase', 'error');
         btn.disabled = false;
-        btn.textContent = '✅ Reintentar';
+        btn.innerHTML = '<i class=ic-circle-check></i> Reintentar';
     } finally {
         MigracionOMS.setProcesando(false);
     }

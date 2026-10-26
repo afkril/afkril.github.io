@@ -156,7 +156,7 @@ const RenovacionModule = (() => {
         }
         const entradas = Object.entries(RenovacionModule._operadores);
         sel.innerHTML = '<option value="">— Selecciona un operador —</option>' +
-            entradas.map(([id, d]) => `<option value="${_esc(id)}">🏢 ${_esc(d.nombre || id)}</option>`).join('');
+            entradas.map(([id, d]) => `<option value="${_esc(id)}"><i class=ic-building-2></i> ${_esc(d.nombre || id)}</option>`).join('');
         if (actual && RenovacionModule._operadores[actual]) sel.value = actual;
     }
 
@@ -182,7 +182,7 @@ const RenovacionModule = (() => {
 
         _operadorId = id;
         _perfil = perfil;
-        if (btn) { btn.disabled = true; btn.textContent = '⏳ Buscando...'; }
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class=ic-hourglass></i> Buscando...'; }
         try {
             await _cargarActivos();
             _resetLog();
@@ -190,7 +190,7 @@ const RenovacionModule = (() => {
         } catch (e) {
             showToast('Error al buscar activos: ' + e.message, 'error');
         } finally {
-            if (btn) { btn.disabled = false; btn.textContent = '🔍 Buscar activos'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class=ic-search></i> Buscar activos'; }
         }
     }
 
@@ -250,7 +250,7 @@ const RenovacionModule = (() => {
                         onchange="RenovacionModule.onCambio()" title="Desvincular este contrato">
                     <div class="renov-fila-info">
                         <div class="renov-fila-nombre"><span class="renov-dot" style="background:${_esc(color)}"></span>
-                            📄 ${_esc(label)}
+                            <i class=ic-file-text></i> ${_esc(label)}
                             ${inactivo ? '<span class="contract-estado-badge is-inactivo">Inactivo</span>' : ''}
                             ${enPerfil ? '' : '<span class="contract-estado-badge is-inactivo">No está en el operador</span>'}
                         </div>
@@ -305,12 +305,12 @@ const RenovacionModule = (() => {
 
             let msg = '', esError = false;
             if (marcado) {
-                if (!fecha) { msg = '⛔ Define la fecha de retiro de este contrato.'; esError = true; hayError = true; }
+                if (!fecha) { msg = 'Define la fecha de retiro de este contrato.'; esError = true; hayError = true; }
                 else {
                     const { ok, omitidos } = _elegibles(cod, fecha);
-                    if (omitidos.length) msg += `⚠️ ${omitidos.length} participante(s) ingresaron después del ${_dmy(fecha)} y se omitirán. `;
-                    if (fecha > hoy) msg += 'ℹ️ La fecha es futura. ';
-                    if (ok.length === 0) { msg += '⛔ Ningún participante se puede retirar con esa fecha: este contrato se omitirá.'; esError = true; }
+                    if (omitidos.length) msg += `${omitidos.length} participante(s) ingresaron después del ${_dmy(fecha)} y se omitirán. `;
+                    if (fecha > hoy) msg += 'La fecha es futura. ';
+                    if (ok.length === 0) { msg += 'Ningún participante se puede retirar con esa fecha: este contrato se omitirá.'; esError = true; }
                     else {
                         totalPersonas += ok.length; totalContratos++;
                         partes.push(`<b>${_esc((_perfil.contratos || {})[cod] || cod)}</b>: ${ok.length} con retiro al ${_dmy(fecha)}`);
@@ -408,12 +408,12 @@ const RenovacionModule = (() => {
         if (!tareas.length) return;
 
         const detalle = tareas.map(t => `• ${(_perfil.contratos || {})[t.cod] || t.cod}: ${t.ok.length} → retiro ${_dmy(t.fecha)}`).join('\n');
-        if (!confirm(`⚠️ Se crearán ${total} registros de RETIRO en "${_perfil.nombre || _operadorId}":\n\n${detalle}\n\nQuedarán pendientes de cargar a Cuéntame. ¿Continuar?`)) return;
+        if (!confirm(`Se crearán ${total} registros de RETIRO en "${_perfil.nombre || _operadorId}":\n\n${detalle}\n\nQuedarán pendientes de cargar a Cuéntame. ¿Continuar?`)) return;
 
         _procesando = true;
         const btn = _$('renovBtnAplicar');
         const textoOriginal = btn ? btn.textContent : '';
-        if (btn) { btn.disabled = true; btn.textContent = '⏳ Aplicando...'; }
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class=ic-hourglass></i> Aplicando...'; }
         _resetLog();
 
         const lote = `renov_${Date.now()}`;
@@ -422,7 +422,7 @@ const RenovacionModule = (() => {
 
         try {
             for (const t of tareas) {
-                _log(`📄 ${(_perfil.contratos || {})[t.cod] || t.cod} — ${t.ok.length} retiro(s) con fecha ${_dmy(t.fecha)}` +
+                _log(`${(_perfil.contratos || {})[t.cod] || t.cod} — ${t.ok.length} retiro(s) con fecha ${_dmy(t.fecha)}` +
                      (t.omitidos ? ` (${t.omitidos} omitido(s) por ingresar después)` : ''));
                 for (let i = 0; i < t.ok.length; i += BLOQUE) {
                     const trozo = t.ok.slice(i, i + BLOQUE);
@@ -434,18 +434,18 @@ const RenovacionModule = (() => {
                     try {
                         await database.ref().update(updates);
                         creados += trozo.length;
-                        _log(`   ✔ ${Math.min(i + BLOQUE, t.ok.length)}/${t.ok.length}`);
+                        _log(`   ${Math.min(i + BLOQUE, t.ok.length)}/${t.ok.length}`);
                     } catch (e) {
                         fallidos += trozo.length;
-                        _log(`   ❌ Falló un bloque de ${trozo.length}: ${e.message}`);
+                        _log(`   Falló un bloque de ${trozo.length}: ${e.message}`);
                     }
                 }
             }
 
             _log(fallidos
-                ? `⚠️ Terminó con errores: ${creados} retiro(s) creados, ${fallidos} fallidos. Vuelve a buscar y repite solo lo pendiente.`
-                : `✅ Listo: ${creados} retiro(s) creados (lote ${lote}).`);
-            showToast(fallidos ? `⚠️ ${creados} desvinculados, ${fallidos} con error` : `✅ ${creados} participante(s) desvinculado(s)`,
+                ? `Terminó con errores: ${creados} retiro(s) creados, ${fallidos} fallidos. Vuelve a buscar y repite solo lo pendiente.`
+                : `Listo: ${creados} retiro(s) creados (lote ${lote}).`);
+            showToast(fallidos ? `${creados} desvinculados, ${fallidos} con error` : `${creados} participante(s) desvinculado(s)`,
                       fallidos ? 'warning' : 'success', 4000);
 
             if (typeof DuplicadosModule !== 'undefined' && DuplicadosModule.cargarIndiceGlobal) {
@@ -457,11 +457,11 @@ const RenovacionModule = (() => {
             const input = _$('renovConfirmInput');
             if (input) input.value = '';
         } catch (e) {
-            _log(`❌ Error al aplicar: ${e.message}`);
-            showToast('❌ Error al desvincular: ' + e.message, 'error');
+            _log(`Error al aplicar: ${e.message}`);
+            showToast('Error al desvincular: ' + e.message, 'error');
         } finally {
             _procesando = false;
-            if (btn) btn.textContent = textoOriginal || '🔴 Desvincular participantes';
+            if (btn) btn.textContent = textoOriginal || 'Desvincular participantes';
             toggleAplicar();
         }
     }

@@ -132,7 +132,7 @@ function renderPapeleraTable(novelties) {
     const paginated = novelties.slice(start, start + itemsPerPage);
 
     if (paginated.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 24px; color:#94a3b8;">🗑️ La papelera está vacía</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 24px; color:#94a3b8;"><i class=ic-trash-2></i> La papelera está vacía</td></tr>`;
         renderPapeleraPagination(0);
         return;
     }
@@ -169,8 +169,8 @@ function renderPapeleraTable(novelties) {
         else if (diasRestantes <= 3) diasColor = '#f59e0b';
 
         const origenBadge = n.origen === 'archivadas'
-            ? '<span class="badge" style="background:#ede9fe; color:#5b21b6;">🗃️ Archivados</span>'
-            : '<span class="badge" style="background:#dbeafe; color:#1e40af;">📋 Activas</span>';
+            ? '<span class="badge" style="background:#ede9fe; color:#5b21b6;"><i class=ic-archive></i> Archivados</span>'
+            : '<span class="badge" style="background:#dbeafe; color:#1e40af;"><i class=ic-clipboard-list></i> Activas</span>';
 
         const row = document.createElement('tr');
         row.className = 'papelera-row';
@@ -184,8 +184,8 @@ function renderPapeleraTable(novelties) {
             <td>${docDisplay}</td>
             <td>${nameDisplay}</td>
             <td>
-                <button onclick="restaurarPapelera('${n.id}')" class="text-green-600 hover:text-green-800 text-xs font-semibold mr-2 bg-green-50 px-2 py-1 rounded">♻️ Restaurar</button>
-                <button onclick="eliminarDefinitivoPapelera('${n.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold bg-red-50 px-2 py-1 rounded">🗑️ Eliminar</button>
+                <button onclick="restaurarPapelera('${n.id}')" class="text-green-600 hover:text-green-800 text-xs font-semibold mr-2 bg-green-50 px-2 py-1 rounded"><i class=ic-recycle></i> Restaurar</button>
+                <button onclick="eliminarDefinitivoPapelera('${n.id}')" class="text-red-600 hover:text-red-800 text-xs font-semibold bg-red-50 px-2 py-1 rounded"><i class=ic-trash-2></i> Eliminar</button>
             </td>
         `;
         tbody.appendChild(row);
@@ -226,7 +226,7 @@ function restaurarPapelera(id) {
     database.ref(destinoRef).push().set(datos)
         .then(() => database.ref(`${AsociacionesModule.getRef('papelera')}/${id}`).remove())
         .then(() => {
-            showToast(`♻️ Novedad restaurada a ${destinoLabel}`, 'success');
+            showToast(`Novedad restaurada a ${destinoLabel}`, 'success');
             loadPapeleraNovelties();
             if (typeof loadNoveltiesTable === 'function') loadNoveltiesTable();
             if (typeof loadArchivedNovelties === 'function') loadArchivedNovelties();
@@ -237,11 +237,11 @@ function restaurarPapelera(id) {
 
 // ── Eliminar un registro puntual de forma definitiva ──────────────
 function eliminarDefinitivoPapelera(id) {
-    if (!confirm('⚠️ Esta acción eliminará el registro de forma PERMANENTE y no se puede deshacer.\n\n¿Desea continuar?')) return;
+    if (!confirm('Esta acción eliminará el registro de forma PERMANENTE y no se puede deshacer.\n\n¿Desea continuar?')) return;
 
     database.ref(`${AsociacionesModule.getRef('papelera')}/${id}`).remove()
         .then(() => {
-            showToast('🗑️ Registro eliminado permanentemente', 'success');
+            showToast('Registro eliminado permanentemente', 'success');
             loadPapeleraNovelties();
         })
         .catch(error => showToast('Error al eliminar: ' + error.message, 'error'));
@@ -255,7 +255,7 @@ function vaciarPapelera() {
         return;
     }
 
-    const confirmacion = prompt(`⚠️ ¡ATENCIÓN! ESTA ACCIÓN NO SE PUEDE DESHACER ⚠️\n\n` +
+    const confirmacion = prompt(`¡ATENCIÓN! ESTA ACCIÓN NO SE PUEDE DESHACER\n\n` +
         `Está a punto de eliminar PERMANENTEMENTE los ${count} registros de la papelera.\n\n` +
         `Para confirmar, escriba ELIMINAR en mayúsculas:`);
 
@@ -266,7 +266,7 @@ function vaciarPapelera() {
 
     database.ref(AsociacionesModule.getRef('papelera')).remove()
         .then(() => {
-            showToast('🗑️ Papelera vaciada correctamente', 'success');
+            showToast('Papelera vaciada correctamente', 'success');
             papeleraNovelties = [];
             filterPapeleraNovelties();
             updatePapeleraBadge();

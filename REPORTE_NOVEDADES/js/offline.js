@@ -300,7 +300,7 @@ const OfflineModule = (() => {
 
                     await _removePending(item.tempId);
                     if (typeof showToast === 'function') {
-                        showToast('✅ Registro pendiente sincronizado', 'success');
+                        showToast('Registro pendiente sincronizado', 'success');
                     }
                     if (typeof loadNoveltiesTable === 'function') loadNoveltiesTable();
                     if (typeof DuplicadosModule !== 'undefined') DuplicadosModule.cargarIndiceGlobal(true);
@@ -367,10 +367,10 @@ const OfflineModule = (() => {
         banner.style.display = 'flex';
         if (!online) {
             banner.className = 'offline-banner offline-banner--offline';
-            banner.innerHTML = `<span class="offline-banner-drag">⠿</span><span>🔴 Sin conexión — viendo datos guardados localmente${pendingCount > 0 ? ` · ${pendingCount} pendiente(s)` : ''}</span>`;
+            banner.innerHTML = `<span class="offline-banner-drag"><i class=ic-grip-vertical></i></span><span><i class=ic-dot-red></i> Sin conexión — viendo datos guardados localmente${pendingCount > 0 ? ` · ${pendingCount} pendiente(s)` : ''}</span>`;
         } else if (pendingCount > 0) {
             banner.className = 'offline-banner offline-banner--syncing';
-            banner.innerHTML = `<span class="offline-banner-drag">⠿</span><span>🟡 Sincronizando ${pendingCount} registro(s) pendiente(s)...</span>`;
+            banner.innerHTML = `<span class="offline-banner-drag"><i class=ic-grip-vertical></i></span><span><i class=ic-dot-yellow></i> Sincronizando ${pendingCount} registro(s) pendiente(s)...</span>`;
         }
     }
 

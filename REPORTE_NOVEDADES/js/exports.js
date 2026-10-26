@@ -117,16 +117,16 @@ function getNombreEstado(categoria) {
 
 function getIconoEstado(categoria) {
     const iconos = {
-        'severa': '🔴',
-        'moderada': '🟠',
-        'riesgo-desnutricion': '🟡',
-        'normal': '🟢',
-        'riesgo-sobrepeso': '🔵',
-        'sobrepeso': '🟣',
-        'obesidad': '🟤',
-        'sin-datos': '⚪'
+        'severa': '<i class=ic-dot-red></i>',
+        'moderada': '<i class=ic-dot-orange></i>',
+        'riesgo-desnutricion': '<i class=ic-dot-yellow></i>',
+        'normal': '<i class=ic-dot-green></i>',
+        'riesgo-sobrepeso': '<i class=ic-dot-blue></i>',
+        'sobrepeso': '<i class=ic-dot-purple></i>',
+        'obesidad': '<i class=ic-dot-brown></i>',
+        'sin-datos': '<i class=ic-dot-gray></i>'
     };
-    return iconos[categoria] || '⚪';
+    return iconos[categoria] || '<i class=ic-dot-gray></i>';
 }
 
 function exportArchivedToExcel() {
@@ -635,7 +635,7 @@ function exportToPDF() {
                     }
                     
                     const fechaMovimiento = getFechaMovimiento(n);
-                    const estadoText = n.cuentameStatus === 'cargado' ? '✓ CARGADO' : '⏳ PEND';
+                    const estadoText = n.cuentameStatus === 'cargado' ? 'CARGADO' : 'PEND';
                     
                     let tipoDisplay = n.type ? n.type.toUpperCase() : '';
                     let docRet = '';
