@@ -466,7 +466,7 @@ button.ws.add{border-bottom:0;border-radius:14px 14px 0 0;background:none;min-he
         </div>
         <div class="kpis" id="detK"></div>
         <div class="wrap" id="detW"><table id="detT"></table></div><div id="detC" class="hide"></div>
-        <div class="legend"><span style="--c:var(--ok)">Asistió (X)</span><span style="--c:var(--warn)">Falla (-)</span><span style="--c:#ff7a00">Naranja: día hábil sin diligenciar de la UDS (se llena como inasistencia; el descuento se calcula en Análisis)</span><span style="--c:#FFD1F0">Rosa: ajuste automático (inasistencia por fecha exacta de desvinculación del Cuéntame, o R de 1–2 días en la semana que cuenta como cupo)</span><span style="--c:var(--gray)">Retiro</span><span style="--c:var(--card)">N/A: ingreso posterior (no cuenta)</span><span style="--c:var(--b)">Azul: ajustado manualmente</span><span style="--c:transparent">Clic en una celda -, R o N/A para validarla</span><span style="--c:var(--sp)">Día especial</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:#fecaca">⚠ Error de marcación (asistencia en día libre)</span></div>
+        <div class="legend"><span style="--c:var(--ok)">Asistió (X)</span><span style="--c:var(--warn)">Falla (-)</span><span style="--c:#ff7a00">Naranja: día hábil sin diligenciar de la UDS (se llena como inasistencia; el descuento se calcula en Análisis)</span><span style="--c:#FFD1F0">Rosa: ajuste automático (inasistencia por fecha exacta de desvinculación del Cuéntame, o R de 1–2 días en la semana que cuenta como cupo). Con el Cuéntame cargado, los días previos a la primera asistencia son inasistencia (no N/A) si el participante ya estaba inscrito y Activo</span><span style="--c:var(--gray)">Retiro</span><span style="--c:var(--card)">N/A: ingreso posterior (no cuenta)</span><span style="--c:var(--b)">Azul: ajustado manualmente</span><span style="--c:transparent">Clic en una celda -, R o N/A para validarla</span><span style="--c:var(--sp)">Día especial</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:#fecaca">⚠ Error de marcación (asistencia en día libre)</span></div>
       </div>
     </section>
   </div>
@@ -565,11 +565,11 @@ const wkIdx=d=>Math.floor((d-1+(dow(1)+6)%7)/7);
 function calc(r){
  const sv=svc(r.code);let first=0,last=0;
  sv.forEach(d=>{if(r.marks[d]){if(!first)first=d;last=d}});
- const ov=S.ov[r.key]||{},o={att:0,abs:0,ret:0,na:0,cell:{},man:{},aw:{},awN:0,dv:{}},K={},dv=!r.active&&r.desv?r.desv:0;   // dv = día de la desvinculación exacta (reporte Cuéntame)
+ const ov=S.ov[r.key]||{},o={att:0,abs:0,ret:0,na:0,cell:{},man:{},aw:{},awN:0,dv:{},iv:{}},K={},dv=!r.active&&r.desv?r.desv:0,ing=r.ing==null?0:r.ing;   // ing = día desde el cual ya estaba inscrito según Cuéntame (T): 1 = ingresó antes del mes · 99 = ingresa después · 0 = sin dato   // dv = día de la desvinculación exacta (reporte Cuéntame)
  sv.forEach(d=>{
   if(r.marks[d])K[d]='x';
-  else if(!first){if(r.active)K[d]='f';else if(dv&&d<=dv){if(r.vinc&&d<r.vinc)K[d]='n';else{K[d]='f';o.dv[d]=1}}else K[d]='r'}   // sin asistencia en el mes (con fecha exacta: falla hasta la desvinculación)
-  else if(d<first)K[d]='n';                   // ingreso posterior: no aplica
+  else if(!first){if(r.active)K[d]=(ing&&d<ing)?'n':'f';else if(dv&&d<=dv){if(r.vinc&&d<r.vinc)K[d]='n';else{K[d]='f';o.dv[d]=1}}else K[d]='r'}   // sin asistencia en el mes (con fecha exacta: falla hasta la desvinculación)
+  else if(d<first){if(ing&&d>=ing){K[d]='f';o.iv[d]=1}else K[d]='n'}   // N/A solo si Cuéntame no lo tenía inscrito ese día; si ya estaba inscrito (T) y activo (V) es inasistencia
   else if(!r.active&&d>last){if(dv&&d<=dv){K[d]='f';o.dv[d]=1}else K[d]='r'}   // retiro (días hasta la fecha exacta = inasistencia)
   else K[d]='f';
  });
@@ -579,7 +579,7 @@ function calc(r){
   [[rD,'r']].forEach(([g,t])=>{if(g.length&&g.length<=AJ_SEM)g.forEach(d=>{K[d]='f';o.aw[d]=t})});   // cuenta como cupo (f) pero se muestra como N/A o R
  }
  sv.forEach(d=>{let k=K[d];
-  if(k!=='x'&&ov[d]){k=ov[d];o.man[d]=1;delete o.aw[d];delete o.dv[d]}   // ajuste manual (solo f / r / n) tiene prioridad
+  if(k!=='x'&&ov[d]){k=ov[d];o.man[d]=1;delete o.aw[d];delete o.dv[d];delete o.iv[d]}   // ajuste manual (solo f / r / n) tiene prioridad
   else if(o.aw[d])o.awN++;
   o.cell[d]=k;o[{x:'att',f:'abs',r:'ret',n:'na'}[k]]++;
  });
@@ -679,7 +679,7 @@ function renderDet(){
   WDAYS.forEach(d=>{let cl,t,at='';
    if(isSp(d)&&r.marks[d]){cl='ce';t='⚠';at=' title="Error de marcación: asistencia marcada en día especial / sin servicio"'}else if(spDay(d,c)){cl='cs';t='–'}
    else{const k=o.cell[d];const bd=k==='f'&&uAuto(c).has(d);cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];if(bd)cl='cb';t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';
-    if(k!=='x'){cl=(o.man[d]?'cm':(o.dv[d]||o.aw[d])?'cd':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" title="${o.dv[d]?'Falla: la desvinculación real fue el día '+r.desv+' (reporte Cuéntame). Clic para cambiar':o.aw[d]?'Retiro de 1–2 días dentro de la semana: cuenta como cupo (falla interna). Clic para cambiar':bd?'Día hábil sin diligenciar de la UDS: se llenó como inasistencia y se descuenta en Análisis. Clic para cambiar':'Clic para validar'}" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
+    if(k!=='x'){cl=(o.man[d]?'cm':(o.dv[d]||o.aw[d])?'cd':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" title="${o.dv[d]?'Falla: la desvinculación real fue el día '+r.desv+' (reporte Cuéntame). Clic para cambiar':o.aw[d]?'Retiro de 1–2 días dentro de la semana: cuenta como cupo (falla interna). Clic para cambiar':o.iv[d]?'Falla: según Cuéntame ya estaba inscrito (ingreso '+r.ingF+') y activo; no es ingreso posterior.'+(bd?' Día hábil sin diligenciar de la UDS: se descuenta en Análisis.':'')+' Clic para cambiar':bd?'Día hábil sin diligenciar de la UDS: se llenó como inasistencia y se descuenta en Análisis. Clic para cambiar':'Clic para validar'}" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
    h+=`<td class="d ${cl}${wb(d)}" data-dy="${d}"${at}>${t}</td>`});
   h+=`<td class="n"><b>${o.att}</b></td><td class="n">${o.abs}</td><td class="n">${o.ret}</td><td class="n">${o.na}</td></tr>`});
  if(!rows.length)h+=`<tr><td colspan="${WDAYS.length+8}" class="empty">Sin resultados</td></tr>`;
@@ -822,7 +822,7 @@ const TS=[
  {i:IC.cal,t:'Días especiales',x:'Toque los <b>festivos o recesos</b> para excluirlos (azul). El último viernes ya viene marcado. Toque el <b>encabezado</b> del panel (o el botón de la derecha) para <b>plegarlo o desplegarlo</b>; se despliega solo cuando aparece una alerta de días.',s:'#dcard',tab:1},
  {i:IC.grid,t:'Consolidado',x:'Resumen por UDS: cupo, asistencias, inasistencias y %. Toque una UDS para ver su detalle.',s:'#v1',tab:1},
  {i:IC.s,t:'Detalle y filtros',x:'Elija la UDS, busque por nombre o documento y filtre <b>Activos</b> o <b>Retirados</b>. Las fallas salen en amarillo.',s:'#v2',tab:2},
- {i:IC.calc,t:'Cómo se cuenta',x:'<b>R</b> = días después de retirarse. <b>N/A</b> = días antes de ingresar. El cupo suma los niños inscritos cada día. Los <b>N/A</b> nunca suman: no son asistencia, inasistencia, cupo ni valor a facturar. <b>Regla semanal (solo retiros):</b> si un retiro deja solo 1–2 días sin asistir dentro de su última semana, esos días se muestran en rosa como R, pero cuentan como cupo (falla interna). Si se cargó el reporte del Cuéntame con la fecha exacta de desvinculación, esta regla no aplica: hasta esa fecha son inasistencias y los días posteriores son retiro (R). Si usted edita una celda a mano, esa edición manda y no suma como caso especial.'},
+ {i:IC.calc,t:'Cómo se cuenta',x:'<b>R</b> = días después de retirarse. <b>N/A</b> = días antes de ingresar. El cupo suma los niños inscritos cada día. Los <b>N/A</b> nunca suman: no son asistencia, inasistencia, cupo ni valor a facturar. <b>Regla semanal (solo retiros):</b> si un retiro deja solo 1–2 días sin asistir dentro de su última semana, esos días se muestran en rosa como R, pero cuentan como cupo (falla interna). Si se cargó el reporte del Cuéntame con la fecha exacta de desvinculación, esta regla no aplica: hasta esa fecha son inasistencias y los días posteriores son retiro (R). Con el reporte del Cuéntame cargado también se valida el <b>ingreso</b> (columna T, el más reciente de su UDS) y el estado <b>Activo</b> (columna V): si ya estaba inscrito antes de su primera asistencia, esos días son inasistencia y no N/A (por ejemplo, cuando la UDS no operó y nadie marcó). Si usted edita una celda a mano, esa edición manda y no suma como caso especial.'},
  {i:IC.pen,t:'Editar casos especiales',x:'Toque una celda <b>-</b>, <b>R</b> o <b>N/A</b> y elija qué es en realidad. Queda en <b>azul</b>; los ajustes se guardan en este navegador.',s:'#v2',tab:2},
  {i:IC.cal,t:'Cupo por semana',x:'Muestra el cupo de cada UDS por semana: el valor que <b>más se repite</b> entre sus días (si empatan, el menor). Toque la <b>lupa</b> para ver los 5 días reales. Los días en blanco solo de una UDS se muestran como <b>descuentos</b> (cupo × días).',s:'#v3',tab:3},
  {i:IC.warn,t:'Errores de marcación',x:'Si un participante tiene <b>X en un día especial, sin servicio o fin de semana</b>, se marca como <b>error de digitación</b> (celda roja ⚠). No suma en asistencias ni cupo y queda listado con su observación en la pestaña <b>Errores de marcación</b>, con descarga a Excel.',s:'#v4',tab:4}
@@ -948,7 +948,7 @@ function renderCards(){const on=!!S.cards;$('#detW').classList.toggle('hide',on)
  $('#detC').innerHTML=rows.map(r=>{const o=calc(r);let g='';
   for(let d=1;d<=N;d++){const w=isWk(d),sp=spDay(d,c);let cl,t,at='';
    if((w||isSp(d))&&r.marks[d]){cl='ce';t='⚠'}else if(w)continue;else if(sp){cl='cs';t='–'}
-   else{const k=o.cell[d];const bd=k==='f'&&uAuto(c).has(d);cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];if(bd)cl='cb';t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';if(k!=='x'){cl=(o.man[d]?'cm':(o.dv[d]||o.aw[d])?'cd':cl)+' ed';at=` data-i="${r.i}" data-d="${d}"${o.dv[d]?' title="Falla: desvinculación real el día '+r.desv+' (Cuéntame)"':o.aw[d]?' title="Retiro de 1–2 días: cuenta como cupo"':bd?' title="Día sin diligenciar: inasistencia (se descuenta en Análisis)"':''} tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
+   else{const k=o.cell[d];const bd=k==='f'&&uAuto(c).has(d);cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];if(bd)cl='cb';t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';if(k!=='x'){cl=(o.man[d]?'cm':(o.dv[d]||o.aw[d])?'cd':cl)+' ed';at=` data-i="${r.i}" data-d="${d}"${o.dv[d]?' title="Falla: desvinculación real el día '+r.desv+' (Cuéntame)"':o.aw[d]?' title="Retiro de 1–2 días: cuenta como cupo"':o.iv[d]?' title="Falla: ya inscrito según Cuéntame (ingreso '+r.ingF+')"':bd?' title="Día sin diligenciar: inasistencia (se descuenta en Análisis)"':''} tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
    g+=`<span class="mc ${cl}" data-dy="${d}"${at}>${t}<small>${d} ${WD[dow(d)]}</small></span>`}
   return`<article class="pc" data-ri="${r.i}"><b>${esc(r.name)}</b><small>${esc(r.doc)} · ${r.active?'Activo':o.eff?'Activo*':'Inactivo'}</small><div class="mg">${g}</div><div class="ps"><span>✔ ${o.att}</span><span>Falla ${o.abs}</span><span>R ${o.ret}</span><span>N/A ${o.na}</span></div></article>`}).join('')||'<div class="empty">Sin resultados</div>'}
 
@@ -1116,9 +1116,20 @@ function cueChk(){return!S.cue?'unk':cueFind()?'ok':digs((S.meta||{}).co)?'bad':
 const cueRows=()=>{const B=cueBlk();return B?B.rows:[]};
 function cueRec(r){const E=cueRows().filter(x=>x.doc===r.doc);if(!E.length)return null;
  return E.find(x=>x.code===r.code&&inM(x.desv))||E.find(x=>x.code===r.code)||E.find(x=>inM(x.desv))||E[0]}
-function applyCue(){S.rows.forEach(r=>{r.desv=0;r.vinc=0});
+const dKey=p=>p?p.y*10000+p.m*100+p.d:0;
+/* Fecha de ingreso (col. T) más reciente del participante en SU unidad de servicio. Si RAM lo trae activo, solo cuentan los registros
+   con estado Activo (col. V). Devuelve {d,f}: d = día del mes desde el que estaba inscrito (1 = antes del mes, 99 = después), f = fecha */
+function cueIng(r){
+ const E=cueRows().filter(x=>x.doc===r.doc&&x.code===r.code&&x.vinc);if(!E.length)return null;
+ const last=A=>A.reduce((a,b)=>dKey(b.vinc)>dKey(a.vinc)?b:a);let c;
+ if(r.active){const A=E.filter(x=>/^activ/i.test(x.est));if(!A.length)return null;c=last(A)}
+ else{c=cueRec(r);if(!c||c.code!==r.code||!c.vinc)c=last(E)}
+ const k=dKey(c.vinc),ms=year()*10000+S.month*100;
+ return{d:inM(c.vinc)?c.vinc.d:(k<ms?1:99),f:`${c.vinc.d}/${c.vinc.m}/${c.vinc.y}`}}
+function applyCue(){S.rows.forEach(r=>{r.desv=0;r.vinc=0;r.ing=null;r.ingF=''});
  if(!S.cue||!S.cueApply||!cueBlk())return;
- S.rows.forEach(r=>{if(r.active)return;const c=cueRec(r);if(c&&inM(c.desv)){r.desv=c.desv.d;if(inM(c.vinc))r.vinc=c.vinc.d}})}
+ S.rows.forEach(r=>{const g=cueIng(r);if(g){r.ing=g.d;r.ingF=g.f}
+  if(r.active)return;const c=cueRec(r);if(c&&inM(c.desv)){r.desv=c.desv.d;if(inM(c.vinc))r.vinc=c.vinc.d}})}
 function desRecs(){const out=[];if(!S.cue||!cueBlk())return out;
  S.rows.filter(r=>!r.active).forEach(r=>{const c=cueRec(r),sv=svc(r.code);let last=0;sv.forEach(d=>{if(r.marks[d])last=d});
   const o={r,c,last,add:[],st:'',sev:'inf',mes:false};
@@ -1209,13 +1220,22 @@ function buildVal(){
  add(L.length?(pv.length?'warn':'info'):'ok','Días sin marcar por UDS',L.length?`${L.length} día(s) en que una UDS no tiene ninguna asistencia (${iso.length} de 1 solo día); ${pv.length} sin clasificar como permiso o incapacidad. Se descuentan raciones.`:'Ninguna UDS tiene días sin marcar.',pv.map(x=>({t:`${x.c} · ${fmtD(x.d)} · ${x.run>1?'día '+x.pos+' de '+x.run+' seguidos':'día aislado'}`,c:x.c,d:x.d})),L.length?5:0);
  // 7. ingresos a mitad de semana: N/A de 1 a 4 días dentro de la misma semana de la primera asistencia
  const ing=[];rows.forEach(r=>{const sv=svc(r.code);let first=0;for(const d of sv){if(r.marks[d]){first=d;break}}if(!first)return;
-  const wf=wkIdx(first),nds=sv.filter(d=>d<first&&wkIdx(d)===wf);if(nds.length>=1&&nds.length<=4)ing.push({r,first,nds})});
+  const wf=wkIdx(first),cc=calc(r).cell,nds=sv.filter(d=>d<first&&wkIdx(d)===wf&&cc[d]==='n');if(nds.length>=1&&nds.length<=4)ing.push({r,first,nds})});
  ing.sort((a,b)=>b.nds.length-a.nds.length||a.r.code.localeCompare(b.r.code)||a.first-b.first);
  {const totN=ing.reduce((a,x)=>a+x.nds.length,0),byN=k=>ing.filter(x=>x.nds.length===k).length,cup=0;
   add(ing.length?'info':'ok','Ingresos a mitad de semana (N/A de 1 a 4 días)',
    ing.length?`${ing.length} participante(s) ingresaron a mitad de semana: ${totN} día(s) N/A en total (1 día: ${byN(1)} · 2 días: ${byN(2)} · 3 días: ${byN(3)} · 4 días: ${byN(4)}). Los N/A no cuentan como asistencia, inasistencia ni cupo.`
    :'Ningún participante ingresó a mitad de semana (sin N/A de 1 a 4 días en la semana de su primera asistencia).',
    ing.map(x=>({t:`${x.r.uds} · ${x.r.name} (${x.r.doc}) · primera asistencia día ${x.first} · ${x.nds.length} N/A (días ${x.nds.join(', ')}) → N/A, no cuenta`,c:x.r.code,i:x.r.i,d:x.nds[0]})),2)}
+ // 7b. fechas de ingreso (Cuéntame, col. T) y estado (col. V)
+ if(S.cue&&cueBlk()){const cv=[],pre=[],noA=[];
+  rows.forEach(r=>{const o=calc(r),sv=svc(r.code),dd=Object.keys(o.iv).map(Number).sort((a,b)=>a-b);let first=0;for(const d of sv){if(r.marks[d]){first=d;break}}
+   if(dd.length)cv.push({t:`${r.uds} · ${r.name} (${r.doc}) · ingreso ${r.ingF} · días ${dd.join(', ')} pasan de N/A a inasistencia`,c:r.code,i:r.i,d:dd[0]});
+   if(r.ing&&r.ing<99&&first&&first<r.ing)pre.push({t:`${r.uds} · ${r.name} (${r.doc}) · asistió el día ${first} y Cuéntame lo ingresó el ${r.ingF}`,c:r.code,i:r.i,d:first});
+   if(r.active&&r.ing==null&&cueRows().some(x=>x.doc===r.doc&&x.code===r.code))noA.push({t:`${r.uds} · ${r.name} (${r.doc}) · RAM lo trae activo pero Cuéntame no lo muestra Activo en esta UDS`,c:r.code,i:r.i})});
+  add(cv.length?'info':'ok','Fechas de ingreso (Cuéntame)',cv.length?`${cv.length} participante(s) ya estaban inscritos y activos antes de su primera asistencia: esos días se cuentan como inasistencia y no como N/A.`:'Ningún N/A se convirtió: los días previos a la primera asistencia son ingresos reales.',cv,cv.length?7:0);
+  if(pre.length)add('warn','Asistencia antes de la fecha de ingreso',`${pre.length} participante(s) con asistencia anterior al ingreso registrado en Cuéntame: revise la fecha.`,pre,7);
+  if(noA.length)add('warn','Activo en RAM sin estado Activo en Cuéntame',`${noA.length} participante(s): no se aplicó la fecha de ingreso, los N/A quedan como estaban.`,noA,7)}
  // 8. fechas exactas de desvinculación (reporte Cuéntame, opcional)
  {const R=desRecs(),pos=rows.filter(x=>{if(x.active)return false;const sv=svc(x.code);let l=0;sv.forEach(d=>{if(x.marks[d])l=d});return l>0&&l<sv[sv.length-1]});
   if(!S.cue)add(pos.length?'info':'ok','Fechas exactas de desvinculación',pos.length?`${pos.length} retirado(s) con asistencias en el mes y última asistencia anterior al último día de servicio: su retiro real puede ser posterior (esos días serían inasistencias, no retiro). Cargue el reporte del Cuéntame en “Desvinculaciones” para validarlo.`:'Sin retirados con asistencias en el mes por validar.',pos.map(x=>{let l=0;svc(x.code).forEach(d=>{if(x.marks[d])l=d});return{t:`${x.uds} · ${x.name} (${x.doc})`,c:x.code,i:x.i,d:l}}),pos.length?7:0);
