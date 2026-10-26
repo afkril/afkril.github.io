@@ -1236,6 +1236,9 @@ function extraerDatosNutricionales(id, data, tipo) {
     
     const ingreso = data.ingreso || data;
     const nutricion = data.nutricion || (data.ingreso && data.ingreso.nutricion) || {};
+
+    // Gestantes y menores de 6 meses (FAMI): no entran al análisis OMS
+    if (nutricion.tipo === 'gestante' || nutricion.tipo === 'menor_6_meses') return null;
     
     // Extraer código UDS
     let udsCode = '';

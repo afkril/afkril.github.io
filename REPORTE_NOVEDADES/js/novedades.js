@@ -1511,6 +1511,44 @@ function renderGeneralTab(
         </div>
     `;
 }
+/* ============================================================
+   RENOMBRADO DE ADJUNTOS (llegan al correo con nombre ordenado)
+     · Soporte documental (ingreso):  <N° documento>_<NOMBRES Y APELLIDOS>
+     · RAM (retiro):                  Ram_<MES>_<UDS>_<N° documento>
+     · Formato retiro voluntario:     Retiro_<N° documento>_<DD-MM-AAAA>
+   La extensión se conserva (.pdf, .jpg…).
+   ============================================================ */
+const MESES_ARCHIVO = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+function limpiarParteNombre(t) {
+    return String(t == null ? '' : t).replace(/[\\\/:*?"<>|\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function extensionArchivo(file) {
+    const m = ((file && file.name) || '').match(/\.([A-Za-z0-9]{1,5})$/);
+    if (m) return '.' + m[1].toLowerCase();
+    const tipos = { 'application/pdf': '.pdf', 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
+    return (file && tipos[file.type]) || '';
+}
+function nombreArchivoNovedad(partes, file) {
+    const base = partes.map(limpiarParteNombre).filter(Boolean).join('_');
+    return base ? base + extensionArchivo(file) : ((file && file.name) || 'archivo');
+}
+function mesArchivo(iso) {
+    const m = String(iso || '').match(/^\d{4}-(\d{2})/);
+    const i = m ? parseInt(m[1], 10) - 1 : new Date().getMonth();
+    return MESES_ARCHIVO[i] || MESES_ARCHIVO[new Date().getMonth()];
+}
+function fechaArchivo(iso) {
+    const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
+}
+
+/* Etiqueta legible del tipo de beneficiario */
+function tipoBeneficiarioLabel(t) {
+    return t === 'estandar' ? '6 meses a 5 años'
+         : t === 'menor_6_meses' ? 'Menor de 6 meses'
+         : t === 'gestante' ? 'Persona gestante' : '-';
+}
+
 function renderRetiroTab(novelty) {
     const r = novelty.retiro || novelty;
     const nombre =
@@ -1576,6 +1614,10 @@ function renderRetiroTab(novelty) {
             <div class="novelty-data-card">
                 <span>⚧ Género</span>
                 <strong>${genero}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🧒 Tipo de beneficiario</span>
+                <strong>${tipoBeneficiarioLabel(r.tipoBeneficiario)}</strong>
             </div>
         </div>
     `;
@@ -1665,6 +1707,10 @@ function renderIngresoTab(novelty) {
             <div class="novelty-data-card">
                 <span>⚧ Género</span>
                 <strong>${genero}</strong>
+            </div>
+            <div class="novelty-data-card">
+                <span>🧒 Tipo de beneficiario</span>
+                <strong>${tipoBeneficiarioLabel((i.tipoBeneficiario || novelty.tipoBeneficiario))}</strong>
             </div>
         </div>
     `;
@@ -1793,6 +1839,9 @@ function renderNutricionalTab(novelty, isArchived) {
         (novelty.ingreso &&
          novelty.ingreso.nutricion);
 
+    if (nutricion && (nutricion.tipo === 'gestante' || nutricion.tipo === 'menor_6_meses')) {
+        return renderNutricionEspecialTab(nutricion);
+    }
     if (!nutricion) {
         return `
             <div class="novelty-empty-state">
@@ -2056,6 +2105,38 @@ function renderDiscapacidadTab(novelty) {
                 <strong>${categorias}</strong>
             </div>
         </div>
+    `;
+}
+/* Tab de datos para tipos de beneficiario FAMI (sin tabla OMS ni estado nutricional) */
+function renderNutricionEspecialTab(n) {
+    const v = (x, u) => (x !== undefined && x !== null && x !== '') ? x + (u ? ' ' + u : '') : '-';
+    const gest = n.tipo === 'gestante';
+    const card = (t, val) => `
+            <div class="novelty-data-card"><span>${t}</span><strong>${val}</strong></div>`;
+    const campos = gest ? [
+        card('🩺 Controles prenatales', v(n.controlesPrenatales)),
+        card('⚖️ Peso', v(n.peso, 'kg')),
+        card('📏 Talla', v(n.talla, 'cm'))
+    ] : [
+        card('⚖️ Peso al ingresar', v(n.peso, 'kg')),
+        card('📏 Talla al ingresar', v(n.talla, 'cm')),
+        card('⚖️ Peso al nacer', v(n.pesoNacer, 'kg')),
+        card('📏 Talla al nacer', v(n.tallaNacer, 'cm')),
+        card('🗓️ Semanas de gestación', v(n.semanasGestacion))
+    ];
+    return `
+        <div class="novelty-section-title">
+            <div>
+                <span class="section-kicker">${gest ? 'PERSONA GESTANTE' : 'MENOR DE 6 MESES'}</span>
+                <h3>${gest ? 'Datos de la Persona Gestante' : 'Datos del Menor de 6 meses'}</h3>
+            </div>
+        </div>
+        <div class="novelty-data-grid">
+            ${campos.join('')}
+            ${card('🏥 Régimen', v(n.regimen))}
+            ${card('🏥 EPS', v(n.eps))}
+        </div>
+        <p style="font-size:.8rem;opacity:.7;margin-top:10px">No aplica tabla OMS ni estado nutricional para este tipo de beneficiario.</p>
     `;
 }
 /* ============================================================
@@ -2714,6 +2795,7 @@ function resetFormularioCompleto(opts) {
     const nutricionIndicator = document.getElementById('nutricionIndicator');
     if (nutricionIndicator) nutricionIndicator.style.display = 'none';
 
+    if (typeof TipoBeneficiario !== 'undefined') TipoBeneficiario.reset();
     if (typeof resetDropzones === 'function') resetDropzones();
     if (typeof wizardSync === 'function') wizardSync();
 
@@ -2980,6 +3062,8 @@ function formatData() {
                 const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
                 
                 formData += `[ DATOS DE RETIRO ]\n`;
+                const tbEtiquetaR = (typeof TipoBeneficiario !== 'undefined') ? TipoBeneficiario.etiquetaRetiro() : '';
+                if (tbEtiquetaR) formData += `  - Tipo benef: ${tbEtiquetaR}\n`;
                 formData += `  - Documento:  ${retiroDocType ? retiroDocType.value : ''} ${retiroDocNumber ? retiroDocNumber.value : ''}\n`;
                 formData += `  - Nombre:     ${retiroFullName ? retiroFullName.value.toUpperCase() : ''}\n`;
                 formData += `  - Fecha:      ${retiroDate ? formatDateDMY(retiroDate.value) : ''}\n`;
@@ -3003,6 +3087,8 @@ function formatData() {
                 const ingresoBarrio = document.getElementById('ingresoBarrio');
                 
                 formData += `[ DATOS DE INGRESO ]\n`;
+                const tbEtiqueta = (typeof TipoBeneficiario !== 'undefined') ? TipoBeneficiario.etiqueta() : '';
+                if (tbEtiqueta) formData += `  - Tipo benef: ${tbEtiqueta}\n`;
                 formData += `  - Niño:       ${ingresoFullName ? ingresoFullName.value.toUpperCase() : ''}\n`;
                 formData += `  - Documento:  ${ingresoDocType ? ingresoDocType.value : ''} ${ingresoDocNumber ? ingresoDocNumber.value : ''}\n`;
                 formData += `  - Edad:       ${displayAge ? displayAge.value : ''}\n`;
@@ -3029,7 +3115,10 @@ function formatData() {
 
                 const nutricionPendienteEl = document.getElementById('nutricionPendiente');
                 const isNutrPend = nutricionPendienteEl && nutricionPendienteEl.checked;
-                if (isNutrPend) {
+                const tbTexto = (typeof TipoBeneficiario !== 'undefined') ? TipoBeneficiario.textoReporte() : '';
+                if (tbTexto) {
+                    formData += tbTexto;
+                } else if (isNutrPend) {
                     formData += `\n[ SEGUIMIENTO NUTRICIONAL ]\n`;
                     formData += `  ⏳ DATO PENDIENTE - Se completará desde el panel de administración\n`;
                 } else if (nutricionFecha && nutricionFecha.value) {
@@ -3155,6 +3244,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         const retiroDate = document.getElementById('retiroDate');
                         const retiroGender = document.querySelector('input[name="_retiroGender"]:checked');
 
+                        // Tipo de beneficiario obligatorio
+                        const tbErrR = (typeof TipoBeneficiario !== 'undefined') ? TipoBeneficiario.validarTipoRetiro() : null;
+                        if (tbErrR) {
+                            showToast(tbErrR.msg, "error");
+                            document.getElementById('tbBoxRetiro')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            return;
+                        }
+
                         // Documento obligatorio
                         if (!retiroDocNumber || !retiroDocNumber.value.trim()) {
                             showToast("❌ El DOCUMENTO del beneficiario a retirar es OBLIGATORIO", "error");
@@ -3229,6 +3326,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         const acudienteName = document.getElementById('acudienteName');
                         const ingresoComuna = document.getElementById('ingresoComuna');
                         const ingresoBarrio = document.getElementById('ingresoBarrio');
+
+                        // Tipo de beneficiario obligatorio (se define antes del documento)
+                        const tbErr = (typeof TipoBeneficiario !== 'undefined') ? TipoBeneficiario.validarTipo() : null;
+                        if (tbErr) {
+                            showToast(tbErr.msg, "error");
+                            document.getElementById('tbBox')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            return;
+                        }
+                        const omitAcud = (typeof TipoBeneficiario !== 'undefined') && TipoBeneficiario.omiteAcudiente();
 
                         // Documento obligatorio
                         if (!ingresoDocNumber || !ingresoDocNumber.value.trim()) {
@@ -3325,7 +3431,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         ingresoPhone.classList.remove('input-error');
 
                         // Acudiente obligatorio
-                        if (!acudienteName || !acudienteName.value.trim()) {
+                        if (!omitAcud && (!acudienteName || !acudienteName.value.trim())) {
                             showToast("❌ El NOMBRE del acudiente es OBLIGATORIO", "error");
                             acudienteName?.classList.add('input-error');
                             acudienteName?.focus();
@@ -3335,7 +3441,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Documento del acudiente obligatorio
                         const acudienteDoc = document.getElementById('acudienteDoc');
-                        if (!acudienteDoc || !acudienteDoc.value.trim()) {
+                        if (!omitAcud && (!acudienteDoc || !acudienteDoc.value.trim())) {
                             showToast("❌ El DOCUMENTO del acudiente es OBLIGATORIO", "error");
                             acudienteDoc?.classList.add('input-error');
                             acudienteDoc?.focus();
@@ -3345,7 +3451,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Fecha de nacimiento del acudiente obligatoria
                         const acudienteDOBCheck = document.getElementById('acudienteDOB');
-                        if (!acudienteDOBCheck || !acudienteDOBCheck.value) {
+                        if (!omitAcud && (!acudienteDOBCheck || !acudienteDOBCheck.value)) {
                             showToast("❌ La FECHA DE NACIMIENTO del acudiente es OBLIGATORIA", "error");
                             acudienteDOBCheck?.classList.add('input-error');
                             acudienteDOBCheck?.focus();
@@ -3355,7 +3461,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Validaciones de nutrición (solo si NO es dato pendiente)
                         const nutricionPendienteCheck = document.getElementById('nutricionPendiente');
-                        const isNutricionPendiente = nutricionPendienteCheck && nutricionPendienteCheck.checked;
+                        const tbEspecial = (typeof TipoBeneficiario !== 'undefined') && TipoBeneficiario.esEspecial();
+                        if (tbEspecial) {
+                            const nErr = TipoBeneficiario.validarNutricion();
+                            if (nErr) {
+                                showToast(nErr.msg, "error");
+                                nErr.el?.classList.add('input-error');
+                                nErr.el?.focus?.();
+                                return;
+                            }
+                        }
+                        // Los tipos especiales (FAMI) no usan los campos de la tabla OMS
+                        const isNutricionPendiente = tbEspecial || (nutricionPendienteCheck && nutricionPendienteCheck.checked);
 
                         const nutricionPeso = document.getElementById('nutricionPeso');
                         const nutricionTalla = document.getElementById('nutricionTalla');
@@ -3575,7 +3692,8 @@ document.addEventListener('DOMContentLoaded', function() {
 							document: retiroDocNumber?.value?.trim() || '',
 							name: retiroFullName?.value?.trim() || '',
 							gender: retiroGender?.value || '',
-							retiroDate: retiroDate?.value || ''
+							retiroDate: retiroDate?.value || '',
+							tipoBeneficiario: (typeof TipoBeneficiario !== 'undefined') ? TipoBeneficiario.tipoRetiro() : ''
 						};
 						
 						// ✅ CORREGIDO: Asignar documento y nombre PRINCIPAL desde retiro
@@ -3666,6 +3784,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         googleData.retiro_nombre = noveltyData.retiro.name;
                         googleData.retiro_fecha = noveltyData.retiro.retiroDate;
                         googleData._retiroGender = noveltyData.retiro.gender;
+                        if (typeof TipoBeneficiario !== 'undefined') googleData.retiro_tipo_beneficiario = TipoBeneficiario.etiquetaRetiro();
                     }
 
                     // Solo agregar datos de ingreso si existe
@@ -3692,6 +3811,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         googleData.nutricion_eps = noveltyData.nutricion.eps;
                         googleData.antecedente_prematurez = noveltyData.nutricion.antecedentePrematurez;
                         googleData.edad_gestacional = noveltyData.nutricion.edadGestacional;
+                        if (typeof TipoBeneficiario !== 'undefined') TipoBeneficiario.aplicarEnvio(noveltyData, googleData);
 
                         // Discapacidad
                         googleData.discapacidad_tiene = noveltyData.discapacidad?.tiene || 'NO';
@@ -3741,7 +3861,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             googleData.file_base64 = base64;
                             googleData.file_type = file.type;
-                            googleData.file_name = file.name;
+                            googleData.file_name = (noveltyData.ingreso && noveltyData.ingreso.document)
+                                ? nombreArchivoNovedad([noveltyData.ingreso.document, String(noveltyData.ingreso.name || '').toUpperCase()], file)
+                                : file.name;
                         }
 
                         // 1b. Procesar Ram Diligenciado (solo aplica si hay retiro)
@@ -3763,10 +3885,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             googleData.ram_file_base64 = ramBase64;
                             googleData.ram_file_type = ramFile.type;
-                            googleData.ram_file_name = ramFile.name;
+                            googleData.ram_file_name = noveltyData.retiro
+                                ? nombreArchivoNovedad(['Ram', mesArchivo(noveltyData.retiro.retiroDate), noveltyData.udsName, noveltyData.retiro.document], ramFile)
+                                : ramFile.name;
 
                             if (noveltyData.retiro) {
-                                noveltyData.retiro.ramFileName = ramFile.name;
+                                noveltyData.retiro.ramFileName = googleData.ram_file_name;
                             }
                         }
 
@@ -3789,10 +3913,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                             googleData.retiro_formato_base64 = formatoBase64;
                             googleData.retiro_formato_type = formatoFile.type;
-                            googleData.retiro_formato_name = formatoFile.name;
+                            googleData.retiro_formato_name = noveltyData.retiro
+                                ? nombreArchivoNovedad(['Retiro', noveltyData.retiro.document, fechaArchivo(noveltyData.retiro.retiroDate)], formatoFile)
+                                : formatoFile.name;
 
                             if (noveltyData.retiro) {
-                                noveltyData.retiro.formatoFileName = formatoFile.name;
+                                noveltyData.retiro.formatoFileName = googleData.retiro_formato_name;
                             }
                         }
 

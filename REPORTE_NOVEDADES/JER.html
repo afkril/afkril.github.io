@@ -23,6 +23,7 @@
 
     <!-- ESTILOS DUPLICADOS v2.0 -->
     <link rel="stylesheet" href="css/duplicados-v2-operador.css">
+    <link rel="stylesheet" href="css/operador-extras.css">
 
     <!-- CONSULTA POR CÓDIGO UDS -->
     <link rel="stylesheet" href="css/consulta-uds.css">
@@ -228,6 +229,9 @@
                         <button type="button" onclick="limpiarFormularioManual()" class="text-slate-400 hover:text-red-500 transition-colors" title="Limpiar formulario">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                         </button>
+                        <button type="button" class="priv-open-btn" onclick="PrivacidadOperador.abrir()" title="Política de privacidad y tratamiento de datos" aria-label="Política de privacidad y tratamiento de datos">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                        </button>
                         <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema"></div>
 						<a href="index.html" target="_self" class="text-slate-400 hover:text-indigo-500 transition-colors" title="Panel administrativo">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -334,6 +338,14 @@
                     <div class="cf-card cf-card-red">
                         <div class="cf-card-head">
                             <div class="cf-card-title"><span class="cf-dot cf-dot-red"></span> Beneficiario Saliente</div>
+                        </div>
+
+                        <!-- TIPO DE BENEFICIARIO DEL RETIRO -->
+                        <div class="cf-field cf-noicon tb-box" id="tbBoxRetiro">
+                            <label class="cf-microlabel">Tipo de Beneficiario *</label>
+                            <div id="tbOpcionesRetiro" class="tb-options" role="radiogroup" aria-label="Tipo de beneficiario del retiro"></div>
+                            <p class="tb-hint" id="tbHintRetiro">Seleccione primero la modalidad para definir el tipo de beneficiario.</p>
+                            <input type="hidden" id="retiroTipoBeneficiario" name="retiro_tipo_beneficiario" value="">
                         </div>
                         <div class="cf-row2">
                             <div class="cf-field cf-noicon">
@@ -443,6 +455,15 @@
                     <div class="cf-columns">
                         <div>
                             <div class="cf-col-title">Datos del Beneficiario Entrante</div>
+                            <!-- TIPO DE BENEFICIARIO (se define según la modalidad, antes del documento) -->
+                            <div class="cf-field cf-noicon tb-box" id="tbBox">
+                                <label class="cf-microlabel">Tipo de Beneficiario *</label>
+                                <div id="tbOpciones" class="tb-options" role="radiogroup" aria-label="Tipo de beneficiario"></div>
+                                <p class="tb-hint" id="tbHint">Seleccione primero la modalidad para definir el tipo de beneficiario.</p>
+                                <input type="hidden" id="tipoBeneficiario" name="ingreso_tipo_beneficiario" value="">
+                            </div>
+                            <div id="tbGated" class="tb-gated tb-locked">
+                            
                             <div class="cf-row2">
                                 <div class="cf-field cf-noicon">
                                     <label class="cf-microlabel">Documento</label>
@@ -492,6 +513,7 @@
                                     </div>
                                 </div>
                             </div>
+                            </div><!-- /tbGated -->
                         </div>
                         <div>
                             <div class="cf-col-title">Ubicación</div>
@@ -546,8 +568,8 @@
                     </div>
                 </div>
 
-                <div class="cf-columns2">
-                    <div class="cf-card cf-card-blue">
+                <div class="cf-columns2" id="ingresoColumns2">
+                    <div class="cf-card cf-card-blue" id="cardAcudiente">
                         <div class="cf-card-head">
                             <div class="cf-card-title"><span class="cf-dot cf-dot-blue"></span> Datos Madre / Acudiente</div>
                         </div>
@@ -603,8 +625,8 @@
                         <div class="nutricion-card cf-nutricion">
                             <div class="nutricion-title">
                                 <div class="flex items-center gap-2">
-                                    <span>🍎</span>
-                                    <span>Seguimiento Nutricional</span>
+                                    <span id="nutriIcono">🍎</span>
+                                    <span id="nutriTitulo">Seguimiento Nutricional</span>
 
                                     <!-- ===== BOTÓN DE GRÁFICA OMS ===== -->
                                     <button type="button" class="grafica-trigger" id="graficaTrigger" onclick="abrirModalGrafica()">
@@ -615,7 +637,7 @@
                             </div>
 
                             <!-- TOGGLE DATO PENDIENTE -->
-                            <div class="cf-nutricion-pendiente flex items-center gap-3 mb-3 p-3 bg-amber-50 border border-amber-300 rounded-xl">
+                            <div id="nutricionPendienteBox" class="cf-nutricion-pendiente flex items-center gap-3 mb-3 p-3 bg-amber-50 border border-amber-300 rounded-xl">
                                 <label class="flex items-center gap-2 cursor-pointer select-none">
                                     <input type="checkbox" id="nutricionPendiente" name="nutricion_pendiente" onchange="toggleNutricionPendiente()" class="w-4 h-4 accent-amber-500">
                                     <span class="text-sm font-bold text-amber-700">⏳ Dato Pendiente — completar luego desde el panel</span>
@@ -645,6 +667,54 @@
                                     <input type="number" id="nutricionPerimetroBraquial" name="nutricion_perimetro_braquial" placeholder="Ej: 15.5"
                                            step="0.1" min="6" max="30"
                                            oninput="validarRangoNutricion(this, 6, 30)">
+                                </div>
+                            </div>
+
+                            <!-- DATOS PERSONA GESTANTE (FAMI / FAMIBIENVENIR) -->
+                            <div id="nutriGestanteBlock" class="tb-extra tb-hide">
+                                <div class="cf-row4">
+                                    <div class="cf-field cf-noicon">
+                                        <label class="cf-microlabel">N° Controles Prenatales *</label>
+                                        <input type="number" id="gestControles" name="nutricion_controles_prenatales" placeholder="Ej: 4" step="1" inputmode="numeric">
+                                    </div>
+                                    <div class="cf-field cf-noicon">
+                                        <label class="cf-microlabel">Peso (kg) *</label>
+                                        <input type="number" id="gestPeso" name="gest_peso" placeholder="Ej: 62.5" step="any" inputmode="decimal">
+                                    </div>
+                                    <div class="cf-field cf-noicon">
+                                        <label class="cf-microlabel">Talla (cm) *</label>
+                                        <input type="number" id="gestTalla" name="gest_talla" placeholder="Ej: 158" step="any" inputmode="decimal">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DATOS MENOR DE 6 MESES (FAMI / FAMIBIENVENIR) -->
+                            <div id="nutriMenor6Block" class="tb-extra tb-hide">
+                                <div class="tb-extra-title">Al ingresar</div>
+                                <div class="cf-row2">
+                                    <div class="cf-field cf-noicon">
+                                        <label class="cf-microlabel">Peso (kg) *</label>
+                                        <input type="number" id="m6PesoIng" name="m6_peso_ingreso" placeholder="Ej: 5.2" step="any" inputmode="decimal">
+                                    </div>
+                                    <div class="cf-field cf-noicon">
+                                        <label class="cf-microlabel">Talla (cm) *</label>
+                                        <input type="number" id="m6TallaIng" name="m6_talla_ingreso" placeholder="Ej: 58" step="any" inputmode="decimal">
+                                    </div>
+                                </div>
+                                <div class="tb-extra-title">Al nacer</div>
+                                <div class="cf-row2">
+                                    <div class="cf-field cf-noicon">
+                                        <label class="cf-microlabel">Peso al nacer (kg) *</label>
+                                        <input type="number" id="m6PesoNac" name="m6_peso_nacer" placeholder="Ej: 3.2" step="any" inputmode="decimal">
+                                    </div>
+                                    <div class="cf-field cf-noicon">
+                                        <label class="cf-microlabel">Talla al nacer (cm) *</label>
+                                        <input type="number" id="m6TallaNac" name="m6_talla_nacer" placeholder="Ej: 49" step="any" inputmode="decimal">
+                                    </div>
+                                </div>
+                                <div class="cf-field cf-noicon">
+                                    <label class="cf-microlabel">Semanas de gestación al nacer *</label>
+                                    <input type="number" id="m6Semanas" name="m6_semanas_gestacion" placeholder="Ej: 38" step="1" inputmode="numeric">
                                 </div>
                             </div>
 
@@ -985,6 +1055,8 @@
     <script src="js/nutricional.js"></script>
     <!-- Formulario, envío y confirmación -->
     <script src="js/novedades.js"></script>
+    <script src="js/tipo-beneficiario.js"></script>
+    <script src="js/privacidad-operador.js"></script>
 
     <!-- Módulo de Consulta por Código UDS -->
     <script src="js/consulta-uds.js"></script>

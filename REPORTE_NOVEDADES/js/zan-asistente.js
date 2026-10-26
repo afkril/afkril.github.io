@@ -244,6 +244,7 @@
     var R = chk('checkRetiro'), I = chk('checkIngreso');
 
     if (R) {
+      if (typeof TipoBeneficiario !== 'undefined' && TipoBeneficiario.validarTipoRetiro()) req.push('Tipo de beneficiario (retiro)');
       if (!val('retiroDocNumber')) req.push('Documento (retiro)');
       else if (!docOk(val('retiroDocNumber'))) req.push('Documento (retiro): 7 a 10 dígitos');
       if (!val('retiroFullName')) req.push('Nombre (retiro)');
@@ -265,11 +266,18 @@
       if (!val('ingresoBarrio')) req.push('Barrio');
       if (!val('ingresoAddress')) req.push('Dirección');
       if (!val('ingresoPhone')) req.push('Teléfono');
-      if (!val('acudienteName')) req.push('Nombre del acudiente');
-      if (!val('acudienteDoc')) req.push('Documento del acudiente');
-      if (!val('acudienteDOB')) req.push('Nacimiento del acudiente');
+      var tbOn = typeof TipoBeneficiario !== 'undefined';
+      if (tbOn && TipoBeneficiario.validarTipo()) req.push('Tipo de beneficiario');
+      if (!(tbOn && TipoBeneficiario.omiteAcudiente())) {
+        if (!val('acudienteName')) req.push('Nombre del acudiente');
+        if (!val('acudienteDoc')) req.push('Documento del acudiente');
+        if (!val('acudienteDOB')) req.push('Nacimiento del acudiente');
+      }
 
-      if (!chk('nutricionPendiente')) {
+      if (tbOn && TipoBeneficiario.esEspecial()) {
+        var ne = TipoBeneficiario.validarNutricion();
+        if (ne) req.push(ne.msg.replace('❌ ', ''));
+      } else if (!chk('nutricionPendiente')) {
         if (!val('nutricionFecha')) req.push('Fecha de valoración');
         if (!val('nutricionPeso')) req.push('Peso');
         if (!val('nutricionTalla')) req.push('Talla');
@@ -326,6 +334,14 @@
     nutricionPeso: 'Peso entre 5 y 30 kg. Uso un punto para decimales (12.5).',
     nutricionTalla: 'Talla entre 50 y 130 cm. Con peso y talla calculo el estado nutricional.',
     nutricionPerimetroBraquial: 'Perímetro braquial entre 6 y 30 cm.',
+    gestControles: 'Cantidad de controles prenatales realizados hasta hoy.',
+    gestPeso: 'Peso de la persona gestante en kg. Uso un punto para decimales.',
+    gestTalla: 'Talla de la persona gestante en cm.',
+    m6PesoIng: 'Peso del menor al ingresar, en kg (ej: 5.2).',
+    m6TallaIng: 'Talla del menor al ingresar, en cm.',
+    m6PesoNac: 'Peso al nacer, en kg (ej: 3.2).',
+    m6TallaNac: 'Talla al nacer, en cm.',
+    m6Semanas: 'Semanas de gestación con las que nació (entre 20 y 44).',
     edadGestacional: 'Semanas de gestación al nacer: entre 3 y 36.',
     correoRespuesta: 'Ahí te llega la respuesta de esta novedad. Revísalo bien.'
   };

@@ -161,6 +161,7 @@ const AdminUI = (() => {
         if (typeof archivedNovelties !== 'undefined') _setText('countArchivadas', archivedNovelties.length);
         const pendientesNutricion = base.filter(n => (n.type === 'ingreso' || n.type === 'ambos' || n.hasIngreso) && n.nutricion?.pendiente).length;
         _setText('countNutricional', pendientesNutricion);
+        if (typeof CambioTipoModule !== 'undefined') CambioTipoModule.actualizarContador();
 
         return { pendientes, pendHoy, ingresos, ingHoy, retiros, retHoy, duplicados, dupHoy, base };
     }

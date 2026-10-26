@@ -33,6 +33,7 @@
 
     <!-- MODO OSCURO V3 (portado desde JER/T3/Florida) — debe ir al final -->
     <link rel="stylesheet" href="css/styles-dark-v3.css">
+    <link rel="stylesheet" href="css/cambio-tipo.css">
 
     <style id="index-background-integrado">
         /*
@@ -403,6 +404,11 @@
                         <span class="admin-tab-icon">🍎</span>
                         <span class="admin-tab-label">Análisis Nutricional</span>
                         <span class="admin-tab-count" id="countNutricional">0</span>
+                    </button>
+                    <button class="admin-tab" onclick="CambioTipoModule.abrir()" id="tab-cambio-tipo" title="Menores de 6 meses que ya cumplieron 6 meses">
+                        <span class="admin-tab-icon">🔄</span>
+                        <span class="admin-tab-label">Cambio de tipo</span>
+                        <span class="admin-tab-count" id="countCambioTipo">0</span>
                     </button>
                     <button class="admin-tab" onclick="switchTab('resumen')" id="tab-resumen" title="Resumen">
                         <span class="admin-tab-icon">📊</span>
@@ -2156,6 +2162,7 @@
     <script src="js/exports.js"></script>
     <script src="js/notificaciones.js"></script>
     <script src="js/migracion-oms.js"></script>
+    <script src="js/cambio-tipo.js"></script>
     <!-- Inicialización del sistema multi-asociación -->
 
     <!-- MODAL DE DUPLICADOS DESDE NOVEDADES ACTIVAS -->
