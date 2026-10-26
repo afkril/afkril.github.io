@@ -34,6 +34,7 @@
     <!-- MODO OSCURO V3 (portado desde JER/T3/Florida) — debe ir al final -->
     <link rel="stylesheet" href="css/styles-dark-v3.css">
     <link rel="stylesheet" href="css/cambio-tipo.css">
+    <link rel="stylesheet" href="css/renovacion.css">
 
     <style id="index-background-integrado">
         /*
@@ -1857,6 +1858,10 @@
           <span class="config-center-nav-icon">🏢</span>
           <span class="config-center-nav-label">Organizaciones</span>
         </button>
+        <button class="config-center-nav-item" data-nav="renovacion" onclick="_mostrarVistaRenovacion()">
+          <span class="config-center-nav-icon">🔄</span>
+          <span class="config-center-nav-label">Renovación de contratos</span>
+        </button>
         <button class="config-center-nav-item" data-nav="seguridad" onclick="AjustesModule.setNav('seguridad')">
           <span class="config-center-nav-icon">🛡️</span>
           <span class="config-center-nav-label">Seguridad del Sistema</span>
@@ -1987,18 +1992,43 @@
           <!-- ══ PASO 3: UDS ══ -->
           <div class="cw-panel" id="cwPanel4">
             <div class="cw-alert"><span>ℹ️</span> Administra las Unidades de Desarrollo Social (UDS) para cada contrato.</div>
+
+            <!-- Copiar UDS entre contratos (origen → uno o varios destinos) -->
+            <div class="cw-card copy-uds-card" id="panelCopiarUDS" style="display:none;margin-bottom:14px">
+              <div class="cw-card-head" style="margin-bottom:10px">
+                <div class="cw-card-icon">📋</div>
+                <div>
+                  <div class="cw-card-title">Copiar UDS entre contratos</div>
+                  <div class="cw-card-sub">Útil cuando un contrato nuevo arranca con las mismas UDS del anterior</div>
+                </div>
+              </div>
+              <div class="copy-uds-grid">
+                <div class="config-field" style="margin-bottom:0">
+                  <label style="font-size:10px">1. Copiar desde (origen)</label>
+                  <select id="ajustesSelectContratoOrigenUDS" onchange="AjustesModule.onOrigenCopiarUDS()"><option value="">— Selecciona contrato origen —</option></select>
+                </div>
+                <div class="config-field" style="margin-bottom:0">
+                  <label style="font-size:10px">3. Modo</label>
+                  <select id="ajustesModoCopiaUDS">
+                    <option value="agregar">Agregar las que falten (no duplica por código)</option>
+                    <option value="reemplazar">Reemplazar todas las UDS del destino</option>
+                  </select>
+                </div>
+              </div>
+              <div class="config-field" style="margin:12px 0 0">
+                <label style="font-size:10px">2. Pegar en (destinos)
+                  <a href="javascript:void(0)" class="copy-uds-link" onclick="AjustesModule.seleccionarTodosDestinosUDS(true)">todos</a>
+                  <a href="javascript:void(0)" class="copy-uds-link" onclick="AjustesModule.seleccionarTodosDestinosUDS(false)">ninguno</a>
+                </label>
+                <div id="ajustesDestinosUDS" class="copy-uds-destinos"></div>
+              </div>
+              <button type="button" class="config-center-btn-primary" style="margin-top:12px;padding:9px 18px" onclick="AjustesModule.copiarUnidadesDesdeContrato()">📋 Copiar UDS</button>
+            </div>
             <div class="config-field" style="max-width:420px">
               <label>Seleccionar contrato</label>
               <select id="ajustesSelectContratoUDS" onchange="AjustesModule.cambiarContratoUDS()"><option value="">— Selecciona un contrato —</option></select>
             </div>
             <div class="cw-card" id="panelUDSWrapper" style="display:none">
-              <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:flex-end;padding:12px;border:1.5px dashed #cbd5e1;border-radius:10px;background:#f8fafc">
-                <div class="config-field" style="flex:1;min-width:200px;margin-bottom:0">
-                  <label style="font-size:10px">Copiar UDS desde otro contrato</label>
-                  <select id="ajustesSelectContratoOrigenUDS"><option value="">— Selecciona contrato origen —</option></select>
-                </div>
-                <button class="config-center-btn-secondary" style="padding:9px 16px" onclick="AjustesModule.copiarUnidadesDesdeContrato()">📋 Copiar UDS</button>
-              </div>
               <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
                 <input type="text" id="ajustesNombreUDS" placeholder="Nombre UDS" style="flex:1;min-width:150px;padding:9px 12px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:13px">
                 <input type="text" id="ajustesCodigoUDS" placeholder="Código UDS" style="width:140px;padding:9px 12px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:13px">
@@ -2025,6 +2055,60 @@
           </div>
 
         </div><!-- /vistaWizard -->
+
+        <!-- ═══════════════════════════════════════
+             VISTA: RENOVACIÓN DE CONTRATOS (desvinculación masiva)
+             ═══════════════════════════════════════ -->
+        <div id="vistaRenovacion" class="config-center-view">
+          <div class="config-center-view-header">
+            <div>
+              <h2 class="config-center-view-title">Renovación de contratos</h2>
+              <p class="config-center-view-desc">Desvincula en bloque a los participantes activos de los contratos que terminan, con fecha de retiro propia por contrato</p>
+            </div>
+          </div>
+
+          <div class="cw-alert"><span>ℹ️</span> Se considera <b>activo</b> a quien tiene un ingreso sin retiro posterior, revisando novedades <b>activas y archivadas</b>. Por cada participante se crea un registro de retiro (queda pendiente de cargar a Cuéntame) y el histórico no se modifica.</div>
+
+          <div class="cw-card" style="margin-bottom:14px">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div class="config-field" style="flex:1;min-width:240px;margin-bottom:0">
+                <label style="font-size:10px">Operador</label>
+                <select id="renovSelectOperador" onchange="RenovacionModule.onOperadorChange()"><option value="">— Selecciona un operador —</option></select>
+              </div>
+              <button type="button" class="config-center-btn-primary" id="renovBtnBuscar" style="padding:9px 16px" onclick="RenovacionModule.buscarActivos(this)">🔍 Buscar activos</button>
+            </div>
+          </div>
+
+          <div id="renovResultadosWrap" style="display:none">
+            <div class="cw-card" style="margin-bottom:14px">
+              <div class="renov-head">
+                <div>
+                  <div class="cw-card-title" id="renovResumenTitulo">—</div>
+                  <div class="cw-card-sub">Marca los contratos a desvincular y define la fecha de retiro de cada uno</div>
+                </div>
+                <div class="renov-fecha-global">
+                  <label for="renovFechaGlobal">Misma fecha para los marcados</label>
+                  <input type="date" id="renovFechaGlobal">
+                  <button type="button" class="config-center-btn-secondary" style="padding:7px 12px;font-size:12px" onclick="RenovacionModule.aplicarFechaGlobal()">Aplicar</button>
+                </div>
+              </div>
+              <div id="renovContratosLista" class="renov-contratos"></div>
+            </div>
+
+            <div class="cw-card renov-confirm">
+              <div class="cw-card-title" style="color:#dc2626">Confirmar desvinculación</div>
+              <p class="renov-resumen" id="renovResumenAccion">Selecciona al menos un contrato.</p>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:10px">
+                <div class="config-field" style="margin-bottom:0;min-width:220px">
+                  <label style="font-size:10px">Escribe RETIRAR para confirmar</label>
+                  <input type="text" id="renovConfirmInput" placeholder="RETIRAR" autocomplete="off" oninput="RenovacionModule.toggleAplicar()">
+                </div>
+                <button type="button" id="renovBtnAplicar" class="renov-btn-danger" disabled onclick="RenovacionModule.aplicarDesvinculacion()">🔴 Desvincular participantes</button>
+              </div>
+              <pre id="renovLog" class="renov-log" style="display:none"></pre>
+            </div>
+          </div>
+        </div>
 
         <!-- ═══════════════════════════════════════
              VISTA: SEGURIDAD DEL SISTEMA
@@ -2162,6 +2246,7 @@
     <script src="js/exports.js"></script>
     <script src="js/notificaciones.js"></script>
     <script src="js/migracion-oms.js"></script>
+    <script src="js/renovacion-contratos.js"></script>
     <script src="js/cambio-tipo.js"></script>
     <!-- Inicialización del sistema multi-asociación -->
 

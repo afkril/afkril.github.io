@@ -2588,8 +2588,9 @@ function onModalidadChange() {
             const modCtrs = window.MODALIDADES_CONTRATOS || {};
             const contratos = perfil?.contratos || {};
 
+            const estCtrs = window.ESTADOS_CONTRATOS || {};
             const filtrados = Object.entries(contratos).filter(([cod]) =>
-                regCtrs[cod] === regional && modCtrs[cod] === modalidad
+                regCtrs[cod] === regional && modCtrs[cod] === modalidad && estCtrs[cod] !== 'inactivo'
             );
 
             selCtr.innerHTML = '<option value="">Seleccione...</option>' +

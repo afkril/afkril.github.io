@@ -336,10 +336,15 @@ const AsociacionesModule = (() => {
             const val = sel.value;
             const label = id === 'contractNumber' ? 'Seleccione...' : 'Todos los contratos';
             sel.innerHTML = `<option value="">${label}</option>`;
+            const estados = perfil.estados_contratos || {};
             Object.entries(contratos).forEach(([cod, etiqueta]) => {
+                const inactivo = estados[cod] === 'inactivo';
+                // Un contrato inactivo no se ofrece en el formulario de novedades,
+                // pero sigue disponible en los filtros para consultar su historial.
+                if (inactivo && id === 'contractNumber') return;
                 const opt = document.createElement('option');
                 opt.value = cod;
-                opt.textContent = etiqueta || `Contrato ${cod}`;
+                opt.textContent = (etiqueta || `Contrato ${cod}`) + (inactivo ? ' (inactivo)' : '');
                 sel.appendChild(opt);
             });
             if (val) sel.value = val;
@@ -361,6 +366,7 @@ const AsociacionesModule = (() => {
         window.UDS_DATA              = nuevoUDS;
         window.MODALIDADES_CONTRATOS = perfil.modalidades_contratos || {};
         window.REGIONALES_CONTRATOS  = perfil.regionales_contratos  || {};
+        window.ESTADOS_CONTRATOS     = perfil.estados_contratos     || {};
         window.COLORES_CONTRATOS     = perfil.colores_contratos      || {};
     }
 
@@ -472,7 +478,8 @@ const AsociacionesModule = (() => {
                 card.style.setProperty('--asoc-bg',    bg);
                 card.onclick = () => AsociacionesModule.seleccionarAsociacion(id);
 
-                const numContratos = Object.keys(datos.contratos || {}).length;
+                const numContratos = Object.keys(datos.contratos || {})
+                    .filter(c => (datos.estados_contratos || {})[c] !== 'inactivo').length;
                 const ubicacion    = datos.subtitulo || '';
                 const tieneImg     = !!datos.logo_url;
 

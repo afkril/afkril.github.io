@@ -51,14 +51,20 @@ const ConsultaUDSModule = (() => {
     // ── Buscar la UDS (nombre + contrato) a partir del código ──
     function _buscarUDSPorCodigo(codigo) {
         const data = window.UDS_DATA || {};
+        const estados = window.ESTADOS_CONTRATOS || {};
+        // Una misma UDS puede existir en varios contratos (copiadas al renovar):
+        // se prefiere el contrato activo sobre los inactivos.
+        let inactivo = null;
         for (const [contrato, lista] of Object.entries(data)) {
             for (const [nombre, cod] of (lista || [])) {
                 if (String(cod).trim() === codigo) {
-                    return { contrato, nombre, codigo: String(cod).trim() };
+                    const r = { contrato, nombre, codigo: String(cod).trim() };
+                    if (estados[contrato] !== 'inactivo') return r;
+                    if (!inactivo) inactivo = r;
                 }
             }
         }
-        return null;
+        return inactivo;
     }
 
     // ── Extraer eventos (ingreso/retiro) de un nodo, filtrados por UDS ──

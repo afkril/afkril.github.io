@@ -11,6 +11,7 @@ const AjustesModule = (() => {
     let _coloresTemp = {};
     let _modalidadesTemp = {};
     let _regionalesTemp = {};
+    let _estadosTemp = {};      // { codigo: 'inactivo' } — sin entrada = contrato activo
     let _currentStep = 1;
     let _clavesExistentes = { admin: null, formulario: null }; // claves guardadas (el wizard ya no tiene esos campos)
     let _idEditadoManualmente = false;
@@ -132,7 +133,7 @@ const AjustesModule = (() => {
         _asociacionEditando = null;
         _clavesExistentes = { admin: null, formulario: null };
         _contratosTemp = {}; _unidadesTemp = {}; _coloresTemp = {};
-        _modalidadesTemp = {}; _regionalesTemp = {};
+        _modalidadesTemp = {}; _regionalesTemp = {}; _estadosTemp = {};
         _currentStep = 1;
         _idEditadoManualmente = false;
 
@@ -162,10 +163,17 @@ const AjustesModule = (() => {
 
             _asociacionEditando = id;
             _contratosTemp = { ...(datos.contratos || {}) };
-            _unidadesTemp  = JSON.parse(JSON.stringify(datos.unidades || {}));
+            _unidadesTemp  = {};
+            Object.entries(datos.unidades || {}).forEach(([cod, lista]) => {
+                // Firebase puede devolver arreglos como objetos: se normaliza a arreglo
+                _unidadesTemp[cod] = Object.values(lista || {})
+                    .filter(u => u && (u.nombre || u.codigo))
+                    .map(u => ({ nombre: String(u.nombre || ''), codigo: String(u.codigo || '') }));
+            });
             _coloresTemp      = { ...(datos.colores_contratos || {}) };
             _modalidadesTemp  = { ...(datos.modalidades_contratos || {}) };
             _regionalesTemp   = { ...(datos.regionales_contratos || {}) };
+            _estadosTemp      = { ...(datos.estados_contratos || {}) };
             _currentStep = 1;
             _idEditadoManualmente = true;
 
@@ -307,6 +315,7 @@ const AjustesModule = (() => {
 
             lista.innerHTML = entries.map(([id, datos]) => {
                 const numContratos = Object.keys(datos.contratos || {}).length;
+                const numInactivos = Object.keys(datos.contratos || {}).filter(c => (datos.estados_contratos || {})[c] === 'inactivo').length;
                 let numUDS = 0;
                 Object.values(datos.unidades || {}).forEach(arr => numUDS += (arr || []).length);
                 return `
@@ -319,7 +328,7 @@ const AjustesModule = (() => {
                     <div class="config-org-info">
                         <div class="config-org-name">${datos.nombre || id}</div>
                         <div class="config-org-meta">
-                            ID: <code>${id}</code> · ${numContratos} contrato(s) · ${numUDS} UDS
+                            ID: <code>${id}</code> · ${numContratos} contrato(s)${numInactivos ? ` (${numInactivos} inactivo${numInactivos > 1 ? 's' : ''})` : ''} · ${numUDS} UDS
                             ${datos.google_url ? '· ✅ Google URL' : '· ⚠️ Sin Google URL'}
                         </div>
                     </div>
@@ -351,17 +360,23 @@ const AjustesModule = (() => {
             const color = _coloresTemp[codigo] || '#94a3b8';
             const modal = _modalidadesTemp[codigo] || '—';
             const regional = _regionalesTemp[codigo] || '—';
-            const numUDS = (_unidadesTemp[codigo] || []).length;
+            const numUDS = _listaUDS(codigo).length;
+            const activo = _contratoActivo(codigo);
             return `
-            <div class="contract-item" id="ctr-row-${codigo}">
+            <div class="contract-item${activo ? '' : ' contract-item--inactivo'}" id="ctr-row-${codigo}">
                 <div class="contract-info">
                     <button type="button" class="contract-color" title="Cambiar color" style="background:${color};border-color:${color}" onclick="AjustesModule.toggleColorPicker('${codigo}', this)"></button>
                     <div>
-                        <div class="contract-name">📄 ${label || codigo}</div>
+                        <div class="contract-name">📄 ${label || codigo}
+                            <span class="contract-estado-badge ${activo ? 'is-activo' : 'is-inactivo'}">${activo ? 'Activo' : 'Inactivo'}</span>
+                        </div>
                         <div class="contract-meta">${codigo} · ${regional} · ${modal}</div>
                     </div>
                 </div>
                 <div class="contract-actions">
+                    <button type="button" class="contract-toggle-btn ${activo ? 'is-activo' : 'is-inactivo'}"
+                        title="${activo ? 'Desactivar: deja de aparecer en el formulario de novedades (el historial se conserva)' : 'Activar: vuelve a aparecer en el formulario de novedades'}"
+                        onclick="AjustesModule.toggleEstadoContrato('${codigo}')">${activo ? '⏸ Desactivar' : '▶ Activar'}</button>
                     <button onclick="AjustesModule.toggleColorPicker('${codigo}', this)">🎨 Color</button>
                     <button onclick="AjustesModule.irAUnidades('${codigo}')">📦 UDS (${numUDS})</button>
                     <button onclick="AjustesModule.quitarContrato('${codigo}')" style="color:#ef4444">🗑️</button>
@@ -369,6 +384,28 @@ const AjustesModule = (() => {
             </div>
             `;
         }).join('');
+    }
+
+    // ═══════════════════════════════════════════
+    // ACTIVAR / DESACTIVAR CONTRATO
+    // Un contrato inactivo deja de ofrecerse en el formulario de novedades
+    // de los operadores, pero conserva UDS e historial (activas/archivadas).
+    // ═══════════════════════════════════════════
+
+    function _contratoActivo(codigo) {
+        return _estadosTemp[codigo] !== 'inactivo';
+    }
+
+    function toggleEstadoContrato(codigo) {
+        if (!_contratosTemp[codigo]) return;
+        if (_contratoActivo(codigo)) {
+            _estadosTemp[codigo] = 'inactivo';
+            showToast(`Contrato ${codigo} desactivado (guarda la organización para aplicar)`, 'info', 3200);
+        } else {
+            delete _estadosTemp[codigo];
+            showToast(`Contrato ${codigo} activado (guarda la organización para aplicar)`, 'success', 3200);
+        }
+        renderContratos();
     }
 
     // ═══════════════════════════════════════════
@@ -487,6 +524,7 @@ const AjustesModule = (() => {
         delete _coloresTemp[codigo];
         delete _modalidadesTemp[codigo];
         delete _regionalesTemp[codigo];
+        delete _estadosTemp[codigo];
         renderContratos();
     }
 
@@ -503,6 +541,12 @@ const AjustesModule = (() => {
     // PASO 4 — UDS
     // ═══════════════════════════════════════════
 
+    function _listaUDS(codigo) {
+        const l = _unidadesTemp[codigo];
+        if (!l) return [];
+        return Array.isArray(l) ? l : Object.values(l);
+    }
+
     function poblarSelectContratosUDS() {
         const sel = document.getElementById('ajustesSelectContratoUDS');
         if (!sel) return;
@@ -513,6 +557,7 @@ const AjustesModule = (() => {
             ).join('');
         if (current && _contratosTemp[current]) sel.value = current;
         cambiarContratoUDS();
+        renderCopiarUDS();
     }
 
     function cambiarContratoUDS() {
@@ -531,7 +576,7 @@ const AjustesModule = (() => {
 
     function renderTablaUDS(codigo) {
         const tbody = document.querySelector('#tablaUDS tbody');
-        const lista = _unidadesTemp[codigo] || [];
+        const lista = _listaUDS(codigo);
         if (lista.length === 0) {
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:16px">Sin unidades. Agrega una arriba.</td></tr>';
             return;
@@ -556,7 +601,7 @@ const AjustesModule = (() => {
         if (!nombre) { showToast('Ingresa el nombre de la UDS', 'warning'); return; }
         if (!codigoUDS) { showToast('Ingresa el código de la UDS', 'warning'); return; }
 
-        if (!_unidadesTemp[codigo]) _unidadesTemp[codigo] = [];
+        if (!Array.isArray(_unidadesTemp[codigo])) _unidadesTemp[codigo] = _listaUDS(codigo).slice();
         _unidadesTemp[codigo].push({ nombre, codigo: codigoUDS });
 
         if (nombreInput) nombreInput.value = '';
@@ -567,8 +612,109 @@ const AjustesModule = (() => {
 
     function quitarUnidad(codigo, index) {
         if (!_unidadesTemp[codigo]) return;
+        if (!Array.isArray(_unidadesTemp[codigo])) _unidadesTemp[codigo] = _listaUDS(codigo).slice();
         _unidadesTemp[codigo].splice(index, 1);
         renderTablaUDS(codigo);
+    }
+
+    // ═══════════════════════════════════════════
+    // COPIAR UDS ENTRE CONTRATOS
+    // Se elige un contrato origen y uno o varios contratos destino.
+    // Modo "agregar": suma solo las UDS cuyo código aún no existe en el
+    // destino. Modo "reemplazar": deja el destino idéntico al origen.
+    // ═══════════════════════════════════════════
+
+    function _etiquetaContrato(cod) {
+        return _contratosTemp[cod] || `Contrato ${cod}`;
+    }
+
+    function renderCopiarUDS() {
+        const panel = document.getElementById('panelCopiarUDS');
+        const selOrigen = document.getElementById('ajustesSelectContratoOrigenUDS');
+        const cont = document.getElementById('ajustesDestinosUDS');
+        if (!panel || !selOrigen || !cont) return;
+
+        const codigos = Object.keys(_contratosTemp);
+        if (codigos.length < 2) { panel.style.display = 'none'; return; }
+        panel.style.display = 'block';
+
+        // Conservar selecciones previas mientras sigan siendo válidas
+        const origenPrevio = selOrigen.value;
+        const destinosPrevios = new Set([...cont.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value));
+
+        selOrigen.innerHTML = '<option value="">— Selecciona contrato origen —</option>' +
+            codigos.map(c => `<option value="${c}">📄 ${_etiquetaContrato(c)} · ${_listaUDS(c).length} UDS</option>`).join('');
+        if (origenPrevio && _contratosTemp[origenPrevio]) selOrigen.value = origenPrevio;
+
+        _renderDestinosUDS(destinosPrevios);
+    }
+
+    function _renderDestinosUDS(seleccionPrevia) {
+        const cont = document.getElementById('ajustesDestinosUDS');
+        const origen = document.getElementById('ajustesSelectContratoOrigenUDS')?.value || '';
+        if (!cont) return;
+        const previa = seleccionPrevia || new Set([...cont.querySelectorAll('input[type=checkbox]:checked')].map(c => c.value));
+        const actual = document.getElementById('ajustesSelectContratoUDS')?.value || '';
+        const candidatos = Object.keys(_contratosTemp).filter(c => c !== origen);
+
+        if (candidatos.length === 0) { cont.innerHTML = '<span class="copy-uds-empty">No hay otros contratos.</span>'; return; }
+
+        cont.innerHTML = candidatos.map(c => {
+            // Por defecto se marca el contrato que se está editando (si no es el origen)
+            const marcado = previa.size ? previa.has(c) : (c === actual);
+            return `<label class="copy-uds-chip">
+                <input type="checkbox" value="${c}" ${marcado ? 'checked' : ''}>
+                <span>${_etiquetaContrato(c)} <small>(${_listaUDS(c).length} UDS)</small></span>
+            </label>`;
+        }).join('');
+    }
+
+    function onOrigenCopiarUDS() { _renderDestinosUDS(); }
+
+    function seleccionarTodosDestinosUDS(marcar) {
+        document.querySelectorAll('#ajustesDestinosUDS input[type=checkbox]').forEach(c => { c.checked = marcar; });
+    }
+
+    function copiarUnidadesDesdeContrato() {
+        const origen = document.getElementById('ajustesSelectContratoOrigenUDS')?.value || '';
+        const modo = document.getElementById('ajustesModoCopiaUDS')?.value || 'agregar';
+        const destinos = [...document.querySelectorAll('#ajustesDestinosUDS input[type=checkbox]:checked')].map(c => c.value)
+            .filter(c => c !== origen && _contratosTemp[c]);
+
+        if (!origen || !_contratosTemp[origen]) { showToast('Selecciona el contrato origen', 'warning'); return; }
+        const fuente = _listaUDS(origen);
+        if (fuente.length === 0) { showToast('El contrato origen no tiene UDS para copiar', 'warning'); return; }
+        if (destinos.length === 0) { showToast('Marca al menos un contrato destino', 'warning'); return; }
+
+        if (modo === 'reemplazar') {
+            const nombres = destinos.map(c => `• ${_etiquetaContrato(c)} (${_listaUDS(c).length} UDS)`).join('\n');
+            if (!confirm(`Se REEMPLAZARÁN todas las UDS de:\n${nombres}\n\npor las ${fuente.length} UDS de "${_etiquetaContrato(origen)}".\n\n¿Continuar?`)) return;
+        }
+
+        let agregadas = 0, omitidas = 0;
+        destinos.forEach(dest => {
+            if (modo === 'reemplazar') {
+                _unidadesTemp[dest] = fuente.map(u => ({ nombre: u.nombre, codigo: u.codigo }));
+                agregadas += fuente.length;
+            } else {
+                const lista = _listaUDS(dest).slice();
+                const codigos = new Set(lista.map(u => String(u.codigo).trim()));
+                fuente.forEach(u => {
+                    const cod = String(u.codigo).trim();
+                    if (codigos.has(cod)) { omitidas++; return; }
+                    lista.push({ nombre: u.nombre, codigo: u.codigo });
+                    codigos.add(cod);
+                    agregadas++;
+                });
+                _unidadesTemp[dest] = lista;
+            }
+        });
+
+        // Refrescar todo lo que muestra UDS
+        poblarSelectContratosUDS();
+        const sel = document.getElementById('ajustesSelectContratoUDS');
+        if (sel && sel.value) renderTablaUDS(sel.value);
+        showToast(`📋 ${agregadas} UDS copiadas a ${destinos.length} contrato(s)` + (omitidas ? ` · ${omitidas} ya existían` : '') + '. Recuerda guardar la organización.', 'success', 4500);
     }
 
     // ═══════════════════════════════════════════
@@ -596,7 +742,7 @@ const AjustesModule = (() => {
         let contratosText = Object.entries(_contratosTemp).map(([cod, label]) => {
             const reg = _regionalesTemp[cod] || '—';
             const mod = _modalidadesTemp[cod] || '—';
-            return `${label || cod} (${reg}, ${mod})`;
+            return `${label || cod} (${reg}, ${mod}${_contratoActivo(cod) ? '' : ', INACTIVO'})`;
         }).join(', ') || 'Ninguno';
 
         detalle.innerHTML = `
@@ -637,6 +783,7 @@ const AjustesModule = (() => {
             colores_contratos:       _coloresTemp,
             modalidades_contratos:   _modalidadesTemp,
             regionales_contratos:    _regionalesTemp,
+            estados_contratos:       _estadosTemp,
             unidades:                _unidadesTemp,
             actualizadoEn: new Date().toISOString()
         };
@@ -660,7 +807,7 @@ const AjustesModule = (() => {
     function cerrarFormularioAsociacion() {
         _asociacionEditando = null;
         _contratosTemp = {}; _unidadesTemp = {}; _coloresTemp = {};
-        _modalidadesTemp = {}; _regionalesTemp = {};
+        _modalidadesTemp = {}; _regionalesTemp = {}; _estadosTemp = {};
         _currentStep = 1;
     }
 
@@ -773,6 +920,8 @@ const AjustesModule = (() => {
         agregarContrato, quitarContrato, irAUnidades,
         toggleColorPicker, elegirColorContrato, cerrarColorPicker,
         cambiarContratoUDS, agregarUnidad, quitarUnidad,
+        toggleEstadoContrato,
+        copiarUnidadesDesdeContrato, onOrigenCopiarUDS, seleccionarTodosDestinosUDS, renderCopiarUDS,
         guardarAsociacion, confirmarEliminarAsociacion,
         cerrarFormularioAsociacion, cambiarPassword,
         togglePass, genPass, checkStrength
