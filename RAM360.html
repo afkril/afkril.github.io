@@ -424,12 +424,25 @@ table.cons tbody tr:hover td{background:var(--g3)}
 .ws.on small{color:var(--onG);opacity:.85}
 .ws.on .wx:hover{color:#fecaca}
 button.ws.add{border-bottom:0;border-radius:14px 14px 0 0;background:none;min-height:40px}
+.sm{background:#FFD1F0;color:#7a1058;font-weight:700}
+#simBadge{display:inline-flex;align-items:center;gap:7px;background:#FFD1F0;color:#8a1c6a;border:2px solid #e879c6;border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;font-weight:800;letter-spacing:.4px;cursor:pointer;margin-left:12px}
+#simBadge.hide,#simPill.hide{display:none!important}
+#simPill{position:fixed;right:14px;bottom:14px;z-index:60;background:#FFD1F0;color:#7a1058;border:2px solid #e879c6;border-radius:999px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+body.simMode #nav{background:#FFEAF7;box-shadow:0 0 0 2px #f5b8e1,var(--sh)}
+body.simMode #nav button:hover{background:#FFD9F1;color:#8a1c6a}
+body.simMode #nav button.on{background:#FFD1F0;color:#8a1c6a;box-shadow:inset 0 0 0 1px rgba(232,121,198,.5)}
+#simBadge:hover{background:#ffc2ea}
+#simDlg{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center}
+#simDlg>div{background:#fff;color:#1c2b29;border-radius:14px;padding:20px;max-width:380px;border-top:5px solid #e879c6;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+#simDlg p{margin:6px 0 14px;font-size:14px}#simDlg .r{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+#simDlg button{border-radius:999px;padding:8px 14px;font:inherit;font-weight:700;cursor:pointer;border:2px solid #e879c6;background:#fff;color:#8a1c6a}#simDlg button.p{background:#e879c6;color:#fff}
+.simb{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.simb label{font-size:12.5px;display:flex;align-items:center;gap:4px;border:1px solid var(--bd,#d6e3e0);border-radius:8px;padding:3px 8px}
 </style>
 </head>
 <body><a class="skip" href="#main">Saltar al contenido</a><div id="live" class="sr" aria-live="polite"></div>
 <header>
   <div class="hl">
-    <div class="brand"><div class="logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M7.5 12.5 10.5 15.5 16.5 8.5"/></svg></div><div><b>RAM360</b><em>Control de Asistencia</em></div></div><div class="ctx"><h1>Control Diario de Asistencia por UDS</h1><small id="sub">Cargue el reporte Excel o use datos de ejemplo</small></div>
+    <div class="brand"><div class="logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M7.5 12.5 10.5 15.5 16.5 8.5"/></svg></div><div><b>RAM360</b><em>Control de Asistencia</em></div></div><button type="button" id="simBadge" class="hide" onclick="simDlg()" title="Los datos mostrados corresponden a una simulación y no afectan información real." aria-label="Modo simulación activo: abrir opciones"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9V3"/><path d="M7.5 15h9"/></svg>MODO SIMULACIÓN<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button><div class="ctx"><h1>Control Diario de Asistencia por UDS</h1><small id="sub">Cargue el reporte Excel o use datos de ejemplo</small></div>
     <input type="file" id="file" accept=".xlsx,.xls,.csv" class="hide" multiple>
     <button class="btn" onclick="file.click()"><svg class="ic" viewBox="0 0 24 24"><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/><path d="M12 16V4M7 9l5-5 5 5"/></svg> Cargar Excel</button>
   </div>
@@ -448,13 +461,14 @@ button.ws.add{border-bottom:0;border-radius:14px 14px 0 0;background:none;min-he
       <div class="legend"><span style="--c:var(--b)">Día especial (excluido)</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:var(--card)">Día de servicio</span>
         <a href="#" onclick="autoDetect();return false" style="color:var(--b)">Detectar días sin ninguna asistencia</a></div></div>
     </div>
-    <nav id="nav" role="tablist" aria-orientation="vertical" aria-label="Vistas"><button type="button" class="ntg" id="navC" onclick="navC()" aria-expanded="true" title="Compactar / expandir menú"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="nlab">Compactar menú</span></button><button type="button" class="sres" id="sumB" onclick="sumGo()" title="Ver resumen del mes" aria-label="Ver resumen del mes"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-7"/></svg><span class="rt nlab">Ver resumen<small>Informe del mes</small></span></button><button id="t1" class="on" onclick="tab(1)" title="Consolidado">Consolidado</button><button id="t2" onclick="tab(2)" title="Detalle por UDS">Detalle por UDS</button><button id="t3" onclick="tab(3)" title="Cupo por semana">Cupo por semana</button><button id="t4" onclick="tab(4)" title="Errores de marcación">Errores de marcación</button><button id="t5" onclick="tab(5)" title="Análisis">Análisis</button><button id="t7" onclick="tab(7)" title="Desvinculaciones">Desvinculaciones</button><button id="t6" onclick="tab(6)" title="Validación">Validación</button></nav>
+    <nav id="nav" role="tablist" aria-orientation="vertical" aria-label="Vistas"><button type="button" class="ntg" id="navC" onclick="navC()" aria-expanded="true" title="Compactar / expandir menú"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="nlab">Compactar menú</span></button><button type="button" class="sres" id="sumB" onclick="sumGo()" title="Ver resumen del mes" aria-label="Ver resumen del mes"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-7"/></svg><span class="rt nlab">Ver resumen<small>Informe del mes</small></span></button><button id="t1" class="on" onclick="tab(1)" title="Consolidado">Consolidado</button><button id="t2" onclick="tab(2)" title="Detalle por UDS">Detalle por UDS</button><button id="t3" onclick="tab(3)" title="Cupo por semana">Cupo por semana</button><button id="t4" onclick="tab(4)" title="Errores de marcación">Errores de marcación</button><button id="t5" onclick="tab(5)" title="Análisis">Análisis</button><button id="t7" onclick="tab(7)" title="Desvinculaciones">Desvinculaciones</button><button id="t8" onclick="tab(8)" title="Simulador">Simulador</button><button id="t6" onclick="tab(6)" title="Validación">Validación</button></nav>
     <section id="v1"></section>
     <section id="v3" class="hide"></section>
     <section id="v4" class="hide"></section>
     <section id="v5" class="hide"><div class="card hide" id="anCfg" role="dialog" aria-label="Configuración"><div class="cfh" id="cfgH"><span>Configuración</span><div class="cfb"><button type="button" id="cfgMin" title="Minimizar" aria-label="Minimizar configuración"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button><button type="button" id="cfgMax" title="Ampliar" aria-label="Ampliar configuración"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg></button><button type="button" id="cfgX" title="Cerrar" aria-label="Cerrar configuración"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div></div><div class="cfbody"><div class="row" style="margin:0"><label>Valor ración ($) <input type="number" id="aval" min="0" step="1" style="width:110px" onchange="setAn()"></label><label>Meta de cumplimiento (%) <input type="number" id="athr" min="1" max="100" onchange="setAn()"></label><label>Alertar con inasistencias seguidas (misma semana) ≥ <input type="number" id="arun" min="2" onchange="setAn()"></label></div><div class="row" style="margin:8px 0 0"><label>Operador <input type="text" id="mop" oninput="setMeta()"></label><label>Contrato N.° <input type="text" id="mco" oninput="setMeta()"></label><label>Regional <input type="text" id="mrg" oninput="setMeta()"></label><label>Centro zonal <input type="text" id="mcz" oninput="setMeta()"></label><label>Modalidad <input type="text" id="mmd" oninput="setMeta()"></label><label>Ciudad <input type="text" id="mci" oninput="setMeta()"></label></div><div class="legend" style="margin:6px 0 0">Se leen del reporte (operador H1, contrato J2, regional M2, centro zonal P2, modalidad H6; ciudad si aparece rotulada) y puede corregirlos. Presupuesto a facturar = (asistencias + inasistencias) × valor ración.</div></div><div class="cfr" id="cfgR" title="Cambiar tamaño"></div></div><button type="button" class="btn alt" id="cfgOpen"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg> Configuración</button><div id="anP"></div><div id="anB"></div></section>
     <section id="v6" class="hide"></section>
     <section id="v7" class="hide"></section>
+    <section id="v8" class="hide"></section>
     <section id="v2" class="hide">
       <div class="card">
         <h3>Detalle por UDS <button class="q" onclick="hlp(4,this)" aria-label="Ayuda de esta sección">?</button> <button class="q" onclick="hlp(6,this)" aria-label="Ayuda de esta sección" title="Editar casos">✎</button></h3>
@@ -466,7 +480,7 @@ button.ws.add{border-bottom:0;border-radius:14px 14px 0 0;background:none;min-he
         </div>
         <div class="kpis" id="detK"></div>
         <div class="wrap" id="detW"><table id="detT"></table></div><div id="detC" class="hide"></div>
-        <div class="legend"><span style="--c:var(--ok)">Asistió (X)</span><span style="--c:var(--warn)">Falla (-)</span><span style="--c:#ff7a00">Naranja: día hábil sin diligenciar de la UDS (se llena como inasistencia; el descuento se calcula en Análisis)</span><span style="--c:#FFD1F0">Rosa: ajuste automático (inasistencia por fecha exacta de desvinculación del Cuéntame, o R de 1–2 días en la semana que cuenta como cupo). Con el Cuéntame cargado, los días previos a la primera asistencia son inasistencia (no N/A) si el participante ya estaba inscrito y Activo</span><span style="--c:var(--gray)">Retiro</span><span style="--c:var(--card)">N/A: ingreso posterior (no cuenta)</span><span style="--c:var(--b)">Azul: ajustado manualmente</span><span style="--c:transparent">Clic en una celda -, R o N/A para validarla</span><span style="--c:var(--sp)">Día especial</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:#fecaca">⚠ Error de marcación (asistencia en día libre)</span></div>
+        <div class="legend"><span style="--c:var(--ok)">Asistió (X)</span><span style="--c:var(--warn)">Falla (-)</span><span style="--c:#ff7a00">Naranja: día hábil sin diligenciar de la UDS (se llena como inasistencia; el descuento se calcula en Análisis)</span><span style="--c:#FFD1F0">Rosa: ajuste automático (inasistencia por fecha exacta de desvinculación del Cuéntame, o R de 1–2 días en la semana que cuenta como cupo). Con el Cuéntame cargado, los días previos a la primera asistencia son inasistencia (no N/A) si el participante ya estaba inscrito y Activo</span><span style="--c:var(--gray)">Retiro</span><span style="--c:var(--card)">N/A: ingreso posterior (no cuenta)</span><span style="--c:var(--b)">Azul: ajustado manualmente</span><span style="--c:#FFD1F0">X rosada: asistencia simulada (pestaña Simulador)</span><span style="--c:transparent">Clic en una celda -, R o N/A para validarla</span><span style="--c:var(--sp)">Día especial</span><span style="--c:var(--wk)">Fin de semana</span><span style="--c:#fecaca">⚠ Error de marcación (asistencia en día libre)</span></div>
       </div>
     </section>
   </div>
@@ -614,14 +628,14 @@ function stats(rows){
  t.pct=t.cap?Math.round(t.att/t.cap*1000)/10:0;t.ok=t.att+t.abs<=t.cap;return t;
 }
 
-function refresh(){AUTO={};calcErr();chips();renderCons();renderDet();renderWk();renderErr();renderAn();renderPm();renderDes();renderVal();$('#live').textContent='Datos actualizados'}
+function refresh(){AUTO={};calcErr();chips();renderCons();renderDet();renderWk();renderErr();renderAn();renderPm();renderDes();renderVal();renderSim();$('#live').textContent='Datos actualizados'}
 function chips(){let h='';for(let d=1;d<=nDays();d++){const w=isWk(d);h+=w?`<div class="chip wk" aria-hidden="true">${d}<i>${WD[dow(d)]}</i></div>`:`<button type="button" class="chip ${isSp(d)?'sp':''} ${S.pend.has(d)&&isSp(d)?'pn':''} ${S.hol.has(d)&&isSp(d)?'hol':''}" title="${esc(S.hol.get(d)||(S.pend.has(d)&&isSp(d)?'Sin ninguna marca: por confirmar':d===S.lf?'Último viernes':''))}" aria-pressed="${isSp(d)}" aria-label="Día ${d} ${WDL[dow(d)]}: ${isSp(d)?'especial, excluido':'de servicio'}" onclick="togg(${d})">${d}<i>${WD[dow(d)]}</i></button>`}
  $('#chips').innerHTML=h;pendUI();const l=[...S.special].sort((a,b)=>a-b);$('#dsum').textContent='— '+(l.length?l.join(', '):'ninguno')}
 function togD(f,ns){const c=$('#dcard'),on=f===undefined?!c.classList.contains('fold'):f;c.classList.toggle('fold',on);
  $('#dfold').textContent=on?'▸ Desplegar':'▾ Plegar';$('#dfold').setAttribute('aria-expanded',!on);if(!ns)try{localStorage.setItem('uds_dfold',on?'1':'0')}catch(e){}}
 $('#dcard').addEventListener('click',e=>{if(e.target.closest('button.q'))return;const c=$('#dcard');if(c.classList.contains('fold')||e.target.closest('.dh'))togD()});
 function togg(d){S.special.has(d)?S.special.delete(d):S.special.add(d);S.pend.delete(d);refresh()}
-function tab(n){[1,2,3,4,5,6,7].forEach(i=>{const on=i===n;$('#v'+i).classList.toggle('hide',!on);const b=$('#t'+i);b.classList.toggle('on',on);b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1});
+function tab(n){[1,2,3,4,5,6,7,8].forEach(i=>{const on=i===n;$('#v'+i).classList.toggle('hide',!on);const b=$('#t'+i);b.classList.toggle('on',on);b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1});
  $('#dcard').classList.toggle('hide',n!==1);   // "Días especiales" solo en Consolidado
  if(innerWidth<720)navC(true)}
 /* barra lateral: compactar / expandir */
@@ -678,7 +692,7 @@ function renderDet(){
   h+=`<tr data-ri="${r.i}" class="${o.eff?'':'ret'}"><td class="n">${i+1}</td><td>${esc(r.doc)}</td><td>${esc(r.name)}${wE?` <span class="chk bad" title="${wE} asistencia(s) marcadas en sábado o domingo (no se cuentan). Ver pestaña Errores de marcación">⚠ ${wE}</span>`:''}</td><td class="n">${r.active?'Activo':o.eff?'<span title="Inactivo en el sistema, pero con el mes completo: cuenta como activo">Activo*</span>':'Inactivo'}</td>`;
   WDAYS.forEach(d=>{let cl,t,at='';
    if(isSp(d)&&r.marks[d]){cl='ce';t='⚠';at=' title="Error de marcación: asistencia marcada en día especial / sin servicio"'}else if(spDay(d,c)){cl='cs';t='–'}
-   else{const k=o.cell[d];const bd=k==='f'&&uAuto(c).has(d);cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];if(bd)cl='cb';t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';
+   else{const k=o.cell[d];const bd=k==='f'&&uAuto(c).has(d);cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];if(bd)cl='cb';t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(k==='x'&&r.sim&&r.sim[d])cl='sm';if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';
     if(k!=='x'){cl=(o.man[d]?'cm':(o.dv[d]||o.aw[d])?'cd':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" title="${o.dv[d]?'Falla: la desvinculación real fue el día '+r.desv+' (reporte Cuéntame). Clic para cambiar':o.aw[d]?'Retiro de 1–2 días dentro de la semana: cuenta como cupo (falla interna). Clic para cambiar':o.iv[d]?'Falla: según Cuéntame ya estaba inscrito (ingreso '+r.ingF+') y activo; no es ingreso posterior.'+(bd?' Día hábil sin diligenciar de la UDS: se descuenta en Análisis.':'')+' Clic para cambiar':bd?'Día hábil sin diligenciar de la UDS: se llenó como inasistencia y se descuenta en Análisis. Clic para cambiar':'Clic para validar'}" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
    h+=`<td class="d ${cl}${wb(d)}" data-dy="${d}"${at}>${t}</td>`});
   h+=`<td class="n"><b>${o.att}</b></td><td class="n">${o.abs}</td><td class="n">${o.ret}</td><td class="n">${o.na}</td></tr>`});
@@ -948,7 +962,7 @@ function renderCards(){const on=!!S.cards;$('#detW').classList.toggle('hide',on)
  $('#detC').innerHTML=rows.map(r=>{const o=calc(r);let g='';
   for(let d=1;d<=N;d++){const w=isWk(d),sp=spDay(d,c);let cl,t,at='';
    if((w||isSp(d))&&r.marks[d]){cl='ce';t='⚠'}else if(w)continue;else if(sp){cl='cs';t='–'}
-   else{const k=o.cell[d];const bd=k==='f'&&uAuto(c).has(d);cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];if(bd)cl='cb';t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';if(k!=='x'){cl=(o.man[d]?'cm':(o.dv[d]||o.aw[d])?'cd':cl)+' ed';at=` data-i="${r.i}" data-d="${d}"${o.dv[d]?' title="Falla: desvinculación real el día '+r.desv+' (Cuéntame)"':o.aw[d]?' title="Retiro de 1–2 días: cuenta como cupo"':o.iv[d]?' title="Falla: ya inscrito según Cuéntame (ingreso '+r.ingF+')"':bd?' title="Día sin diligenciar: inasistencia (se descuenta en Análisis)"':''} tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
+   else{const k=o.cell[d];const bd=k==='f'&&uAuto(c).has(d);cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];if(bd)cl='cb';t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(k==='x'&&r.sim&&r.sim[d])cl='sm';if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';if(k!=='x'){cl=(o.man[d]?'cm':(o.dv[d]||o.aw[d])?'cd':cl)+' ed';at=` data-i="${r.i}" data-d="${d}"${o.dv[d]?' title="Falla: desvinculación real el día '+r.desv+' (Cuéntame)"':o.aw[d]?' title="Retiro de 1–2 días: cuenta como cupo"':o.iv[d]?' title="Falla: ya inscrito según Cuéntame (ingreso '+r.ingF+')"':bd?' title="Día sin diligenciar: inasistencia (se descuenta en Análisis)"':''} tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}}
    g+=`<span class="mc ${cl}" data-dy="${d}"${at}>${t}<small>${d} ${WD[dow(d)]}</small></span>`}
   return`<article class="pc" data-ri="${r.i}"><b>${esc(r.name)}</b><small>${esc(r.doc)} · ${r.active?'Activo':o.eff?'Activo*':'Inactivo'}</small><div class="mg">${g}</div><div class="ps"><span>✔ ${o.att}</span><span>Falla ${o.abs}</span><span>R ${o.ret}</span><span>N/A ${o.na}</span></div></article>`}).join('')||'<div class="empty">Sin resultados</div>'}
 
@@ -1157,6 +1171,48 @@ function cueImgHide(){clearTimeout(cit);cit=setTimeout(()=>$('#cueImg').classLis
 document.addEventListener('keydown',e=>e.key==='Escape'&&$('#cueImg').classList.add('hide'));
 function cueSet(k,v){if(k==='apply'){SH.cueApply=v;shareCue(true)}if(k==='force'){S.cueForce=true;S.cueSel=v}applyCue();refresh()}
 function cueClear(){SH.cue=null;shareCue();applyCue();refresh()}
+/* ----- Simulador: completa los días que faltan según la cobertura ya marcada; lo simulado se ve rosado y TODO (consolidado, análisis financiero…) se recalcula con ello ----- */
+const SIM={wk:null,from:0,to:0,mode:'prom',off:new Set(),info:[]};
+const simLast=()=>{let l=0;for(let d=1;d<=nDays();d++)if(S.rows.some(r=>r.marks[d]&&!(r.sim&&r.sim[d])))l=d;return l};
+function simTot(){let a=0,f=0,n=0;S.rows.forEach(r=>{const o=calc(r);a+=o.att;f+=o.abs;n+=o.na});return{a,f,n,c:a+f}}
+const simDays=()=>{const o=[];for(let d=Math.max(1,SIM.from);d<=Math.min(nDays(),SIM.to);d++)if(!isWk(d))o.push(d);return o};
+function simSet(k,v){SIM[k]=k==='mode'?v:Math.max(1,Math.min(nDays(),+v||1));renderSim()}
+function simTgl(d){SIM.off.has(d)?SIM.off.delete(d):SIM.off.add(d);renderSim()}
+function simRun(){if(!S.rows.length)return;if(S.simOn)simOff(true);
+ const last=simLast(),days=simDays().filter(d=>!SIM.off.has(d));if(!days.length)return;
+ S.simBk={sp:new Set(S.special),pe:new Set(S.pend),b:simTot(),last,days};SIM.info=[];
+ days.forEach(d=>{S.special.delete(d);S.pend.delete(d)});
+ [...new Set(S.rows.map(r=>r.code))].forEach(c=>{
+  const rs=S.rows.filter(r=>r.code===c&&r.active),sv=svc(c).filter(d=>d<=last&&rs.some(r=>r.marks[d]));
+  const use=SIM.mode==='u5'?sv.slice(-5):sv,rate=SIM.mode==='all'?1:(use.length&&rs.length?use.reduce((a,d)=>a+rs.filter(r=>r.marks[d]).length,0)/(use.length*rs.length):0),
+   tgt=Math.min(rs.length,Math.round(rate*rs.length)),
+   pool=rs.map(r=>({r,n:sv.filter(d=>r.marks[d]).length})).filter(x=>SIM.mode==='all'||x.n>0).sort((a,b)=>b.n-a.n||a.r.i-b.r.i).slice(0,tgt);
+  days.forEach(d=>pool.forEach(({r})=>{r.marks[d]=1;(r.sim??={})[d]=1}));
+  if(rs.length)SIM.info.push({uds:rs[0].uds,n:rs.length,rate,tgt})});
+ S.simOn=true;S.simBk.a=simTot();refresh();tab(8)}
+function simDlg(){if($('#simDlg'))return;document.body.insertAdjacentHTML('beforeend','<div id="simDlg" role="dialog" aria-modal="true" aria-label="Modo simulación"><div><b>Modo simulación activo</b><p>Los datos mostrados corresponden a una simulación y no afectan información real. Las asistencias simuladas se ven en rosado.</p><div class="r"><button type="button" class="p" onclick="$(\'#simDlg\').remove()">Continuar simulación</button><button type="button" onclick="$(\'#simDlg\').remove();simOff()">Volver a datos reales</button></div></div></div>')}
+function simOff(q){if(!S.simOn)return;S.rows.forEach(r=>{if(r.sim){Object.keys(r.sim).forEach(d=>delete r.marks[d]);r.sim={}}});
+ S.special=S.simBk.sp;S.pend=S.simBk.pe;S.simOn=false;S.simBk=null;if(!q)refresh()}
+function renderSim(){const el=$('#v8');if(!el)return;const tb=$('#t8');if(tb)tb.innerHTML='Simulador'+(S.simOn?'<span class="bdg" aria-label="simulación activa">●</span>':'');
+ const bd=$('#simBadge');if(bd)bd.classList.toggle('hide',!S.simOn);document.body.classList.toggle('simMode',!!S.simOn);
+ let pl=$('#simPill');if(!pl){document.body.insertAdjacentHTML('beforeend','<button type="button" id="simPill" class="hide" onclick="simDlg()" title="Opciones del modo simulación">MODO SIMULACIÓN ACTIVO</button>');pl=$('#simPill')}
+ pl.classList.toggle('hide',!S.simOn);
+ if(!S.rows.length){el.innerHTML='';return}
+ if(SIM.wk!==S.wk&&!S.simOn){SIM.wk=S.wk;SIM.from=simLast()+1;SIM.to=nDays();SIM.mode='prom';SIM.off=new Set([...S.hol.keys()])}
+ const N=x=>x.toLocaleString('es-CO'),mn=MF[S.month-1];
+ let h=`<div class="card"><h3>Simulador de cierre de ${mn}</h3><div class="legend" style="display:block;margin:0 0 8px">Completa los días que faltan a partir de la cobertura que RAM ya trae marcada: cada UDS repite su porcentaje de cupo atendido y asisten los participantes activos con más asistencias. Las asistencias simuladas se ven <b style="background:#FFD1F0;padding:0 5px;border-radius:4px">X</b> en rosado y el Consolidado, el Detalle y el <b>Análisis</b> se calculan con ellas. No modifica el archivo cargado: se quita con un clic.</div>`;
+ if(!S.simOn){const ds=simDays();
+  h+=`<div class="simb"><label>Simular desde el día <input type="number" min="1" max="${nDays()}" value="${SIM.from}" style="width:56px" onchange="simSet('from',this.value)"></label><label>hasta el día <input type="number" min="1" max="${nDays()}" value="${SIM.to}" style="width:56px" onchange="simSet('to',this.value)"></label>
+  <label>Cobertura <select onchange="simSet('mode',this.value)"><option value="prom"${SIM.mode==='prom'?' selected':''}>Promedio del mes por UDS</option><option value="u5"${SIM.mode==='u5'?' selected':''}>Últimos 5 días marcados</option><option value="all"${SIM.mode==='all'?' selected':''}>100% de los activos</option></select></label></div>
+  <div class="legend" style="display:block;margin:0 0 4px">Días a completar (se omiten fines de semana; quite los que sean festivos o especiales):</div><div class="simb">${ds.map(d=>`<label><input type="checkbox" ${SIM.off.has(d)?'':'checked'} onchange="simTgl(${d})">${WD[dow(d)]} ${d}${S.hol.has(d)?' · festivo':''}</label>`).join('')||'<span class="legend">No hay días por simular en ese rango.</span>'}</div>
+  <button type="button" class="btn" onclick="simRun()" style="background:#e879c6;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer">Activar modo simulación</button>
+  <div class="legend" style="display:block;margin-top:8px">Última marcación real en RAM: día ${simLast()||'—'}.</div>`}
+ else{const b=S.simBk.b,a=S.simBk.a,ds=S.simBk.days,row=(t,x,y)=>`<tr><td style="text-align:left">${t}</td><td>${N(x)}</td><td>${N(y)}</td><td>${y-x>=0?'+':''}${N(y-x)}</td></tr>`;
+  h+=`<div class="legend" style="display:block;background:#FFD1F0;color:#7a1058;border-radius:8px;padding:8px;margin:0 0 8px"><b>Simulación activa</b>: ${ds.length} día(s) completados (${ds.join(', ')}) después del día ${S.simBk.last}. Los reportes de las demás pestañas incluyen estos datos simulados.</div>
+  <div class="wrap"><table><thead><tr><th style="text-align:left">Total del mes</th><th>Real (RAM)</th><th>Simulado</th><th>Diferencia</th></tr></thead><tbody>${row('Asistencias',b.a,a.a)}${row('Inasistencias',b.f,a.f)}${row('Cupo (asistencias + inasistencias)',b.c,a.c)}</tbody></table></div>
+  <div class="wrap" style="margin-top:8px"><table><thead><tr><th style="text-align:left">UDS</th><th>Activos</th><th>Cobertura aplicada</th><th>Asisten por día</th></tr></thead><tbody>${SIM.info.map(i=>`<tr><td style="text-align:left">${E(i.uds)}</td><td>${i.n}</td><td>${Math.round(i.rate*100)}%</td><td>${i.tgt}</td></tr>`).join('')}</tbody></table></div>
+  <div class="simb"><button type="button" onclick="tab(5)" style="border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer">Ver Análisis financiero simulado</button><button type="button" onclick="tab(1)" style="border-radius:8px;padding:8px 14px;cursor:pointer">Ver Consolidado</button><button type="button" onclick="simOff()" style="border-radius:8px;padding:8px 14px;cursor:pointer">Desactivar modo simulación</button></div>`}
+ el.innerHTML=h+'</div>'}
 function renderDes(){const el=$('#v7');if(!el||!S.rows.length)return;
  const mes=MF[S.month-1]+' '+year(),E=esc,dl=d=>`${WDS[dow(d)]} ${d} ${MN[S.month-1]}`,pf=p=>p?(inM(p)?dl(p.d):`${String(p.d).padStart(2,'0')}/${String(p.m).padStart(2,'0')}/${p.y}`):'—',
   bd=o=>`<span class="chk ${{ok:'ok',dif:'dif',bad:'bad',warn:'warn',inf:'inf'}[o.sev]}">${E(o.st)}</span>`;
