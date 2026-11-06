@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="dash-page">
+  <div class="ui-zoom" id="uiRoot">
+  <div class="viewas-bar" id="viewAsBar" style="display:none;"></div>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>
+      </div>
+      Gestor de Documentos
+    </div>
+    <div class="userinfo">
+      <label class="ui-size" title="Tamaño de la interfaz">Tamaño
+        <select id="uiSizeSelect">
+          <option value="0.6">60%</option>
+          <option value="0.67">67%</option>
+          <option value="0.8" selected>80%</option>
+          <option value="0.9">90%</option>
+          <option value="1">100%</option>
+        </select>
+      </label>
+      <div class="user-chip">
+        <span class="avatar" id="userAvatar"></span>
+        <span id="nombreUsuario"></span>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btnHelp" type="button" title="Repetir el recorrido guiado"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17v.1"/></svg> Ayuda</button>
+      <button class="btn btn-secondary btn-sm" id="btnManual" type="button" title="Manual corto en PDF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg> Manual</button>
+      <button class="btn btn-secondary btn-sm" id="btnLogout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </div>
+
+  <div class="container-dash">
+    <div id="alert" class="alert"></div>
+    <div id="avisos" class="avisos"></div>
+    <div id="monthBanner"></div>
+
+    <!-- Encabezado combinado: izquierda unidad, mes y buscador · derecha avance del mes -->
+    <div class="card dash-head">
+      <div class="dh-left">
+        <div class="dash-unit">
+          <span class="du-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg></span>
+          <div style="min-width:0;">
+            <div class="du-label">Unidad de servicio</div>
+            <div class="du-name" id="unitName"></div>
+          </div>
+        </div>
+        <div class="dash-tools" id="dashTools">
+          <div class="field dt-month">
+            <label for="monthSelect">Mes</label>
+            <select id="monthSelect"></select>
+          </div>
+          <div class="field search-input dt-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="search" id="searchInput" placeholder="Buscar tema…" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      <div class="dh-right" id="dashProgressCol" style="display:none;">
+        <div id="progressWrap" class="progress-card-v2">
+          <div class="progress-card-head">
+            <div>
+              <div class="progress-title">Avance del mes</div>
+              <div class="progress-motiv" id="progressMotiv"></div>
+            </div>
+            <div class="progress-pct" id="progressPct"></div>
+          </div>
+          <div class="progress-track-v2"><div class="progress-fill-v2" id="progressFill"></div><div class="progress-fill-v2 rev" id="progressRev"></div></div>
+          <div class="progress-label" id="progressLabel"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen colorido -->
+    <div class="dash-kpis five" id="dashKpis" style="display:none;">
+      <div class="kpi-c azul">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg></span>
+        <div><div class="kc-num" id="kpiTotal">0</div><div class="kc-lbl">Temas exigibles</div></div>
+      </div>
+      <div class="kpi-c verde">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg></span>
+        <div><div class="kc-num" id="kpiAprobados">0</div><div class="kc-lbl">Aprobados</div></div>
+      </div>
+      <div class="kpi-c amarillo">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <div><div class="kc-num" id="kpiRevision">0</div><div class="kc-lbl">En revisión</div></div>
+      </div>
+      <div class="kpi-c naranja">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></span>
+        <div><div class="kc-num" id="kpiRechazados">0</div><div class="kc-lbl">Por corregir</div></div>
+      </div>
+      <div class="kpi-c rojo">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16.2v.1"/></svg></span>
+        <div><div class="kc-num" id="kpiVacios">0</div><div class="kc-lbl">Por cargar</div></div>
+      </div>
+
+    </div>
+
+    <!-- Carpetas -->
+    <div class="section-head">
+      <span class="sh-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg></span>
+      <div>
+        <h1>Carpetas / Temas</h1>
+        <p class="subtitle">Selecciona una carpeta para ver sus detalles y cargar documentos. Solo tú ves estos archivos. Tamaño máximo por archivo: <span id="maxSize"></span> MB.</p>
+      </div>
+    </div>
+
+    <div class="folders-toolbar" id="foldersToolbar" style="display:none;">
+      <span class="muted" id="foldersCount"></span>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" id="btnToggleCollapseAll" type="button">Desplegar todos</button>
+        <label class="switch-toggle">
+          <input type="checkbox" id="hideCompletedToggle">
+          <span class="switch-track"></span>
+          Ocultar temas completados
+        </label>
+      </div>
+    </div>
+
+    <div class="mx-legend" id="dashLegend" style="display:none;margin-bottom:12px;">
+      <span><i class="mx-dot verde"></i> Aprobado</span>
+      <span><i class="mx-dot amarillo"></i> En revisión</span>
+      <span><i class="mx-dot naranja"></i> Rechazado: corrige y vuelve a subir</span>
+      <span><i class="mx-dot rojo"></i> Vacío</span>
+      <span><i class="mx-dot gris"></i> No aplica</span>
+    </div>
+    <div id="foldersGrid" class="folders-grid"></div>
+    <div id="emptyHint" class="empty-hint" style="display:none;">Aún no hay meses creados por el administrador.</div>
+  </div>
+
+  <!-- Panel lateral: ver detalles -->
+  <div class="drawer-bg" id="drawerBg"></div>
+  <aside class="drawer" id="detailDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" aria-hidden="true">
+    <div class="drawer-head">
+      <span class="dh-icon" id="drawerIcon"></span>
+      <h2 id="drawerTitle"></h2>
+      <span class="fc-badge" id="drawerBadge"></span>
+      <button class="drawer-close" id="drawerClose" type="button" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="drawerAlert" class="alert"></div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+  </div><!-- /uiRoot -->
+
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    const alertEl = document.getElementById('alert');
+    const drawerAlertEl = document.getElementById('drawerAlert');
+    const ACCEPT_EXT = '.jpg,.jpeg,.png,.gif,.webp,.pdf,.rar,.zip,.7z,.xls,.xlsx,.doc,.docx';
+    const VIEW_TOKEN = new URLSearchParams(location.search).get('vt') || '';
+    let token = VIEW_TOKEN || localStorage.getItem('userToken');
+    let currentMonthId = null;
+    let lastTopics = [];
+    let openTopicId = null;
+    let searchTerm = '';
+    // Por defecto las tarjetas se ven compactas (plegadas); "Desplegar todos" muestra
+    // archivos, zona de carga y "No aplica" dentro de cada tarjeta.
+    let allCollapsed = localStorage.getItem('gd_allCollapsed') !== 'false';
+    document.getElementById('maxSize').textContent = MAX_FILE_MB;
+
+    // ---------- Tamaño de la interfaz (mismo sistema que el panel admin) ----------
+    let uiScale = 0.8, uiScalePref = 0.8;
+    function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+    function lsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
+    // En pantallas angostas (celular) no se reduce.
+    function applyUiScale(v) {
+      uiScale = window.innerWidth > 900 ? v : 1;
+      document.body.style.setProperty('--ui-scale', String(uiScale));
+    }
+    (function initUiScale() {
+      const sizeSel = document.getElementById('uiSizeSelect');
+      const saved = parseFloat(lsGet('gd_uiscale_dash'));
+      if (saved >= 0.5 && saved <= 1.2) { uiScalePref = saved; sizeSel.value = String(saved); }
+      applyUiScale(uiScalePref);
+      sizeSel.addEventListener('change', function () {
+        uiScalePref = parseFloat(sizeSel.value) || 0.8;
+        lsSet('gd_uiscale_dash', String(uiScalePref));
+        applyUiScale(uiScalePref);
+      });
+      window.addEventListener('resize', function () { applyUiScale(uiScalePref); });
+    })();
+
+    if (!token) { goTo('login'); }
+
+    // ---------- Iconos ----------
+    function folderSvg(size) {
+      return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>';
+    }
+    const DOC_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/></svg>';
+    const CHEV_DOWN_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+    const CHEV_RIGHT_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+    const UPLOAD_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
+    const BANNER_ICON = {
+      vacio: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16.2v.1"/></svg>',
+      completo: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>',
+      noaplica: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>'
+    };
+    const INFO_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>';
+    const UP_SMALL_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
+    const CLIP_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8"/></svg>';
+    const UP_ICON_LG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
+    const FOLDER_SMALL_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>';
+
+    function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+
+    const ESTADO_LABEL = { vacio: 'Vacío', pendiente: 'En revisión', aprobado: 'Aprobado', rechazado: 'Rechazado', noaplica: 'No aplica' };
+    const ESTADO_COLORS = {
+      vacio: ['#e0393e', '#fdeceb'], vencido: ['#a61b1f', '#fdeceb'], pendiente: ['#a56a00', '#fff6d9'],
+      aprobado: ['#1e9e5a', '#e9f9ef'], rechazado: ['#c2540a', '#ffe9d6'], noaplica: ['#6f7c95', '#eef1f6']
+    };
+    const CLOCK_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+    const BACK_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>';
+    let lastData = null;
+    let viewAs = false;
+    function isReadonly() { return viewAs || !!(lastData && lastData.month && lastData.month.cerrado); }
+    function topicEstado(t) { return t.estado || (t.noAplica ? 'noaplica' : (t.vacio ? 'vacio' : 'aprobado')); }
+    function isVenc(t) { return !!t.vencido && (t.estado === 'vacio' || t.estado === 'rechazado'); }
+    function colorKey(t) { return isVenc(t) && t.estado === 'vacio' ? 'vencido' : t.estado; }
+    function badgeLabel(t) {
+      if (isVenc(t)) return t.estado === 'vacio' ? 'Vencido' : 'Rechazado · vencido';
+      return ESTADO_LABEL[t.estado];
+    }
+    function acceptFor(t) { return t.extensiones && t.extensiones.length ? t.extensiones.map(function (e) { return '.' + e; }).join(',') : ACCEPT_EXT; }
+    function extsText(t) { return (t.extensiones && t.extensiones.length ? t.extensiones : ACCEPT_EXT.split(',').map(function (e) { return e.slice(1); })).map(function (e) { return e.toUpperCase(); }).join(', '); }
+
+    // Mensaje claro según el estado, la fecha límite y si el tema es obligatorio
+    function topicMessage(t) {
+      const lim = t.fechaLimite ? fmtDay(t.fechaLimite) : '';
+      const d = t.diasRestantes;
+      const cuando = d === null || d === undefined ? '' : (d < 0 ? '' : (d === 0 ? ' (vence hoy)' : (d === 1 ? ' (queda 1 día)' : ' (quedan ' + d + ' días)')));
+      if (t.estado === 'noaplica') return t.noAplicaPorAdmin ? 'El administrador marcó este tema como "No aplica".' : 'Marcaste este tema como "No aplica" este mes.';
+      if (t.estado === 'aprobado') return 'Aprobado por el administrador.';
+      if (t.estado === 'pendiente') return 'Tu archivo está en revisión.';
+      if (t.estado === 'rechazado') {
+        return 'Rechazado' + (t.observacion ? ': ' + t.observacion + (/[.!?]$/.test(t.observacion) ? '' : '.') : '.') + ' Corrígelo y vuelve a subirlo' +
+          (t.vencido ? ' (ya venció el ' + lim + ')' : (lim ? ' antes del ' + lim : '')) + '.';
+      }
+      if (!t.obligatorio) return 'Tema opcional: cárgalo solo si corresponde' + (lim ? ' (límite ' + lim + ')' : '') + '.';
+      if (t.vencido) return 'Venció el ' + lim + '. Cárgalo lo antes posible.';
+      if (lim) return 'Te falta cargar «' + t.nombre + '» antes del ' + lim + cuando + '.';
+      return 'Te falta cargar «' + t.nombre + '».';
+    }
+    function stateTag(f) {
+      const m = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'En revisión'], rechazado: ['naranja', 'Rechazado'] }[f.estado] || ['gris', f.estado];
+      return '<span class="tag ' + m[0] + '">' + m[1] + '</span>' + (f.tardio ? ' <span class="tag gris" title="Se cargó después de la fecha límite">Fuera de plazo</span>' : '');
+    }
+
+    function renderAvisos(avisos) {
+      const wrap = document.getElementById('avisos');
+      wrap.innerHTML = '';
+      (avisos || []).forEach(function (a) {
+        const el = document.createElement('div');
+        el.className = 'aviso ' + (a.tipo === 'rechazo' ? 'rechazo' : '');
+        el.innerHTML = '<span class="av-ico">' + (a.tipo === 'rechazo' ? BACK_SVG : BANNER_ICON.vacio) + '</span>' +
+          '<div class="av-body">' + escapeHtml(a.mensaje) + '</div>' +
+          (viewAs ? '' : '<button class="btn btn-secondary btn-sm" type="button">Entendido</button>');
+        const btn = el.querySelector('button');
+        if (btn) btn.addEventListener('click', async function () {
+          btn.disabled = true;
+          try { await gsRun('apiMarkAvisoLeido', token, a.id); el.remove(); } catch (e) { reportError(e.message); btn.disabled = false; }
+        });
+        wrap.appendChild(el);
+      });
+    }
+
+    function renderMonthBanner() {
+      const el = document.getElementById('monthBanner');
+      const m = lastData && lastData.month;
+      if (!m) { el.innerHTML = ''; return; }
+      if (m.cerrado) {
+        el.innerHTML = '<div class="month-banner">' + BANNER_ICON.noaplica + '<div><strong>Este mes está cerrado.</strong> Ya no se pueden cargar ni borrar archivos. Si te falta algo, pídele al administrador que lo reabra.</div></div>';
+      } else if (m.fechaLimite) {
+        el.innerHTML = '<div class="month-banner">' + CLOCK_SVG + '<div>Fecha límite del mes: <strong>' + fmtDay(m.fechaLimite) + '</strong>. Algunos temas pueden tener su propia fecha.</div></div>';
+      } else { el.innerHTML = ''; }
+    }
+
+    async function loadMonths() {
+      const months = await gsRun('apiGetMonths', token);
+      const sel = document.getElementById('monthSelect');
+      sel.innerHTML = '';
+      if (!months.length) {
+        document.getElementById('emptyHint').style.display = 'block';
+        document.getElementById('dashTools').style.display = 'none';
+        return;
+      }
+      months.forEach(function (m) {
+        const opt = document.createElement('option');
+        opt.value = m.id; opt.textContent = m.nombre + (m.cerrado ? ' (cerrado)' : '');
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', function () { loadTopics(sel.value); });
+      currentMonthId = months[0].id;
+      sel.value = currentMonthId;
+      await loadTopics(currentMonthId);
+    }
+
+    // silent = true: refresca los datos sin vaciar la pantalla (después de cargar, renombrar,
+    // eliminar o marcar "No aplica"), así el panel de detalles no parpadea.
+    async function loadTopics(monthId, silent) {
+      currentMonthId = monthId;
+      const sel = document.getElementById('monthSelect');
+      if (!silent) {
+        closeDrawer();
+        hideAlert(alertEl);
+        document.getElementById('foldersToolbar').style.display = 'none';
+        document.getElementById('dashKpis').style.display = 'none';
+        document.getElementById('dashProgressCol').style.display = 'none';
+        document.getElementById('dashLegend').style.display = 'none';
+        document.getElementById('foldersGrid').innerHTML =
+          '<div class="topics-loading"><span class="spinner"></span>Cargando la información de este mes…</div>';
+        sel.disabled = true;
+      }
+      try {
+        lastData = await gsRun('apiGetTopics', token, monthId);
+        lastTopics = lastData.topics;
+      } catch (e) {
+        reportError(e.message);
+        if (!silent) { lastData = null; lastTopics = []; }
+      }
+      if (!silent) sel.disabled = false;
+      if (currentMonthId !== monthId) return; // el usuario ya cambió de mes mientras cargaba
+      renderAvisos(lastData ? lastData.avisos : []);
+      renderMonthBanner();
+      renderFolders();
+      maybeStartTour();
+    }
+
+    function refreshTopics() { return loadTopics(currentMonthId, true); }
+
+    function motivText(r) {
+      if (r.total && r.resueltos >= r.total) return '¡Todos los temas de este mes están aprobados! 🎉';
+      if (r.vencidos) return 'Tienes ' + r.vencidos + (r.vencidos === 1 ? ' tema vencido' : ' temas vencidos') + ': cárgalos cuanto antes.';
+      if (r.rechazados) return 'Tienes ' + r.rechazados + (r.rechazados === 1 ? ' tema por corregir' : ' temas por corregir') + '. Lee la observación y vuelve a subirlos.';
+      if (r.pct >= 80) return '¡Ya casi! Un último esfuerzo 💪';
+      if (r.pct >= 50) return 'Vas más de la mitad, ¡sigue así!';
+      if (r.pct >= 20) return 'Buen comienzo, continúa cargando tus documentos.';
+      return '¡Empecemos a cargar tus documentos!';
+    }
+
+    function renderFolders() {
+      const topics = lastTopics;
+      const total = topics.length;
+      const r = (lastData && lastData.resumen) || { total: 0, resueltos: 0, aprobados: 0, pendientes: 0, rechazados: 0, vacios: 0, noAplica: 0, vencidos: 0, pct: 0 };
+
+      const kpis = document.getElementById('dashKpis');
+      if (total) {
+        kpis.style.display = 'grid';
+        document.getElementById('dashProgressCol').style.display = 'flex';
+        document.getElementById('kpiTotal').textContent = r.total;
+        document.getElementById('kpiAprobados').textContent = r.aprobados;
+        document.getElementById('kpiRevision').textContent = r.pendientes;
+        document.getElementById('kpiRechazados').textContent = r.rechazados;
+        document.getElementById('kpiVacios').textContent = r.vacios;
+        document.getElementById('progressLabel').textContent = r.resueltos + ' de ' + r.total + ' temas exigibles aprobados' +
+          (r.noAplica ? ' o sin aplicar' : '') + (r.pendientes ? ' · ' + r.pendientes + ' en revisión' : '') + '. Los temas opcionales no cuentan.';
+        document.getElementById('progressMotiv').textContent = motivText(r);
+        const pctEl = document.getElementById('progressPct');
+        pctEl.textContent = r.pct + '%';
+        pctEl.className = 'progress-pct' + (r.pct >= 100 ? ' complete' : '');
+        const fillEl = document.getElementById('progressFill');
+        fillEl.style.width = r.pct + '%';
+        fillEl.className = 'progress-fill-v2' + (r.pct >= 100 ? ' complete' : '');
+        const revEl = document.getElementById('progressRev');
+        const revPct = r.total ? Math.min(100 - r.pct, Math.round(r.pendientes / r.total * 100)) : 0;
+        revEl.style.left = r.pct + '%'; revEl.style.width = revPct + '%';
+      } else {
+        kpis.style.display = 'none';
+        document.getElementById('dashProgressCol').style.display = 'none';
+      }
+
+      document.getElementById('foldersToolbar').style.display = total ? 'flex' : 'none';
+      document.getElementById('dashLegend').style.display = total ? 'flex' : 'none';
+
+      const grid = document.getElementById('foldersGrid');
+      grid.innerHTML = '';
+
+      if (!total) {
+        grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;">El administrador aún no ha creado los temas de este mes' + (lastData ? ' para tu contrato' : '') + '.</div>';
+        document.getElementById('foldersCount').textContent = '';
+        renderPanel();
+        return;
+      }
+
+      const hideCompleted = document.getElementById('hideCompletedToggle').checked;
+      let visibleTopics = hideCompleted ? topics.filter(function (t) { return t.estado === 'vacio' || t.estado === 'rechazado'; }) : topics;
+      const q = norm(searchTerm).trim();
+      if (q) visibleTopics = visibleTopics.filter(function (t) { return norm(t.nombre).indexOf(q) !== -1; });
+
+      document.getElementById('foldersCount').textContent = 'Mostrando ' + visibleTopics.length + ' de ' + total + ' temas';
+
+      if (!visibleTopics.length) {
+        const msg = q
+          ? 'No se encontraron temas que coincidan con "' + escapeHtml(searchTerm.trim()) + '".'
+          : '¡No tienes temas por cargar ni corregir! 🎉 Puedes desactivar "Ocultar temas completados" para verlos todos.';
+        grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;">' + msg + '</div>';
+        renderPanel();
+        return;
+      }
+
+      visibleTopics.forEach(function (t) {
+        // Si un tema falla al construirse no se cae la pantalla completa:
+        // se muestra una tarjeta de error solo para ese tema y se sigue con los demás.
+        try {
+          grid.appendChild(buildFolderCard(t));
+        } catch (e) {
+          console.error('No se pudo construir el tema "' + t.nombre + '":', e);
+          const errCard = document.createElement('div');
+          errCard.className = 'folder-card vacio';
+          errCard.innerHTML =
+            '<div class="fc-title">' + escapeHtml(t.nombre) + '</div>' +
+            '<div class="empty-hint" style="padding:0;font-size:12px;">No se pudo mostrar este tema. Recarga la página; si sigue fallando, avísale al administrador.</div>';
+          grid.appendChild(errCard);
+        }
+      });
+
+      renderPanel();
+    }
+
+    // ---------- Acciones compartidas (tarjeta y panel) ----------
+    function uploadFor(t, file, zone) {
+      if (isReadonly()) { reportError('Este mes no admite cargas en este momento.'); return; }
+      if (file.size > MAX_FILE_MB * 1024 * 1024) {
+        reportError('El archivo supera el límite de ' + MAX_FILE_MB + ' MB.');
+        return;
+      }
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      const allowed = t.extensiones && t.extensiones.length ? t.extensiones : ACCEPT_EXT.split(',').map(function (e) { return e.slice(1); });
+      if (allowed.indexOf(ext) === -1) {
+        reportError('En este tema solo se permiten archivos ' + extsText(t) + '.');
+        const inp0 = zone.querySelector('input[type=file]'); if (inp0) inp0.value = '';
+        return;
+      }
+      const inp = zone.querySelector('input[type=file]');
+      if (inp) inp.value = '';
+      const toast = safeShowToast(file.name);
+      zone.style.pointerEvents = 'none';
+      (async function () {
+        try {
+          const fileObj = await readFileAsBase64(file);
+          await gsRun('apiUploadFile', token, currentMonthId, t.id, fileObj);
+          toast.success('Se cargó: quedó en revisión.');
+          zone.style.pointerEvents = '';
+          await refreshTopics();
+        } catch (err) {
+          toast.error(err.message);
+          zone.style.pointerEvents = '';
+        }
+      })();
+    }
+
+    // Botón "No aplica este mes" / "Marcar que sí aplica". Devuelve null si no corresponde mostrarlo.
+    function buildNoAplicaBtn(t, asButton) {
+      if (isReadonly() || t.noAplicaPorAdmin) return null;
+      if (t.estado !== 'noaplica' && t.estado !== 'vacio') return null;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = asButton ? 'btn btn-secondary btn-sm' : 'link-btn';
+      btn.textContent = t.noAplica ? 'Marcar que sí aplica' : 'No aplica este mes';
+      btn.addEventListener('click', async function (e) {
+        e.stopPropagation();
+        btn.disabled = true;
+        try {
+          await gsRun('apiSetNoAplica', token, currentMonthId, t.id, !t.noAplica);
+          await refreshTopics();
+        } catch (err) {
+          reportError(err.message);
+          btn.disabled = false;
+        }
+      });
+      return btn;
+    }
+
+    // ---------- Tarjeta de carpeta ----------
+    function buildFolderCard(t) {
+      const card = document.createElement('div');
+      const n = t.files.length;
+      const ro = isReadonly();
+      card.className = 'folder-card ' + t.estado + (isVenc(t) ? ' vencido' : '') + (t.obligatorio ? '' : ' opcional') + (allCollapsed ? ' collapsed' : '') + (openTopicId === t.id ? ' selected' : '');
+      card.dataset.id = t.id;
+      card.innerHTML =
+        '<div class="fc-top">' +
+          '<span class="fc-icon">' + folderSvg(30) + '</span>' +
+          '<div class="fc-title" title="' + escapeHtml(t.nombre) + '">' + escapeHtml(t.nombre) + '</div>' +
+          '<button class="fc-toggle" type="button" title="Plegar/desplegar" data-collapse>' + CHEV_DOWN_SVG + '</button>' +
+        '</div>' +
+        '<span class="fc-badge"><i class="dot"></i>' + badgeLabel(t) + '</span>' +
+        (t.obligatorio ? '' : '<span class="fc-opt">OPCIONAL</span>') +
+        '<div class="fc-hint">' + escapeHtml(topicMessage(t)) + '</div>' +
+        '<div class="fc-extra">' +
+          '<div class="files-list"></div>' +
+          ((t.noAplica || ro) ? '' :
+            '<div class="attach-label">' + CLIP_SVG + 'Adjuntar documento</div>' +
+            '<div class="dropzone dz-attach">' +
+              '<input type="file" accept="' + acceptFor(t) + '">' +
+              '<div class="dz-icon">' + UP_ICON_LG + '</div>' +
+              '<div class="dz-text"><strong>Haz clic aquí</strong> o arrastra tu archivo</div>' +
+              '<span class="dz-btn">Seleccionar archivo</span>' +
+              '<div class="dz-limits">' + extsText(t) + '</div>' +
+            '</div>') +
+          '<div class="noaplica-row"></div>' +
+        '</div>' +
+        '<div class="fc-foot">' +
+          '<span class="fc-count">' + DOC_SVG + n + (n === 1 ? ' archivo' : ' archivos') + '</span>' +
+          '<button class="fc-detail" type="button" data-detail>Detalles ' + CHEV_RIGHT_SVG + '</button>' +
+        '</div>';
+
+      card.querySelector('[data-collapse]').addEventListener('click', function (e) {
+        e.stopPropagation();
+        card.classList.toggle('collapsed');
+      });
+      card.querySelector('[data-detail]').addEventListener('click', function (e) {
+        e.stopPropagation();
+        openDrawer(t.id);
+      });
+      // Clic en cualquier parte "neutra" de la tarjeta abre el panel de detalles
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('button, input, .dropzone, .file-item-v2, a')) return;
+        openDrawer(t.id);
+      });
+
+      const naBtn = buildNoAplicaBtn(t, false);
+      if (naBtn) card.querySelector('.noaplica-row').appendChild(naBtn);
+
+      const filesList = card.querySelector('.files-list');
+      t.files.forEach(function (f) { filesList.appendChild(buildFileItem(f)); });
+
+      const zone = card.querySelector('.dropzone');
+      if (zone) enableDropzone(zone, function (file) { uploadFor(t, file, zone); });
+
+      return card;
+    }
+
+    // ---------- Archivo (usado en tarjeta y en panel) ----------
+    function buildFileItem(f) {
+      const item = document.createElement('div');
+      item.className = 'file-item-v2';
+      const parts = splitFileName(f.originalName);
+      const ro = isReadonly();
+      const IC = function (d, s) { return '<svg width="' + (s || 15) + '" height="' + (s || 15) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+      item.innerHTML =
+        '<span class="ftype-icon">' + fileTypeIcon(f.originalName) + '</span>' +
+        '<div class="fi-info">' +
+          '<span class="fi-name" title="' + escapeHtml(f.originalName) + '">' + escapeHtml(f.originalName) + '</span>' +
+          '<span class="fi-meta">' + formatBytes(f.size) + ' · ' + formatDate(f.uploadedAt) + '</span>' +
+          '<span class="fi-state">' + stateTag(f) + '</span>' +
+          (f.estado === 'rechazado' && f.observacion ? '<div class="file-obs"><strong>Motivo:</strong> ' + escapeHtml(f.observacion) + '</div>' : '') +
+        '</div>' +
+        '<div class="file-actions">' +
+          (ro ? '' : '<button data-rename title="Renombrar">' + IC('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>', 14) + '</button>') +
+          '<button data-view title="Ver">' + IC('<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>') + '</button>' +
+          '<button data-download title="Descargar">' + IC('<path d="M12 3v13M7 11l5 5 5-5"/><path d="M4 19h16"/>') + '</button>' +
+          (ro ? '' : '<button data-del title="Eliminar">' + IC('<path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7"/>') + '</button>') +
+        '</div>';
+
+      item.querySelector('[data-view]').addEventListener('click', async function (e) {
+        const btn = e.currentTarget; btn.disabled = true;
+        try { triggerDownload(await gsRun('apiDownloadFile', token, f.id), 'view'); }
+        catch (err) { reportError(err.message); }
+        btn.disabled = false;
+      });
+      item.querySelector('[data-download]').addEventListener('click', async function (e) {
+        const btn = e.currentTarget; btn.disabled = true;
+        try { triggerDownload(await gsRun('apiDownloadFile', token, f.id), 'download'); }
+        catch (err) { reportError(err.message); }
+        btn.disabled = false;
+      });
+      const del = item.querySelector('[data-del]');
+      if (del) del.addEventListener('click', async function () {
+        if (!confirm('¿Eliminar este archivo? El administrador podrá recuperarlo desde la papelera si fue un error.')) return;
+        try { await gsRun('apiDeleteFile', token, f.id); await refreshTopics(); }
+        catch (err) { reportError(err.message); }
+      });
+      const ren = item.querySelector('[data-rename]');
+      if (ren) ren.addEventListener('click', function () { startRename(item, f, parts); });
+
+      return item;
+    }
+
+    function renderPanel() {
+      if (!openTopicId) return;
+      const t = lastTopics.find(function (x) { return x.id === openTopicId; });
+      if (!t) { closeDrawer(); return; }
+
+      const ck = colorKey(t);
+      const n = t.files.length;
+      const sel = document.getElementById('monthSelect');
+      const mesTxt = sel.selectedOptions && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : '';
+      const col = ESTADO_COLORS[ck];
+
+      const head = document.getElementById('detailDrawer');
+      head.style.setProperty('--fc', col[0]);
+      head.style.setProperty('--fc-bg', col[1]);
+      const iconEl = document.getElementById('drawerIcon');
+      iconEl.innerHTML = folderSvg(30);
+      iconEl.style.color = col[0];
+      document.getElementById('drawerTitle').textContent = t.nombre;
+      document.getElementById('drawerBadge').innerHTML = '<i class="dot"></i>' + badgeLabel(t);
+
+      const bannerTitle = {
+        vacio: isVenc(t) ? 'Este tema está vencido.' : 'Este tema aún no tiene archivos.',
+        pendiente: 'Tu archivo está en revisión.',
+        aprobado: 'Tema aprobado.',
+        rechazado: 'Hay un archivo rechazado.',
+        noaplica: 'Marcado como "No aplica" este mes.'
+      }[t.estado];
+      const bannerSub = t.estado === 'aprobado' ? n + (n === 1 ? ' archivo cargado' : ' archivos cargados') + ' en este tema.'
+        : (t.estado === 'pendiente' ? 'El administrador lo revisará y verás aquí si fue aprobado o si debes corregirlo.'
+        : topicMessage(t));
+      const bannerIcon = { vacio: BANNER_ICON.vacio, pendiente: CLOCK_SVG, aprobado: BANNER_ICON.completo, rechazado: BACK_SVG, noaplica: BANNER_ICON.noaplica }[t.estado];
+
+      const body = document.getElementById('drawerBody');
+      body.innerHTML = '';
+
+      const banner = document.createElement('div');
+      banner.className = 'dr-banner ' + (ck === 'vencido' ? 'vencido' : t.estado);
+      banner.innerHTML =
+        '<span class="db-icon">' + bannerIcon + '</span>' +
+        '<div><strong>' + escapeHtml(bannerTitle) + '</strong>' + escapeHtml(bannerSub) + '</div>';
+      body.appendChild(banner);
+
+      const info = document.createElement('div');
+      info.innerHTML =
+        '<div class="dr-title">' + INFO_SVG + 'Información del tema</div>' +
+        '<div class="dr-info">' +
+          '<div><div class="k">Tema</div><div class="v">' + escapeHtml(t.nombre) + '</div></div>' +
+          '<div><div class="k">Mes</div><div class="v">' + escapeHtml(mesTxt) + '</div></div>' +
+          '<div><div class="k">Estado</div><div class="v">' + badgeLabel(t) + '</div></div>' +
+          '<div><div class="k">Archivos cargados</div><div class="v">' + n + '</div></div>' +
+          '<div><div class="k">Fecha límite</div><div class="v">' + (t.fechaLimite ? fmtDay(t.fechaLimite) : 'Sin fecha') + '</div></div>' +
+          '<div><div class="k">Se exige</div><div class="v">' + (t.obligatorio ? 'Obligatorio' : 'Opcional') + '</div></div>' +
+        '</div>';
+      body.appendChild(info);
+
+      // Cargar archivo (no se muestra si el tema es "No aplica" o el mes no admite cambios)
+      if (!t.noAplica && !isReadonly()) {
+        const up = document.createElement('div');
+        up.className = 'dr-upload';
+        up.innerHTML =
+          '<div class="dr-upload-head">' +
+            '<span class="du-badge">' + CLIP_SVG.replace(/width="14" height="14"/, 'width="18" height="18"') + '</span>' +
+            '<div><div class="du-title">Adjuntar documentos</div>' +
+            '<div class="du-sub">Aquí se cargan los archivos de este tema</div></div>' +
+          '</div>' +
+          '<div class="dropzone dz-large dz-attach">' +
+            '<input type="file" accept="' + acceptFor(t) + '">' +
+            '<div class="dz-main"><span class="dz-icon">' + UPLOAD_SVG + '</span>' +
+              '<div><strong>Arrastra un archivo aquí</strong><span>o selecciónalo desde tu equipo</span></div></div>' +
+            '<span class="btn btn-primary btn-sm">' + UP_SMALL_SVG + ' Adjuntar archivo</span>' +
+          '</div>' +
+          '<div class="dr-note">Formatos permitidos: ' + extsText(t) + ' · Tamaño máximo: ' + MAX_FILE_MB + ' MB · El archivo se nombra automáticamente.</div>';
+        body.appendChild(up);
+        const zone = up.querySelector('.dropzone');
+        enableDropzone(zone, function (file) { uploadFor(t, file, zone); });
+      }
+
+      const naBtn = buildNoAplicaBtn(t, true);
+      if (naBtn) {
+        const row = document.createElement('div');
+        row.className = 'dr-actions';
+        row.appendChild(naBtn);
+        body.appendChild(row);
+      }
+
+      const filesWrap = document.createElement('div');
+      filesWrap.innerHTML = '<div class="dr-title">' + FOLDER_SMALL_SVG + 'Archivos cargados</div>';
+      const list = document.createElement('div');
+      list.className = 'dr-files';
+      if (n) {
+        t.files.forEach(function (f) { list.appendChild(buildFileItem(f)); });
+      } else {
+        list.innerHTML = '<div class="dr-empty">No hay archivos cargados en este tema.</div>';
+      }
+      filesWrap.appendChild(list);
+      body.appendChild(filesWrap);
+    }
+
+    // ---------- Manual, ayuda y recorrido guiado ----------
+    async function openManual(btn) {
+      await withBusyBtn(btn, async function () {
+        try { triggerDownload(await gsRun('apiGetManualPdf', token), 'view'); }
+        catch (e) { reportError(e.message); }
+      });
+    }
+
+    let tourKey = null;
+    function tourSteps() {
+      return [
+        { sel: '#monthSelect', title: 'Elige el mes', text: 'Aquí cambias de mes. Cada mes tiene sus propios temas y fechas límite.' },
+        { sel: '#progressWrap', title: 'Tu avance', text: 'Muestra cuántos temas exigibles ya fueron aprobados. La parte amarilla es lo que está en revisión.' },
+        { sel: '#dashLegend', title: 'Los colores', text: 'Verde: aprobado. Amarillo: en revisión. Naranja: rechazado, debes corregirlo. Rojo: aún vacío. Gris: no aplica.' },
+        { sel: '#foldersGrid .folder-card', title: 'Cada carpeta es un tema', text: 'Te dice qué falta y hasta cuándo. Arrastra un archivo sobre la carpeta para cargarlo.' },
+        { sel: '#foldersGrid .folder-card .fc-detail', title: 'Detalles', text: 'Abre el panel del tema: ahí ves tus archivos, el motivo si fueron rechazados y puedes cargar uno nuevo.' },
+        { sel: '#btnManual', title: 'Manual', text: 'Descarga un manual corto en PDF cuando lo necesites. Puedes repetir este recorrido con el botón Ayuda.' }
+      ];
+    }
+    function maybeStartTour() {
+      if (viewAs || !tourKey) return;
+      let done = false;
+      try { done = localStorage.getItem(tourKey) === '1'; } catch (e) {}
+      if (done || !lastTopics.length) return;
+      try { localStorage.setItem(tourKey, '1'); } catch (e) {}
+      setTimeout(function () { startTour(tourSteps()); }, 400);
+    }
+
+
+    // Muestra un error en la página y, si el panel de detalles está abierto, también dentro del panel.
+    function reportError(msg) {
+      showAlert(alertEl, msg);
+      if (openTopicId) showAlert(drawerAlertEl, msg);
+    }
+
+    (async function init() {
+      try {
+        const me = await gsRun('apiMe', token);
+        if (!me.authenticated) {
+          if (VIEW_TOKEN) { document.body.innerHTML = '<div style="padding:60px 20px;text-align:center;font-family:sans-serif;">Esta vista temporal expiró. Ciérrala y ábrela de nuevo desde el panel de administrador.</div>'; return; }
+          goTo('login'); return;
+        }
+        document.getElementById('nombreUsuario').textContent = me.user.nombreUnidad + ' · CC ' + me.user.cedula;
+        document.getElementById('unitName').textContent = me.user.nombreUnidad;
+        document.getElementById('userAvatar').textContent = getInitials(me.user.nombreUnidad);
+        viewAs = !!me.viewAs;
+        tourKey = 'gd_tour_' + me.user.id;
+        if (viewAs) {
+          const bar = document.getElementById('viewAsBar');
+          bar.style.display = 'block';
+          bar.innerHTML = 'Estás viendo el panel como <b>' + escapeHtml(me.user.nombreUnidad) + '</b> (solo lectura) por ' + escapeHtml(me.viewAsBy || 'el administrador') + ' · <button class="btn btn-ghost-light btn-sm" id="btnCloseView" type="button">Cerrar esta vista</button>';
+          document.getElementById('btnLogout').style.display = 'none';
+          document.getElementById('btnCloseView').addEventListener('click', function () {
+            try { window.close(); } catch (e) {}
+            goTo('admin');
+          });
+        }
+      } catch (e) {
+        goTo('login'); return;
+      }
+
+      document.getElementById('btnLogout').addEventListener('click', async function () {
+        try { await gsRun('apiLogout', token); } catch (e) {}
+        localStorage.removeItem('userToken');
+        goTo('login');
+      });
+
+      document.getElementById('btnManual').addEventListener('click', function () { openManual(this); });
+      document.getElementById('btnHelp').addEventListener('click', function () { startTour(tourSteps()); });
+
+      const hideToggle = document.getElementById('hideCompletedToggle');
+      hideToggle.checked = localStorage.getItem('gd_hideCompleted') === 'true';
+      hideToggle.addEventListener('change', function () {
+        localStorage.setItem('gd_hideCompleted', hideToggle.checked ? 'true' : 'false');
+        renderFolders();
+      });
+
+      const collapseBtn = document.getElementById('btnToggleCollapseAll');
+      collapseBtn.textContent = allCollapsed ? 'Desplegar todos' : 'Plegar todos';
+      collapseBtn.addEventListener('click', function () {
+        allCollapsed = !allCollapsed;
+        localStorage.setItem('gd_allCollapsed', allCollapsed ? 'true' : 'false');
+        this.textContent = allCollapsed ? 'Desplegar todos' : 'Plegar todos';
+        document.querySelectorAll('.folder-card').forEach(function (c) {
+          c.classList.toggle('collapsed', allCollapsed);
+        });
+      });
+
+      document.getElementById('searchInput').addEventListener('input', function () {
+        searchTerm = this.value;
+        renderFolders();
+      });
+
+      document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+      document.getElementById('drawerBg').addEventListener('click', closeDrawer);
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape' || !openTopicId) return;
+        // Escape dentro del campo de renombrar solo cancela el renombrado
+        if (e.target && e.target.classList && e.target.classList.contains('rename-input')) return;
+        closeDrawer();
+      });
+
+      await loadMonths();
+    })();
+
+
+
+
+
+
+    // Respaldo por si ClientCommon.html no define showUploadToast.
+    function safeShowToast(fileName) {
+      if (typeof showUploadToast === 'function') {
+        try { return showUploadToast(fileName); } catch (e) { console.error(e); }
+      }
+      return {
+        success: function () {},
+        error: function (msg) { reportError(msg || 'No se pudo subir el archivo.'); }
+      };
+    }
+
+
+
+
+
+    // Edición del nombre en línea: la extensión queda fija y no es editable.
+    function startRename(item, f, parts) {
+      const infoEl = item.querySelector('.fi-info');
+      infoEl.innerHTML =
+        '<span class="fi-name-edit">' +
+          '<input type="text" class="rename-input" value="' + escapeHtml(parts.base) + '">' +
+          '<span class="ext-suffix">' + escapeHtml(parts.ext) + '</span>' +
+        '</span>';
+      const input = infoEl.querySelector('.rename-input');
+      input.focus();
+      input.select();
+
+      let done = false;
+      async function commit() {
+        if (done) return;
+        done = true;
+        const nuevo = input.value.trim();
+        if (!nuevo || nuevo === parts.base) { renderFolders(); return; }
+        try {
+          await gsRun('apiRenameFile', token, f.id, nuevo);
+          await refreshTopics();
+        } catch (err) {
+          reportError(err.message);
+          renderFolders();
+        }
+      }
+      function cancel() {
+        if (done) return;
+        done = true;
+        renderFolders();
+      }
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); commit(); }
+        if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+      });
+      input.addEventListener('blur', function () { commit(); });
+    }
+
+    // ---------- Panel lateral "Ver detalles" ----------
+    function openDrawer(topicId) {
+      openTopicId = topicId;
+      hideAlert(drawerAlertEl);
+      renderPanel();
+      document.getElementById('drawerBg').classList.add('open');
+      const dr = document.getElementById('detailDrawer');
+      dr.classList.add('open');
+      dr.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      markSelectedCard();
+      document.getElementById('drawerClose').focus();
+    }
+
+    function closeDrawer() {
+      openTopicId = null;
+      document.getElementById('drawerBg').classList.remove('open');
+      const dr = document.getElementById('detailDrawer');
+      dr.classList.remove('open');
+      dr.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      markSelectedCard();
+    }
+
+    function markSelectedCard() {
+      document.querySelectorAll('.folder-card').forEach(function (c) {
+        c.classList.toggle('selected', !!openTopicId && c.dataset.id === openTopicId);
+      });
+    }
+
+  </script>
+</body>
+</html>

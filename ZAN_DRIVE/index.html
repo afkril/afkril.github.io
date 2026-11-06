@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestor de Documentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/login.css"></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+<symbol id="i-in" viewBox="0 0 24 24"><path d="M4 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M19 8v6M16 11h6"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.1"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-id" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.5-1.5 1.7-2 3-2s2.5.5 3 2M15 10h3M15 13h3"/></symbol>
+<symbol id="i-bld" viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></symbol>
+<symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8zM14 3v5h5M9 13h6M9 17h6"/></symbol>
+</defs></svg>
+<div class="brand"><svg viewBox="0 0 48 48"><path d="M4 12a4 4 0 014-4h10l4 5h18a4 4 0 014 4v21a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="#1456d6"/><path d="M4 20h40v17a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="#2d7cf6"/></svg><span>Gestor de<br>Documentos</span></div>
+<div class="hero"><h1>Organiza, accede y gestiona tus documentos</h1><p>Una solución eficiente para el manejo seguro de tu información.</p></div>
+<main class="card">
+<div class="tabs" id="tabs" data-t="login"><i></i>
+<button class="tab on" data-t="login" type="button"><svg><use href="#i-in"/></svg>Ingresar</button>
+<button class="tab" data-t="reg" type="button"><svg><use href="#i-plus"/></svg>Registrarse</button></div>
+<div id="alert" class="alert"></div>
+<section class="panel on" id="p-login"><h2>Inicia sesión en tu cuenta</h2><p class="sub">Accede a las carpetas de tu unidad.</p>
+<form id="loginForm"><div class="f"><label>Número de identificación</label><div class="w"><svg class="ic"><use href="#i-user"/></svg><input type="text" id="cedula" inputmode="numeric" autocomplete="username" placeholder="Ingresa tu número de identificación" required></div></div><div class="f"><label>Código de unidad</label><div class="w"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="codigoUnidad" placeholder="Código de unidad de servicio" autocomplete="current-password" required><button type="button" class="eye" data-eye="codigoUnidad" aria-label="Mostrar u ocultar"><svg class="ic"><use href="#i-eye"/></svg></button></div></div><button class="btn p" id="btnLogin" type="submit"><svg class="ic"><use href="#i-in"/></svg>Ingresar</button></form></section>
+<section class="panel" id="p-reg"><h2>Crea tu cuenta</h2><p class="sub">El código que crees será tu contraseña cada mes.</p>
+<form id="regForm"><div class="row2"><div class="f"><label>Nombres</label><div class="w"><svg class="ic"><use href="#i-user"/></svg><input type="text" id="nombres" autocomplete="given-name" placeholder="María Fernanda" required></div></div><div class="f"><label>Apellidos</label><div class="w"><svg class="ic"><use href="#i-user"/></svg><input type="text" id="apellidos" autocomplete="family-name" placeholder="Gómez Rojas" required></div></div></div><div class="f"><label>Número de identificación</label><div class="w"><svg class="ic"><use href="#i-id"/></svg><input type="text" id="rcedula" inputmode="numeric" placeholder="Tu número de identificación" required></div></div><div class="f"><label>Nombre de la unidad</label><div class="w"><svg class="ic"><use href="#i-bld"/></svg><input type="text" id="nombreUnidad" placeholder="Ej: Unidad Norte" required></div></div><div id="contratoField" style="display:none"><div class="f"><label>Contrato</label><div class="w"><svg class="ic"><use href="#i-doc"/></svg><select id="contratoId"></select></div></div></div><div class="row2"><div class="f"><label>Crea tu código</label><div class="w"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="rcodigo" placeholder="Código"  required><button type="button" class="eye" data-eye="rcodigo" aria-label="Mostrar u ocultar"><svg class="ic"><use href="#i-eye"/></svg></button></div></div><div class="f"><label>Repite el código</label><div class="w"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="rcodigo2" placeholder="Repite"  required><button type="button" class="eye" data-eye="rcodigo2" aria-label="Mostrar u ocultar"><svg class="ic"><use href="#i-eye"/></svg></button></div></div></div><button class="btn p" id="btnReg" type="submit"><svg class="ic"><use href="#i-plus"/></svg>Crear cuenta</button></form></section>
+<div class="or">o</div>
+<a class="btn s" href="admin-login.html"><svg class="ic"><use href="#i-shield"/></svg>Acceso administrativo</a>
+<button class="help" id="help" type="button"><svg class="ic"><use href="#i-info"/></svg>¿Olvidaste tus datos?</button>
+<p class="note" id="note">Comunícate con el administrador para que revise o restablezca tu número de identificación y código de unidad.</p>
+</main>
+<script src="js/config.js"></script><script src="js/common.js"></script>
+<script>
+const alertEl=document.getElementById('alert'),tabs=document.getElementById('tabs');
+function setTab(t){hideAlert(alertEl);tabs.dataset.t=t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  document.getElementById('p-login').classList.toggle('on',t==='login');
+  document.getElementById('p-reg').classList.toggle('on',t==='reg');
+  history.replaceState(null,'',t==='reg'?'#registro':location.pathname+location.search);}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+if(location.hash==='#registro')setTab('reg');
+document.getElementById('help').onclick=()=>{const n=document.getElementById('note');n.style.display=n.style.display==='block'?'none':'block';};
+document.querySelectorAll('[data-eye]').forEach(b=>b.onclick=()=>{const i=document.getElementById(b.dataset.eye);i.type=i.type==='password'?'text':'password';});
+(function(){const t=localStorage.getItem('userToken');if(!t)return;
+  gsRun('apiMe',t).then(r=>{if(r.authenticated)goTo('dashboard');}).catch(()=>{});})();
+gsRun('apiGetContratosPublic').then(function(cs){if(!cs.length)return;
+  const s=document.getElementById('contratoId');
+  s.innerHTML='<option value="">Selecciona tu contrato...</option>'+cs.map(c=>'<option value="'+c.id+'">'+escapeHtml(c.nombre)+'</option>').join('');
+  s.required=true;document.getElementById('contratoField').style.display='';}).catch(()=>{});
+function busy(b,on,txt){b.disabled=on;b.lastChild.textContent=on?txt:b.dataset.l;}
+['btnLogin','btnReg'].forEach(id=>{const b=document.getElementById(id);b.dataset.l=b.textContent;});
+document.getElementById('loginForm').onsubmit=function(e){e.preventDefault();hideAlert(alertEl);
+  const b=document.getElementById('btnLogin');busy(b,true,'Ingresando...');
+  gsRun('apiLogin',document.getElementById('cedula').value.trim(),document.getElementById('codigoUnidad').value)
+  .then(r=>{localStorage.setItem('userToken',r.token);goTo('dashboard');})
+  .catch(err=>{showAlert(alertEl,err.message);busy(b,false);});};
+document.getElementById('regForm').onsubmit=function(e){e.preventDefault();hideAlert(alertEl);
+  const v=i=>document.getElementById(i).value,b=document.getElementById('btnReg');
+  if(v('rcodigo')!==v('rcodigo2'))return showAlert(alertEl,'Los códigos no coinciden.');
+  if(v('nombres').trim().length<2||v('apellidos').trim().length<2)return showAlert(alertEl,'Escribe tus nombres y apellidos.');
+  busy(b,true,'Creando cuenta...');
+  gsRun('apiRegister',v('rcedula').trim(),v('rcodigo'),v('nombreUnidad').trim(),v('contratoId'),v('nombres').trim(),v('apellidos').trim())
+  .then(r=>{localStorage.setItem('userToken',r.token);goTo('dashboard');})
+  .catch(err=>{showAlert(alertEl,err.message);busy(b,false);});};
+</script></body></html>

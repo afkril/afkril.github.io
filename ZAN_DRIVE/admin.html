@@ -1,0 +1,2538 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body class="admin-page">
+  <div class="topbar">
+    <div class="tb-left">
+    <button class="hamb" id="btnSidebar" type="button" aria-label="Mostrar u ocultar el menú" aria-expanded="true" title="Mostrar / ocultar menú">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>
+      </div>
+      Panel Administrador
+    </div>
+    </div>
+    <div class="userinfo">
+      <label class="ui-size" title="Tamaño de la interfaz">Tamaño
+        <select id="uiSizeSelect">
+          <option value="0.6">60%</option>
+          <option value="0.67" selected>67%</option>
+          <option value="0.8">80%</option>
+          <option value="0.9">90%</option>
+          <option value="1">100%</option>
+        </select>
+      </label>
+      <div class="user-chip">
+        <span class="avatar" id="adminAvatar"></span>
+        <span id="adminUsuario"></span>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btnManual" type="button" title="Manual corto en PDF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg> Manual</button>
+      <button class="btn btn-secondary btn-sm" id="btnLogout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </div>
+
+  <div class="admin-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="side-label">Seguimiento</div>
+      <button class="side-btn active" data-tab="inicio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg> Inicio</button>
+      <button class="side-btn" data-tab="estado"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Matriz de estado</button>
+      <button class="side-btn" data-tab="revision"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg> Por revisar <span class="badge-count" id="badgeRev"></span></button>
+      <button class="side-btn" data-tab="reportes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4V2h6v2"/><path d="M9 12l2 2 4-4"/></svg>Reportes</button>
+      <button class="side-btn" data-tab="historial"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Historial de cargues</button>
+      <div class="side-label">Gestión</div>
+      <button class="side-btn" data-tab="meses"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>Meses y temario</button>
+      <button class="side-btn" data-tab="usuarios"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3.5-6 7-6s7 2 7 6"/><path d="M17 11a3.5 3.5 0 1 0 0-7M20 21c0-3-2-5-4.5-5.5"/></svg>Usuarios registrados</button>
+      <button class="side-btn" data-tab="papelera"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7"/></svg> Papelera <span class="badge-count soft" id="badgeTrash"></span></button>
+      <div class="side-label">Sistema</div>
+      <button class="side-btn" data-tab="bitacora"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg> Bitácora</button>
+      <button class="side-btn" data-tab="config"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes</button>
+    </aside>
+
+    <main class="admin-main">
+    <div id="alert" class="alert"></div>
+
+    <!-- ==================== INICIO ==================== -->
+    <div class="tab-panel active" id="tab-inicio">
+      <div class="page-head">
+        <h1 class="page-title">Inicio</h1>
+        <p class="subtitle">Panorama del mes: cumplimiento por contrato, temas que más se incumplen, unidades rezagadas y avance semanal.</p>
+      </div>
+      <div class="card" style="padding:14px 20px;">
+        <div class="filters-bar" style="margin-bottom:0;">
+          <div class="field"><label>Mes</label><select id="homeMonthSelect"></select></div><div class="field"><label>Contrato</label><select id="homeContratoSelect"></select></div>
+          <div class="field" style="margin-left:auto;align-self:flex-end;" id="homeMonthInfo"></div>
+        </div>
+      </div>
+      <div id="homeWrap"><div id="homeBody"></div></div>
+    </div>
+    <!-- ==================== POR REVISAR ==================== -->
+    <div class="tab-panel" id="tab-revision">
+      <div class="page-head">
+        <h1 class="page-title">Revisión de archivos</h1>
+        <p class="subtitle">Aprueba o rechaza lo que cargan las unidades. Al rechazar escribes el motivo y la unidad lo ve para corregir y volver a subir.</p>
+      </div>
+      <div class="card" id="reviewWrap">
+        <div class="filters-bar">
+          <div class="field"><label>Mes</label><select id="revMonthSelect"></select></div><div class="field"><label>Contrato</label><select id="revContratoSelect"></select></div>
+          <div class="field"><label>Mostrar</label><select id="revEstadoSelect"><option value="pendiente">Por revisar</option><option value="rechazado">Rechazados</option><option value="aprobado">Aprobados</option></select></div>
+          <div class="field" id="reviewCounts" style="margin-left:auto;align-self:flex-end;"></div>
+        </div>
+        <div class="bulk-bar" id="revBulkBar" style="display:none;">
+          <span class="bb-count" id="revBulkCount"></span>
+          <button class="btn btn-primary btn-sm" id="btnBulkApprove" type="button">Aprobar seleccionados</button>
+        </div>
+        <div id="reviewBody" style="overflow:auto;"></div>
+      </div>
+    </div>
+    <!-- ==================== MATRIZ DE ESTADO ==================== -->
+    <div class="tab-panel" id="tab-estado">
+      <div class="page-head">
+        <h1 class="page-title">Matriz de Estado Global</h1>
+        <p class="subtitle">Cada punto es un tema de una unidad. Haz clic en un punto para revisar sus archivos, o en el nombre de la unidad para abrir su ficha.</p>
+      </div>
+      <div class="mx-kpis" id="mxKpis"></div>
+      <div class="card" style="padding:18px 20px;" id="statusCard">
+        <div class="filters-bar">
+          <div class="field"><label>Mes</label><select id="statusMonthSelect"></select></div><div class="field"><label>Contrato</label><select id="statusContratoSelect"></select></div><div class="field"><label>Tema</label><select id="statusTemaSelect"></select></div>
+          <div class="field"><label>Estado del tema</label><select id="statusEstadoSelect">
+            <option value="todos">Cualquiera</option><option value="vacio">Vacío</option><option value="vencido">Vencido</option><option value="pendiente">Por revisar</option>
+            <option value="rechazado">Rechazado</option><option value="aprobado">Aprobado</option><option value="noaplica">No aplica</option></select></div>
+          <div class="field"><label>Ordenar por</label><select id="statusSort">
+            <option value="nombre">Nombre</option><option value="avance_asc">Avance: menor a mayor</option><option value="avance_desc">Avance: mayor a menor</option>
+            <option value="ultimo">Último cargue</option><option value="contrato">Contrato</option></select></div>
+          <div class="field search-input">
+            <label>Buscar</label>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="statusSearch" placeholder="Cédula, código o nombre de unidad...">
+          </div>
+          <div class="field" style="align-self:flex-end;"><label class="check-inline"><input type="checkbox" id="statusSoloPend"> Solo con pendientes</label></div>
+          <div class="field mx-actions" style="margin-left:auto;">
+            <button class="btn btn-secondary" id="btnMatrixFull" type="button" title="Ver toda la matriz a pantalla completa">Ampliar vista</button>
+            <button class="btn btn-secondary" id="btnMatrixCsv" type="button" title="Excel con la matriz en colores">Descargar matriz (Excel)</button>
+          </div>
+        </div>
+        <div class="month-state-bar" id="monthStateBar"></div>
+        <div class="bulk-bar" id="mxBulkBar" style="display:none;">
+          <span class="bb-count" id="mxBulkCount"></span>
+          <button class="btn btn-secondary btn-sm" id="btnBulkNa" type="button">Marcar «No aplica»…</button>
+          <button class="btn btn-secondary btn-sm" id="btnBulkNaOff" type="button">Quitar «No aplica»…</button>
+          <button class="btn btn-secondary btn-sm" id="btnBulkApprovePend" type="button">Aprobar pendientes</button>
+          <button class="btn btn-primary btn-sm" id="btnRemindSel" type="button">Enviar recordatorio</button>
+        </div>
+        <div class="mx-legend">
+          <span><i class="mx-dot verde"></i> Aprobado</span>
+          <span><i class="mx-dot amarillo"></i> Por revisar</span>
+          <span><i class="mx-dot naranja"></i> Rechazado</span>
+          <span><i class="mx-dot rojo"></i> Vacío</span>
+          <span><i class="mx-dot rojo venc"></i> Vencido</span>
+          <span><i class="mx-dot gris"></i> No aplica</span>
+          <span><i class="mx-dot excl"></i> No exigido al contrato</span>
+          <button class="btn btn-secondary btn-sm" id="btnRemindAll" type="button" style="margin-left:auto;">Recordar a las que tienen pendientes</button>
+          <span id="statusSummary"></span>
+        </div>
+        <div id="matrixWrap" class="mx-wrap"></div>
+      </div>
+    </div>
+
+    <!-- ==================== REPORTES ==================== -->
+    <div class="tab-panel" id="tab-reportes">
+      <div class="card" id="reportCard">
+        <div class="card-head">
+          <div class="cicon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4V2h6v2"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <h2 style="margin:0;">Reporte detallado de cargue</h2>
+        </div>
+        <p class="subtitle" style="margin-top:2px;">Filtra por mes, contrato y estado, y descarga el resultado en Excel (CSV) o imprímelo como PDF.</p>
+
+        <div class="filters-bar">
+          <div class="field"><label>Mes</label><select id="repMonthSelect"></select></div>
+          <div class="field"><label>Contrato</label><select id="repContratoSelect"></select></div>
+          <div class="field">
+            <label>Estado</label>
+            <select id="repEstadoSelect">
+              <option value="todos">Todos</option>
+              <option value="completos">Completos</option>
+              <option value="faltantes">Con pendientes</option>
+            </select>
+          </div>
+          <div class="field search-input">
+            <label>Buscar</label>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="repSearch" placeholder="Cédula, código o nombre de unidad...">
+          </div>
+        </div>
+
+        <div class="flex-between" style="margin-bottom:18px;">
+          <div class="muted" id="reportSummary"></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary btn-sm" id="btnZip" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
+              Descargar paquete completo (ZIP)
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnExportCsv">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M4 19h16"/></svg>
+              Descargar Excel (CSV)
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btnPrintReport">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="7"/><path d="M6 14H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-2"/></svg>
+              Imprimir / PDF
+            </button>
+          </div>
+        </div>
+
+        <p class="zip-note">El paquete ZIP incluye la matriz (CSV) y, por cada unidad del filtro actual, su carpeta «Nombre (código)» con sus temas, los archivos cargados y un RESUMEN.txt con las carpetas vacías y las que no aplican.</p>
+        <div class="kpi-grid" id="reportKpis"></div>
+        <div id="reportList"></div>
+      </div>
+    </div>
+
+    <!-- ==================== HISTORIAL DE CARGUES ==================== -->
+    <div class="tab-panel" id="tab-historial">
+      <div class="card" id="logCard">
+        <div class="card-head">
+          <div class="cicon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <h2 style="margin:0;">Historial de cargues</h2>
+        </div>
+        <p class="subtitle" style="margin-top:2px;">Registro cronológico de cada archivo cargado, con la fecha y hora exacta.</p>
+
+        <div class="filters-bar">
+          <div class="field"><label>Mes</label><select id="logMonthSelect"></select></div>
+          <div class="field"><label>Contrato</label><select id="logContratoSelect"></select></div>
+          <div class="field search-input">
+            <label>Buscar</label>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="logSearch" placeholder="Unidad, cédula, archivo o tema...">
+          </div>
+        </div>
+        <div class="flex-between" style="gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+          <div class="result-count" id="logCount" style="margin:0;"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-sm" id="btnLogRestore" type="button" style="display:none;"></button>
+            <button class="btn btn-danger btn-sm" id="btnLogClearSel" type="button" style="display:none;">Limpiar seleccionados</button>
+            <button class="btn btn-danger btn-sm" id="btnLogClear" type="button">Limpiar historial</button>
+          </div>
+        </div>
+        <p class="muted" style="font-size:12px;margin:0 0 8px;">«Limpiar» solo oculta las entradas de esta lista: los archivos siguen en Drive y la matriz, los reportes y la revisión no cambian.</p>
+        <div class="log-table-wrap">
+          <table>
+            <thead><tr><th style="width:28px;"><input type="checkbox" id="logSelAll" title="Seleccionar todos"></th><th>Fecha de cargue</th><th>Unidad de servicio</th><th>Contrato</th><th>Mes</th><th>Tema</th><th>Archivo</th><th>Tamaño</th><th></th></tr></thead>
+            <tbody id="logTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MESES Y TEMARIO ==================== -->
+    <div class="tab-panel" id="tab-meses">
+      <div class="card">
+        <div class="card-head"><h2 style="margin:0;">Crear nuevo mes</h2></div>
+        <p class="subtitle" style="margin-top:2px;">Cada tema se convierte en una carpeta dentro de Drive para cada unidad. Puedes empezar desde cero o <b>copiar el temario de un mes anterior</b> (con sus reglas: obligatorio, tipos de archivo y contratos).</p>
+        <div class="filters-bar" style="margin-bottom:6px;">
+          <div class="field"><label>Nombre del mes</label><input type="text" id="newMonthName" placeholder="Ej: Octubre 2026"></div>
+          <div class="field"><label>Fecha límite del mes (opcional)</label><input type="date" id="newMonthDate"></div>
+          <div class="field"><label>Copiar temario de</label><select id="newMonthCopy"></select></div>
+        </div>
+        <div class="field" id="newTopicsField"><label>Temas / carpetas (uno por línea)</label><textarea id="newMonthTopics" rows="7" placeholder="Tema 1&#10;Tema 2&#10;Tema 3"></textarea></div>
+        <button class="btn btn-primary" id="btnCreateMonth">Crear mes</button>
+      </div>
+      <div class="card">
+        <h2>Meses existentes</h2>
+        <p class="subtitle" style="margin-top:-8px;">Cierra un mes para bloquear las cargas y dejarlo archivado; puedes reabrirlo o cambiar sus fechas si a alguna unidad le falta algo. Lo que eliminas va a la Papelera.</p>
+        <div id="monthsList"></div>
+      </div>
+    </div>
+    <!-- ==================== USUARIOS REGISTRADOS ==================== -->
+    <div class="tab-panel" id="tab-usuarios">
+      <div class="card" id="usersCard">
+        <div class="flex-between" style="margin-bottom:14px;">
+          <h2 style="margin:0;">Usuarios registrados</h2>
+          <button class="btn btn-primary btn-sm" id="btnAddUser" type="button">＋ Agregar usuario</button>
+          <div class="search-input" style="max-width:260px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="userSearch" placeholder="Buscar por cédula, nombre o unidad..." style="padding:8px 10px;border:1px solid var(--gris-borde);border-radius:9px;">
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Unidad de servicio</th><th>Nombres y apellidos</th><th>Cédula</th><th>Código UDS</th><th>Contrato</th><th>Último cargue</th><th>Registrado</th><th></th></tr></thead>
+          <tbody id="usersTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== PAPELERA ==================== -->
+    <div class="tab-panel" id="tab-papelera">
+      <div class="page-head">
+        <h1 class="page-title">Papelera</h1>
+        <p class="subtitle">Los archivos, temas y meses eliminados no se borran de inmediato: puedes restaurarlos desde aquí. Los archivos siguen en Drive hasta que los borres definitivamente.</p>
+      </div>
+      <div class="card" id="trashCard">
+        <div class="flex-between" style="margin-bottom:8px;"><span class="muted" id="trashCount"></span><button class="btn btn-danger btn-sm" id="btnEmptyTrash" type="button">Vaciar papelera</button></div>
+        <div id="trashBody"></div>
+      </div>
+    </div>
+    <!-- ==================== BITÁCORA ==================== -->
+    <div class="tab-panel" id="tab-bitacora">
+      <div class="page-head">
+        <h1 class="page-title">Bitácora de auditoría</h1>
+        <p class="subtitle">Quién cargó, borró, renombró, aprobó o cambió qué, y cuándo.</p>
+      </div>
+      <div class="card" id="auditCard">
+        <div class="filters-bar">
+          <div class="field"><label>Acción</label><select id="audAccion"><option value="todas">Todas las acciones</option></select></div>
+          <div class="field"><label>Quién</label><select id="audTipo"><option value="todos">Todos</option><option value="admin">Administrador</option><option value="unidad">Unidades</option><option value="sistema">Sistema</option></select></div>
+          <div class="field"><label>Mes</label><select id="audMes"></select></div>
+          <div class="field"><label>Desde</label><input type="date" id="audDesde"></div>
+          <div class="field"><label>Hasta</label><input type="date" id="audHasta"></div>
+          <div class="field search-input"><label>Buscar</label><input type="text" id="audTexto" placeholder="Unidad, archivo, tema…"></div>
+        </div>
+        <div class="filters-bar" style="margin-top:0;">
+          <div class="field"><label>Ver</label><select id="audArchivo"><option value="">Registros actuales</option></select></div>
+          <div class="field" style="align-self:flex-end;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-sm" id="btnAudArchMes" type="button">Archivar un mes…</button>
+            <button class="btn btn-secondary btn-sm" id="btnAudArchPast" type="button">Archivar meses anteriores</button>
+            <button class="btn btn-danger btn-sm" id="btnAudDelArchive" type="button" style="display:none;">Eliminar este archivo</button>
+          </div>
+        </div>
+        <div class="flex-between" style="gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+          <div class="result-count" id="auditCount" style="margin:0;"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-danger btn-sm" id="btnAudDelSel" type="button" style="display:none;">Eliminar seleccionados</button>
+            <button class="btn btn-danger btn-sm" id="btnAudDelFilter" type="button">Eliminar los filtrados</button>
+          </div>
+        </div>
+        <div class="log-table-wrap">
+          <table class="audit-table">
+            <thead><tr><th style="width:28px;"><input type="checkbox" id="audSelAll" title="Seleccionar todos"></th><th>Fecha</th><th>Quién</th><th>Acción</th><th>Detalle</th><th>Mes</th></tr></thead>
+            <tbody id="auditBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- ==================== AJUSTES (contratos + credenciales) ==================== -->
+    <div class="tab-panel" id="tab-config">
+      <div class="page-head">
+        <h1 class="page-title">Ajustes</h1>
+        <p class="subtitle">Administra los contratos de las unidades de servicio y las credenciales del administrador.</p>
+      </div>
+      <div class="card">
+        <h2>Datos y rendimiento</h2>
+        <p class="subtitle" style="margin-top:-8px;">La app guarda en memoria las lecturas de la hoja para ir más rápido (se refrescan solas al guardar cambios). Si editaste la hoja de cálculo a mano y quieres verlo ya, actualiza los datos.</p>
+        <button class="btn btn-secondary" id="btnClearCache" type="button">Actualizar datos ahora</button>
+      </div>
+      <div class="settings-grid">
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <div class="cicon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg></div>
+              <h2 style="margin:0;">Nuevo contrato</h2>
+            </div>
+            <p class="subtitle" style="margin-top:2px;">Cada unidad de servicio queda asociada a uno de estos contratos, para filtrar y validar el cargue por contrato.</p>
+            <div class="field"><label>Nombre del contrato</label><input type="text" id="newContratoName" placeholder="Ej: Contrato 1234 de 2026"></div>
+            <button class="btn btn-primary" id="btnCreateContrato">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              Crear contrato
+            </button>
+          </div>
+          <div class="card">
+            <h2>Contratos existentes</h2>
+            <div id="contratosList"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Cambiar credenciales de administrador</h2>
+          <div id="configAlert" class="alert"></div>
+          <div class="field"><label>Nuevo usuario</label><input type="text" id="cfgUsuario"></div>
+          <div class="field"><label>Nueva contraseña</label><input type="password" id="cfgPassword"></div>
+          <button class="btn btn-primary" id="btnChangeCreds">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+    </main>
+  </div>
+
+  <!-- Vista ampliada de la matriz (pantalla completa) -->
+  <div class="mx-full" id="mxFull" aria-hidden="true">
+    <div class="mx-full-bar">
+      <h2 id="mxFullTitle">Matriz de estado</h2>
+      <span class="muted" id="mxFullSummary"></span>
+      <div class="mx-legend">
+        <span><i class="mx-dot verde"></i> Aprobado</span><span><i class="mx-dot amarillo"></i> Por revisar</span><span><i class="mx-dot naranja"></i> Rechazado</span>
+        <span><i class="mx-dot rojo"></i> Vacío</span><span><i class="mx-dot rojo venc"></i> Vencido</span><span><i class="mx-dot gris"></i> No aplica</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="mxFullClose" type="button" style="margin-left:auto;">✕ Cerrar (Esc)</button>
+    </div>
+    <div class="mx-full-body" id="mxFullBody"><div class="mx-fit" id="mxFit"></div></div>
+  </div>
+
+  <!-- Panel lateral: detalle de un punto de la matriz -->
+  <div class="drawer-bg" id="cellDrawerBg"></div>
+  <aside class="drawer" id="cellDrawer" role="dialog" aria-modal="true" aria-labelledby="cdTitle" aria-hidden="true" style="width:min(500px,100vw);">
+    <div class="drawer-head">
+      <span class="dh-icon" id="cdIcon"></span>
+      <h2 id="cdTitle"></h2>
+      <span class="fc-badge" id="cdBadge"></span>
+      <button class="drawer-close" id="cdClose" type="button" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body" id="cdBody"></div>
+  </aside>
+
+  <!-- Progreso del paquete ZIP -->
+  <div class="modal-bg" id="zipModalBg">
+    <div class="modal" style="max-width:460px;">
+      <h2 id="zipTitle" style="margin-bottom:6px;">Preparando paquete…</h2>
+      <p class="muted" id="zipText" style="margin:0 0 14px;"></p>
+      <div class="progress-track-v2"><div class="progress-fill-v2" id="zipFill"></div></div>
+      <div class="muted" id="zipSub" style="margin-top:8px;"></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+        <button class="btn btn-secondary btn-sm" id="zipCancel" type="button">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="userModalBg">
+    <div class="modal">
+      <button class="modal-close" id="closeModal">&times;</button>
+      <h2 id="modalTitle"></h2>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Diálogo genérico -->
+  <div class="modal-bg" id="dlgBg" style="z-index:300;">
+    <div class="modal" style="max-width:520px;">
+      <button class="modal-close" id="dlgClose" type="button">&times;</button>
+      <h2 id="dlgTitle" style="margin-bottom:12px;"></h2>
+      <div id="dlgBody"></div>
+      <div id="dlgErr" class="alert alert-error" style="display:none;margin-top:10px;"></div>
+      <div class="dlg-foot" id="dlgFoot"></div>
+    </div>
+  </div>
+  <!-- Ficha de unidad -->
+  <div class="drawer-bg" id="unitDrawerBg"></div>
+  <aside class="drawer" id="unitDrawer" role="dialog" aria-modal="true" aria-hidden="true" style="width:min(640px,100vw);">
+    <div class="drawer-head">
+      <h2 id="udTitle">Ficha de la unidad</h2>
+      <button class="drawer-close" id="udClose" type="button" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="drawer-body" id="udBody"></div>
+  </aside>
+  <div id="printArea"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    const alertEl = document.getElementById('alert');
+    let token = localStorage.getItem('adminToken');
+    let months = [];
+    let contratos = [];
+    let allUsers = [];
+    let currentStatus = null;
+    let mxFullOpen = false, mxFullFs = false;   // vista ampliada de la matriz
+    let uiScale = 0.67, uiScalePref = 0.67;       // escala de la interfaz (0.67 = como verla al 67%)
+
+    function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+    function lsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
+
+    // Aplica la escala a todo el panel. En pantallas angostas (celular) no se reduce.
+    function applyUiScale(v) {
+      uiScale = window.innerWidth > 900 ? v : 1;
+      document.body.style.setProperty('--ui-scale', String(uiScale));
+    }
+    let currentReport = null;
+    let currentLog = null;
+    let logSearchTimer = null;
+    let homeData = null, reviewData = null, trashData = null, auditData = null, auditMonths = null;
+    let auditSel = {}, logSel = {};
+    let curMonth = '', curContrato = 'todos', curTab = 'inicio';
+    let tabLoaded = {};
+    let selectedUsers = {};
+    let reviewSel = {};
+
+    if (!token) { goTo('admin-login'); }
+
+    // ---------------- Estados ----------------
+    const ESTADO = {
+      aprobado: { label: 'Aprobado', color: 'verde' },
+      pendiente: { label: 'Por revisar', color: 'amarillo' },
+      rechazado: { label: 'Rechazado', color: 'naranja' },
+      vacio: { label: 'Vacío', color: 'rojo' },
+      noaplica: { label: 'No aplica', color: 'gris' },
+      excluido: { label: 'No exigido a su contrato', color: 'excl' }
+    };
+    const ARCH_ESTADO = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'Por revisar'], rechazado: ['naranja', 'Rechazado'] };
+    const ACCION_LABEL = {
+      archivo_subido: 'Archivo cargado', archivo_renombrado: 'Archivo renombrado', archivo_eliminado: 'Archivo a la papelera',
+      archivo_restaurado: 'Archivo restaurado', archivo_aprobado: 'Archivo aprobado', archivo_rechazado: 'Archivo rechazado',
+      archivo_pendiente: 'Archivo devuelto a revisión', no_aplica_marcado: 'No aplica marcado', no_aplica_quitado: 'No aplica quitado',
+      mes_creado: 'Mes creado', mes_duplicado: 'Mes duplicado', mes_cerrado: 'Mes cerrado', mes_reabierto: 'Mes reabierto',
+      mes_fechas: 'Fecha límite del mes', mes_visible: 'Mes visible', mes_oculto: 'Mes oculto', mes_eliminado: 'Mes a la papelera',
+      mes_restaurado: 'Mes restaurado', tema_creado: 'Tema creado', tema_editado: 'Tema editado', tema_eliminado: 'Tema a la papelera',
+      tema_restaurado: 'Tema restaurado', purga_definitiva: 'Borrado definitivo', contrato_creado: 'Contrato creado',
+      contrato_editado: 'Contrato editado', contrato_eliminado: 'Contrato eliminado', unidad_contrato: 'Contrato de unidad cambiado',
+      unidad_registrada: 'Unidad registrada', recordatorio: 'Recordatorio enviado', login_admin: 'Inicio de sesión (admin)',
+      login_fallido: 'Intento de acceso fallido', admin_credenciales: 'Credenciales cambiadas', ver_como_unidad: 'Ver como unidad',
+      cache_limpia: 'Datos actualizados',
+      usuario_creado: 'Usuario creado', usuario_editado: 'Usuario editado', usuario_eliminado: 'Usuario eliminado',
+      bitacora_archivada: 'Bitácora archivada', bitacora_eliminada: 'Bitácora: registros eliminados',
+      bitacora_archivo_eliminado: 'Archivo de bitácora eliminado', historial_limpiado: 'Historial de cargues limpiado',
+      historial_restaurado: 'Historial de cargues restaurado'
+    };
+    const SVG = function (d, s) { return '<svg width="' + (s || 15) + '" height="' + (s || 15) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+    const EYE_SVG = SVG('<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>');
+    const DL_SVG = SVG('<path d="M12 3v13M7 11l5 5 5-5"/><path d="M4 19h16"/>');
+    const OK_SVG = SVG('<path d="M20 6L9 17l-5-5"/>');
+    const NO_SVG = SVG('<path d="M18 6L6 18M6 6l12 12"/>');
+    const FOLDER_SVG_ADM = '<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>';
+
+    function arTag(estado) { const m = ARCH_ESTADO[estado] || ['gris', estado]; return '<span class="tag ' + m[0] + '">' + m[1] + '</span>'; }
+    function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+
+    // Color del punto de la matriz y marca de vencido / opcional
+    function dotClass(cell) {
+      const e = ESTADO[cell.estado] || ESTADO.vacio;
+      return e.color + (cell.vencido ? ' venc' : '') + (!cell.obligatorio && (cell.estado === 'vacio') ? ' opc' : '');
+    }
+    function cellTip(cell, topic) {
+      let tip = (ESTADO[cell.estado] || ESTADO.vacio).label;
+      if (cell.files.length) tip += ' · ' + cell.files.length + (cell.files.length === 1 ? ' archivo' : ' archivos');
+      if (cell.vencido) tip += ' · VENCIDO (' + fmtDay(cell.fechaLimite) + ')';
+      else if (cell.fechaLimite && (cell.estado === 'vacio' || cell.estado === 'rechazado')) tip += ' · límite ' + fmtDay(cell.fechaLimite);
+      if (!cell.obligatorio) tip += ' · opcional';
+      return tip + ' · ' + topic.nombre;
+    }
+
+    // ---------------- Diálogos ----------------
+    let dlgResolve = null;
+    function closeDlg(val) {
+      document.getElementById('dlgBg').classList.remove('open');
+      const r = dlgResolve; dlgResolve = null;
+      if (r) r(val);
+    }
+    // buttons: [{ label, cls, value, validate: fn(bodyEl) -> true | string (mensaje de error) }]
+    // Devuelve una promesa con el value del botón pulsado (o null al cancelar).
+    function openDlg(title, bodyHtml, buttons, onOpen) {
+      document.getElementById('dlgTitle').textContent = title;
+      const body = document.getElementById('dlgBody');
+      body.innerHTML = bodyHtml;
+      const foot = document.getElementById('dlgFoot');
+      foot.innerHTML = '';
+      document.getElementById('dlgErr').style.display = 'none';
+      buttons.forEach(function (b) {
+        const el = document.createElement('button');
+        el.type = 'button'; el.className = 'btn ' + (b.cls || 'btn-secondary'); el.textContent = b.label;
+        el.addEventListener('click', function () {
+          if (b.validate) {
+            const v = b.validate(body);
+            if (v !== true) { const er = document.getElementById('dlgErr'); er.textContent = v; er.style.display = 'block'; return; }
+          }
+          closeDlg(b.collect ? b.collect(body) : (b.value === undefined ? true : b.value));
+        });
+        foot.appendChild(el);
+      });
+      if (dlgResolve) dlgResolve(null);
+      document.getElementById('dlgBg').classList.add('open');
+      if (onOpen) onOpen(body);
+      return new Promise(function (resolve) { dlgResolve = resolve; });
+    }
+    function askConfirm(title, text, okLabel, danger) {
+      return openDlg(title, '<p style="margin:0;line-height:1.5;">' + text + '</p>', [
+        { label: 'Cancelar', value: false },
+        { label: okLabel || 'Aceptar', cls: danger ? 'btn-danger' : 'btn-primary', value: true }
+      ]).then(function (v) { return v === true; });
+    }
+    function askText(title, label, placeholder, okLabel, required, initial) {
+      return openDlg(title,
+        '<div class="field" style="margin-bottom:0;"><label>' + escapeHtml(label) + '</label><textarea id="dlgText" rows="3" placeholder="' + escapeHtml(placeholder || '') + '">' + escapeHtml(initial || '') + '</textarea></div>', [
+        { label: 'Cancelar', value: null },
+        { label: okLabel || 'Aceptar', cls: 'btn-primary',
+          validate: function (b) { return !required || b.querySelector('#dlgText').value.trim() ? true : 'Este campo es obligatorio.'; },
+          collect: function (b) { return b.querySelector('#dlgText').value.trim(); } }
+      ], function (b) { b.querySelector('#dlgText').focus(); });
+    }
+    function toast(msg, type) { showAlert(alertEl, msg, type || 'ok'); window.scrollTo(0, 0); setTimeout(function () { if (alertEl.textContent === msg) hideAlert(alertEl); }, 6000); }
+    function fail(err) { showAlert(alertEl, err && err.message ? err.message : String(err)); }
+
+    function fillSelect(id, items, withTodos, todosLabel) {
+      const sel = document.getElementById(id);
+      const prev = sel.value;
+      sel.innerHTML = (withTodos ? '<option value="todos">' + (todosLabel || 'Todos') + '</option>' : '') +
+        items.map(function (it) { return '<option value="' + it.value + '">' + escapeHtml(it.label) + '</option>'; }).join('');
+      if (Array.prototype.some.call(sel.options, function (o) { return o.value === prev; })) sel.value = prev;
+    }
+
+    // ---------------- Pestañas (cada una carga sus datos solo cuando se abre) ----------------
+    const TAB_LOADERS = {
+      inicio: function () { return loadHome(); },
+      estado: function () { return loadStatus(curMonth); },
+      revision: function () { return loadReview(); },
+      reportes: function () { return loadReport(); },
+      historial: function () { return loadLog(); },
+      meses: function () { return Promise.resolve(); },
+      usuarios: function () { return loadUsers(); },
+      papelera: function () { return loadTrash(); },
+      bitacora: function () { auditMonths = null; return loadAudit(); },
+      config: function () { return Promise.resolve(); }
+    };
+    async function activateTab(tab) {
+      curTab = tab;
+      document.querySelectorAll('.side-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
+      document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.toggle('active', p.id === 'tab-' + tab); });
+      if (!tabLoaded[tab]) {
+        tabLoaded[tab] = true;
+        try { await TAB_LOADERS[tab](); } catch (e) { tabLoaded[tab] = false; fail(e); }
+      }
+    }
+    // Marca todas las pestañas como "desactualizadas" y recarga la actual
+    function invalidateAll(keepCurrent) {
+      const was = tabLoaded;
+      tabLoaded = {};
+      if (keepCurrent) tabLoaded = {};
+      refreshBadges();
+      return activateTab(curTab);
+    }
+    function markDirtyExceptCurrent() { tabLoaded = {}; tabLoaded[curTab] = true; }
+    async function refreshBadges() {
+      try {
+        const b = await gsRun('apiAdminGetBadges', token);
+        document.getElementById('badgeRev').textContent = b.porRevisar || '';
+        document.getElementById('badgeTrash').textContent = b.papelera || '';
+      } catch (e) {}
+    }
+
+    // Mes y contrato compartidos entre Inicio, Matriz, Por revisar y Reportes
+    const SHARED_MONTH = ['homeMonthSelect', 'statusMonthSelect', 'revMonthSelect', 'repMonthSelect'];
+    const SHARED_CONTRATO = ['homeContratoSelect', 'statusContratoSelect', 'revContratoSelect', 'repContratoSelect'];
+    function syncMonth(id) { curMonth = id; SHARED_MONTH.forEach(function (s) { const el = document.getElementById(s); if (el) el.value = id; }); }
+    function syncContrato(id) { curContrato = id; SHARED_CONTRATO.forEach(function (s) { const el = document.getElementById(s); if (el) el.value = id; }); }
+    function onMonthChange(id) {
+      syncMonth(id);
+      selectedUsers = {}; reviewSel = {};
+      ['inicio', 'estado', 'revision', 'reportes'].forEach(function (t) { tabLoaded[t] = false; });
+      if (['inicio', 'estado', 'revision', 'reportes'].indexOf(curTab) !== -1) activateTab(curTab);
+    }
+    function onContratoChange(id) {
+      syncContrato(id);
+      ['inicio', 'revision', 'reportes'].forEach(function (t) { tabLoaded[t] = false; });
+      if (curTab === 'estado') { renderMatrix(); }
+      else if (['inicio', 'revision', 'reportes'].indexOf(curTab) !== -1) activateTab(curTab);
+    }
+
+    (async function init() {
+      try {
+        const me = await gsRun('apiAdminMe', token);
+        if (!me.authenticated) { goTo('admin-login'); return; }
+        document.getElementById('adminUsuario').textContent = me.usuario;
+        document.getElementById('adminAvatar').textContent = getInitials(me.usuario);
+      } catch (e) { goTo('admin-login'); return; }
+
+      document.getElementById('btnLogout').addEventListener('click', async function () {
+        try { await gsRun('apiAdminLogout', token); } catch (e) {}
+        localStorage.removeItem('adminToken');
+        goTo('admin-login');
+      });
+      document.getElementById('btnManual').addEventListener('click', function () {
+        const btn = this;
+        withBusyBtn(btn, async function () { try { triggerDownload(await gsRun('apiAdminGetManualPdf', token), 'view'); } catch (e) { fail(e); } });
+      });
+
+      document.querySelectorAll('.side-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () { activateTab(btn.dataset.tab); });
+      });
+
+      SHARED_MONTH.forEach(function (id) { document.getElementById(id).addEventListener('change', function () { onMonthChange(this.value); }); });
+      SHARED_CONTRATO.forEach(function (id) { document.getElementById(id).addEventListener('change', function () { onContratoChange(this.value); }); });
+
+      document.getElementById('btnCreateMonth').addEventListener('click', createMonth);
+      document.getElementById('newMonthCopy').addEventListener('change', function () {
+        document.getElementById('newTopicsField').style.display = this.value ? 'none' : 'block';
+      });
+      document.getElementById('btnCreateContrato').addEventListener('click', createContrato);
+      document.getElementById('btnChangeCreds').addEventListener('click', changeCreds);
+      document.getElementById('btnClearCache').addEventListener('click', function () {
+        const btn = this;
+        withBusyBtn(btn, async function () {
+          try { await gsRun('apiAdminClearCache', token); toast('Datos actualizados.'); invalidateAll(); } catch (e) { fail(e); }
+        });
+      });
+      ['statusSearch', 'statusTemaSelect', 'statusEstadoSelect', 'statusSort', 'statusSoloPend'].forEach(function (id) {
+        document.getElementById(id).addEventListener(id === 'statusSearch' ? 'input' : 'change', renderMatrix);
+      });
+      document.getElementById('userSearch').addEventListener('input', renderUsers);
+      document.getElementById('closeModal').addEventListener('click', function () {
+        document.getElementById('userModalBg').classList.remove('open');
+      });
+      document.getElementById('dlgClose').addEventListener('click', function () { closeDlg(null); });
+
+      document.getElementById('revEstadoSelect').addEventListener('change', function () { tabLoaded.revision = false; reviewSel = {}; activateTab('revision'); });
+      document.getElementById('repEstadoSelect').addEventListener('change', renderReport);
+      document.getElementById('repSearch').addEventListener('input', renderReport);
+      document.getElementById('btnExportCsv').addEventListener('click', exportReportCsv);
+      document.getElementById('btnPrintReport').addEventListener('click', printReport);
+      document.getElementById('btnZip').addEventListener('click', downloadFullPackage);
+      document.getElementById('zipCancel').addEventListener('click', function () { if (zipState) zipState.cancel = true; });
+      document.getElementById('btnMatrixCsv').addEventListener('click', exportMatrixXlsx);
+      document.getElementById('btnMatrixFull').addEventListener('click', openMatrixFull);
+      document.getElementById('mxFullClose').addEventListener('click', closeMatrixFull);
+      document.addEventListener('fullscreenchange', function () { if (mxFullOpen && mxFullFs && !document.fullscreenElement) closeMatrixFull(); });
+      window.addEventListener('resize', function () { applyUiScale(uiScalePref); if (mxFullOpen) fitMatrixFull(); });
+      document.getElementById('cdClose').addEventListener('click', closeCellDrawer);
+      document.getElementById('cellDrawerBg').addEventListener('click', closeCellDrawer);
+      document.getElementById('udClose').addEventListener('click', closeUnitDrawer);
+      document.getElementById('unitDrawerBg').addEventListener('click', closeUnitDrawer);
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        if (document.getElementById('dlgBg').classList.contains('open')) closeDlg(null);
+        else if (document.getElementById('unitDrawer').classList.contains('open')) closeUnitDrawer();
+        else if (document.getElementById('cellDrawer').classList.contains('open')) closeCellDrawer();
+        else closeMatrixFull();
+      });
+
+      document.getElementById('logContratoSelect').addEventListener('change', loadLog);
+      document.getElementById('logMonthSelect').addEventListener('change', loadLog);
+      document.getElementById('logSearch').addEventListener('input', function () {
+        clearTimeout(logSearchTimer);
+        logSearchTimer = setTimeout(loadLog, 350);
+      });
+      ['audAccion', 'audTipo', 'audMes', 'audDesde', 'audHasta'].forEach(function (id) { document.getElementById(id).addEventListener('change', loadAudit); });
+      document.getElementById('audTexto').addEventListener('input', function () { clearTimeout(logSearchTimer); logSearchTimer = setTimeout(loadAudit, 350); });
+      document.getElementById('btnBulkNa').addEventListener('click', function () { bulkNoAplica(true); });
+      document.getElementById('btnBulkNaOff').addEventListener('click', function () { bulkNoAplica(false); });
+      document.getElementById('btnBulkApprovePend').addEventListener('click', bulkApprovePending);
+      document.getElementById('btnRemindSel').addEventListener('click', function () { sendReminders(selectedIds()); });
+      document.getElementById('btnRemindAll').addEventListener('click', function () { sendReminders(null); });
+      document.getElementById('btnEmptyTrash').addEventListener('click', emptyTrash);
+      document.getElementById('btnAddUser').addEventListener('click', function () { openUserDialog(null); });
+      document.getElementById('btnLogClear').addEventListener('click', function () { clearLog(false); });
+      document.getElementById('btnLogClearSel').addEventListener('click', function () { clearLog(true); });
+      document.getElementById('btnLogRestore').addEventListener('click', restoreLog);
+      document.getElementById('logSelAll').addEventListener('change', function () {
+        const on = this.checked;
+        (currentLog ? currentLog.rows : []).forEach(function (r) { if (on) logSel[r.id] = true; else delete logSel[r.id]; });
+        renderLog();
+      });
+      document.getElementById('audArchivo').addEventListener('change', function () { auditSel = {}; loadAudit(); });
+      document.getElementById('btnAudArchMes').addEventListener('click', archiveAuditMonthDialog);
+      document.getElementById('btnAudArchPast').addEventListener('click', archiveAuditPast);
+      document.getElementById('btnAudDelSel').addEventListener('click', deleteAuditSelected);
+      document.getElementById('btnAudDelFilter').addEventListener('click', deleteAuditFiltered);
+      document.getElementById('btnAudDelArchive').addEventListener('click', deleteAuditArchive);
+      document.getElementById('audSelAll').addEventListener('change', function () {
+        const on = this.checked;
+        (auditData ? auditData.rows : []).forEach(function (r) { if (on) auditSel[r.id] = true; else delete auditSel[r.id]; });
+        renderAudit();
+      });
+      document.getElementById('btnBulkApprove').addEventListener('click', bulkApproveReview);
+
+      // Menú lateral tipo hamburguesa + tamaño de interfaz (se recuerdan si el navegador lo permite)
+      const btnSb = document.getElementById('btnSidebar');
+      function setSidebar(open) {
+        document.body.classList.toggle('sb-collapsed', !open);
+        btnSb.setAttribute('aria-expanded', open ? 'true' : 'false');
+        lsSet('gd_sidebar', open ? '1' : '0');
+        if (mxFullOpen) fitMatrixFull();
+      }
+      btnSb.addEventListener('click', function () { setSidebar(document.body.classList.contains('sb-collapsed')); });
+      if (lsGet('gd_sidebar') === '0') setSidebar(false);
+
+      const sizeSel = document.getElementById('uiSizeSelect');
+      const savedSize = parseFloat(lsGet('gd_uiscale'));
+      if (savedSize >= 0.5 && savedSize <= 1.2) { uiScalePref = savedSize; sizeSel.value = String(savedSize); }
+      applyUiScale(uiScalePref);
+      sizeSel.addEventListener('change', function () {
+        uiScalePref = parseFloat(sizeSel.value) || 0.67;
+        lsSet('gd_uiscale', String(uiScalePref));
+        applyUiScale(uiScalePref);
+        if (mxFullOpen) fitMatrixFull();
+      });
+
+      // Contratos y meses se piden en paralelo; el resto de pestañas carga al abrirse.
+      try { await Promise.all([loadContratos(), loadMonthsData()]); } catch (e) { fail(e); }
+      refreshBadges();
+      tabLoaded.inicio = true;
+      try { await loadHome(); } catch (e) { tabLoaded.inicio = false; fail(e); }
+    })();
+
+
+    // ---------------- MESES ----------------
+    async function loadMonthsData() {
+      months = await gsRun('apiAdminListMonths', token);
+      const opts = months.map(function (m) { return { value: m.id, label: m.nombre + (!m.activo ? ' (oculto)' : '') + (m.cerrado ? ' · cerrado' : '') }; });
+      SHARED_MONTH.forEach(function (id) { fillSelect(id, opts, false); });
+      fillSelect('logMonthSelect', months.map(function (m) { return { value: m.id, label: m.nombre }; }), true, 'Todos los meses');
+      fillSelect('audMes', months.map(function (m) { return { value: m.id, label: m.nombre }; }), true, 'Todos los meses');
+      fillSelect('newMonthCopy', months.map(function (m) { return { value: m.id, label: m.nombre }; }), false);
+      const cp = document.getElementById('newMonthCopy');
+      cp.insertAdjacentHTML('afterbegin', '<option value="">— Empezar desde cero —</option>');
+      if (!cp.value || !months.some(function (m) { return m.id === cp.value; })) cp.value = '';
+      document.getElementById('newTopicsField').style.display = cp.value ? 'none' : 'block';
+      if (!months.some(function (m) { return m.id === curMonth; })) curMonth = months.length ? months[0].id : '';
+      syncMonth(curMonth);
+      renderMonthsList();
+    }
+    // Recarga la lista de meses y marca todo como desactualizado
+    async function loadMonths() {
+      await loadMonthsData();
+      return invalidateAll();
+    }
+
+    function monthPills(m) {
+      return '<span class="pill ' + (!m.activo ? 'pill-rojo' : 'pill-verde') + '">' + (!m.activo ? 'Oculto' : 'Visible') + '</span> ' +
+        (m.cerrado ? '<span class="pill pill-gris">🔒 Cerrado</span> ' : '') +
+        (m.fechaLimite ? '<span class="pill pill-azul">Límite: ' + fmtDay(m.fechaLimite) + '</span>' : '<span class="pill pill-gris">Sin fecha límite</span>');
+    }
+
+    function renderMonthsList() {
+      const wrap = document.getElementById('monthsList');
+      if (!months.length) { wrap.innerHTML = '<p class="empty-hint">Aún no has creado ningún mes.</p>'; return; }
+      wrap.innerHTML = '';
+      months.forEach(function (m) {
+        const row = document.createElement('div');
+        row.className = 'manage-row';
+        row.innerHTML =
+          '<div class="mr-info"><strong>' + escapeHtml(m.nombre) + '</strong> <span class="muted" style="font-size:12px;">· ' + m.totalTemas + ' temas</span>' +
+            '<div class="mr-sub">' + monthPills(m) + '</div></div>' +
+          '<div class="mr-actions">' +
+            '<button class="btn btn-secondary btn-sm" data-topics="' + m.id + '">Gestionar temas</button>' +
+            '<button class="btn btn-secondary btn-sm" data-dates="' + m.id + '">Fecha límite</button>' +
+            '<button class="btn ' + (m.cerrado ? 'btn-primary' : 'btn-secondary') + ' btn-sm" data-close="' + m.id + '">' + (m.cerrado ? 'Reabrir mes' : 'Cerrar mes') + '</button>' +
+            '<button class="btn btn-secondary btn-sm" data-toggle="' + m.id + '" data-activo="' + (!m.activo) + '">' + (!m.activo ? 'Mostrar a unidades' : 'Ocultar') + '</button>' +
+            '<button class="btn btn-danger btn-sm" data-delmonth="' + m.id + '">Eliminar</button>' +
+          '</div>';
+        wrap.appendChild(row);
+      });
+      const byId = function (id) { return months.find(function (x) { return x.id === id; }); };
+      wrap.querySelectorAll('[data-topics]').forEach(function (btn) { btn.addEventListener('click', function () { openTopicsModal(byId(btn.dataset.topics)); }); });
+      wrap.querySelectorAll('[data-dates]').forEach(function (btn) { btn.addEventListener('click', function () { editMonthDates(byId(btn.dataset.dates)); }); });
+      wrap.querySelectorAll('[data-close]').forEach(function (btn) { btn.addEventListener('click', function () { toggleMonthClosed(byId(btn.dataset.close)); }); });
+      wrap.querySelectorAll('[data-toggle]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          withBusyBtn(btn, async function () {
+            try { await gsRun('apiAdminSetMonthActive', token, btn.dataset.toggle, btn.dataset.activo === 'true'); await loadMonths(); } catch (e) { fail(e); }
+          });
+        });
+      });
+      wrap.querySelectorAll('[data-delmonth]').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          const m = byId(btn.dataset.delmonth);
+          if (!await askConfirm('Eliminar el mes «' + escapeHtml(m.nombre) + '»',
+            'El mes, sus temas y todos los archivos cargados en él pasan a la <b>Papelera</b>. Desde ahí puedes restaurarlos si fue un error.', 'Enviar a la papelera', true)) return;
+          try { await gsRun('apiAdminDeleteMonth', token, m.id); toast('Mes enviado a la papelera.'); await loadMonths(); } catch (e) { fail(e); }
+        });
+      });
+    }
+
+    async function editMonthDates(m) {
+      const v = await openDlg('Fecha límite de «' + m.nombre + '»',
+        '<div class="field"><label>Fecha límite del mes</label><input type="date" id="dlgDate" value="' + (m.fechaLimite || '') + '"></div>' +
+        '<p class="muted" style="margin:0;font-size:12.5px;">Los temas que no tengan fecha propia usan esta. Déjala vacía para quitarla. Los temas vencidos se marcan en la matriz.</p>', [
+        { label: 'Cancelar', value: null },
+        { label: 'Guardar', cls: 'btn-primary', collect: function (b) { return b.querySelector('#dlgDate').value; } }
+      ]);
+      if (v === null) return;
+      try { await gsRun('apiAdminSetMonthDates', token, m.id, v); toast('Fecha límite actualizada.'); await loadMonths(); } catch (e) { fail(e); }
+    }
+
+    async function toggleMonthClosed(m) {
+      if (!m.cerrado) {
+        if (!await askConfirm('Cerrar «' + escapeHtml(m.nombre) + '»',
+          'Se bloquean las cargas, los borrados y los cambios de nombre de las unidades en este mes y queda archivado. Podrás reabrirlo cuando quieras.', 'Cerrar mes')) return;
+        try { await gsRun('apiAdminSetMonthClosed', token, m.id, true); toast('Mes cerrado.'); await loadMonths(); } catch (e) { fail(e); }
+        return;
+      }
+      const v = await openDlg('Reabrir «' + m.nombre + '»',
+        '<p style="margin:0 0 10px;line-height:1.5;">Las unidades podrán volver a cargar. Si quieres darles un plazo nuevo, elige una fecha límite.</p>' +
+        '<div class="field" style="margin-bottom:0;"><label>Nueva fecha límite (opcional)</label><input type="date" id="dlgDate" value=""></div>', [
+        { label: 'Cancelar', value: null },
+        { label: 'Reabrir mes', cls: 'btn-primary', collect: function (b) { return { fecha: b.querySelector('#dlgDate').value }; } }
+      ]);
+      if (v === null) return;
+      try { await gsRun('apiAdminSetMonthClosed', token, m.id, false, v.fecha); toast('Mes reabierto.'); await loadMonths(); } catch (e) { fail(e); }
+    }
+
+    async function createMonth() {
+      hideAlert(alertEl);
+      const btn = document.getElementById('btnCreateMonth');
+      const nombre = document.getElementById('newMonthName').value.trim();
+      const fecha = document.getElementById('newMonthDate').value;
+      const copy = document.getElementById('newMonthCopy').value;
+      const temas = document.getElementById('newMonthTopics').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+      if (!nombre) { showAlert(alertEl, 'Escribe el nombre del mes.'); return; }
+      if (!copy && !temas.length) { showAlert(alertEl, 'Agrega al menos un tema o elige un mes del cual copiar el temario.'); return; }
+      await withBusyBtn(btn, async function () {
+        try {
+          const r = copy ? await gsRun('apiAdminDuplicateMonth', token, copy, nombre, fecha) : await gsRun('apiAdminCreateMonth', token, nombre, temas, fecha);
+          document.getElementById('newMonthName').value = '';
+          document.getElementById('newMonthTopics').value = '';
+          document.getElementById('newMonthDate').value = '';
+          document.getElementById('newMonthCopy').value = '';
+          document.getElementById('newTopicsField').style.display = 'block';
+          toast('Mes creado con ' + r.month.totalTemas + ' temas.');
+          await loadMonths();
+          onMonthChange(r.month.id);
+        } catch (err) { fail(err); }
+      });
+    }
+
+    // ---------------- TEMARIO DE UN MES ----------------
+    const EXT_GROUPS = [
+      { id: 'pdf', label: 'PDF', exts: ['pdf'] },
+      { id: 'word', label: 'Word', exts: ['doc', 'docx'] },
+      { id: 'excel', label: 'Excel', exts: ['xls', 'xlsx'] },
+      { id: 'img', label: 'Imágenes', exts: ['jpg', 'jpeg', 'png', 'gif', 'webp'] },
+      { id: 'zip', label: 'Comprimidos', exts: ['zip', 'rar', '7z'] }
+    ];
+
+    async function openTopicsModal(month) {
+      let topics = await gsRun('apiAdminGetMonthTopics', token, month.id);
+      document.getElementById('modalTitle').textContent = 'Temas de ' + month.nombre;
+      const body = document.getElementById('modalBody');
+      body.innerHTML =
+        '<div id="topicsListModal" style="margin-bottom:16px;"></div>' +
+        '<div class="field"><label>Agregar temas nuevos (uno por línea)</label><textarea id="newTopicsText" rows="3" placeholder="Tema nuevo 1&#10;Tema nuevo 2"></textarea></div>' +
+        '<button class="btn btn-primary btn-sm" id="btnAddTopics">Agregar temas</button>';
+      const contratoName = function (id) { const c = contratos.find(function (x) { return x.id === id; }); return c ? c.nombre : 'contrato eliminado'; };
+
+      function afterChange() {
+        invalidateAll();
+        loadMonthsData().catch(function () {});
+      }
+
+      function topicSummary(t) {
+        const bits = [];
+        bits.push('<span class="tag ' + (t.obligatorio ? 'azul' : 'gris') + '">' + (t.obligatorio ? 'Obligatorio' : 'Opcional') + '</span>');
+        if (t.fechaLimite) bits.push('<span class="tag azul">Límite ' + fmtDay(t.fechaLimite) + '</span>');
+        if (t.extensiones.length) bits.push('<span class="tag gris">Solo ' + t.extensiones.map(function (e) { return e.toUpperCase(); }).join(', ') + '</span>');
+        bits.push(t.contratoIds.length ? '<span class="tag gris">Contratos: ' + escapeHtml(t.contratoIds.map(contratoName).join(', ')) + '</span>' : '<span class="tag gris">Todos los contratos</span>');
+        return bits.join(' ');
+      }
+
+      function renderTopicsList() {
+        const listWrap = document.getElementById('topicsListModal');
+        if (!topics.length) { listWrap.innerHTML = '<p class="empty-hint">Este mes aún no tiene temas.</p>'; return; }
+        listWrap.innerHTML = topics.map(function (t) {
+          return '<div class="manage-row" style="padding:9px 2px;">' +
+            '<div class="mr-info"><span>' + escapeHtml(t.nombre) + '</span><div class="mr-sub">' + topicSummary(t) + '</div></div>' +
+            '<div class="mr-actions">' +
+              '<button class="btn btn-ghost btn-sm" data-edittopic="' + t.id + '">Editar</button>' +
+              '<button class="btn btn-ghost btn-sm" style="color:var(--rojo);" data-deltopic="' + t.id + '">Eliminar</button>' +
+            '</div></div>';
+        }).join('');
+        listWrap.querySelectorAll('[data-edittopic]').forEach(function (btn) {
+          btn.addEventListener('click', function () { editTopic(topics.find(function (x) { return x.id === btn.dataset.edittopic; })); });
+        });
+        listWrap.querySelectorAll('[data-deltopic]').forEach(function (btn) {
+          btn.addEventListener('click', async function () {
+            const t = topics.find(function (x) { return x.id === btn.dataset.deltopic; });
+            if (!await askConfirm('Eliminar «' + escapeHtml(t.nombre) + '»', 'El tema y los archivos que las unidades cargaron en él pasan a la <b>Papelera</b>; puedes restaurarlos desde ahí.', 'Enviar a la papelera', true)) return;
+            try {
+              await gsRun('apiAdminDeleteTopic', token, t.id);
+              topics = topics.filter(function (x) { return x.id !== t.id; });
+              renderTopicsList(); afterChange();
+            } catch (e) { fail(e); }
+          });
+        });
+      }
+
+      function editTopic(t) {
+        const listWrap = document.getElementById('topicsListModal');
+        const hasExt = function (g) { return g.exts.some(function (e) { return t.extensiones.indexOf(e) !== -1; }); };
+        listWrap.innerHTML =
+          '<div class="topic-edit">' +
+            '<div class="field"><label>Nombre del tema</label><input type="text" id="teNombre" value="' + escapeHtml(t.nombre) + '"></div>' +
+            '<div class="row2">' +
+              '<div class="field"><label>Se exige</label><select id="teObl"><option value="1"' + (t.obligatorio ? ' selected' : '') + '>Obligatorio (cuenta para el avance)</option><option value="0"' + (!t.obligatorio ? ' selected' : '') + '>Opcional (no cuenta)</option></select></div>' +
+              '<div class="field"><label>Fecha límite propia</label><input type="date" id="teFecha" value="' + (t.fechaLimite || '') + '"></div>' +
+            '</div>' +
+            '<div class="field"><label>Tipos de archivo permitidos <span class="muted">(ninguno marcado = todos)</span></label><div class="chk-list cols" id="teExt">' +
+              EXT_GROUPS.map(function (g) { return '<label><input type="checkbox" value="' + g.id + '"' + (hasExt(g) ? ' checked' : '') + '> ' + g.label + '</label>'; }).join('') + '</div></div>' +
+            '<div class="field" style="margin-bottom:6px;"><label>Contratos a los que se exige <span class="muted">(ninguno marcado = todos)</span></label><div class="chk-list" id="teContratos">' +
+              (contratos.length ? contratos.map(function (c) { return '<label><input type="checkbox" value="' + c.id + '"' + (t.contratoIds.indexOf(c.id) !== -1 ? ' checked' : '') + '> ' + escapeHtml(c.nombre) + '</label>'; }).join('') : '<span class="muted">No hay contratos creados.</span>') + '</div></div>' +
+            '<div id="teErr" class="alert alert-error" style="display:none;"></div>' +
+            '<div style="display:flex;gap:8px;justify-content:flex-end;"><button class="btn btn-secondary btn-sm" id="teCancel" type="button">Cancelar</button><button class="btn btn-primary btn-sm" id="teSave" type="button">Guardar tema</button></div>' +
+          '</div>';
+        document.getElementById('teCancel').addEventListener('click', renderTopicsList);
+        document.getElementById('teSave').addEventListener('click', function () {
+          const btn = this;
+          withBusyBtn(btn, async function () {
+            const groups = Array.prototype.map.call(document.querySelectorAll('#teExt input:checked'), function (i) { return i.value; });
+            const exts = [];
+            EXT_GROUPS.forEach(function (g) { if (groups.indexOf(g.id) !== -1) g.exts.forEach(function (e) { exts.push(e); }); });
+            const ctr = Array.prototype.map.call(document.querySelectorAll('#teContratos input:checked'), function (i) { return i.value; });
+            const f = {
+              nombre: document.getElementById('teNombre').value.trim(),
+              obligatorio: document.getElementById('teObl').value === '1',
+              fechaLimite: document.getElementById('teFecha').value,
+              extensiones: exts, contratoIds: ctr
+            };
+            try {
+              await gsRun('apiAdminUpdateTopic', token, t.id, f);
+              topics = await gsRun('apiAdminGetMonthTopics', token, month.id);
+              renderTopicsList(); afterChange();
+            } catch (e) { const er = document.getElementById('teErr'); er.textContent = e.message; er.style.display = 'block'; }
+          });
+        });
+      }
+      renderTopicsList();
+
+      document.getElementById('btnAddTopics').addEventListener('click', function () {
+        const btn = this;
+        const nuevos = document.getElementById('newTopicsText').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+        if (!nuevos.length) return;
+        withBusyBtn(btn, async function () {
+          try {
+            await gsRun('apiAdminCreateTopics', token, month.id, nuevos);
+            document.getElementById('newTopicsText').value = '';
+            topics = await gsRun('apiAdminGetMonthTopics', token, month.id);
+            renderTopicsList(); afterChange();
+          } catch (e) { fail(e); }
+        });
+      });
+
+      document.getElementById('userModalBg').classList.add('open');
+    }
+
+
+    // ---------------- KPI ----------------
+    function kpiCard(color, iconSvg, value, label) {
+      return '<div class="kpi-c ' + color + '"><span class="kc-icon">' + iconSvg + '</span><div><div class="kc-num">' + value + '</div><div class="kc-lbl">' + label + '</div></div></div>';
+    }
+    const KS = 'width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    const K_ICON = {
+      users: '<svg ' + KS + '><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3.5-6 7-6s7 2 7 6"/><path d="M17 11a3.5 3.5 0 1 0 0-7M20 21c0-3-2-5-4.5-5.5"/></svg>',
+      ok: '<svg ' + KS + '><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>',
+      alert: '<svg ' + KS + '><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16.2v.1"/></svg>',
+      clock: '<svg ' + KS + '><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+      back: '<svg ' + KS + '><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>'
+    };
+    function barClass(p) { return p >= 75 ? '' : (p >= 40 ? 'mid' : 'low'); }
+
+    // ---------------- INICIO ----------------
+    async function loadHome() {
+      if (!curMonth) { document.getElementById('homeBody').innerHTML = '<p class="empty-hint big">Crea un mes en «Meses y temario» para empezar.</p>'; return; }
+      const monthId = curMonth, contratoId = curContrato;
+      const body = document.getElementById('homeBody');
+      if (!homeData) body.innerHTML = '<div style="padding:10px;">' + skeletonHtml(6) + '</div>';
+      const box = document.getElementById('homeWrap');
+      const d = await withLoading(box, function () { return gsRun('apiAdminGetHome', token, monthId, contratoId); });
+      if (monthId !== curMonth || contratoId !== curContrato) return;
+      homeData = d;
+      renderHome();
+    }
+
+    function renderHome() {
+      const d = homeData, k = d.kpis;
+      document.getElementById('homeMonthInfo').innerHTML = (d.month.cerrado ? '<span class="pill pill-gris">🔒 Mes cerrado</span> ' : '') +
+        (d.month.fechaLimite ? '<span class="pill pill-azul">Fecha límite: ' + fmtDay(d.month.fechaLimite) + '</span>' : '<span class="pill pill-gris">Sin fecha límite</span>');
+      let html = '<div class="mx-kpis">' +
+        kpiCard('azul', K_ICON.users, k.unidades, 'Unidades') +
+        kpiCard('verde', K_ICON.ok, k.avance + '%', 'Cumplimiento global') +
+        kpiCard('verde', K_ICON.ok, k.completas, 'Unidades completas') +
+        kpiCard('amarillo', K_ICON.clock, k.archivosPorRevisar, 'Archivos por revisar') +
+        kpiCard('naranja', K_ICON.back, k.archivosRechazados, 'Archivos rechazados') +
+        kpiCard('rojo', K_ICON.alert, k.temasVencidos, 'Temas vencidos') +
+      '</div><div class="home-grid">';
+
+      // Cumplimiento por contrato
+      html += '<div class="card"><h2>Cumplimiento por contrato</h2>' + (d.porContrato.length ? d.porContrato.map(function (c) {
+        return '<div class="hbar-row"><div class="hbar-name" title="' + escapeHtml(c.nombre) + '">' + escapeHtml(c.nombre) + '<small>' + c.completas + ' de ' + c.unidades + ' unidades completas</small></div>' +
+          '<div class="hbar-track"><div class="hbar-fill ' + barClass(c.pct) + '" style="width:' + c.pct + '%"></div></div><div class="hbar-val">' + c.pct + '%</div></div>';
+      }).join('') : '<p class="empty-hint">Sin unidades en este filtro.</p>') + '</div>';
+
+      // Temas que más incumplen
+      html += '<div class="card"><h2>Temas que más incumplen</h2>' + (d.temasIncumplen.length ? d.temasIncumplen.map(function (t) {
+        return '<div class="hbar-row"><div class="hbar-name" title="' + escapeHtml(t.nombre) + '">' + escapeHtml(t.nombre) + '<small>' + t.incumplen + ' de ' + t.unidades + ' unidades' + (t.vencidos ? ' · <b style="color:var(--rojo-osc)">' + t.vencidos + (t.vencidos === 1 ? ' vencida' : ' vencidas') + '</b>' : '') + '</small></div>' +
+          '<div class="hbar-track"><div class="hbar-fill low" style="width:' + t.pct + '%"></div></div><div class="hbar-val">' + t.pct + '%</div></div>';
+      }).join('') : '<p class="empty-hint">¡Ningún tema con incumplimientos! 🎉</p>') + '</div>';
+
+      // Unidades más rezagadas
+      html += '<div class="card"><h2>Unidades más rezagadas</h2>' + (d.rezagadas.length ? d.rezagadas.map(function (r) {
+        return '<div class="hbar-row unit-link" data-unit="' + r.userId + '"><div class="hbar-name" title="' + escapeHtml(r.nombreUnidad) + '"><span class="mn-title">' + escapeHtml(r.nombreUnidad) + '</span><small>' + escapeHtml(r.contratoNombre) + ' · faltan ' + r.faltan + (r.vencidos ? ' · <b style="color:var(--rojo-osc)">' + r.vencidos + (r.vencidos === 1 ? ' vencido' : ' vencidos') + '</b>' : '') + ' · ' + (r.ultimaFecha ? 'últ. cargue ' + fmtDay(r.ultimaFecha.slice(0, 10)) : 'sin cargues') + '</small></div>' +
+          '<div class="hbar-track"><div class="hbar-fill ' + barClass(r.pct) + '" style="width:' + Math.max(r.pct, 2) + '%"></div></div><div class="hbar-val">' + r.pct + '%</div></div>';
+      }).join('') : '<p class="empty-hint">Todas las unidades están al día. 🎉</p>') + '</div>';
+
+      // Avance semanal
+      html += '<div class="card"><h2>Avance semanal</h2>' + weeklyChart(d.semanal) + '</div></div>';
+      document.getElementById('homeBody').innerHTML = html;
+      document.querySelectorAll('#homeBody [data-unit]').forEach(function (el) { el.addEventListener('click', function () { openUnitDrawer(el.dataset.unit); }); });
+    }
+
+    function weeklyChart(weeks) {
+      if (!weeks.length) return '<p class="empty-hint">Aún no hay actividad.</p>';
+      const W = 520, H = 210, padL = 28, padB = 30, padT = 10;
+      const max = Math.max(4, Math.max.apply(null, weeks.map(function (w) { return Math.max(w.cargados, w.aprobados); })));
+      const step = (W - padL) / weeks.length, bw = Math.min(18, step / 2.6);
+      let g = '';
+      for (let i = 0; i <= 4; i++) {
+        const y = padT + (H - padT - padB) * (1 - i / 4);
+        g += '<line x1="' + padL + '" y1="' + y + '" x2="' + W + '" y2="' + y + '" stroke="#e9edf5" stroke-width="1"/><text x="' + (padL - 5) + '" y="' + (y + 4) + '" font-size="10" fill="#8a94a8" text-anchor="end">' + Math.round(max * i / 4) + '</text>';
+      }
+      weeks.forEach(function (w, i) {
+        const cx = padL + step * i + step / 2;
+        const h1 = (H - padT - padB) * w.cargados / max, h2 = (H - padT - padB) * w.aprobados / max;
+        g += '<rect x="' + (cx - bw - 1) + '" y="' + (H - padB - h1) + '" width="' + bw + '" height="' + h1 + '" rx="3" fill="#2455e6"><title>' + w.cargados + ' archivos cargados</title></rect>';
+        g += '<rect x="' + (cx + 1) + '" y="' + (H - padB - h2) + '" width="' + bw + '" height="' + h2 + '" rx="3" fill="#1e9e5a"><title>' + w.aprobados + ' archivos aprobados</title></rect>';
+        g += '<text x="' + cx + '" y="' + (H - 10) + '" font-size="10" fill="#6b7280" text-anchor="middle">' + fmtDay(w.semana).slice(0, -5) + '</text>';
+      });
+      return '<div class="chart-legend"><span><i style="background:#2455e6"></i>Archivos cargados</span><span><i style="background:#1e9e5a"></i>Archivos aprobados</span><span class="muted">por semana (inicia el lunes)</span></div>' +
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Avance semanal">' + g + '</svg>';
+    }
+
+    // ---------------- POR REVISAR ----------------
+    async function loadReview() {
+      if (!curMonth) { document.getElementById('reviewBody').innerHTML = '<p class="empty-hint big">No hay meses creados.</p>'; return; }
+      const monthId = curMonth, contratoId = curContrato, estado = document.getElementById('revEstadoSelect').value;
+      const wrap = document.getElementById('reviewWrap');
+      if (!reviewData) document.getElementById('reviewBody').innerHTML = skeletonHtml(6);
+      const d = await withLoading(wrap, function () { return gsRun('apiAdminGetReviewQueue', token, monthId, contratoId, estado); });
+      if (monthId !== curMonth) return;
+      reviewData = d; reviewSel = {};
+      renderReview();
+      document.getElementById('badgeRev').textContent = (d.counts.pendiente || '') ;
+    }
+
+    function renderReview() {
+      const d = reviewData, estado = document.getElementById('revEstadoSelect').value;
+      document.getElementById('reviewCounts').innerHTML =
+        '<span class="tag amarillo">' + d.counts.pendiente + ' por revisar</span> <span class="tag naranja">' + d.counts.rechazado + ' rechazados</span> <span class="tag verde">' + d.counts.aprobado + ' aprobados</span>';
+      const wrap = document.getElementById('reviewBody');
+      if (!d.rows.length) {
+        wrap.innerHTML = '<p class="empty-hint big">' + (estado === 'pendiente' ? '¡Todo revisado! No hay archivos por revisar. 🎉' : 'No hay archivos en este estado.') + '</p>';
+        updateReviewBar();
+        return;
+      }
+      wrap.innerHTML = '<table class="review-table"><thead><tr><th style="width:30px;"><input type="checkbox" id="revAll"></th><th>Cargado</th><th>Unidad</th><th>Tema</th><th>Archivo</th><th style="text-align:right;">Revisión</th></tr></thead><tbody>' +
+        d.rows.map(function (r) {
+          return '<tr data-row="' + r.id + '"><td><input type="checkbox" data-rsel="' + r.id + '"></td>' +
+            '<td>' + formatDate(r.uploadedAt) + (r.tardio ? '<br><span class="tag gris">Fuera de plazo</span>' : '') + '</td>' +
+            '<td class="unit-link" data-unit="' + r.userId + '"><div class="mn-title" style="font-weight:600;">' + escapeHtml(r.nombreUnidad) + '</div><div class="muted" style="font-size:11.5px;">' + escapeHtml(r.contratoNombre) + '</div></td>' +
+            '<td>' + escapeHtml(r.temaNombre) + '</td>' +
+            '<td><div class="file-item" style="display:inline-flex;"><span class="ftype-icon">' + fileTypeIcon(r.originalName) + '</span><span class="name" title="' + escapeHtml(r.originalName) + '">' + escapeHtml(r.originalName) + '</span></div><div class="muted" style="font-size:11.5px;">' + formatBytes(r.size) + '</div>' +
+              (r.observacion ? '<div class="obs-text"><b>Motivo:</b> ' + escapeHtml(r.observacion) + '</div>' : '') + '</td>' +
+            '<td><div class="file-actions" style="justify-content:flex-end;gap:6px;">' +
+              '<button class="btn btn-secondary btn-sm" data-rview="' + r.id + '" title="Ver">' + EYE_SVG + '</button>' +
+              '<button class="btn btn-secondary btn-sm" data-rdl="' + r.id + '" title="Descargar">' + DL_SVG + '</button>' +
+              (r.estado !== 'aprobado' ? '<button class="btn btn-primary btn-sm" data-rok="' + r.id + '">' + OK_SVG + ' Aprobar</button>' : '') +
+              (r.estado !== 'rechazado' ? '<button class="btn btn-danger btn-sm" data-rno="' + r.id + '">' + NO_SVG + ' Rechazar</button>' : '') +
+            '</div></td></tr>';
+        }).join('') + '</tbody></table>' +
+        (d.total > d.mostrados ? '<p class="muted" style="margin-top:10px;">Mostrando ' + d.mostrados + ' de ' + d.total + '. Al revisar estos aparecerán los siguientes.</p>' : '');
+      wrap.querySelector('#revAll').addEventListener('change', function () {
+        const on = this.checked;
+        wrap.querySelectorAll('[data-rsel]').forEach(function (c) { c.checked = on; if (on) reviewSel[c.dataset.rsel] = true; else delete reviewSel[c.dataset.rsel]; });
+        updateReviewBar();
+      });
+      wrap.querySelectorAll('[data-rsel]').forEach(function (c) { c.addEventListener('change', function () { if (c.checked) reviewSel[c.dataset.rsel] = true; else delete reviewSel[c.dataset.rsel]; updateReviewBar(); }); });
+      wrap.querySelectorAll('[data-unit]').forEach(function (c) { c.addEventListener('click', function () { openUnitDrawer(c.dataset.unit); }); });
+      wrap.querySelectorAll('[data-rview]').forEach(function (b) { b.addEventListener('click', function () { fileAction(b, b.dataset.rview, 'view'); }); });
+      wrap.querySelectorAll('[data-rdl]').forEach(function (b) { b.addEventListener('click', function () { fileAction(b, b.dataset.rdl, 'download'); }); });
+      wrap.querySelectorAll('[data-rok]').forEach(function (b) { b.addEventListener('click', function () { reviewOne(b, b.dataset.rok, 'aprobado'); }); });
+      wrap.querySelectorAll('[data-rno]').forEach(function (b) { b.addEventListener('click', function () { reviewOne(b, b.dataset.rno, 'rechazado'); }); });
+      updateReviewBar();
+    }
+
+    function updateReviewBar() {
+      const n = Object.keys(reviewSel).length;
+      document.getElementById('revBulkBar').style.display = n ? 'flex' : 'none';
+      document.getElementById('revBulkCount').textContent = n + (n === 1 ? ' archivo seleccionado' : ' archivos seleccionados');
+    }
+
+    async function fileAction(btn, id, mode) {
+      await withBusyBtn(btn, async function () {
+        try { triggerDownload(await gsRun('apiAdminDownloadFile', token, id), mode); } catch (e) { fail(e); }
+      });
+    }
+
+    // Aprobar o rechazar un archivo (el rechazo pide el motivo)
+    async function reviewOne(btn, id, estado, after) {
+      let obs = '';
+      if (estado === 'rechazado') {
+        obs = await askText('Rechazar archivo', 'Motivo del rechazo (la unidad lo verá para corregirlo)', 'Ej: El documento está borroso o no tiene la firma.', 'Rechazar archivo', true);
+        if (obs === null) return;
+      }
+      await withBusyBtn(btn, async function () {
+        try {
+          await gsRun('apiAdminReviewFile', token, id, estado, obs);
+          toast(estado === 'aprobado' ? 'Archivo aprobado.' : 'Archivo rechazado: la unidad verá el motivo.');
+          if (after) { await after(); markDirtyExceptCurrent(); refreshBadges(); } else { await invalidateAll(); }
+        } catch (e) { fail(e); }
+      });
+    }
+
+    async function bulkApproveReview() {
+      const ids = Object.keys(reviewSel);
+      if (!ids.length) return;
+      if (!await askConfirm('Aprobar ' + ids.length + (ids.length === 1 ? ' archivo' : ' archivos'), 'Los archivos seleccionados quedarán como aprobados.', 'Aprobar')) return;
+      await withBusyBtn(document.getElementById('btnBulkApprove'), async function () {
+        try { await gsRun('apiAdminBulkReview', token, ids, 'aprobado', ''); toast(ids.length + ' archivo(s) aprobado(s).'); await invalidateAll(); } catch (e) { fail(e); }
+      });
+    }
+
+
+    // ---------------- MATRIZ DE ESTADO ----------------
+    async function loadStatus(monthId) {
+      if (!monthId) { document.getElementById('matrixWrap').innerHTML = '<p class="empty-hint big">Crea un mes en «Meses y temario» para empezar.</p>'; return; }
+      const wrap = document.getElementById('matrixWrap');
+      if (!currentStatus) wrap.innerHTML = skeletonHtml(7);
+      const st = await withLoading(document.getElementById('statusCard'), function () { return gsRun('apiAdminGetStatus', token, monthId); });
+      if (monthId !== curMonth) return;
+      currentStatus = st;
+      selectedUsers = {};
+      fillSelect('statusTemaSelect', st.topics.map(function (t) { return { value: t.id, label: t.nombre }; }), true, 'Todos los temas');
+      renderMatrix();
+    }
+
+    function getStatusFiltered() {
+      const q = document.getElementById('statusSearch').value.toLowerCase().trim();
+      const temaId = document.getElementById('statusTemaSelect').value || 'todos';
+      const est = document.getElementById('statusEstadoSelect').value || 'todos';
+      const soloPend = document.getElementById('statusSoloPend').checked;
+      const sort = document.getElementById('statusSort').value;
+      const tIdx = temaId === 'todos' ? -1 : currentStatus.topics.findIndex(function (t) { return t.id === temaId; });
+      let rows = currentStatus.matrix.filter(function (row) {
+        const matchQ = !q || String(row.cedula).toLowerCase().indexOf(q) !== -1 ||
+          row.nombreUnidad.toLowerCase().indexOf(q) !== -1 ||
+          String(row.codigoPlano || '').toLowerCase().indexOf(q) !== -1;
+        if (!matchQ) return false;
+        if (curContrato !== 'todos' && row.contratoId !== curContrato) return false;
+        if (soloPend && row.completo) return false;
+        if (est !== 'todos') {
+          const test = function (c) { return est === 'vencido' ? c.vencido : c.estado === est; };
+          const hit = tIdx >= 0 ? test(row.cells[tIdx]) : row.cells.some(test);
+          if (!hit) return false;
+        }
+        return true;
+      });
+      rows = rows.slice();
+      const byName = function (a, b) { return a.nombreUnidad.localeCompare(b.nombreUnidad); };
+      if (sort === 'avance_asc') rows.sort(function (a, b) { return a.pct - b.pct || byName(a, b); });
+      else if (sort === 'avance_desc') rows.sort(function (a, b) { return b.pct - a.pct || byName(a, b); });
+      else if (sort === 'ultimo') rows.sort(function (a, b) { return (b.ultimaFecha || '').localeCompare(a.ultimaFecha || '') || byName(a, b); });
+      else if (sort === 'contrato') rows.sort(function (a, b) { return a.contratoNombre.localeCompare(b.contratoNombre) || byName(a, b); });
+      else rows.sort(byName);
+      return rows;
+    }
+
+    function visibleTopicIdx() {
+      const temaId = document.getElementById('statusTemaSelect').value || 'todos';
+      const all = currentStatus.topics.map(function (t, i) { return i; });
+      if (temaId === 'todos') return all;
+      const i = currentStatus.topics.findIndex(function (t) { return t.id === temaId; });
+      return i >= 0 ? [i] : all;
+    }
+
+    function renderMatrix() {
+      if (!currentStatus) return;
+      const topics = currentStatus.topics;
+      const filtered = getStatusFiltered();
+      const completos = filtered.filter(function (r) { return r.completo; }).length;
+      const faltantes = filtered.length - completos;
+      let porRev = 0, venc = 0, rech = 0;
+      filtered.forEach(function (r) {
+        r.cells.forEach(function (c) {
+          porRev += c.files.filter(function (f) { return f.estado === 'pendiente'; }).length;
+          if (c.vencido) venc++;
+          rech += c.files.filter(function (f) { return f.estado === 'rechazado'; }).length;
+        });
+      });
+      const pctC = filtered.length ? Math.round(completos / filtered.length * 100) : 0;
+
+      document.getElementById('mxKpis').innerHTML =
+        kpiCard('azul', K_ICON.users, filtered.length, 'Unidades') +
+        kpiCard('verde', K_ICON.ok, pctC + '% <span style="font-size:13px;font-weight:600;color:var(--texto-suave);">(' + completos + ')</span>', 'Unidades completas') +
+        kpiCard('rojo', K_ICON.alert, faltantes, 'Unidades con pendientes') +
+        kpiCard('amarillo', K_ICON.clock, porRev, 'Archivos por revisar') +
+        kpiCard('naranja', K_ICON.back, rech, 'Archivos rechazados') +
+        kpiCard('rojo', K_ICON.alert, venc, 'Casillas vencidas');
+
+      const m = currentStatus.month;
+      document.getElementById('monthStateBar').innerHTML =
+        (m.cerrado ? '<span class="pill pill-gris">🔒 Mes cerrado: las unidades no pueden cargar</span>' : '<span class="pill pill-verde">Mes abierto</span>') + ' ' +
+        (m.fechaLimite ? '<span class="pill pill-azul">Fecha límite: ' + fmtDay(m.fechaLimite) + '</span>' : '<span class="pill pill-gris">Sin fecha límite</span>') +
+        ' <button class="btn btn-secondary btn-sm" id="btnMxClose" type="button">' + (m.cerrado ? 'Reabrir mes…' : 'Cerrar mes…') + '</button>';
+      document.getElementById('btnMxClose').addEventListener('click', function () {
+        const mm = months.find(function (x) { return x.id === m.id; });
+        if (mm) toggleMonthClosed(mm);
+      });
+
+      document.getElementById('statusSummary').textContent = filtered.length + ' unidad(es) · ' + visibleTopicIdx().length + ' de ' + topics.length + ' temas';
+      document.getElementById('btnRemindAll').textContent = 'Recordar a las que tienen pendientes (' + filtered.filter(function (r) { return !r.completo && r.total > 0; }).length + ')';
+
+      const wrap = document.getElementById('matrixWrap');
+      if (!topics.length) { wrap.innerHTML = '<p class="empty-hint">Este mes todavía no tiene temas creados.</p>'; updateBulkBar(); return; }
+      if (!filtered.length) { wrap.innerHTML = '<p class="empty-hint">No se encontraron unidades con estos filtros.</p>'; updateBulkBar(); return; }
+
+      wrap.innerHTML = matrixTableHtml(topics, filtered, { select: true, cols: visibleTopicIdx() });
+      bindMatrixTable(wrap.querySelector('table'));
+      updateBulkBar();
+      if (mxFullOpen) renderMatrixFull();
+    }
+
+    function matrixTableHtml(topics, filtered, opts) {
+      opts = opts || {};
+      const cols = opts.cols || topics.map(function (t, i) { return i; });
+      let html = '<table class="mx-table"><thead><tr>' + (opts.select ? '<th class="mx-sel"><input type="checkbox" id="mxSelAll" title="Seleccionar todas las unidades del filtro"></th>' : '') +
+        '<th class="mx-name">Unidad de servicio</th><th class="mx-prog">Avance</th>';
+      cols.forEach(function (ci) {
+        const t = topics[ci];
+        html += '<th class="topic-h" data-c="' + ci + '" title="' + escapeHtml(t.nombre + (t.obligatorio ? '' : ' (opcional)')) + '"><span class="th-text">' + escapeHtml(t.nombre) + (t.obligatorio ? '' : ' ·opc') + '</span></th>';
+      });
+      html += '</tr></thead><tbody>';
+      filtered.forEach(function (row) {
+        const sub = [];
+        if (row.codigoPlano) sub.push('Cód. ' + escapeHtml(row.codigoPlano));
+        sub.push('CC ' + escapeHtml(row.cedula));
+        const full = row.nombreUnidad + (row.responsable ? ' · ' + row.responsable : '') + ' · CC ' + row.cedula + (row.codigoPlano ? ' · Cód. ' + row.codigoPlano : '') + ' · ' + row.contratoNombre;
+        const r = row.resumen;
+        const pc = row.completo ? 'pill-verde' : (r.vencidos ? 'pill-rojo' : (r.pendientes ? 'pill-amarillo' : 'pill-gris'));
+        html += '<tr>' + (opts.select ? '<td class="mx-sel"><input type="checkbox" data-sel="' + row.userId + '"' + (selectedUsers[row.userId] ? ' checked' : '') + '></td>' : '') +
+          '<td class="mx-name unit-link" data-unit="' + row.userId + '" title="' + escapeHtml(full) + ' — clic para abrir la ficha"><div class="mn-title">' + escapeHtml(row.nombreUnidad) + '</div>' +
+          '<div class="mn-sub">' + sub.join(' · ') + '</div></td>';
+        html += '<td class="mx-prog"><span class="pill ' + pc + '" title="' + row.pct + '%">' + row.completados + '/' + row.total + '</span></td>';
+        cols.forEach(function (ci) {
+          const cell = row.cells[ci];
+          const n = cell.files.length;
+          const lab = cell.estado === 'noaplica' ? '–' : (cell.estado === 'excluido' ? '·' : (n || ''));
+          html += '<td class="mx-cell' + (!cell.obligatorio ? ' is-opc' : '') + '" data-c="' + ci + '" data-user="' + row.userId + '" data-topic="' + cell.topicId + '" title="' + escapeHtml(cellTip(cell, topics[ci])) + '">' +
+            '<span class="mc"><i class="mx-dot ' + dotClass(cell) + '"></i>' + lab + '</span></td>';
+        });
+        html += '</tr>';
+      });
+      return html + '</tbody></table>';
+    }
+
+    function bindMatrixTable(table) {
+      let hlCol = null;
+      function setCol(c) {
+        if (c === hlCol) return;
+        if (hlCol !== null) table.querySelectorAll('[data-c="' + hlCol + '"]').forEach(function (el) { el.classList.remove('col-hl'); });
+        hlCol = c;
+        if (c !== null) table.querySelectorAll('[data-c="' + c + '"]').forEach(function (el) { el.classList.add('col-hl'); });
+      }
+      table.addEventListener('mouseover', function (e) {
+        const el = e.target.closest('[data-c]');
+        setCol(el ? el.dataset.c : null);
+      });
+      table.addEventListener('mouseleave', function () { setCol(null); });
+      table.addEventListener('click', function (e) {
+        if (e.target.closest('.mx-sel')) return;
+        const cell = e.target.closest('td.mx-cell');
+        if (cell) { openCellDrawer(cell.dataset.user, cell.dataset.topic); return; }
+        const u = e.target.closest('[data-unit]');
+        if (u) { closeMatrixFull(); openUnitDrawer(u.dataset.unit); }
+      });
+      const all = table.querySelector('#mxSelAll');
+      if (all) {
+        all.addEventListener('change', function () {
+          getStatusFiltered().forEach(function (r) { if (all.checked) selectedUsers[r.userId] = true; else delete selectedUsers[r.userId]; });
+          table.querySelectorAll('[data-sel]').forEach(function (c) { c.checked = all.checked; });
+          updateBulkBar();
+        });
+        table.querySelectorAll('[data-sel]').forEach(function (c) {
+          c.addEventListener('change', function () { if (c.checked) selectedUsers[c.dataset.sel] = true; else delete selectedUsers[c.dataset.sel]; updateBulkBar(); });
+        });
+      }
+    }
+
+    function selectedIds() { return Object.keys(selectedUsers); }
+    function updateBulkBar() {
+      const n = selectedIds().length;
+      const bar = document.getElementById('mxBulkBar');
+      bar.style.display = n ? 'flex' : 'none';
+      document.getElementById('mxBulkCount').textContent = n + (n === 1 ? ' unidad seleccionada' : ' unidades seleccionadas');
+    }
+
+    // ---- Acciones masivas sobre la matriz ----
+    function topicCheckList() {
+      return '<div class="chk-list" id="dlgTopics">' + currentStatus.topics.map(function (t) {
+        return '<label><input type="checkbox" value="' + t.id + '"> ' + escapeHtml(t.nombre) + '</label>';
+      }).join('') + '</div>';
+    }
+    async function bulkNoAplica(valor) {
+      const ids = selectedIds();
+      if (!ids.length) return;
+      const tem = document.getElementById('statusTemaSelect').value;
+      const v = await openDlg((valor ? 'Marcar «No aplica»' : 'Quitar «No aplica»') + ' · ' + ids.length + ' unidad(es)',
+        '<p style="margin:0 0 6px;line-height:1.5;">Elige los temas. ' + (valor ? 'Se omiten las casillas que ya tienen archivos o que no se exigen al contrato de la unidad.' : 'Vuelven a quedar como vacías.') + '</p>' + topicCheckList(), [
+        { label: 'Cancelar', value: null },
+        { label: valor ? 'Marcar No aplica' : 'Quitar No aplica', cls: 'btn-primary',
+          validate: function (b) { return b.querySelector('#dlgTopics input:checked') ? true : 'Elige al menos un tema.'; },
+          collect: function (b) { return Array.prototype.map.call(b.querySelectorAll('#dlgTopics input:checked'), function (i) { return i.value; }); } }
+      ], function (b) { if (tem && tem !== 'todos') { const i = b.querySelector('#dlgTopics input[value="' + tem + '"]'); if (i) i.checked = true; } });
+      if (v === null) return;
+      try {
+        const r = await gsRun('apiAdminBulkNoAplica', token, curMonth, ids, v, valor);
+        toast(valor ? r.marcados + ' casilla(s) marcadas como «No aplica»' + (r.conArchivos + r.noExigido ? ' · ' + (r.conArchivos + r.noExigido) + ' omitidas.' : '.') : r.quitados + ' casilla(s) liberadas.');
+        selectedUsers = {};
+        await invalidateAll();
+      } catch (e) { fail(e); }
+    }
+
+    async function bulkApprovePending() {
+      const ids = selectedIds();
+      if (!ids.length) return;
+      if (!await askConfirm('Aprobar pendientes de ' + ids.length + ' unidad(es)', 'Todo lo que esté <b>por revisar</b> de las unidades seleccionadas en este mes quedará aprobado. Úsalo solo si ya los verificaste.', 'Aprobar pendientes')) return;
+      try {
+        const r = await gsRun('apiAdminApprovePendingOfUnits', token, curMonth, ids);
+        toast(r.cambiados + ' archivo(s) aprobado(s).');
+        selectedUsers = {};
+        await invalidateAll();
+      } catch (e) { fail(e); }
+    }
+
+    // ids = null: todas las unidades del filtro actual que tengan pendientes
+    async function sendReminders(ids) {
+      const targets = ids || getStatusFiltered().filter(function (r) { return !r.completo && r.total > 0; }).map(function (r) { return r.userId; });
+      if (!targets.length) { toast('No hay unidades con pendientes en este filtro.'); return; }
+      const v = await openDlg('Enviar recordatorio a ' + targets.length + ' unidad(es)',
+        '<p style="margin:0 0 10px;line-height:1.5;">Cada unidad verá en su panel un aviso con los temas que le faltan por cargar o corregir. Las que ya están al día se omiten.</p>' +
+        '<div class="field" style="margin-bottom:0;"><label>Nota adicional (opcional)</label><textarea id="dlgText" rows="2" placeholder="Ej: Por favor cargar antes del viernes."></textarea></div>', [
+        { label: 'Cancelar', value: null },
+        { label: 'Enviar recordatorio', cls: 'btn-primary', collect: function (b) { return b.querySelector('#dlgText').value.trim(); } }
+      ]);
+      if (v === null) return;
+      try {
+        const r = await gsRun('apiAdminSendReminders', token, curMonth, ids ? targets : targets, v);
+        toast('Recordatorio enviado a ' + r.enviados + ' unidad(es)' + (r.omitidos ? ' (' + r.omitidos + ' sin pendientes).' : '.'));
+        selectedUsers = {};
+        renderMatrix();
+      } catch (e) { fail(e); }
+    }
+
+    // ---- Vista ampliada: toda la matriz (todos los temas y unidades) ajustada a la pantalla ----
+    function openMatrixFull() {
+      if (!currentStatus) return;
+      mxFullOpen = true;
+      document.getElementById('mxFull').classList.add('open');
+      document.getElementById('mxFull').setAttribute('aria-hidden', 'false');
+      document.body.classList.add('mx-lock');
+      renderMatrixFull();
+      // Pantalla completa real del navegador (si el entorno la permite; si no, queda la vista ampliada igual)
+      const root = document.documentElement;
+      if (root.requestFullscreen && !document.fullscreenElement) {
+        try {
+          const p = root.requestFullscreen();
+          if (p && p.then) p.then(function () { mxFullFs = true; }, function () {});
+        } catch (e) {}
+      }
+    }
+
+    function closeMatrixFull() {
+      if (!mxFullOpen) return;
+      mxFullOpen = false;
+      document.getElementById('mxFull').classList.remove('open');
+      document.getElementById('mxFull').setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('mx-lock');
+      if (document.fullscreenElement && document.exitFullscreen) { try { document.exitFullscreen(); } catch (e) {} }
+      mxFullFs = false;
+    }
+
+    function renderMatrixFull() {
+      if (!currentStatus) return;
+      const topics = currentStatus.topics;
+      const filtered = getStatusFiltered();
+      document.getElementById('mxFullTitle').textContent = 'Matriz de estado · ' + currentStatus.month.nombre;
+      document.getElementById('mxFullSummary').textContent = filtered.length + ' unidad(es) · ' + topics.length + ' temas';
+      const fit = document.getElementById('mxFit');
+      if (!topics.length || !filtered.length) {
+        fit.style.zoom = '1';
+        fit.innerHTML = '<p class="empty-hint">' + (!topics.length ? 'Este mes todavía no tiene temas creados.' : 'No se encontraron unidades con estos filtros.') + '</p>';
+        return;
+      }
+      fit.style.zoom = '1';
+      fit.innerHTML = matrixTableHtml(topics, filtered, {});
+      bindMatrixTable(fit.querySelector('table'));
+      requestAnimationFrame(fitMatrixFull);
+    }
+
+    // Calcula el zoom para que la tabla completa quepa en pantalla sin barras de desplazamiento
+    function fitMatrixFull() {
+      const fit = document.getElementById('mxFit');
+      const table = fit.querySelector('table');
+      if (!table) return;
+      fit.style.zoom = '1';
+      const tr = table.getBoundingClientRect();
+      const br = document.getElementById('mxFullBody').getBoundingClientRect();
+      const pad = 24 * uiScale;
+      const s = Math.min((br.width - pad) / tr.width, (br.height - pad) / tr.height);
+      fit.style.zoom = String(Math.max(0.2, Math.min(1.5, s * 0.99)));
+    }
+
+    // ---- Detalle de una casilla de la matriz (panel lateral con revisión) ----
+    let cdCurrent = null;
+    function openCellDrawer(userId, topicId) {
+      const row = currentStatus.matrix.find(function (r) { return r.userId === userId; });
+      const cell = row.cells.find(function (c) { return c.topicId === topicId; });
+      const topic = currentStatus.topics.find(function (t) { return t.id === topicId; });
+      cdCurrent = { userId: userId, topicId: topicId };
+      const e = ESTADO[cell.estado];
+      const colMap = { verde: ['#1e9e5a', '#e9f9ef'], amarillo: ['#a56a00', '#fff6d9'], naranja: ['#c2540a', '#ffe9d6'], rojo: ['#e0393e', '#fdeceb'], gris: ['#6f7c95', '#eef1f6'], excl: ['#6f7c95', '#eef1f6'] };
+      const col = colMap[cell.vencido && cell.estado === 'vacio' ? 'rojo' : e.color];
+      const n = cell.files.length;
+      const mclosed = currentStatus.month.cerrado;
+
+      const dr = document.getElementById('cellDrawer');
+      dr.style.setProperty('--fc', col[0]);
+      dr.style.setProperty('--fc-bg', col[1]);
+      const iconEl = document.getElementById('cdIcon');
+      iconEl.innerHTML = FOLDER_SVG_ADM;
+      iconEl.style.color = col[0];
+      document.getElementById('cdTitle').textContent = topic.nombre;
+      document.getElementById('cdBadge').innerHTML = '<i class="dot"></i>' + e.label + (cell.vencido ? ' · vencido' : '');
+
+      const bTitle = {
+        vacio: cell.vencido ? 'Tema vencido: la unidad no ha cargado nada.' : 'Esta unidad aún no ha cargado archivos en este tema.',
+        pendiente: 'Hay archivos por revisar.',
+        aprobado: 'Tema aprobado.',
+        rechazado: 'Todos los archivos están rechazados: la unidad debe corregir.',
+        noaplica: cell.marcadoPor === 'admin' ? 'Marcado como «No aplica» por el administrador.' : 'La unidad marcó este tema como «No aplica».',
+        excluido: 'Este tema no se exige al contrato de la unidad.'
+      }[cell.estado];
+      const bSub = [];
+      if (cell.fechaLimite) bSub.push('Fecha límite: ' + fmtDay(cell.fechaLimite) + '.');
+      if (!cell.obligatorio) bSub.push('Tema opcional.');
+      if (cell.estado === 'noaplica' && cell.marcadoAt) bSub.push('Marcado el ' + formatDate(cell.marcadoAt) + '.');
+      const ultima = cell.files.reduce(function (m, f) { return !m || f.uploadedAt > m ? f.uploadedAt : m; }, '');
+
+      let html =
+        '<div class="dr-banner ' + (cell.estado === 'vacio' ? (cell.vencido ? 'vencido' : 'vacio') : (cell.estado === 'excluido' ? 'noaplica' : cell.estado)) + '">' +
+          '<div><strong>' + escapeHtml(bTitle) + '</strong>' + escapeHtml(bSub.join(' ')) + '</div></div>' +
+        '<div><div class="dr-title">Información</div><div class="dr-info">' +
+          '<div style="grid-column:1/-1;"><div class="k">Unidad de servicio</div><div class="v"><a href="#" class="link-btn" id="cdUnitLink">' + escapeHtml(row.nombreUnidad) + ' · abrir ficha</a></div></div>' +
+          '<div><div class="k">Código UDS</div><div class="v">' + (row.codigoPlano ? escapeHtml(row.codigoPlano) : 'No disponible') + '</div></div>' +
+          '<div><div class="k">Cédula</div><div class="v">' + escapeHtml(row.cedula) + '</div></div>' +
+          '<div><div class="k">Contrato</div><div class="v">' + escapeHtml(row.contratoNombre) + '</div></div>' +
+          '<div><div class="k">Mes</div><div class="v">' + escapeHtml(currentStatus.month.nombre) + '</div></div>' +
+          '<div><div class="k">Último cargue en el tema</div><div class="v">' + (ultima ? formatDate(ultima) : '—') + '</div></div>' +
+        '</div></div>';
+
+      if (!n && (cell.estado === 'vacio' || cell.estado === 'noaplica')) {
+        html += '<div><button class="btn btn-secondary btn-sm" id="cdNa" type="button">' + (cell.estado === 'noaplica' ? 'Quitar «No aplica»' : 'Marcar como «No aplica»') + '</button></div>';
+      }
+
+      html += '<div><div class="dr-title">Archivos cargados (' + n + ')</div><div class="dr-files">';
+      if (!n) {
+        html += '<div class="dr-empty">No hay archivos cargados en este tema.</div>';
+      } else {
+        cell.files.slice().sort(function (a, b) { return a.uploadedAt < b.uploadedAt ? 1 : -1; }).forEach(function (f) {
+          const parts = splitFileName(f.originalName);
+          const ext = parts.ext ? parts.ext.slice(1).toUpperCase() : 'Archivo';
+          html += '<div class="dr-file">' +
+            '<div class="dr-file-head"><span class="ftype-icon">' + fileTypeIcon(f.originalName) + '</span>' +
+              '<div class="dr-file-name">' + escapeHtml(f.originalName) + '</div>' + arTag(f.estado) + '</div>' +
+            '<div class="dr-file-meta">' +
+              '<div class="full"><div class="k">Fecha y hora de subida</div><div class="v">' + formatDate(f.uploadedAt) + (f.tardio ? ' · <span class="tag gris">Fuera de plazo</span>' : '') + '</div></div>' +
+              '<div><div class="k">Tamaño</div><div class="v">' + formatBytes(f.size) + '</div></div>' +
+              '<div><div class="k">Tipo</div><div class="v">' + escapeHtml(ext) + '</div></div>' +
+              (f.nombreCargado && f.nombreCargado !== f.originalName ? '<div class="full"><div class="k">Nombre original</div><div class="v">' + escapeHtml(f.nombreCargado) + '</div></div>' : '') +
+              (f.estado !== 'pendiente' && f.revisadoAt ? '<div class="full"><div class="k">Revisado por</div><div class="v">' + escapeHtml(f.revisadoPor) + ' · ' + formatDate(f.revisadoAt) + '</div></div>' : '') +
+              (f.observacion ? '<div class="full"><div class="k">Motivo del rechazo</div><div class="v" style="color:#9a3a0a;">' + escapeHtml(f.observacion) + '</div></div>' : '') +
+            '</div>' +
+            '<div class="dr-file-actions">' +
+              '<button class="btn btn-secondary btn-sm" data-view="' + f.id + '">' + EYE_SVG + ' Ver</button>' +
+              '<button class="btn btn-secondary btn-sm" data-download="' + f.id + '">' + DL_SVG + ' Descargar</button>' +
+              (f.estado !== 'aprobado' ? '<button class="btn btn-primary btn-sm" data-ok="' + f.id + '">' + OK_SVG + ' Aprobar</button>' : '') +
+              (f.estado !== 'rechazado' ? '<button class="btn btn-danger btn-sm" data-no="' + f.id + '">' + NO_SVG + ' Rechazar</button>' : '') +
+            '</div></div>';
+        });
+      }
+      html += '</div></div>';
+
+      const body = document.getElementById('cdBody');
+      body.innerHTML = html;
+      body.querySelectorAll('[data-view]').forEach(function (btn) { btn.addEventListener('click', function () { fileAction(btn, btn.dataset.view, 'view'); }); });
+      body.querySelectorAll('[data-download]').forEach(function (btn) { btn.addEventListener('click', function () { fileAction(btn, btn.dataset.download, 'download'); }); });
+      const reopen = function () { return loadStatusKeepDrawer(); };
+      body.querySelectorAll('[data-ok]').forEach(function (btn) { btn.addEventListener('click', function () { reviewOne(btn, btn.dataset.ok, 'aprobado', reopen); }); });
+      body.querySelectorAll('[data-no]').forEach(function (btn) { btn.addEventListener('click', function () { reviewOne(btn, btn.dataset.no, 'rechazado', reopen); }); });
+      const na = body.querySelector('#cdNa');
+      if (na) na.addEventListener('click', function () {
+        withBusyBtn(na, async function () {
+          try {
+            await gsRun('apiAdminBulkNoAplica', token, curMonth, [userId], [topicId], cell.estado !== 'noaplica');
+            await loadStatusKeepDrawer(); markDirtyExceptCurrent(); refreshBadges();
+          } catch (err) { fail(err); }
+        });
+      });
+      body.querySelector('#cdUnitLink').addEventListener('click', function (ev) { ev.preventDefault(); closeCellDrawer(); openUnitDrawer(userId); });
+
+      document.getElementById('cellDrawerBg').classList.add('open');
+      dr.classList.add('open');
+      dr.setAttribute('aria-hidden', 'false');
+      document.getElementById('cdClose').focus();
+    }
+
+    // Refresca la matriz y vuelve a dibujar el panel de la casilla abierta
+    async function loadStatusKeepDrawer() {
+      const cur = cdCurrent;
+      currentStatus = await gsRun('apiAdminGetStatus', token, curMonth);
+      renderMatrix();
+      if (cur && currentStatus.matrix.some(function (r) { return r.userId === cur.userId; })) openCellDrawer(cur.userId, cur.topicId);
+    }
+
+    function closeCellDrawer() {
+      const dr = document.getElementById('cellDrawer');
+      if (!dr.classList.contains('open')) return;
+      dr.classList.remove('open');
+      dr.setAttribute('aria-hidden', 'true');
+      document.getElementById('cellDrawerBg').classList.remove('open');
+      cdCurrent = null;
+    }
+
+
+    // ---------------- FICHA DE UNIDAD ----------------
+    let unitSheetData = null;
+    async function openUnitDrawer(userId) {
+      const dr = document.getElementById('unitDrawer');
+      document.getElementById('udBody').innerHTML = '<div style="padding:10px;">' + skeletonHtml(6) + '</div>';
+      document.getElementById('udTitle').textContent = 'Ficha de la unidad';
+      document.getElementById('unitDrawerBg').classList.add('open');
+      dr.classList.add('open');
+      dr.setAttribute('aria-hidden', 'false');
+      try {
+        unitSheetData = await withLoading(document.getElementById('udBody'), function () { return gsRun('apiAdminGetUnitSheet', token, userId); });
+        renderUnitDrawer();
+      } catch (e) { closeUnitDrawer(); fail(e); }
+    }
+    function closeUnitDrawer() {
+      const dr = document.getElementById('unitDrawer');
+      dr.classList.remove('open');
+      dr.setAttribute('aria-hidden', 'true');
+      document.getElementById('unitDrawerBg').classList.remove('open');
+    }
+
+    function renderUnitDrawer() {
+      const d = unitSheetData, u = d.unit;
+      document.getElementById('udTitle').textContent = u.nombreUnidad;
+      const opts = '<option value="">Sin contrato</option>' + contratos.map(function (c) { return '<option value="' + c.id + '"' + (c.id === u.contratoId ? ' selected' : '') + '>' + escapeHtml(c.nombre) + '</option>'; }).join('');
+      let html =
+        '<div class="sheet-head"><span class="avatar" style="width:46px;height:46px;font-size:16px;">' + getInitials(u.nombreUnidad) + '</span>' +
+          '<div style="min-width:0;"><div style="font-weight:700;font-size:15px;">' + escapeHtml(u.nombreUnidad) + '</div>' + (u.nombreCompleto ? '<div style="font-size:13px;">' + escapeHtml(u.nombreCompleto) + '</div>' : '') + '<div class="muted" style="font-size:12.5px;">CC ' + escapeHtml(u.cedula) + (u.codigoPlano ? ' · Cód. ' + escapeHtml(u.codigoPlano) : '') + '</div></div></div>' +
+        '<div class="dr-info" style="margin-bottom:12px;">' +
+          '<div><div class="k">Contrato</div><div class="v"><select class="select-inline" id="udContrato">' + opts + '</select></div></div>' +
+          '<div><div class="k">Registrada</div><div class="v">' + formatDate(u.createdAt) + '</div></div>' +
+          '<div><div class="k">Último cargue</div><div class="v">' + (u.ultimoCargue ? formatDate(u.ultimoCargue) : 'Sin cargues') + '</div></div>' +
+          '<div><div class="k">Archivos en total</div><div class="v">' + u.totalArchivos + '</div></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">' +
+          '<button class="btn btn-primary btn-sm" id="udViewAs" type="button">👁 Ver como unidad</button>' +
+          '<button class="btn btn-secondary btn-sm" id="udRemind" type="button">Enviar recordatorio (' + escapeHtml(monthNameOf(curMonth)) + ')</button>' +
+        '</div>';
+
+      if (d.avisos.length) {
+        html += '<div class="dr-title">Últimos avisos enviados</div>' + d.avisos.map(function (a) {
+          return '<div class="aviso ' + (a.tipo === 'rechazo' ? 'rechazo' : '') + '" style="font-size:12px;"><div class="av-body">' + escapeHtml(a.mensaje) + '<div class="muted" style="font-size:11px;margin-top:3px;">' + formatDate(a.creadoAt) + (a.leidoAt ? ' · leído' : ' · sin leer') + '</div></div></div>';
+        }).join('');
+      }
+
+      html += '<div class="dr-title" style="margin-top:6px;">Historial por mes</div>';
+      html += d.meses.length ? d.meses.map(function (m, i) {
+        const r = m.resumen;
+        return '<div class="sheet-month' + (m.id === curMonth ? ' open' : '') + '"><div class="sm-head" data-smtoggle>' +
+          '<div class="sm-title">' + escapeHtml(m.nombre) + (m.cerrado ? ' 🔒' : '') + '</div>' +
+          '<span class="pill ' + (r.completo ? 'pill-verde' : (r.vencidos ? 'pill-rojo' : 'pill-gris')) + '">' + r.resueltos + '/' + r.total + ' · ' + r.pct + '%</span>' +
+          (r.pendientes ? '<span class="tag amarillo">' + r.pendientes + ' por revisar</span>' : '') +
+          (r.rechazados ? '<span class="tag naranja">' + r.rechazados + ' rechazados</span>' : '') +
+        '</div><div class="sm-body">' +
+          '<div class="muted" style="font-size:12px;margin-bottom:4px;">' + (m.fechaLimite ? 'Fecha límite: ' + fmtDay(m.fechaLimite) + ' · ' : '') + (m.ultimaFecha ? 'Último cargue: ' + formatDate(m.ultimaFecha) : 'Sin cargues este mes') + '</div>' +
+          m.temas.filter(function (t) { return t.aplica; }).map(function (t) {
+            const e = ESTADO[t.estado];
+            return '<div class="sheet-topic"><div class="st-head"><span class="mx-dot ' + e.color + (t.vencido ? ' venc' : '') + '" style="display:inline-block;"></span><span class="st-name">' + escapeHtml(t.nombre) + (t.obligatorio ? '' : ' <span class="muted">(opcional)</span>') + '</span>' +
+              '<span class="tag ' + (e.color === 'excl' ? 'gris' : e.color) + '">' + e.label + (t.vencido ? ' · vencido' : '') + '</span></div>' +
+              (t.observacion ? '<div class="obs-text"><b>Motivo del rechazo:</b> ' + escapeHtml(t.observacion) + '</div>' : '') +
+              t.files.map(function (f) {
+                return '<div class="sheet-file"><span class="ftype-icon">' + fileTypeIcon(f.originalName) + '</span><span style="min-width:0;word-break:break-all;">' + escapeHtml(f.originalName) + '</span>' + arTag(f.estado) +
+                  '<span class="muted" style="font-size:11px;">' + formatDate(f.uploadedAt) + '</span>' +
+                  '<button class="btn btn-ghost btn-sm" data-sfview="' + f.id + '" title="Ver">' + EYE_SVG + '</button></div>';
+              }).join('') + '</div>';
+          }).join('') +
+        '</div></div>';
+      }).join('') : '<p class="empty-hint">Todavía no hay meses.</p>';
+
+      const body = document.getElementById('udBody');
+      body.innerHTML = html;
+      body.querySelectorAll('[data-smtoggle]').forEach(function (h) { h.addEventListener('click', function () { h.parentElement.classList.toggle('open'); }); });
+      body.querySelectorAll('[data-sfview]').forEach(function (b) { b.addEventListener('click', function () { fileAction(b, b.dataset.sfview, 'view'); }); });
+      body.querySelector('#udContrato').addEventListener('change', function () {
+        const sel = this;
+        gsRun('apiAdminSetUserContrato', token, u.id, sel.value).then(function () {
+          toast('Contrato de la unidad actualizado.');
+          const uu = allUsers.find(function (x) { return x.id === u.id; });
+          if (uu) { uu.contratoId = sel.value; const c = contratos.find(function (x) { return x.id === sel.value; }); uu.contratoNombre = c ? c.nombre : ''; }
+          invalidateAll();
+        }).catch(fail);
+      });
+      body.querySelector('#udViewAs').addEventListener('click', function () { viewAsUnit(u.id, this); });
+      body.querySelector('#udRemind').addEventListener('click', function () {
+        if (!curMonth) return;
+        closeUnitDrawer();
+        if (!currentStatus || currentStatus.month.id !== curMonth) { toast('Abre primero la Matriz de estado de ese mes y envía el recordatorio desde allí.', 'error'); return; }
+        sendReminders([u.id]);
+      });
+    }
+    function monthNameOf(id) { const m = months.find(function (x) { return x.id === id; }); return m ? m.nombre : ''; }
+
+    // "Ver como unidad": abre el panel de la unidad (solo lectura) en una pestaña nueva
+    async function viewAsUnit(userId, btn) {
+      await withBusyBtn(btn, async function () {
+        try {
+          const r = await gsRun('apiAdminViewAs', token, userId);
+          const u = pageUrl('dashboard', 'vt=' + encodeURIComponent(r.token));
+          const w = window.open(u, '_blank');
+          if (!w) { window.location.href = u; }
+        } catch (e) { fail(e); }
+      });
+    }
+
+    // ---------------- PAPELERA ----------------
+    async function loadTrash() {
+      const wrap = document.getElementById('trashBody');
+      if (!trashData) wrap.innerHTML = skeletonHtml(4);
+      trashData = await withLoading(document.getElementById('trashCard'), function () { return gsRun('apiAdminListTrash', token); });
+      renderTrash();
+    }
+    const TRASH_TIPO = { mes: ['azul', 'Mes'], tema: ['amarillo', 'Tema'], archivo: ['gris', 'Archivo'] };
+    function renderTrash() {
+      const items = trashData.items;
+      document.getElementById('trashCount').textContent = items.length ? items.length + ' elemento(s)' : '';
+      document.getElementById('btnEmptyTrash').style.display = items.length ? '' : 'none';
+      const wrap = document.getElementById('trashBody');
+      if (!items.length) { wrap.innerHTML = '<p class="empty-hint big">La papelera está vacía.</p>'; return; }
+      wrap.innerHTML = items.map(function (it) {
+        const t = TRASH_TIPO[it.tipo];
+        const det = it.tipo === 'mes' ? it.temas + ' temas · ' + it.archivos + ' archivos' : (it.tipo === 'tema' ? 'Mes: ' + (it.contexto || '—') + ' · ' + it.archivos + ' archivos' : it.contexto);
+        return '<div class="trash-row"><span class="tag ' + t[0] + '">' + t[1] + '</span>' +
+          '<div class="tr-info"><div style="font-weight:600;word-break:break-all;">' + escapeHtml(it.nombre) + '</div>' +
+            '<div class="tr-sub">' + escapeHtml(det) + ' · eliminado por ' + escapeHtml(it.eliminadoPor || '—') + ' el ' + formatDate(it.eliminadoAt) + '</div></div>' +
+          '<button class="btn btn-primary btn-sm" data-restore="' + it.lote + '">Restaurar</button>' +
+          '<button class="btn btn-ghost btn-sm" style="color:var(--rojo);" data-purge="' + it.lote + '">Borrar definitivamente</button></div>';
+      }).join('');
+      wrap.querySelectorAll('[data-restore]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          withBusyBtn(b, async function () {
+            try { await gsRun('apiAdminRestoreTrash', token, b.dataset.restore); toast('Elemento restaurado.'); await loadMonthsData(); await invalidateAll(); } catch (e) { fail(e); }
+          });
+        });
+      });
+      wrap.querySelectorAll('[data-purge]').forEach(function (b) {
+        b.addEventListener('click', async function () {
+          if (!await askConfirm('Borrar definitivamente', 'Esto elimina el elemento y manda sus archivos a la papelera de Drive. <b>Ya no se podrá restaurar desde la app.</b>', 'Borrar definitivamente', true)) return;
+          withBusyBtn(b, async function () {
+            try { await gsRun('apiAdminPurgeTrash', token, b.dataset.purge); toast('Eliminado definitivamente.'); await invalidateAll(); } catch (e) { fail(e); }
+          });
+        });
+      });
+    }
+    async function emptyTrash() {
+      if (!await askConfirm('Vaciar la papelera', 'Se eliminarán definitivamente <b>todos</b> los elementos de la papelera y sus archivos pasarán a la papelera de Drive.', 'Vaciar papelera', true)) return;
+      await withBusyBtn(document.getElementById('btnEmptyTrash'), async function () {
+        try { await gsRun('apiAdminEmptyTrash', token); toast('Papelera vaciada.'); await invalidateAll(); } catch (e) { fail(e); }
+      });
+    }
+
+    // ---------------- BITÁCORA ----------------
+    function mesLabel(m) {
+      const n = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+      const p = String(m).split('-');
+      return n[parseInt(p[1], 10) - 1] + ' ' + p[0];
+    }
+    function auditFilters() {
+      return {
+        accion: document.getElementById('audAccion').value, tipo: document.getElementById('audTipo').value, monthId: document.getElementById('audMes').value,
+        desde: document.getElementById('audDesde').value, hasta: document.getElementById('audHasta').value, texto: document.getElementById('audTexto').value.trim()
+      };
+    }
+    async function loadAuditMonths() {
+      auditMonths = await gsRun('apiAdminAuditMonths', token);
+      const sel = document.getElementById('audArchivo');
+      const prev = sel.value;
+      sel.innerHTML = '<option value="">Registros actuales</option>' + auditMonths.archivos.map(function (a) {
+        return '<option value="' + a.mes + '">Archivo: ' + mesLabel(a.mes) + ' (' + a.total + ')</option>';
+      }).join('');
+      if (Array.prototype.some.call(sel.options, function (o) { return o.value === prev; })) sel.value = prev;
+    }
+    async function loadAudit() {
+      const sel = document.getElementById('audAccion');
+      if (sel.options.length <= 1) {
+        sel.innerHTML = '<option value="todas">Todas las acciones</option>' + Object.keys(ACCION_LABEL).map(function (k) { return '<option value="' + k + '">' + ACCION_LABEL[k] + '</option>'; }).join('');
+      }
+      if (!auditMonths) { try { await loadAuditMonths(); } catch (e) {} }
+      const f = auditFilters();
+      f.archivo = document.getElementById('audArchivo').value;
+      if (!auditData) document.getElementById('auditBody').innerHTML = '<tr><td colspan="6">' + skeletonHtml(5) + '</td></tr>';
+      auditData = await withLoading(document.getElementById('auditCard'), function () { return gsRun('apiAdminGetAudit', token, f); });
+      renderAudit();
+    }
+    function renderAudit() {
+      const archivo = document.getElementById('audArchivo').value;
+      document.getElementById('auditCount').textContent = auditData.mostrados + ' de ' + auditData.total + ' registro(s)' + (auditData.total > auditData.mostrados ? ' (mostrando los más recientes)' : '') + (archivo ? ' · archivo de ' + mesLabel(archivo) : '');
+      document.getElementById('btnAudDelArchive').style.display = archivo ? '' : 'none';
+      document.getElementById('btnAudArchMes').style.display = archivo ? 'none' : '';
+      document.getElementById('btnAudArchPast').style.display = archivo ? 'none' : '';
+      const nSel = Object.keys(auditSel).length;
+      const bs = document.getElementById('btnAudDelSel');
+      bs.style.display = nSel ? '' : 'none'; bs.textContent = 'Eliminar seleccionados (' + nSel + ')';
+      const tb = document.getElementById('auditBody');
+      document.getElementById('audSelAll').checked = auditData.rows.length > 0 && auditData.rows.every(function (r) { return auditSel[r.id]; });
+      if (!auditData.rows.length) { tb.innerHTML = '<tr><td colspan="6" class="empty-hint">Sin registros con estos filtros.</td></tr>'; return; }
+      const tcol = { admin: 'azul', unidad: 'verde', sistema: 'gris' };
+      tb.innerHTML = auditData.rows.map(function (r) {
+        return '<tr><td><input type="checkbox" data-audsel="' + r.id + '"' + (auditSel[r.id] ? ' checked' : '') + '></td>' +
+          '<td style="white-space:nowrap;">' + formatDate(r.fecha) + '</td>' +
+          '<td><span class="tag ' + (tcol[r.actorTipo] || 'gris') + '">' + escapeHtml(r.actorTipo) + '</span> ' + escapeHtml(r.actor) + '</td>' +
+          '<td>' + escapeHtml(ACCION_LABEL[r.accion] || r.accion) + '</td>' +
+          '<td class="audit-det">' + escapeHtml(r.detalle) + '</td>' +
+          '<td>' + escapeHtml(r.mesNombre || '') + '</td></tr>';
+      }).join('');
+      tb.querySelectorAll('[data-audsel]').forEach(function (c) {
+        c.addEventListener('change', function () { if (c.checked) auditSel[c.dataset.audsel] = true; else delete auditSel[c.dataset.audsel]; renderAudit(); });
+      });
+    }
+    async function afterAuditChange() {
+      auditSel = {}; auditMonths = null; auditData = null;
+      await loadAudit();
+    }
+    function archiveAuditMonthDialog() {
+      const go = function () {
+        const list = auditMonths ? auditMonths.vivos : [];
+        if (!list.length) { toast('No hay registros en la bitácora actual para archivar.', 'error'); return; }
+        const opts = list.map(function (m) { return '<option value="' + m.mes + '">' + mesLabel(m.mes) + ' · ' + m.total + ' registro(s)' + (m.actual ? ' (mes en curso)' : '') + '</option>'; }).join('');
+        openDlg('Archivar un mes de la bitácora',
+          '<p style="margin:0 0 10px;line-height:1.5;">Los registros del mes elegido pasan a un archivo aparte (hoja <b>Auditoria_AAAA-MM</b>) y salen de la lista actual. Los podrás consultar en «Ver».</p>' +
+          '<div class="field" style="margin-bottom:0;"><label>Mes</label><select id="dlgAudMes">' + opts + '</select></div>', [
+            { label: 'Cancelar', value: null },
+            { label: 'Archivar', cls: 'btn-primary', collect: function (b) { return b.querySelector('#dlgAudMes').value; } }
+          ]).then(async function (mes) {
+          if (!mes) return;
+          try { const r = await gsRun('apiAdminArchiveAuditMonth', token, mes); toast('Archivados ' + r.registros + ' registro(s) de ' + mesLabel(mes) + '.'); await afterAuditChange(); } catch (e) { fail(e); }
+        });
+      };
+      if (auditMonths) go(); else loadAuditMonths().then(go).catch(fail);
+    }
+    async function archiveAuditPast() {
+      if (!await askConfirm('Archivar meses anteriores', 'Se archivarán, mes por mes, todos los registros anteriores al mes en curso.', 'Archivar', false)) return;
+      await withBusyBtn(document.getElementById('btnAudArchPast'), async function () {
+        try {
+          const r = await gsRun('apiAdminArchiveAuditPast', token);
+          toast(r.registros ? 'Archivados ' + r.registros + ' registro(s) de ' + r.meses.length + ' mes(es).' : 'No había meses anteriores para archivar.');
+          await afterAuditChange();
+        } catch (e) { fail(e); }
+      });
+    }
+    async function deleteAuditSelected() {
+      const ids = Object.keys(auditSel);
+      if (!ids.length) return;
+      if (!await askConfirm('Eliminar registros', 'Se eliminarán <b>' + ids.length + '</b> registro(s) de la bitácora. <b>No se pueden recuperar.</b>', 'Eliminar', true)) return;
+      try { const r = await gsRun('apiAdminDeleteAudit', token, ids, document.getElementById('audArchivo').value); toast(r.eliminados + ' registro(s) eliminado(s).'); await afterAuditChange(); } catch (e) { fail(e); }
+    }
+    async function deleteAuditFiltered() {
+      const archivo = document.getElementById('audArchivo').value;
+      if (!auditData || !auditData.total) { toast('No hay registros con estos filtros.', 'error'); return; }
+      if (!await askConfirm('Eliminar los registros filtrados', 'Se eliminarán <b>' + auditData.total + '</b> registro(s) que cumplen los filtros actuales' + (archivo ? ' del archivo de ' + mesLabel(archivo) : '') + ' (aunque no se vean todos en pantalla). <b>No se pueden recuperar.</b>', 'Eliminar', true)) return;
+      await withBusyBtn(document.getElementById('btnAudDelFilter'), async function () {
+        try { const r = await gsRun('apiAdminDeleteAuditByFilter', token, auditFilters(), archivo); toast(r.eliminados + ' registro(s) eliminado(s).'); await afterAuditChange(); } catch (e) { fail(e); }
+      });
+    }
+    async function deleteAuditArchive() {
+      const mes = document.getElementById('audArchivo').value;
+      if (!mes) return;
+      if (!await askConfirm('Eliminar el archivo de ' + mesLabel(mes), 'Se eliminará el archivo completo de la bitácora de <b>' + mesLabel(mes) + '</b>. <b>No se puede recuperar.</b>', 'Eliminar archivo', true)) return;
+      try { await gsRun('apiAdminDeleteAuditArchive', token, mes); toast('Archivo eliminado.'); document.getElementById('audArchivo').value = ''; await afterAuditChange(); } catch (e) { fail(e); }
+    }
+
+    // ---------------- USUARIOS ----------------
+    async function loadUsers() {
+      allUsers = await withLoading(document.getElementById('usersCard'), function () { return gsRun('apiAdminListUsers', token); });
+      renderUsers();
+    }
+
+    function renderUsers() {
+      const q = document.getElementById('userSearch').value.toLowerCase().trim();
+      const tbody = document.getElementById('usersTbody');
+      const filtered = allUsers.filter(function (u) { return !q || String(u.cedula).indexOf(q) !== -1 || norm(u.nombreUnidad).indexOf(norm(q)) !== -1 || norm(u.nombreCompleto).indexOf(norm(q)) !== -1; });
+      tbody.innerHTML = filtered.map(function (u) {
+        const codigoCell = u.codigoPlano ? '<span class="mono-code">' + escapeHtml(u.codigoPlano) + '</span>' : '<span class="muted">No disponible</span>';
+        const opciones = '<option value="">Sin contrato</option>' + contratos.map(function (c) {
+          return '<option value="' + c.id + '"' + (c.id === u.contratoId ? ' selected' : '') + '>' + escapeHtml(c.nombre) + '</option>';
+        }).join('');
+        return '<tr>' +
+          '<td class="unit-link" data-unit="' + u.id + '"><div class="row-avatar"><span class="avatar">' + getInitials(u.nombreUnidad) + '</span><span class="mn-title">' + escapeHtml(u.nombreUnidad) + '</span></div></td>' +
+          '<td>' + (u.nombreCompleto ? escapeHtml(u.nombreCompleto) : '<span class="muted">Sin registrar</span>') + '</td>' +
+          '<td>' + escapeHtml(u.cedula) + '</td>' +
+          '<td>' + codigoCell + '</td>' +
+          '<td><select class="select-inline" data-userid="' + u.id + '">' + opciones + '</select></td>' +
+          '<td>' + (u.ultimoCargue ? formatDate(u.ultimoCargue) : '<span class="muted">Sin cargues</span>') + '<div class="muted" style="font-size:11px;">' + u.totalArchivos + ' archivo(s)</div></td>' +
+          '<td>' + formatDate(u.createdAt) + '</td>' +
+          '<td style="white-space:nowrap;"><button class="btn btn-secondary btn-sm" data-ficha="' + u.id + '">Ficha</button> <button class="btn btn-ghost btn-sm" data-viewas="' + u.id + '" title="Ver el panel como lo ve la unidad (solo lectura)">👁 Ver como</button> <button class="btn btn-secondary btn-sm" data-edituser="' + u.id + '">Editar</button> <button class="btn btn-ghost btn-sm" style="color:var(--rojo);" data-deluser="' + u.id + '">Eliminar</button></td>' +
+        '</tr>';
+      }).join('') || '<tr><td colspan="8" class="empty-hint">Sin resultados.</td></tr>';
+
+      tbody.querySelectorAll('[data-edituser]').forEach(function (el) { el.addEventListener('click', function () { openUserDialog(el.dataset.edituser); }); });
+      tbody.querySelectorAll('[data-deluser]').forEach(function (el) { el.addEventListener('click', function () { deleteUser(el.dataset.deluser); }); });
+      tbody.querySelectorAll('[data-unit]').forEach(function (el) { el.addEventListener('click', function () { openUnitDrawer(el.dataset.unit); }); });
+      tbody.querySelectorAll('[data-ficha]').forEach(function (el) { el.addEventListener('click', function () { openUnitDrawer(el.dataset.ficha); }); });
+      tbody.querySelectorAll('[data-viewas]').forEach(function (el) { el.addEventListener('click', function () { viewAsUnit(el.dataset.viewas, el); }); });
+      tbody.querySelectorAll('select[data-userid]').forEach(function (sel) {
+        sel.addEventListener('change', async function () {
+          try {
+            await gsRun('apiAdminSetUserContrato', token, sel.dataset.userid, sel.value);
+            const u = allUsers.find(function (x) { return x.id === sel.dataset.userid; });
+            if (u) {
+              u.contratoId = sel.value;
+              const c = contratos.find(function (x) { return x.id === sel.value; });
+              u.contratoNombre = c ? c.nombre : '';
+            }
+            toast('Contrato de la unidad actualizado.');
+            tabLoaded.inicio = tabLoaded.estado = tabLoaded.reportes = tabLoaded.revision = false;
+          } catch (err) { fail(err); }
+        });
+      });
+    }
+
+    // Alta / edición de usuarios (userId = null → crear)
+    function openUserDialog(userId) {
+      const u = userId ? allUsers.find(function (x) { return x.id === userId; }) : null;
+      const val = function (v) { return escapeHtml(v || ''); };
+      const opts = '<option value="">Sin contrato</option>' + contratos.map(function (c) {
+        return '<option value="' + c.id + '"' + (u && c.id === u.contratoId ? ' selected' : '') + '>' + escapeHtml(c.nombre) + '</option>';
+      }).join('');
+      const body =
+        '<div class="field"><label>Nombres</label><input type="text" id="duNombres" value="' + val(u && u.nombres) + '" placeholder="Ej: María Fernanda"></div>' +
+        '<div class="field"><label>Apellidos</label><input type="text" id="duApellidos" value="' + val(u && u.apellidos) + '" placeholder="Ej: Gómez Rojas"></div>' +
+        '<div class="field"><label>Cédula</label><input type="text" id="duCedula" inputmode="numeric" value="' + val(u && u.cedula) + '"></div>' +
+        '<div class="field"><label>Unidad de servicio</label><input type="text" id="duUnidad" value="' + val(u && u.nombreUnidad) + '"></div>' +
+        '<div class="field"><label>Contrato</label><select id="duContrato">' + opts + '</select></div>' +
+        '<div class="field" style="margin-bottom:0;"><label>Código de acceso' + (u ? ' (déjalo igual o vacío para no cambiarlo)' : '') + '</label><input type="text" id="duCodigo" value="' + val(u && u.codigoPlano) + '" placeholder="Mínimo 3 caracteres"></div>' +
+        (u ? '<p class="muted" style="font-size:12px;margin:10px 0 0;">Si cambias la cédula o el nombre de la unidad, los archivos que cargue desde ahora irán a una carpeta de Drive con el nombre nuevo; los anteriores se quedan donde están.</p>' : '');
+      openDlg(u ? 'Editar usuario' : 'Agregar usuario', body, [
+        { label: 'Cancelar', value: null },
+        { label: u ? 'Guardar cambios' : 'Crear cuenta', cls: 'btn-primary',
+          validate: function (b) {
+            const g = function (id) { return b.querySelector('#' + id).value.trim(); };
+            if (g('duNombres').length < 2) return 'Escribe los nombres.';
+            if (g('duApellidos').length < 2) return 'Escribe los apellidos.';
+            if (g('duCedula').length < 4) return 'La cédula no es válida.';
+            if (!g('duUnidad')) return 'Escribe el nombre de la unidad de servicio.';
+            if (!u && g('duCodigo').length < 3) return 'El código debe tener al menos 3 caracteres.';
+            if (u && g('duCodigo') && g('duCodigo').length < 3) return 'El código debe tener al menos 3 caracteres.';
+            return true;
+          },
+          collect: function (b) {
+            const g = function (id) { return b.querySelector('#' + id).value.trim(); };
+            return { nombres: g('duNombres'), apellidos: g('duApellidos'), cedula: g('duCedula'), nombreUnidad: g('duUnidad'), contratoId: b.querySelector('#duContrato').value, codigo: g('duCodigo') };
+          } }
+      ], function (b) { b.querySelector('#duNombres').focus(); }).then(async function (f) {
+        if (!f) return;
+        try {
+          if (u) await gsRun('apiAdminUpdateUser', token, u.id, f); else await gsRun('apiAdminCreateUser', token, f);
+          toast(u ? 'Usuario actualizado.' : 'Cuenta creada.');
+          tabLoaded = {}; tabLoaded.usuarios = true;
+          await loadUsers();
+        } catch (e) { fail(e); }
+      });
+    }
+    async function deleteUser(userId) {
+      const u = allUsers.find(function (x) { return x.id === userId; });
+      if (!u) return;
+      const v = await openDlg('Eliminar usuario',
+        '<p style="margin:0 0 10px;line-height:1.5;">Se eliminará la cuenta de <b>' + escapeHtml(u.nombreUnidad) + '</b> (CC ' + escapeHtml(u.cedula) + ') junto con sus <b>' + u.totalArchivos + ' registro(s) de archivos</b>, marcas «No aplica» y avisos. <b>No se puede deshacer.</b></p>' +
+        '<label style="display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.4;"><input type="checkbox" id="duDrive" style="margin-top:3px;"> Enviar también sus archivos a la papelera de Drive (si no lo marcas, quedan en Drive).</label>', [
+          { label: 'Cancelar', value: null },
+          { label: 'Eliminar usuario', cls: 'btn-danger', collect: function (b) { return { drive: b.querySelector('#duDrive').checked }; } }
+        ]);
+      if (!v) return;
+      try {
+        await gsRun('apiAdminDeleteUser', token, userId, v.drive);
+        toast('Usuario eliminado.');
+        tabLoaded = {}; tabLoaded.usuarios = true;
+        await loadUsers();
+        refreshBadges();
+      } catch (e) { fail(e); }
+    }
+
+    function xlsxColLetter(n) {
+      let s = ''; n = n + 1;
+      while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); }
+      return s;
+    }
+    function xlsxEsc(v) {
+      return String(v === null || v === undefined ? '' : v)
+        .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // rows: { nombreUnidad, codigoPlano, cedula, contratoNombre, completados, total, ultimaFecha, states: [{ estado, n }] }
+    async function buildMatrixXlsxBlob(rows, topics, monthName) {
+      const HEAD = ['Unidad de servicio', 'Código UDS', 'Cédula', 'Contrato', 'Avance', 'Último cargue'];
+      const nFixed = HEAD.length;
+      const S_HEAD = 1, S_HEAD_TOPIC = 2, S_TEXT = 3, S_VERDE = 4, S_ROJO = 5, S_GRIS = 6, S_AV_OK = 7, S_AV_PEND = 8, S_TITLE = 9, S_LEG = 10, S_AMAR = 11, S_NARA = 12, S_ROJOOSC = 13;
+      const str = function (ref, style, text) {
+        return '<c r="' + ref + '" s="' + style + '" t="inlineStr"><is><t xml:space="preserve">' + xlsxEsc(text) + '</t></is></c>';
+      };
+      const blank = function (ref, style) { return '<c r="' + ref + '" s="' + style + '"/>'; };
+
+      const out = [];
+      out.push('<row r="1" ht="24" customHeight="1">' + str('A1', S_TITLE, 'Matriz de estado global · ' + monthName) + '</row>');
+      out.push('<row r="2" ht="18" customHeight="1">' + str('A2', S_LEG, 'Leyenda:') + str('B2', S_VERDE, 'Aprobado') + str('C2', S_AMAR, 'Por revisar') + str('D2', S_NARA, 'Rechazado') + str('E2', S_ROJO, 'Vacío') + str('F2', S_ROJOOSC, 'Vencido') + str('G2', S_GRIS, 'No aplica') + '</row>');
+
+      let h = '<row r="4" ht="170" customHeight="1">';
+      HEAD.forEach(function (t, i) { h += str(xlsxColLetter(i) + '4', S_HEAD, t); });
+      topics.forEach(function (t, j) { h += str(xlsxColLetter(nFixed + j) + '4', S_HEAD_TOPIC, t.nombre); });
+      out.push(h + '</row>');
+
+      rows.forEach(function (r, i) {
+        const rn = 5 + i;
+        const ok = r.total > 0 && r.completados >= r.total;
+        let x = '<row r="' + rn + '" ht="20" customHeight="1">';
+        x += str('A' + rn, S_TEXT, r.nombreUnidad);
+        x += str('B' + rn, S_TEXT, r.codigoPlano || '');
+        x += str('C' + rn, S_TEXT, r.cedula);
+        x += str('D' + rn, S_TEXT, r.contratoNombre);
+        x += str('E' + rn, ok ? S_AV_OK : S_AV_PEND, r.completados + '/' + r.total);
+        x += str('F' + rn, S_TEXT, r.ultimaFecha ? formatDate(r.ultimaFecha) : '');
+        r.states.forEach(function (st, j) {
+          const ref = xlsxColLetter(nFixed + j) + rn;
+          const sty = { aprobado: S_VERDE, pendiente: S_AMAR, rechazado: S_NARA, vacio: st.venc ? S_ROJOOSC : S_ROJO, noaplica: S_GRIS, excluido: S_GRIS }[st.estado] || S_ROJO;
+          if (st.n > 0) x += '<c r="' + ref + '" s="' + sty + '"><v>' + (Number(st.n) || 0) + '</v></c>';
+          else x += blank(ref, sty);
+        });
+        out.push(x + '</row>');
+      });
+
+      const lastCol = xlsxColLetter(nFixed + Math.max(topics.length, 1) - 1);
+      const lastRow = 4 + Math.max(rows.length, 1);
+      let cols = '<cols><col min="1" max="1" width="36" customWidth="1"/><col min="2" max="2" width="14" customWidth="1"/>' +
+        '<col min="3" max="3" width="14" customWidth="1"/><col min="4" max="4" width="22" customWidth="1"/>' +
+        '<col min="5" max="5" width="10" customWidth="1"/><col min="6" max="6" width="18" customWidth="1"/>';
+      if (topics.length) cols += '<col min="' + (nFixed + 1) + '" max="' + (nFixed + topics.length) + '" width="7" customWidth="1"/>';
+      cols += '</cols>';
+
+      const NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+      // OJO: Apps Script interpreta cualquier "<" + "?" dentro de un HTML como código del servidor, por eso se arma separado.
+      const XML_DECL = '<' + '?xml version="1.0" encoding="UTF-8" standalone="yes"' + '?' + '>';
+      const sheet = XML_DECL +
+        '<worksheet xmlns="' + NS + '"><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>' +
+        '<dimension ref="A1:' + lastCol + lastRow + '"/>' +
+        '<sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane xSplit="1" ySplit="4" topLeftCell="B5" activePane="bottomRight" state="frozen"/>' +
+        '<selection pane="topRight"/><selection pane="bottomLeft"/><selection pane="bottomRight" activeCell="B5" sqref="B5"/></sheetView></sheetViews>' +
+        '<sheetFormatPr defaultRowHeight="15"/>' + cols + '<sheetData>' + out.join('') + '</sheetData>' +
+        '<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/>' +
+        '<pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
+
+      const font = function (bold, size, color) {
+        return '<font>' + (bold ? '<b/>' : '') + '<sz val="' + size + '"/><color rgb="' + color + '"/><name val="Arial"/><family val="2"/></font>';
+      };
+      const fill = function (rgb) { return '<fill><patternFill patternType="solid"><fgColor rgb="' + rgb + '"/><bgColor indexed="64"/></patternFill></fill>'; };
+      const side = function (rgb) { return '<left style="thin"><color rgb="' + rgb + '"/></left><right style="thin"><color rgb="' + rgb + '"/></right><top style="thin"><color rgb="' + rgb + '"/></top><bottom style="thin"><color rgb="' + rgb + '"/></bottom><diagonal/>'; };
+      const xf = function (font, fill, border, align) {
+        return '<xf numFmtId="0" fontId="' + font + '" fillId="' + fill + '" borderId="' + border + '" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment ' + align + '/></xf>';
+      };
+      const styles = XML_DECL +
+        '<styleSheet xmlns="' + NS + '">' +
+        '<fonts count="5">' + font(false, 10, 'FF1C2230') + font(true, 10, 'FF1C2230') + font(true, 11, 'FFFFFFFF') + font(true, 13, 'FF0F1B3D') + font(false, 10, 'FF6B7280') + '</fonts>' +
+        '<fills count="11"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>' +
+        fill('FFEEF2FA') + fill('FF1E9E5A') + fill('FFE0393E') + fill('FF9AA5B8') + fill('FFE9F9EF') + fill('FFFDECEB') + fill('FFF2B01E') + fill('FFF28C28') + fill('FFA61B1F') + '</fills>' +
+        '<borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border><border>' + side('FFFFFFFF') + '</border><border>' + side('FFE1E5EE') + '</border></borders>' +
+        '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+        '<cellXfs count="14">' +
+        '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+        xf(1, 2, 2, 'horizontal="left" vertical="center" wrapText="1"') +
+        xf(1, 2, 2, 'horizontal="center" vertical="bottom" textRotation="90" wrapText="1"') +
+        xf(0, 0, 2, 'horizontal="left" vertical="center"') +
+        xf(2, 3, 1, 'horizontal="center" vertical="center"') +
+        xf(2, 4, 1, 'horizontal="center" vertical="center"') +
+        xf(2, 5, 1, 'horizontal="center" vertical="center"') +
+        xf(1, 6, 2, 'horizontal="center" vertical="center"') +
+        xf(1, 7, 2, 'horizontal="center" vertical="center"') +
+        xf(3, 0, 0, 'horizontal="left" vertical="center"') +
+        xf(4, 0, 0, 'horizontal="right" vertical="center"') +
+        xf(1, 8, 1, 'horizontal="center" vertical="center"') +
+        xf(2, 9, 1, 'horizontal="center" vertical="center"') +
+        xf(2, 10, 1, 'horizontal="center" vertical="center"') +
+        '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+
+      const zip = new JSZip();
+      zip.file('[Content_Types].xml', XML_DECL + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>');
+      zip.file('_rels/.rels', XML_DECL + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+      zip.file('xl/workbook.xml', XML_DECL + '<workbook xmlns="' + NS + '" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Matriz" sheetId="1" r:id="rId1"/></sheets></workbook>');
+      zip.file('xl/_rels/workbook.xml.rels', XML_DECL + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
+      zip.file('xl/styles.xml', styles);
+      zip.file('xl/worksheets/sheet1.xml', sheet);
+      return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', compression: 'DEFLATE' });
+    }
+
+    function downloadBlobFile(filename, blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+    }
+
+    function matrixRowsForExport(filtered) {
+      return filtered.map(function (r) {
+        return {
+          nombreUnidad: r.nombreUnidad, codigoPlano: r.codigoPlano, cedula: r.cedula, contratoNombre: r.contratoNombre,
+          completados: r.completados, total: r.total, ultimaFecha: r.ultimaFecha,
+          states: r.cells.map(function (c) { return { estado: c.estado, n: c.files.length, venc: c.vencido }; })
+        };
+      });
+    }
+
+    async function exportMatrixXlsx() {
+      if (!currentStatus) return;
+      const filtered = getStatusFiltered();
+      if (!filtered.length) { showAlert(alertEl, 'No hay filas para exportar con estos filtros.'); return; }
+      await withBusyBtn(document.getElementById('btnMatrixCsv'), async function () {
+        try {
+          const blob = await buildMatrixXlsxBlob(matrixRowsForExport(filtered), currentStatus.topics, currentStatus.month.nombre);
+          downloadBlobFile('matriz_' + currentStatus.month.nombre.replace(/\s+/g, '_') + '.xlsx', blob);
+        } catch (err) {
+          showAlert(alertEl, 'No se pudo generar el Excel: ' + (err && err.message ? err.message : err));
+        }
+      });
+    }
+
+    // ---------------- REPORTES ----------------
+    async function loadReport() {
+      const monthId = curMonth;
+      if (!monthId) return;
+      const contratoId = curContrato;
+      currentReport = await withLoading(document.getElementById('reportCard'), function () { return gsRun('apiAdminGetReport', token, monthId, contratoId, ''); });
+      renderReport();
+    }
+
+    function getReportBaseRows() {
+      if (!currentReport) return [];
+      const q = document.getElementById('repSearch').value.toLowerCase().trim();
+      if (!q) return currentReport.rows;
+      return currentReport.rows.filter(function (r) {
+        return r.nombreUnidad.toLowerCase().indexOf(q) !== -1 || String(r.cedula).toLowerCase().indexOf(q) !== -1 || String(r.codigoPlano || '').toLowerCase().indexOf(q) !== -1;
+      });
+    }
+
+    function getReportFilteredRows() {
+      const estado = document.getElementById('repEstadoSelect').value;
+      const base = getReportBaseRows();
+      if (estado === 'completos') return base.filter(function (r) { return r.completo; });
+      if (estado === 'faltantes') return base.filter(function (r) { return !r.completo; });
+      return base;
+    }
+
+    function renderReport() {
+      if (!currentReport) return;
+      const base = getReportBaseRows();
+      const filtered = getReportFilteredRows();
+      const completos = base.filter(function (r) { return r.completo; }).length;
+      const faltantes = base.length - completos;
+      const avance = base.length ? Math.round(base.reduce(function (s, r) { return s + (r.total ? r.completados / r.total : 0); }, 0) / base.length * 100) : 0;
+
+      document.getElementById('reportKpis').innerHTML =
+        '<div class="kpi-card"><div class="kicon azul"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3.5-6 7-6s7 2 7 6"/></svg></div><div><div class="kpi-value">' + base.length + '</div><div class="kpi-label">Unidades en el filtro</div></div></div>' +
+        '<div class="kpi-card"><div class="kicon verde"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><div><div class="kpi-value">' + completos + '</div><div class="kpi-label">Completas</div></div></div>' +
+        '<div class="kpi-card"><div class="kicon rojo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></div><div><div class="kpi-value">' + faltantes + '</div><div class="kpi-label">Con pendientes</div></div></div>' +
+        '<div class="kpi-card"><div class="kicon morado"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3L5 21M7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></div><div><div class="kpi-value">' + avance + '%</div><div class="kpi-label">Avance promedio</div></div></div>';
+
+      document.getElementById('reportSummary').textContent = filtered.length + ' unidad(es) en el resultado · Mes: ' + currentReport.month.nombre;
+
+      const list = document.getElementById('reportList');
+      if (!filtered.length) { list.innerHTML = '<p class="empty-hint">No hay resultados con estos filtros.</p>'; return; }
+      list.innerHTML = filtered.map(function (r) {
+        return '<div class="report-row">' +
+          '<div class="report-row-head">' +
+            '<div class="row-avatar"><span class="avatar">' + getInitials(r.nombreUnidad) + '</span><div><strong>' + escapeHtml(r.nombreUnidad) + '</strong><br><span class="muted">' + (r.codigoPlano ? 'Cód. ' + escapeHtml(r.codigoPlano) + ' · ' : '') + 'CC ' + escapeHtml(r.cedula) + '</span></div></div>' +
+            '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
+              '<span class="chip-contrato ' + (r.contratoNombre === 'Sin contrato' ? 'sin' : '') + '"><span class="dot"></span>' + escapeHtml(r.contratoNombre) + '</span>' +
+              '<span class="pill ' + (r.completo ? 'pill-verde' : 'pill-rojo') + '">' + r.completados + '/' + r.total + '</span>' +
+              '<span class="muted" style="font-size:12px;">' + (r.ultimaFecha ? 'Últ. cargue: ' + formatDate(r.ultimaFecha) : 'Sin cargues') + '</span>' +
+              '<svg class="chev-toggle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>' +
+            '</div>' +
+          '</div>' +
+          '<div class="report-row-body"><div class="topic-grid">' +
+            r.temas.map(function (t) {
+              const files = (t.estado === 'excluido') ? '<div class="tm-file">No se exige a este contrato</div>' : t.noAplica ? '<div class="tm-file">No aplica este mes</div>' : (t.files.length ? t.files.map(function (f) { return '<div class="tm-file">' + escapeHtml(f.originalName) + ' · ' + (ARCH_ESTADO[f.estado] || ['', ''])[1] + ' · ' + formatDate(f.uploadedAt) + '</div>'; }).join('') : '<div class="tm-file">Sin archivos</div>');
+              const claseTema = { aprobado: 'lleno', pendiente: 'pendiente', rechazado: 'rechazado', vacio: 'vacio', noaplica: 'noaplica', excluido: 'noaplica' }[t.estado] || 'vacio';
+              const icono = { aprobado: '✓', pendiente: '⏳', rechazado: '↩', vacio: t.vencido ? '!' : '✕', noaplica: '—', excluido: '·' }[t.estado] || '';
+              return '<div class="topic-mini ' + claseTema + '"><div class="tm-head"><span>' + escapeHtml(t.nombre) + '</span><span>' + icono + '</span></div>' + files + '</div>';
+            }).join('') +
+          '</div></div>' +
+        '</div>';
+      }).join('');
+      list.querySelectorAll('.report-row-head').forEach(function (head) {
+        head.addEventListener('click', function () { head.closest('.report-row').classList.toggle('open'); });
+      });
+    }
+
+    function exportReportCsv() {
+      if (!currentReport) return;
+      const rows = getReportFilteredRows();
+      if (!rows.length) { showAlert(alertEl, 'No hay filas para exportar con estos filtros.'); return; }
+      const headers = ['Unidad de servicio', 'Cédula', 'Contrato', 'Completados', 'Total temas', 'Estado', 'Última fecha de cargue'].concat(currentReport.topics.map(function (t) { return t.nombre; }));
+      const lines = [headers.map(csvEscape).join(';')];
+      rows.forEach(function (r) {
+        const base = [r.nombreUnidad, r.cedula, r.contratoNombre, r.completados, r.total, r.completo ? 'Completo' : 'Pendiente', r.ultimaFecha ? formatDate(r.ultimaFecha) : ''];
+        const temaCols = r.temas.map(function (t) {
+          const et = (ESTADO[t.estado] || ESTADO.vacio).label + (t.vencido ? ' (vencido)' : '');
+          if (!t.files.length) return et;
+          return et + ': ' + t.files.map(function (f) { return f.originalName + ' [' + (ARCH_ESTADO[f.estado] || ['', ''])[1] + '] (' + formatDate(f.uploadedAt) + ')'; }).join(' | ');
+        });
+        lines.push(base.concat(temaCols).map(csvEscape).join(';'));
+      });
+      downloadTextFile('reporte_' + currentReport.month.nombre.replace(/\s+/g, '_') + '.csv', lines.join('\n'));
+    }
+
+    function printReport() {
+      if (!currentReport) return;
+      const rows = getReportFilteredRows();
+      const area = document.getElementById('printArea');
+      area.innerHTML = '<h1>Reporte de cargue — ' + escapeHtml(currentReport.month.nombre) + '</h1>' +
+        '<p>' + rows.length + ' unidad(es) · Generado el ' + formatDate(new Date().toISOString()) + '</p>' +
+        '<table><thead><tr><th>Unidad</th><th>Cédula</th><th>Contrato</th><th>Progreso</th><th>Última carga</th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          return '<tr><td>' + escapeHtml(r.nombreUnidad) + '</td><td>' + escapeHtml(r.cedula) + '</td><td>' + escapeHtml(r.contratoNombre) + '</td><td>' + r.completados + '/' + r.total + '</td><td>' + (r.ultimaFecha ? formatDate(r.ultimaFecha) : '—') + '</td></tr>';
+        }).join('') +
+        '</tbody></table>';
+      window.print();
+    }
+
+    // ---------------- PAQUETE COMPLETO (ZIP) ----------------
+    // Arma en el navegador un ZIP con: la matriz (CSV) y, por cada unidad del filtro actual,
+    // la carpeta "Nombre (código)" con una subcarpeta por tema que tenga archivos y un RESUMEN.txt.
+    // Se hace en el navegador (no en el servidor) para evitar el límite de 6 minutos de Apps Script
+    // y poder mostrar el avance archivo por archivo.
+    function safeName(str, max) {
+      let out = String(str || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '-').replace(/\s+/g, ' ').trim().replace(/[. ]+$/, '');
+      if (!out) out = 'sin_nombre';
+      return out.slice(0, max || 80);
+    }
+
+    function uniqueName(used, name) {
+      const key = name.toLowerCase();
+      if (!used[key]) { used[key] = 1; return name; }
+      const dot = name.lastIndexOf('.');
+      const base = dot > 0 ? name.slice(0, dot) : name;
+      const ext = dot > 0 ? name.slice(dot) : '';
+      let k = used[key] + 1;
+      let candidate = base + ' (' + k + ')' + ext;
+      while (used[candidate.toLowerCase()]) { k++; candidate = base + ' (' + k + ')' + ext; }
+      used[key] = k;
+      used[candidate.toLowerCase()] = 1;
+      return candidate;
+    }
+
+    function buildSummaryTxt(r, codigo, monthName) {
+      const grp = function (st) { return r.temas.filter(function (t) { return t.estado === st; }); };
+      const pct = r.total ? Math.round(r.completados / r.total * 100) : 0;
+      const L = [];
+      L.push('RESUMEN DE CARGUE');
+      L.push('=================');
+      L.push('Mes: ' + monthName);
+      L.push('Unidad de servicio: ' + r.nombreUnidad);
+      L.push('Código UDS: ' + (r.codigoPlano || 'No disponible'));
+      L.push('Cédula: ' + r.cedula);
+      L.push('Contrato: ' + r.contratoNombre);
+      L.push('Generado el: ' + formatDate(new Date().toISOString()));
+      L.push('');
+      L.push('Avance: ' + r.completados + ' de ' + r.total + ' temas exigibles cumplidos (' + pct + '%) — cuentan los temas aprobados y los marcados "No aplica".');
+      L.push('Último cargue: ' + (r.ultimaFecha ? formatDate(r.ultimaFecha) : 'Sin cargues'));
+      const sec = function (titulo, list, withFiles) {
+        L.push('');
+        L.push(titulo + ' (' + list.length + ')');
+        if (!list.length) { L.push('  (ninguno)'); return; }
+        list.forEach(function (t) {
+          L.push('  - ' + t.nombre + (t.vencido ? '  [VENCIDO]' : '') + (!t.obligatorio ? '  [opcional]' : ''));
+          if (withFiles) t.files.forEach(function (f) { L.push('      · ' + f.originalName + (f.observacion ? ' — Motivo: ' + f.observacion : '')); });
+        });
+      };
+      sec('TEMAS APROBADOS', grp('aprobado'), true);
+      sec('TEMAS POR REVISAR', grp('pendiente'), true);
+      sec('TEMAS RECHAZADOS (la unidad debe corregir)', grp('rechazado'), true);
+      sec('TEMAS VACÍOS — SIN ARCHIVOS', grp('vacio'), false);
+      sec('TEMAS QUE NO APLICAN', grp('noaplica'), false);
+      L.push('');
+      return '\uFEFF' + L.join('\r\n');
+    }
+
+    let zipState = null;
+
+    function zipUi(title, text, pct, sub) {
+      document.getElementById('zipTitle').textContent = title;
+      document.getElementById('zipText').textContent = text;
+      document.getElementById('zipFill').style.width = Math.max(0, Math.min(100, pct)) + '%';
+      document.getElementById('zipSub').textContent = sub || '';
+    }
+
+    async function downloadFullPackage() {
+      hideAlert(alertEl);
+      if (!currentReport) { showAlert(alertEl, 'Aún no se ha cargado el reporte. Espera un momento e intenta de nuevo.'); return; }
+      if (typeof JSZip === 'undefined') {
+        showAlert(alertEl, 'No se pudo cargar la librería de compresión (JSZip). Revisa tu conexión a internet y recarga la página.');
+        return;
+      }
+      const rows = getReportFilteredRows();
+      if (!rows.length) { showAlert(alertEl, 'No hay unidades para descargar con estos filtros.'); return; }
+
+      const monthName = currentReport.month.nombre;
+      const zip = new JSZip();
+      const root = zip.folder(safeName('Reporte ' + monthName));
+
+      // 1) Matriz
+      const matrixRows = rows.map(function (r) {
+        return {
+          nombreUnidad: r.nombreUnidad, codigoPlano: r.codigoPlano, cedula: r.cedula, contratoNombre: r.contratoNombre,
+          completados: r.completados, total: r.total, ultimaFecha: r.ultimaFecha,
+          states: r.temas.map(function (t) { return { estado: t.estado, n: t.files.length, venc: t.vencido }; })
+        };
+      });
+      root.file('Matriz_' + safeName(monthName).replace(/\s+/g, '_') + '.csv', '\uFEFF' + buildMatrixCsv(matrixRows, currentReport.topics));
+      try { root.file('Matriz_' + safeName(monthName).replace(/\s+/g, '_') + '_colores.xlsx', await buildMatrixXlsxBlob(matrixRows, currentReport.topics, monthName)); } catch (e) { /* si falla, el CSV ya va incluido */ }
+
+      // 2) Carpetas por unidad + RESUMEN.txt; se listan los archivos a descargar
+      const usedUnits = {};
+      const tasks = [];
+      rows.forEach(function (r) {
+        const codigo = r.codigoPlano || r.cedula;
+        const unitName = uniqueName(usedUnits, safeName(r.nombreUnidad + ' (' + codigo + ')', 100));
+        const unit = root.folder(unitName);
+        unit.file('RESUMEN.txt', buildSummaryTxt(r, codigo, monthName));
+        const usedTopics = {};
+        r.temas.forEach(function (t) {
+          if (!t.files.length) return;
+          const folder = unit.folder(uniqueName(usedTopics, safeName(t.nombre, 80)));
+          const usedFiles = {};
+          t.files.forEach(function (f) {
+            tasks.push({ folder: folder, f: f, name: uniqueName(usedFiles, safeName(f.originalName, 120)), unit: unitName, tema: t.nombre });
+          });
+        });
+      });
+
+      zipState = { cancel: false, done: 0, errors: [] };
+      const state = zipState;
+      document.getElementById('zipModalBg').classList.add('open');
+      zipUi('Preparando paquete…', rows.length + ' unidad(es) · ' + tasks.length + ' archivo(s)', 0, '');
+      document.getElementById('zipCancel').disabled = false;
+
+      let idx = 0;
+      async function worker() {
+        while (!state.cancel) {
+          const i = idx++;
+          if (i >= tasks.length) return;
+          const tk = tasks[i];
+          try {
+            const res = await gsRun('apiAdminDownloadFile', token, tk.f.id);
+            tk.folder.file(tk.name, res.base64Data, { base64: true });
+          } catch (err) {
+            state.errors.push(tk.unit + ' / ' + tk.tema + ' / ' + tk.f.originalName + ' — ' + err.message);
+          }
+          state.done++;
+          zipUi('Descargando archivos…', 'Archivo ' + state.done + ' de ' + tasks.length,
+            tasks.length ? state.done / tasks.length * 90 : 90, state.errors.length ? state.errors.length + ' archivo(s) no se pudieron descargar' : '');
+        }
+      }
+      const WORKERS = 4;
+      const pool = [];
+      for (let k = 0; k < WORKERS; k++) pool.push(worker());
+      await Promise.all(pool);
+
+      if (state.cancel) { document.getElementById('zipModalBg').classList.remove('open'); zipState = null; return; }
+
+      if (state.errors.length) {
+        root.file('ERRORES.txt', '\uFEFFArchivos que no se pudieron incluir en el paquete:\r\n\r\n' + state.errors.join('\r\n') + '\r\n');
+      }
+
+      try {
+        document.getElementById('zipCancel').disabled = true;
+        zipUi('Comprimiendo…', 'Armando el archivo ZIP', 90, '');
+        const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 3 } }, function (meta) {
+          zipUi('Comprimiendo…', 'Armando el archivo ZIP', 90 + meta.percent / 10, Math.round(meta.percent) + '%');
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = safeName('Reporte_' + monthName).replace(/\s+/g, '_') + '.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+        document.getElementById('zipModalBg').classList.remove('open');
+        showAlert(alertEl, 'Paquete generado: ' + rows.length + ' unidad(es), ' + (tasks.length - state.errors.length) + ' archivo(s).' +
+          (state.errors.length ? ' ' + state.errors.length + ' archivo(s) no se pudieron incluir (ver ERRORES.txt dentro del ZIP).' : ''),
+          state.errors.length ? 'error' : 'ok');
+      } catch (err) {
+        document.getElementById('zipModalBg').classList.remove('open');
+        showAlert(alertEl, 'No se pudo generar el ZIP: ' + err.message);
+      }
+      zipState = null;
+    }
+
+    // ---------------- HISTORIAL DE CARGUES ----------------
+    async function loadLog() {
+      const monthId = document.getElementById('logMonthSelect').value || 'todos';
+      const contratoId = document.getElementById('logContratoSelect').value || 'todos';
+      const search = document.getElementById('logSearch').value.trim();
+      currentLog = await withLoading(document.getElementById('logCard'), function () { return gsRun('apiAdminGetUploadsLog', token, monthId, contratoId, search); });
+      renderLog();
+    }
+
+    function updateLogButtons() {
+      const n = Object.keys(logSel).length;
+      const bs = document.getElementById('btnLogClearSel');
+      bs.style.display = n ? '' : 'none'; bs.textContent = 'Limpiar seleccionados (' + n + ')';
+      const br = document.getElementById('btnLogRestore');
+      const oc = currentLog ? (currentLog.ocultos || 0) : 0;
+      br.style.display = oc ? '' : 'none'; br.textContent = 'Restaurar ' + oc + ' limpiado(s)';
+      document.getElementById('btnLogClear').disabled = !currentLog || !currentLog.total;
+    }
+    async function clearLog(onlySelected) {
+      const f = { monthId: document.getElementById('logMonthSelect').value || 'todos', contratoId: document.getElementById('logContratoSelect').value || 'todos', search: document.getElementById('logSearch').value.trim() };
+      let msg;
+      if (onlySelected) {
+        f.ids = Object.keys(logSel);
+        if (!f.ids.length) return;
+        msg = 'Se ocultarán <b>' + f.ids.length + '</b> entrada(s) del historial.';
+      } else {
+        if (!currentLog || !currentLog.total) return;
+        msg = 'Se ocultarán <b>' + currentLog.total + '</b> entrada(s) del historial' + ((f.monthId !== 'todos' || f.contratoId !== 'todos' || f.search) ? ' que cumplen los filtros actuales' : '') + '.';
+      }
+      if (!await askConfirm('Limpiar historial de cargues', msg + '<br><br>Los archivos <b>no</b> se borran de Drive y la matriz, los reportes y la revisión siguen igual. Puedes volver a mostrarlas con «Restaurar».', 'Limpiar', true)) return;
+      try {
+        const r = await gsRun('apiAdminClearUploadsLog', token, f);
+        toast(r.limpiados + ' entrada(s) limpiada(s) del historial.');
+        logSel = {};
+        await loadLog();
+      } catch (e) { fail(e); }
+    }
+    async function restoreLog() {
+      if (!await askConfirm('Restaurar historial', 'Se volverán a mostrar todas las entradas que habías limpiado.', 'Restaurar', false)) return;
+      try { const r = await gsRun('apiAdminRestoreUploadsLog', token); toast(r.restaurados + ' entrada(s) restaurada(s).'); await loadLog(); } catch (e) { fail(e); }
+    }
+
+    function renderLog() {
+      if (!currentLog) return;
+      document.getElementById('logCount').textContent = currentLog.mostrados + ' de ' + currentLog.total + ' cargue(s)' +
+        (currentLog.total > currentLog.mostrados ? ' (mostrando los más recientes)' : '');
+      const tbody = document.getElementById('logTbody');
+      document.getElementById('logSelAll').checked = currentLog.rows.length > 0 && currentLog.rows.every(function (r) { return logSel[r.id]; });
+      updateLogButtons();
+      if (!currentLog.rows.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty-hint">Sin resultados.</td></tr>'; return; }
+      tbody.innerHTML = currentLog.rows.map(function (r) {
+        return '<tr>' +
+          '<td><input type="checkbox" data-logsel="' + r.id + '"' + (logSel[r.id] ? ' checked' : '') + '></td>' +
+          '<td>' + formatDate(r.uploadedAt) + '</td>' +
+          '<td><div class="row-avatar"><span class="avatar">' + getInitials(r.nombreUnidad) + '</span><div>' + escapeHtml(r.nombreUnidad) + (r.responsable ? '<br><span class="muted">' + escapeHtml(r.responsable) + '</span>' : '') + '<br><span class="muted">CC ' + escapeHtml(r.cedula) + '</span></div></div></td>' +
+          '<td><span class="chip-contrato ' + (r.contratoNombre === 'Sin contrato' ? 'sin' : '') + '"><span class="dot"></span>' + escapeHtml(r.contratoNombre) + '</span></td>' +
+          '<td>' + escapeHtml(r.mesNombre) + '</td>' +
+          '<td>' + escapeHtml(r.temaNombre) + '</td>' +
+          '<td><div class="file-item" style="display:inline-flex;"><span class="ftype-icon">' + fileTypeIcon(r.originalName) + '</span><span class="name" title="' + escapeHtml(r.originalName) + '">' + escapeHtml(r.originalName) + '</span></div></td>' +
+          '<td>' + formatBytes(r.size) + '<br>' + arTag(r.estado) + (r.tardio ? ' <span class="tag gris">Fuera de plazo</span>' : '') + '</td>' +
+          '<td><div class="file-actions">' +
+            '<button data-logview="' + r.id + '" title="Ver">' + EYE_SVG + '</button>' +
+            '<button data-logdownload="' + r.id + '" title="Descargar">' + DL_SVG + '</button>' +
+          '</div></td></tr>';
+      }).join('');
+      tbody.querySelectorAll('[data-logsel]').forEach(function (c) {
+        c.addEventListener('change', function () { if (c.checked) logSel[c.dataset.logsel] = true; else delete logSel[c.dataset.logsel]; renderLog(); });
+      });
+      tbody.querySelectorAll('[data-logview]').forEach(function (btn) {
+        btn.addEventListener('click', async function () { triggerDownload(await gsRun('apiAdminDownloadFile', token, btn.dataset.logview), 'view'); });
+      });
+      tbody.querySelectorAll('[data-logdownload]').forEach(function (btn) {
+        btn.addEventListener('click', async function () { triggerDownload(await gsRun('apiAdminDownloadFile', token, btn.dataset.logdownload), 'download'); });
+      });
+    }
+
+    async function loadContratos() {
+      contratos = await gsRun('apiAdminListContratos', token);
+      const opts = contratos.map(function (c) { return { value: c.id, label: c.nombre + (!c.activo ? ' (oculto)' : '') }; });
+      SHARED_CONTRATO.forEach(function (id) { fillSelect(id, opts, true, 'Todos los contratos'); const el = document.getElementById(id); if (el) el.value = curContrato; });
+      fillSelect('logContratoSelect', opts, true, 'Todos los contratos');
+      renderContratosList();
+      if (allUsers.length) renderUsers();
+    }
+
+    function renderContratosList() {
+      const wrap = document.getElementById('contratosList');
+      if (!contratos.length) { wrap.innerHTML = '<p class="empty-hint">Aún no has creado ningún contrato. Mientras no exista ninguno, el registro de unidades no pedirá contrato.</p>'; return; }
+      wrap.innerHTML = '';
+      contratos.forEach(function (c) {
+        const row = document.createElement('div');
+        row.className = 'manage-row';
+        row.innerHTML =
+          '<div class="mr-info"><strong>' + escapeHtml(c.nombre) + '</strong> <span class="pill ' + (!c.activo ? 'pill-rojo' : 'pill-verde') + '">' + (!c.activo ? 'Oculto' : 'Visible') + '</span> <span class="mr-count">' + c.totalUnidades + ' unidad(es)</span></div>' +
+          '<div class="mr-actions">' +
+            '<button class="btn btn-secondary btn-sm" data-rename="' + c.id + '">Renombrar</button>' +
+            '<button class="btn btn-secondary btn-sm" data-toggle="' + c.id + '" data-activo="' + (!c.activo) + '">' + (!c.activo ? 'Mostrar' : 'Ocultar') + '</button>' +
+            '<button class="btn btn-danger btn-sm" data-del="' + c.id + '">Eliminar</button>' +
+          '</div>';
+        wrap.appendChild(row);
+      });
+      wrap.querySelectorAll('[data-rename]').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          const c = contratos.find(function (x) { return x.id === btn.dataset.rename; });
+          const nuevo = prompt('Nuevo nombre del contrato:', c.nombre);
+          if (!nuevo || !nuevo.trim() || nuevo.trim() === c.nombre) return;
+          try {
+            await gsRun('apiAdminRenameContrato', token, c.id, nuevo.trim());
+            await loadContratos(); tabLoaded = {};
+          } catch (err) { showAlert(alertEl, err.message); }
+        });
+      });
+      wrap.querySelectorAll('[data-toggle]').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          await gsRun('apiAdminSetContratoActive', token, btn.dataset.toggle, btn.dataset.activo === 'true');
+          await loadContratos(); tabLoaded = {};
+        });
+      });
+      wrap.querySelectorAll('[data-del]').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          if (!confirm('¿Eliminar este contrato? Esta acción no se puede deshacer.')) return;
+          try {
+            await gsRun('apiAdminDeleteContrato', token, btn.dataset.del);
+            await loadContratos(); tabLoaded = {};
+          } catch (err) { showAlert(alertEl, err.message); }
+        });
+      });
+    }
+
+    async function createContrato() {
+      hideAlert(alertEl);
+      const nombre = document.getElementById('newContratoName').value.trim();
+      if (!nombre) { showAlert(alertEl, 'Escribe el nombre del contrato.'); return; }
+      try {
+        await gsRun('apiAdminCreateContrato', token, nombre);
+        document.getElementById('newContratoName').value = '';
+        showAlert(alertEl, 'Contrato creado.', 'ok');
+        await loadContratos(); tabLoaded = {};
+      } catch (err) { showAlert(alertEl, err.message); }
+    }
+
+    // ---------------- CONFIGURACIÓN ----------------
+    async function changeCreds() {
+      const cfgAlert = document.getElementById('configAlert');
+      hideAlert(cfgAlert);
+      const nuevoUsuario = document.getElementById('cfgUsuario').value.trim();
+      const nuevaPassword = document.getElementById('cfgPassword').value;
+      try {
+        await gsRun('apiAdminChangeCredentials', token, nuevoUsuario, nuevaPassword);
+        showAlert(cfgAlert, 'Credenciales actualizadas correctamente.', 'ok');
+        document.getElementById('adminUsuario').textContent = nuevoUsuario;
+        document.getElementById('adminAvatar').textContent = getInitials(nuevoUsuario);
+        document.getElementById('cfgPassword').value = '';
+      } catch (err) { showAlert(cfgAlert, err.message); }
+    }
+  </script>
+</body>
+</html>
