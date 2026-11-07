@@ -30,6 +30,10 @@ const ConsultaUDSModule = (() => {
 
     function _formatearFecha(fechaStr) {
         if (!fechaStr) return '—';
+        // Fecha sola (AAAA-MM-DD): se formatea tal cual. new Date() la leería como
+        // medianoche UTC y en Colombia (UTC-5) mostraría el día anterior.
+        const m = String(fechaStr).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (m) return `${m[3]}/${m[2]}/${m[1]}`;
         const d = new Date(fechaStr);
         if (isNaN(d)) return _esc(fechaStr);
         const dd = String(d.getDate()).padStart(2, '0');
