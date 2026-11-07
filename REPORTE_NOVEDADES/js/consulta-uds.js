@@ -67,14 +67,41 @@ const ConsultaUDSModule = (() => {
         return inactivo;
     }
 
+    // ── Contratos en los que existe un código de UDS ──
+    // (una misma UDS se copia a otro contrato al renovar y conserva el código)
+    function _contratosDelCodigo(codigo) {
+        const data = window.UDS_DATA || {};
+        const contratos = new Set();
+        Object.entries(data).forEach(([contrato, lista]) => {
+            (lista || []).forEach(([, cod]) => {
+                if (String(cod).trim() === codigo) contratos.add(contrato);
+            });
+        });
+        return contratos;
+    }
+
+    // ── ¿El registro pertenece a la UDS consultada? ──
+    // Varias UDS pueden llamarse igual y tener distinto código y contrato, así
+    // que NUNCA se cruza solo por nombre: se compara el código guardado en
+    // udsFull ("NOMBRE - CÓDIGO"). Solo si el registro es antiguo y no trae
+    // código se acepta por nombre, y únicamente dentro de los contratos donde
+    // existe ese código.
+    function _pertenecePorCodigo(r, udsInfo, contratosDelCodigo) {
+        const partes = String(r.udsFull || '').split(' - ');
+        const codigoRegistro = partes.length > 1 ? partes[partes.length - 1].trim() : '';
+        if (codigoRegistro) return codigoRegistro === udsInfo.codigo;
+        return r.udsName === udsInfo.nombre && contratosDelCodigo.has(r.contract);
+    }
+
     // ── Extraer eventos (ingreso/retiro) de un nodo, filtrados por UDS ──
     // Ahora conserva el id del registro, su origen (activas/archivadas) y el
     // detalle completo (ingreso/retiro + nutrición), necesarios para la ficha
     // lateral y para las acciones especiales (reportar retiro / reingreso).
-    function _extraerEventos(registros, udsNombre, origen) {
+    function _extraerEventos(registros, udsInfo, origen) {
         const eventos = [];
+        const contratosDelCodigo = _contratosDelCodigo(udsInfo.codigo);
         Object.entries(registros || {}).forEach(([id, r]) => {
-            if (!r || r.udsName !== udsNombre) return;
+            if (!r || !_pertenecePorCodigo(r, udsInfo, contratosDelCodigo)) return;
 
             if ((r.hasIngreso || r.type === 'ingreso' || r.type === 'ambos') && r.ingreso && r.ingreso.document) {
                 eventos.push({
@@ -298,8 +325,8 @@ const ConsultaUDSModule = (() => {
             ]);
 
             const eventos = [
-                ..._extraerEventos(activos, udsInfo.nombre, 'activas'),
-                ..._extraerEventos(archivados, udsInfo.nombre, 'archivadas')
+                ..._extraerEventos(activos, udsInfo, 'activas'),
+                ..._extraerEventos(archivados, udsInfo, 'archivadas')
             ];
 
             // Guardar estado para la ficha lateral y las acciones especiales
