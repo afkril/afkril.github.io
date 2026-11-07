@@ -483,7 +483,7 @@ const DuplicadosModule = (function () {
                                 <span class="dup-h-tooltip-val">${_esc(ev.operadorNombre)} ${ev.origen === 'archivadas' ? '(Archivado)' : ''}</span>
                             </div>
                             <div class="dup-h-tooltip-row">
-                                <span class="dup-h-tooltip-label"><i class=ic-map-pin></i> Regional</span>
+                                <span class="dup-h-tooltip-label"><i class=ic-map-pin></i> Centro Zonal</span>
                                 <span class="dup-h-tooltip-val">${_esc(ev.regional || 'N/A')} / ${_esc(ev.modalidad || 'N/A')}</span>
                             </div>
                         </div>

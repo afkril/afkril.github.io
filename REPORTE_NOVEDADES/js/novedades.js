@@ -780,11 +780,12 @@ function refreshNoveltyModal() {
     if (!currentNoveltyData) return;
 
     const cardsView = document.getElementById('cardsView');
-    const activeTab = cardsView?.querySelector('.novelty-tab-btn.active')?.dataset.tab || 'general';
+    const activeTab = cardsView?.querySelector('.novelty-tab-btn.active')?.dataset.tab || '';
 
     viewNoveltyDetails(currentNoveltyData, currentNoveltyIsArchived);
 
-    if (activeTab !== 'general') {
+    const nuevaVista = document.getElementById('cardsView');
+    if (activeTab && nuevaVista?.querySelector(`.novelty-tab-btn[data-tab="${activeTab}"]`)) {
         switchNoveltyTab(activeTab);
     }
 }
@@ -996,7 +997,10 @@ function viewNoveltyDetails(novelty, isArchived) {
 function generateFiveCards(novelty, isArchived, udsName, udsCode) {
     const contract = novelty.contract || 'N/A';
     const fechaRegistro = novelty.timestamp
-        ? new Date(novelty.timestamp).toLocaleString('es-CO')
+        ? new Date(novelty.timestamp).toLocaleString('es-CO', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        })
         : '-';
     const tieneRetiro =
         novelty.type === 'retiro' ||
@@ -1012,6 +1016,8 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
             : novelty.type === 'retiro'
                 ? 'RETIRO'
                 : 'INGRESO';
+    // La pestaña "Información" ya no existe: la primera pestaña útil queda activa
+    const primeraTab = tieneRetiro ? 'retiro' : (tieneIngreso ? 'ingreso' : 'comunicacion');
     const isCargado =
         novelty.cuentameStatus === 'cargado';
     const estadoTexto =
@@ -1072,6 +1078,10 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                         Código: <strong>${udsCode || '-'}</strong>
                         <span>•</span>
                         Contrato: <strong>${contract}</strong>
+                        <span>•</span>
+                        Centro zonal: <strong>${novelty.regional || '-'}</strong>
+                        <span>•</span>
+                        Fecha: <strong>${fechaRegistro}</strong>
                     </div>
 
                 </div>
@@ -1144,22 +1154,14 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
         <div class="novelty-tab-buttons"
              role="tablist">
 
-            <button
-                class="novelty-tab-btn active"
-                data-tab="general"
-                onclick="switchNoveltyTab('general')">
 
-                <span class="tab-icon"><i class=ic-clipboard-list></i></span>
-                <span>Información</span>
-
-            </button>
 
 
             ${
                 tieneRetiro
                 ? `
                     <button
-                        class="novelty-tab-btn"
+                        class="novelty-tab-btn ${primeraTab === 'retiro' ? 'active' : ''}"
                         data-tab="retiro"
                         onclick="switchNoveltyTab('retiro')">
 
@@ -1176,7 +1178,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                 tieneIngreso
                 ? `
                     <button
-                        class="novelty-tab-btn"
+                        class="novelty-tab-btn ${primeraTab === 'ingreso' ? 'active' : ''}"
                         data-tab="ingreso"
                         onclick="switchNoveltyTab('ingreso')">
 
@@ -1241,7 +1243,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
 
 
             <button
-                class="novelty-tab-btn"
+                class="novelty-tab-btn ${primeraTab === 'comunicacion' ? 'active' : ''}"
                 data-tab="comunicacion"
                 onclick="switchNoveltyTab('comunicacion')">
 
@@ -1261,26 +1263,6 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
 
 
             <!-- =================================================
-                 INFORMACIÓN GENERAL
-            ================================================== -->
-
-            <div
-                class="novelty-tab-panel active"
-                data-panel="general">
-
-                ${renderGeneralTab(
-                    novelty,
-                    udsName,
-                    udsCode,
-                    contract,
-                    fechaRegistro,
-                    tipo
-                )}
-
-            </div>
-
-
-            <!-- =================================================
                  RETIRO
             ================================================== -->
 
@@ -1288,7 +1270,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                 tieneRetiro
                 ? `
                     <div
-                        class="novelty-tab-panel"
+                        class="novelty-tab-panel ${primeraTab === 'retiro' ? 'active' : ''}"
                         data-panel="retiro">
 
                         ${renderRetiroTab(novelty)}
@@ -1307,7 +1289,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
                 tieneIngreso
                 ? `
                     <div
-                        class="novelty-tab-panel"
+                        class="novelty-tab-panel ${primeraTab === 'ingreso' ? 'active' : ''}"
                         data-panel="ingreso">
 
                         ${renderIngresoTab(novelty)}
@@ -1383,7 +1365,7 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
             ================================================== -->
 
             <div
-                class="novelty-tab-panel"
+                class="novelty-tab-panel ${primeraTab === 'comunicacion' ? 'active' : ''}"
                 data-panel="comunicacion">
 
                 ${
@@ -1407,110 +1389,6 @@ function generateFiveCards(novelty, isArchived, udsName, udsCode) {
     return html;
 }
 
-function renderGeneralTab(
-    novelty,
-    udsName,
-    udsCode,
-    contract,
-    fechaRegistro,
-    tipo
-) {
-
-    const estado =
-        novelty.cuentameStatus === 'cargado'
-            ? 'Cargado al CUÉNTAME'
-            : 'Pendiente';
-
-    return `
-
-        <div class="novelty-section-title">
-
-            <div>
-                <span class="section-kicker">
-                    RESUMEN DEL REPORTE
-                </span>
-
-                <h3>
-                    Información General
-                </h3>
-            </div>
-
-            <span class="novelty-section-icon">
-                <i class=ic-clipboard-list></i>
-            </span>
-
-        </div>
-
-
-        <div class="novelty-data-grid grid-3col">
-
-            <div class="novelty-data-card">
-                <span><i class=ic-file-text></i> Contrato</span>
-                <strong>${contract}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span><i class=ic-school></i> UDS</span>
-                <strong>${udsName}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span><i class=ic-hash></i> Código UDS</span>
-                <strong>${udsCode || '-'}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span><i class=ic-globe></i> Regional</span>
-                <strong>${novelty.regional || '-'}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span><i class=ic-calendar></i> Fecha del reporte</span>
-                <strong>${fechaRegistro}</strong>
-            </div>
-
-            <div class="novelty-data-card">
-                <span><i class=ic-tag></i> Tipo de novedad</span>
-                <strong class="type-text ${tipo.toLowerCase()}">
-                    ${tipo}
-                </strong>
-            </div>
-            <!--<div class="novelty-data-card">
-                <span><i class=ic-chart-column></i> Estado CUÉNTAME</span>
-                <strong>${estado}</strong>
-            </div>
-            <div class="novelty-data-card">
-                <span><i class=ic-id-card></i> ID del reporte</span>
-                <strong>${novelty.id || '-'}</strong>
-            </div><-->
-        </div>
-        <div class="novelty-action-summary">
-            <div class="action-summary-icon">
-                ${
-                    novelty.cuentameStatus === 'cargado'
-                        ? '<i class=ic-check></i>'
-                        : '!'
-                }
-            </div>
-            <div>
-                <span class="action-summary-title">
-                    ${
-                        novelty.cuentameStatus === 'cargado'
-                            ? 'Novedad procesada'
-                            : 'Novedad pendiente'
-                    }
-                </span>
-                <p>
-                    ${
-                        novelty.cuentameStatus === 'cargado'
-                            ? 'Este reporte ya fue marcado como cargado al CUÉNTAME.'
-                            : 'Este reporte requiere revisión administrativa.'
-                    }
-                </p>
-            </div>
-        </div>
-    `;
-}
 /* ============================================================
    RENOMBRADO DE ADJUNTOS (llegan al correo con nombre ordenado)
      · Soporte documental (ingreso):  <N° documento>_<NOMBRES Y APELLIDOS>
@@ -1547,6 +1425,123 @@ function tipoBeneficiarioLabel(t) {
     return t === 'estandar' ? '6 meses a 5 años'
          : t === 'menor_6_meses' ? 'Menor de 6 meses'
          : t === 'gestante' ? 'Persona gestante' : '-';
+}
+
+/* ============================================================
+   CORRECCIÓN DE NOMBRE Y DOCUMENTO (cuando no coinciden con el RC adjunto)
+   Se edita desde la pestaña Retiro / Ingreso del detalle.
+============================================================ */
+function _neEsc(t) {
+    return String(t == null ? '' : t)
+        .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderEditarBasicos(novelty, rol) {
+    const d = novelty[rol] || novelty;
+    return `
+        <div class="ne-wrap">
+            <button type="button" class="ne-btn" id="ne-btn-${rol}" onclick="abrirEditarBasicos('${rol}')">
+                <i class=ic-pencil></i> Corregir nombre y documento
+            </button>
+            <div class="ne-form" id="ne-form-${rol}" style="display:none;">
+                <div class="ne-field">
+                    <label for="ne-name-${rol}">Nombres y apellidos</label>
+                    <input type="text" id="ne-name-${rol}" value="${_neEsc(d.name || '')}" autocomplete="off">
+                </div>
+                <div class="ne-field">
+                    <label for="ne-doc-${rol}">N° de documento (${_neEsc(d.docType || 'RC')})</label>
+                    <input type="text" id="ne-doc-${rol}" value="${_neEsc(d.document || '')}" autocomplete="off">
+                </div>
+                <div class="ne-actions">
+                    <button type="button" class="ne-save" id="ne-save-${rol}" onclick="guardarEditarBasicos('${rol}')"><i class=ic-check></i> Guardar</button>
+                    <button type="button" class="ne-cancel" onclick="cerrarEditarBasicos('${rol}')">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function abrirEditarBasicos(rol) {
+    const form = document.getElementById(`ne-form-${rol}`);
+    const btn = document.getElementById(`ne-btn-${rol}`);
+    if (!form) return;
+    form.style.display = 'grid';
+    if (btn) btn.style.display = 'none';
+    const inp = document.getElementById(`ne-name-${rol}`);
+    if (inp) inp.focus();
+}
+
+function cerrarEditarBasicos(rol) {
+    const form = document.getElementById(`ne-form-${rol}`);
+    const btn = document.getElementById(`ne-btn-${rol}`);
+    if (form) form.style.display = 'none';
+    if (btn) btn.style.display = '';
+}
+
+function guardarEditarBasicos(rol) {
+    const novelty = currentNoveltyData;
+    if (!novelty || !novelty.id) return;
+
+    const anidado = novelty[rol] && typeof novelty[rol] === 'object';
+    const actual = anidado ? novelty[rol] : novelty;
+
+    const nuevoNombre = (document.getElementById(`ne-name-${rol}`)?.value || '').replace(/\s+/g, ' ').trim();
+    const nuevoDoc = (document.getElementById(`ne-doc-${rol}`)?.value || '').replace(/\s+/g, '').trim();
+
+    if (nuevoNombre.length < 3) { showToast('Escribe los nombres y apellidos completos.', 'error'); return; }
+    if (!/^[A-Za-z0-9]{3,20}$/.test(nuevoDoc)) { showToast('El documento solo puede tener letras y números (3 a 20 caracteres).', 'error'); return; }
+
+    const nombreAntes = actual.name || '';
+    const docAntes = actual.document || '';
+    if (nuevoNombre === nombreAntes && nuevoDoc === docAntes) {
+        cerrarEditarBasicos(rol);
+        showToast('No hay cambios para guardar.', 'info');
+        return;
+    }
+
+    // El nombre/documento "principal" de la fila sale del retiro si existe, si no del ingreso
+    const rolPrincipal = novelty.retiro ? 'retiro' : (novelty.ingreso ? 'ingreso' : null);
+    const updates = {};
+    if (anidado) {
+        updates[`${rol}/name`] = nuevoNombre;
+        updates[`${rol}/document`] = nuevoDoc;
+    }
+    if (!anidado || rol === rolPrincipal) {
+        updates['name'] = nuevoNombre;
+        updates['document'] = nuevoDoc;
+    }
+    // Rastro de la corrección (qué había antes)
+    updates[`historialEdiciones/${Date.now()}`] = {
+        rol,
+        fecha: new Date().toISOString(),
+        antes: { name: nombreAntes, document: docAntes },
+        despues: { name: nuevoNombre, document: nuevoDoc }
+    };
+
+    const esArchivada = currentNoveltyIsArchived;
+    const base = AsociacionesModule.getRef(esArchivada ? 'archived' : 'novelties');
+    const btn = document.getElementById(`ne-save-${rol}`);
+    if (btn) btn.disabled = true;
+
+    database.ref(`${base}/${novelty.id}`).update(updates)
+        .then(() => {
+            const aplicar = (n) => {
+                if (!n) return;
+                if (n[rol] && typeof n[rol] === 'object') { n[rol].name = nuevoNombre; n[rol].document = nuevoDoc; }
+                if (!(n[rol] && typeof n[rol] === 'object') || rol === rolPrincipal) { n.name = nuevoNombre; n.document = nuevoDoc; }
+            };
+            aplicar(novelty);
+            aplicar((esArchivada ? archivedNovelties : currentNovelties).find(n => n.id === novelty.id));
+
+            showToast('Nombre y documento actualizados.', 'success');
+            refreshNoveltyModal();
+            if (esArchivada) filterArchivedNovelties(); else filterNovelties();
+        })
+        .catch((error) => {
+            if (btn) btn.disabled = false;
+            showToast('No se pudo guardar: ' + error.message, 'error');
+        });
 }
 
 function renderRetiroTab(novelty) {
@@ -1592,6 +1587,7 @@ function renderRetiroTab(novelty) {
                 </small>
             </div>
         </div>
+        ${renderEditarBasicos(novelty, 'retiro')}
         <div class="novelty-data-grid">
             <div class="novelty-data-card">
                 <span><i class=ic-id-card></i> Documento</span>
@@ -1668,6 +1664,7 @@ function renderIngresoTab(novelty) {
                 </small>
             </div>
         </div>
+        ${renderEditarBasicos(novelty, 'ingreso')}
         <div class="novelty-data-grid">
             <div class="novelty-data-card">
                 <span><i class=ic-user></i> Nombre</span>
@@ -2539,7 +2536,7 @@ function onRegionalChange() {
             if (secUDS) secUDS.style.opacity = '0.5';
 
             if (!regional) {
-                if (selMod) { selMod.innerHTML = '<option value="">-- Primero Regional --</option>'; selMod.disabled = true; }
+                if (selMod) { selMod.innerHTML = '<option value="">-- Primero Centro Zonal --</option>'; selMod.disabled = true; }
                 if (secMod) secMod.classList.add('opacity-50');
                 wizardSync();
                 return;
@@ -2857,7 +2854,7 @@ function wizardSync() {
     wizardRender(active, sels);
 }
 
-const WIZARD_LABELS = ['Regional', 'Modalidad', 'Contrato', 'UDS'];
+const WIZARD_LABELS = ['Centro Zonal', 'Modalidad', 'Contrato', 'UDS'];
 const WIZARD_FIELD_IDS = ['sectionRegional', 'sectionModalidad', 'sectionContrato', 'sectionUDS'];
 
 function wizardRender(activeStep, sels) {

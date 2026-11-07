@@ -589,13 +589,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="filter-grid">
+                    <div class="filter-grid filter-grid--compact">
                         <div class="search-box">
                             <span class="search-icon"><i class=ic-search></i></span>
                             <input type="text" id="searchInput" placeholder="Buscar nombre o documento..." oninput="filterNovelties()">
                         </div>
                         <select id="filterRegional" onchange="filterNovelties()">
-                            <option value="">Todas las regionales</option>
+                            <option value="">Todos los centros zonales</option>
                         </select>
                         <select id="filterModalidad" onchange="filterNovelties()">
                             <option value="">Todas las modalidades</option>
@@ -605,7 +605,7 @@
                             <option value="CDI">CDI</option>
                             <option value="FAMIBIENVENIR">FAMIBIENVENIR</option>
                         </select>
-                        <select id="filterContract" onchange="filterNovelties()">
+                        <select id="filterContract" onchange="onFilterContractChange(false)">
                             <option value="">Todos los contratos</option>
                             <!-- Contratos cargados dinámicamente -->
                         </select>
@@ -730,13 +730,13 @@
                         </div>
                     </div>
                     
-                    <div class="filter-grid">
+                    <div class="filter-grid filter-grid--compact">
                         <div class="search-box">
                             <span class="search-icon"><i class=ic-search></i></span>
                             <input type="text" id="searchInputArchivados" placeholder="Buscar nombre o documento..." oninput="filterArchivedNovelties()">
                         </div>
                         <select id="filterRegionalArchivados" onchange="filterArchivedNovelties()">
-                            <option value="">Todas las regionales</option>
+                            <option value="">Todos los centros zonales</option>
                         </select>
                         <select id="filterModalidadArchivados" onchange="filterArchivedNovelties()">
                             <option value="">Todas las modalidades</option>
@@ -746,7 +746,7 @@
                             <option value="CDI">CDI</option>
                             <option value="FAMIBIENVENIR">FAMIBIENVENIR</option>
                         </select>
-                        <select id="filterContractArchivados" onchange="filterArchivedNovelties()">
+                        <select id="filterContractArchivados" onchange="onFilterContractChange(true)">
                             <option value="">Todos los contratos</option>
                             <!-- Contratos cargados dinámicamente -->
                         </select>
@@ -808,7 +808,7 @@
                     <div class="filter-grid" style="margin-top:16px;">
                         <div class="search-box">
                             <span class="search-icon"><i class=ic-search></i></span>
-                            <input type="text" id="segBandejaBusqueda" placeholder="Buscar por nombre, RC, contrato, regional o UDS..." oninput="SeguimientoModule.filtrarBandeja()">
+                            <input type="text" id="segBandejaBusqueda" placeholder="Buscar por nombre, RC, contrato, centro zonal o UDS..." oninput="SeguimientoModule.filtrarBandeja()">
                         </div>
                         <select id="segBandejaFiltroEstado" onchange="SeguimientoModule.filtrarBandeja()">
                             <option value="">Todos los estados</option>
@@ -824,7 +824,7 @@
                                     <th>RC</th>
                                     <th>Código UDS</th>
                                     <th>Contrato</th>
-                                    <th>Regional</th>
+                                    <th>Centro Zonal</th>
                                     <th>Estado</th>
                                     <th>Correos</th>
                                     <th>Última actividad</th>
@@ -1969,14 +1969,14 @@
 
           <!-- ══ PASO 2: CONTRATOS ══ -->
           <div class="cw-panel" id="cwPanel3">
-            <div class="cw-alert"><span><i class=ic-info></i></span> Agrega los contratos asociados a esta organización. Cada contrato puede tener un color, regional y modalidad.</div>
+            <div class="cw-alert"><span><i class=ic-info></i></span> Agrega los contratos asociados a esta organización. Cada contrato puede tener un color, centro zonal y modalidad.</div>
             <div class="cw-card" style="margin-bottom:14px">
               <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
                 <div class="config-field" style="flex:1;min-width:120px;margin-bottom:0"><label style="font-size:10px">Código</label><input type="text" id="ajustesNuevoCodigoContrato" placeholder="ej: 665"></div>
                 <div class="config-field" style="flex:2;min-width:180px;margin-bottom:0"><label style="font-size:10px">Etiqueta</label><input type="text" id="ajustesNuevoLabelContrato" placeholder="ej: Contrato 41006652024"></div>
                 <div class="config-field" style="min-width:150px;margin-bottom:0">
-                  <label style="font-size:10px">Regional</label>
-                  <select id="ajustesNuevaRegionalContrato"><option value="">Regional...</option><option>Regional Neiva</option><option>Regional Gaitana</option></select>
+                  <label style="font-size:10px">Centro Zonal</label>
+                  <select id="ajustesNuevaRegionalContrato"><option value="">Centro Zonal...</option><option>Regional Neiva</option><option>Regional Gaitana</option></select>
                 </div>
                 <div class="config-field" style="min-width:150px;margin-bottom:0">
                   <label style="font-size:10px">Modalidad</label>

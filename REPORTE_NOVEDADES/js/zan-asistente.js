@@ -347,7 +347,7 @@
   };
 
   var WIZARD = [
-    ['regionalSelect', '<b>Paso 1 · Regional.</b> Elige la <b>Regional</b> donde se reporta la novedad.'],
+    ['regionalSelect', '<b>Paso 1 · Centro Zonal.</b> Elige el <b>Centro Zonal</b> donde se reporta la novedad.'],
     ['modalidadSelect', '<b>Paso 2 · Modalidad.</b> Ahora dime la <b>Modalidad</b> (tipo de servicio) de tu UDS.'],
     ['contractNumber', '<b>Paso 3 · Contrato.</b> Selecciona el <b>Contrato</b> al que pertenece la UDS.'],
     ['mainUdsDropdown', '<b>Paso 4 · UDS.</b> Elige tu <b>UDS</b>. Es la última parte de la ubicación.']
@@ -680,8 +680,8 @@
   // ------------------------------------------------------------------------
   var TIPS = {
     ubicacion: [
-      'Las listas van en cascada: primero <b>Regional</b>, luego <b>Modalidad</b>, <b>Contrato</b> y <b>UDS</b>.',
-      'Puedes tocar una miga de pan (ej. <b>Regional: …</b>) para volver a cambiar un paso.',
+      'Las listas van en cascada: primero <b>Centro Zonal</b>, luego <b>Modalidad</b>, <b>Contrato</b> y <b>UDS</b>.',
+      'Puedes tocar una miga de pan (ej. <b>Centro Zonal: …</b>) para volver a cambiar un paso.',
       'Si te equivocaste, el botón de <b>limpiar formulario</b> borra todo y empieza de cero.'
     ],
     accion: [

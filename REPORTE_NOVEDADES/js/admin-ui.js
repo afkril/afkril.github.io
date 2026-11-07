@@ -15,7 +15,7 @@ const AdminUI = (() => {
     const CONSEJOS_DEL_DIA = [
         'Verifica diariamente las novedades pendientes para mantener la información actualizada.',
         'Revisa la Papelera de vez en cuando: los registros eliminados se purgan solos a los 7 días.',
-        'Usa los filtros por Regional, Contrato o UDS para encontrar novedades más rápido.',
+        'Usa los filtros por Centro Zonal, Contrato o UDS para encontrar novedades más rápido.',
         'Marca como "cargado al CUENTAME" apenas proceses una novedad, para no perder el orden.',
         'Los registros con el badge "DUP" pueden indicar un documento repetido: revísalos antes de archivar.',
         'Exporta un respaldo en Excel al cierre de cada mes para tener siempre una copia local.'

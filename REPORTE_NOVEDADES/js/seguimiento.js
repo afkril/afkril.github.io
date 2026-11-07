@@ -318,7 +318,7 @@ const SeguimientoModule = (() => {
                     <span class="qr2-summary-val">${d.codigoUds}</span>
                 </div>
                 <div class="qr2-summary-item">
-                    <span class="qr2-summary-label">Regional</span>
+                    <span class="qr2-summary-label">Centro Zonal</span>
                     <span class="qr2-summary-val">${d.regional}</span>
                 </div>
                 <div class="qr2-summary-item">
@@ -374,7 +374,7 @@ const SeguimientoModule = (() => {
             <div class="qr2-aside-row"><span><i class=ic-tag></i> Tipo:</span><strong><i class="qr2-dot" style="background:${color}"></i>${_tipoDe(novelty)}</strong></div>
             <div class="qr2-aside-row"><span><i class=ic-file-text></i> Contrato:</span><strong>${d.contrato}</strong></div>
             <div class="qr2-aside-row"><span><i class=ic-hash></i> Código UDS:</span><strong>${d.codigoUds}</strong></div>
-            <div class="qr2-aside-row"><span><i class=ic-globe></i> Regional:</span><strong>${d.regional}</strong></div>
+            <div class="qr2-aside-row"><span><i class=ic-globe></i> Centro Zonal:</span><strong>${d.regional}</strong></div>
             <div class="qr2-aside-row"><span>${novelty.type === 'ambos' ? '<i class=ic-calendar></i> Fechas:' : '<i class=ic-calendar></i> Fecha:'}</span><strong>${fecha || 'N/A'}</strong></div>
         </div>
 
@@ -620,7 +620,7 @@ const SeguimientoModule = (() => {
                 <div class="data-item-c"><span class="data-label-c"><i class=ic-id-card></i> RC</span><span class="data-value-c">${d.rc}</span></div>
                 <div class="data-item-c"><span class="data-label-c"><i class=ic-hash></i> Código UDS</span><span class="data-value-c">${d.codigoUds}</span></div>
                 <div class="data-item-c"><span class="data-label-c"><i class=ic-file-text></i> Contrato</span><span class="data-value-c">${d.contrato}</span></div>
-                <div class="data-item-c"><span class="data-label-c"><i class=ic-globe></i> Regional</span><span class="data-value-c">${d.regional}</span></div>
+                <div class="data-item-c"><span class="data-label-c"><i class=ic-globe></i> Centro Zonal</span><span class="data-value-c">${d.regional}</span></div>
             </div>
             <div class="seg-hist-list">${historialHTML}</div>
             <div class="seg-panel-actions">

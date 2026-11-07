@@ -37,7 +37,7 @@ const PrivacidadOperador = (() => {
 <tr><td>Fecha de valoración, peso, talla, perímetro braquial y estado nutricional</td><td>Seguimiento nutricional que exige el servicio y registro en Cuéntame</td><td>A, S, M</td></tr>
 <tr><td>Régimen de salud y EPS</td><td>Registrar la afiliación del beneficiario en Cuéntame</td><td>A, S, M</td></tr>
 <tr><td>Acudiente: documento, nombre y fecha de nacimiento</td><td>Identificar a quien representa al beneficiario y autoriza el tratamiento</td><td>A</td></tr>
-<tr><td>Regional, modalidad, contrato, UDS y fechas de ingreso o retiro</td><td>Asociar la novedad al servicio y a la unidad correctos</td><td>A</td></tr>
+<tr><td>Centro zonal, modalidad, contrato, UDS y fechas de ingreso o retiro</td><td>Asociar la novedad al servicio y a la unidad correctos</td><td>A</td></tr>
 <tr><td>Correo para recibir respuesta</td><td>Enviar la confirmación o respuesta de la novedad</td><td>A</td></tr>
 <tr><td>Cuenta de usuario: nombre, correo, contraseña y operador elegido</td><td>Autenticar a la persona y definir a qué operador puede acceder</td><td>A</td></tr>
 </tbody>

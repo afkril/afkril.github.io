@@ -386,7 +386,7 @@ const AsociacionesModule = (() => {
         ['filterRegional','filterRegionalArchivados'].forEach(id => {
             const f = document.getElementById(id);
             if (!f) return;
-            f.innerHTML = '<option value="">Todas las regionales</option>';
+            f.innerHTML = '<option value="">Todos los centros zonales</option>';
             regionales.forEach(r => {
                 const opt = document.createElement('option');
                 opt.value = r; opt.textContent = r;

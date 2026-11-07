@@ -6233,3 +6233,55 @@ body.dark-mode .novelty-empty-state strong {
         padding: 10px;
     }
 }
+
+
+/* Filtros compactos (Novedades Activas / Archivadas): 9 filtros en una fila en pantallas anchas */
+.filter-grid.filter-grid--compact {
+    grid-template-columns: minmax(170px, 1.6fr) repeat(7, minmax(105px, 1fr)) minmax(125px, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.filter-grid--compact input,
+.filter-grid--compact select {
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.78rem !important;
+    min-width: 0;
+    width: 100%;
+    text-overflow: ellipsis;
+}
+.filter-grid--compact .search-box input { padding-left: 2rem !important; }
+@media (max-width: 1280px) {
+    .filter-grid.filter-grid--compact { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+    .filter-grid--compact .search-box { grid-column: 1 / -1; }
+}
+
+
+/* Corrección de nombre y documento en el detalle de la novedad */
+.ne-wrap { margin: -2px 0 12px; }
+.ne-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; font-size: 11.5px; font-weight: 700;
+    color: #2563eb; background: rgba(37, 99, 235, .08);
+    border: 1px solid rgba(37, 99, 235, .25); border-radius: 8px; cursor: pointer;
+}
+.ne-btn:hover { background: rgba(37, 99, 235, .15); }
+.ne-form {
+    grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: end;
+    padding: 10px 12px; border: 1px dashed #cbd5e1; border-radius: 10px; background: #f8fafc;
+}
+.ne-field label { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: .03em; }
+.ne-field input {
+    width: 100%; padding: 6px 9px; font-size: 13px; border: 1px solid #cbd5e1;
+    border-radius: 8px; background: #fff; color: #1e293b;
+}
+.ne-field input:focus { outline: 2px solid rgba(37, 99, 235, .35); border-color: #2563eb; }
+.ne-actions { display: flex; gap: 6px; }
+.ne-save, .ne-cancel { padding: 7px 12px; font-size: 12px; font-weight: 700; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+.ne-save { background: #2563eb; color: #fff; }
+.ne-save:disabled { opacity: .6; cursor: wait; }
+.ne-cancel { background: transparent; color: #64748b; border-color: #cbd5e1; }
+body.dark-mode .ne-form { background: rgba(255,255,255,.04); border-color: #475569; }
+body.dark-mode .ne-field label { color: #94a3b8; }
+body.dark-mode .ne-field input { background: #0f172a; border-color: #475569; color: #f1f5f9; }
+body.dark-mode .ne-cancel { color: #cbd5e1; border-color: #475569; }
+@media (max-width: 640px) { .ne-form { grid-template-columns: 1fr; } }

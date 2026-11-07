@@ -104,29 +104,38 @@ function switchTab(tab) {
             if (typeof AdminUI !== 'undefined') setTimeout(() => AdminUI.refrescarPanel(), 400);
         }
 
+// Llena el select de UDS. Si hay un contrato seleccionado, solo lista las UDS de ese contrato.
+function _fillUDSSelect(selUDS, contrato) {
+            if (!selUDS) return;
+            const previo = selUDS.value;
+            selUDS.innerHTML = '<option value="">Todas las UDS</option>';
+            const data = window.UDS_DATA || {};
+            const listas = contrato ? [data[contrato] || []] : Object.values(data);
+            const nombres = new Set();
+            listas.flat().forEach(([name, code]) => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = `${name} (${code})`;
+                selUDS.appendChild(opt);
+                nombres.add(name);
+            });
+            // Conserva la UDS elegida solo si sigue perteneciendo al contrato
+            selUDS.value = nombres.has(previo) ? previo : '';
+        }
+
 function populateUDSFilter() {
-            const filterUDS = document.getElementById('filterUDS');
-            const filterUDSArchivados = document.getElementById('filterUDSArchivados');
-            
-            if (filterUDS) {
-                filterUDS.innerHTML = '<option value="">Todas las UDS</option>';
-                Object.values(window.UDS_DATA).flat().forEach(([name, code]) => {
-                    const opt = document.createElement('option');
-                    opt.value = name;
-                    opt.textContent = `${name} (${code})`;
-                    filterUDS.appendChild(opt);
-                });
-            }
-            
-            if (filterUDSArchivados) {
-                filterUDSArchivados.innerHTML = '<option value="">Todas las UDS</option>';
-                Object.values(window.UDS_DATA).flat().forEach(([name, code]) => {
-                    const opt = document.createElement('option');
-                    opt.value = name;
-                    opt.textContent = `${name} (${code})`;
-                    filterUDSArchivados.appendChild(opt);
-                });
-            }
+            const cAct = document.getElementById('filterContract');
+            const cArc = document.getElementById('filterContractArchivados');
+            _fillUDSSelect(document.getElementById('filterUDS'), cAct ? cAct.value : '');
+            _fillUDSSelect(document.getElementById('filterUDSArchivados'), cArc ? cArc.value : '');
+        }
+
+// Se dispara al cambiar el contrato: limita el listado de UDS y aplica el filtro
+function onFilterContractChange(archivados) {
+            const sufijo = archivados ? 'Archivados' : '';
+            const contrato = (document.getElementById('filterContract' + sufijo) || {}).value || '';
+            _fillUDSSelect(document.getElementById('filterUDS' + sufijo), contrato);
+            if (archivados) filterArchivedNovelties(); else filterNovelties();
         }
 
 let _configBloqueoRef = null;
@@ -279,3 +288,46 @@ setInterval(verificarBloqueo, 3600000);
 document.addEventListener('DOMContentLoaded', () => {
             AsociacionesModule.onPerfilCargado(() => cargarConfigBloqueo());
         });
+
+
+/* ── Filtros con nombre corto cuando están cerrados y "Todos los/Todas las…" al abrirlos ── */
+(function () {
+    const ETIQUETAS = {
+        filterRegional:  ['Centro zonal', 'Todos los centros zonales'],
+        filterModalidad: ['Modalidad',    'Todas las modalidades'],
+        filterContract:  ['Contrato',     'Todos los contratos'],
+        filterType:      ['Tipo',         'Todos los tipos'],
+        filterMonth:     ['Mes',          'Todos los meses'],
+        filterUDS:       ['UDS',          'Todas las UDS'],
+        filterStatus:    ['Estado',       'Todos los estados']
+    };
+    Object.keys(ETIQUETAS).forEach(id => {
+        if (id !== 'filterStatus') ETIQUETAS[id + 'Archivados'] = ETIQUETAS[id];
+    });
+
+    function poner(sel, i) { if (sel.options[0]) sel.options[0].text = ETIQUETAS[sel.id][i]; }
+
+    function iniciar() {
+        Object.keys(ETIQUETAS).forEach(id => {
+            const sel = document.getElementById(id);
+            if (!sel || sel._etiquetaCorta) return;
+            sel._etiquetaCorta = true;
+            sel.title = ETIQUETAS[id][1];
+            poner(sel, 0);
+            // Al abrir: texto completo. Al cerrar/cambiar: texto corto.
+            sel.addEventListener('mousedown', () => poner(sel, 1));
+            sel.addEventListener('keydown', () => poner(sel, 1));
+            sel.addEventListener('change', () => poner(sel, 0));
+            sel.addEventListener('blur', () => poner(sel, 0));
+            // Si el listado se rellena de nuevo (contratos, UDS, centros zonales), reaplica el texto corto
+            new MutationObserver(() => poner(sel, 0)).observe(sel, { childList: true });
+        });
+        ['searchInput', 'searchInputArchivados'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.placeholder = 'Buscar nombre o documento';
+        });
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+    else iniciar();
+})();
