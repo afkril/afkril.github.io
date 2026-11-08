@@ -921,3 +921,71 @@ body.dash-page{--ui-scale:.8;}
 .perfil-card .pc-now{position:absolute;top:8px;right:8px;font-size:10px;font-weight:800;color:var(--azul);background:#dbe6ff;padding:2px 7px;border-radius:99px;}
 @media (max-width:480px){.perfil-grid{grid-template-columns:1fr;}}
 @media (prefers-reduced-motion:reduce){.perfil-card,.perfil-pill,.perfil-ico{transition:none;}}
+
+
+/* ============ Visor de archivos dentro de la página ============ */
+.fv-bg{position:fixed;inset:0;z-index:500;background:rgba(15,20,35,.6);display:flex;align-items:center;justify-content:center;padding:20px;animation:fvIn .18s ease-out;}
+@keyframes fvIn{from{opacity:0;}to{opacity:1;}}
+.fv-panel{background:#fff;border-radius:16px;width:min(1100px,100%);height:min(88vh,100%);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);}
+.fv-head{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--gris-borde);flex-shrink:0;}
+.fv-name{flex:1;min-width:0;font-family:var(--font-display);font-weight:800;font-size:14.5px;color:#0f1b3d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fv-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.fv-x{border:0;background:none;font-size:26px;line-height:1;cursor:pointer;color:var(--texto-suave);padding:0 4px;}
+.fv-x:hover{color:#0f1b3d;}
+.fv-body{flex:1;min-height:0;overflow:auto;background:#f4f6fa;display:flex;flex-direction:column;}
+.fv-frame{flex:1;width:100%;border:0;background:#fff;}
+.fv-img{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;}
+.fv-img img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 8px 24px -10px rgba(15,27,61,.35);}
+.fv-msg{margin:auto;text-align:center;color:#33405c;padding:30px;line-height:1.5;}
+.fv-spin{display:inline-block;width:18px;height:18px;border:2.5px solid #cdd8f1;border-top-color:#2d7cf6;border-radius:50%;margin-right:10px;vertical-align:-4px;animation:fvSpin .8s linear infinite;}
+@keyframes fvSpin{to{transform:rotate(360deg);}}
+.fv-note{font-size:12px;color:var(--texto-suave);padding:8px 16px;background:#eef2fb;border-bottom:1px solid var(--gris-borde);flex-shrink:0;}
+.fv-doc{background:#fff;margin:16px auto;padding:36px 44px;width:min(820px,calc(100% - 32px));border-radius:8px;box-shadow:0 8px 24px -12px rgba(15,27,61,.3);line-height:1.6;color:#1b2540;font-size:14px;overflow-wrap:anywhere;}
+.fv-doc h1,.fv-doc h2,.fv-doc h3{font-family:var(--font-display);color:#0f1b3d;margin:1em 0 .4em;}
+.fv-doc img{max-width:100%;height:auto;}
+.fv-doc table{border-collapse:collapse;max-width:100%;display:block;overflow-x:auto;}
+.fv-doc td,.fv-doc th{border:1px solid #cdd5e4;padding:5px 9px;}
+.fv-tabs{display:flex;gap:4px;padding:8px 12px 0;background:#e9eef8;flex-shrink:0;overflow-x:auto;}
+.fv-tab{border:0;background:#dbe3f3;color:#33405c;font:inherit;font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:9px 9px 0 0;cursor:pointer;white-space:nowrap;}
+.fv-tab.on{background:#fff;color:var(--azul);}
+.fv-sheet{flex:1;overflow:auto;background:#fff;}
+.fv-table{border-collapse:collapse;font-size:12.5px;min-width:100%;}
+.fv-table th,.fv-table td{border:1px solid #e1e6f0;padding:4px 9px;white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis;}
+.fv-table thead th{position:sticky;top:0;background:#eef2fb;color:#5b6783;font-weight:700;z-index:1;}
+.fv-table tbody th{background:#f4f6fa;color:#8190ab;font-weight:600;text-align:center;position:sticky;left:0;}
+.fv-pre{margin:0;padding:16px;font-size:12.5px;white-space:pre-wrap;word-break:break-word;background:#fff;flex:1;}
+@media (max-width:640px){.fv-bg{padding:0;}.fv-panel{border-radius:0;height:100%;}.fv-doc{padding:20px 16px;}}
+
+/* Visor: Word como páginas y Excel con estilos */
+.fv-pages{flex:1;overflow:auto;background:#dfe4ee;}
+.fv-pages-in{padding:14px 0;}
+.fv-pages-in .docx-wrapper{background:transparent !important;padding:0 !important;align-items:center;}
+.fv-pages-in .docx-wrapper > section.docx{box-shadow:0 6px 20px -8px rgba(15,27,61,.45) !important;margin-bottom:14px !important;max-width:none;}
+.fv-xl{border-collapse:collapse;table-layout:fixed;font-size:13px;font-family:Calibri,Carlito,'Segoe UI',Arial,sans-serif;background:#fff;}
+.fv-xl td{padding:2px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom;}
+.fv-xl.grid td{border:1px solid #e1e1e1;}
+.fv-xl thead th{position:sticky;top:0;z-index:2;background:#eef2fb;color:#5b6783;font-weight:700;font-size:12px;border:1px solid #dde3f0;}
+.fv-xl tbody th{position:sticky;left:0;z-index:1;background:#f4f6fa;color:#8190ab;font-weight:600;font-size:11.5px;text-align:center;border:1px solid #dde3f0;}
+.fv-xl th{padding:1px 4px;line-height:1.3;}
+.fv-xl td{line-height:1.3;}
+
+/* ============ PANELES LATERALES: desplazamiento, plegables y acciones de archivo ============ */
+/* Antes, las tarjetas con overflow:hidden (ficha de la unidad) se encogían dentro de la columna y el panel no dejaba bajar. */
+.drawer-body{min-height:0;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.drawer-body > *{flex-shrink:0;}
+.dr-flash{background:#f0fbf4;border:1px solid #c6ebd5;color:#177a46;border-radius:12px;padding:10px 14px;font-size:12.5px;font-weight:600;}
+.dr-fmt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;background:#fff;border:1px solid var(--gris-borde);border-radius:12px;padding:10px 14px;}
+.ext-chips{display:flex;flex-wrap:wrap;gap:6px;min-width:0;}
+.dr-sec-toggle{cursor:pointer;user-select:none;}
+.dr-sec-toggle .chev,.dr-file-head .chev{display:inline-flex;transition:transform .2s;color:var(--texto-suave);flex-shrink:0;}
+.dr-sec.collapsed .dr-sec-toggle .chev,.dr-file.collapsed .dr-file-head .chev{transform:rotate(-90deg);}
+.dr-sec.collapsed .dr-files{display:none;}
+.dr-file-head[data-fold]{cursor:pointer;align-items:center;}
+.dr-file.collapsed .dr-file-detail{display:none;}
+.dr-file-sub{display:none;font-size:11.5px;color:var(--texto-suave);margin:4px 0 0 24px;}
+.dr-file.collapsed .dr-file-sub{display:block;}
+.dr-file-actions{flex-wrap:wrap;}
+.aviso.info{background:#eef4ff;border-color:#c9d9fb;color:#1c3f9e;}
+.dlg-warn{background:#fff3f2;border:1px solid #f6cfcd;color:#8c1519;border-radius:10px;padding:10px 12px;font-size:13px;overflow-wrap:anywhere;}
+.dlg-check{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:600;cursor:pointer;line-height:1.4;}
+.dlg-check input{margin-top:3px;}

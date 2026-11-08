@@ -637,6 +637,7 @@
     const ARCH_ESTADO = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'Por revisar'], rechazado: ['naranja', 'Rechazado'] };
     const ACCION_LABEL = {
       archivo_subido: 'Archivo cargado', archivo_renombrado: 'Archivo renombrado', archivo_eliminado: 'Archivo a la papelera',
+      archivo_eliminado_admin: 'Archivo eliminado (administración)', archivo_reemplazado: 'Archivo reemplazado', notificacion_unidad: 'Aviso enviado a la unidad',
       archivo_restaurado: 'Archivo restaurado', archivo_aprobado: 'Archivo aprobado', archivo_rechazado: 'Archivo rechazado',
       archivo_pendiente: 'Archivo devuelto a revisión', no_aplica_marcado: 'No aplica marcado', no_aplica_quitado: 'No aplica quitado',
       mes_creado: 'Mes creado', mes_duplicado: 'Mes duplicado', mes_cerrado: 'Mes cerrado', mes_reabierto: 'Mes reabierto',
@@ -1067,9 +1068,48 @@
       { id: 'pdf', label: 'PDF', exts: ['pdf'] },
       { id: 'word', label: 'Word', exts: ['doc', 'docx'] },
       { id: 'excel', label: 'Excel', exts: ['xls', 'xlsx'] },
+      { id: 'ppt', label: 'PowerPoint', exts: ['ppt', 'pptx'] },
       { id: 'img', label: 'Imágenes', exts: ['jpg', 'jpeg', 'png', 'gif', 'webp'] },
+      { id: 'txt', label: 'Texto / CSV', exts: ['txt', 'csv'] },
       { id: 'zip', label: 'Comprimidos', exts: ['zip', 'rar', '7z'] }
     ];
+    // Editor de formatos (lo usan «Meses y temario» y el detalle de la matriz).
+    // Sin nada marcado ni escrito = se acepta cualquier formato.
+    function extEditorHtml(current) {
+      current = current || [];
+      const known = EXT_GROUPS.reduce(function (a, g) { return a.concat(g.exts); }, []);
+      const others = current.filter(function (e) { return known.indexOf(e) === -1; });
+      const hasExt = function (g) { return g.exts.some(function (e) { return current.indexOf(e) !== -1; }); };
+      return '<div class="ext-editor"><div class="chk-list cols ext-groups">' +
+          EXT_GROUPS.map(function (g) { return '<label><input type="checkbox" value="' + g.id + '"' + (hasExt(g) ? ' checked' : '') + '> ' + g.label + '</label>'; }).join('') + '</div>' +
+        '<div class="field" style="margin:10px 0 0;"><label>Otros formatos <span class="muted">(separados por coma, ej. dwg, mp4, psd)</span></label>' +
+          '<input type="text" class="ext-other" value="' + escapeHtml(others.join(', ')) + '" placeholder="dwg, mp4, psd"></div>' +
+        '<div class="muted" style="font-size:12px;margin-top:8px;">Si no marcas ni escribes nada, se aceptará <b>cualquier formato</b>. ' +
+          '<a href="#" class="link-btn ext-any">Permitir cualquier formato</a></div></div>';
+    }
+    function extEditorBind(root) {
+      const any = root.querySelector('.ext-any');
+      if (!any) return;
+      any.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        root.querySelectorAll('.ext-groups input').forEach(function (i) { i.checked = false; });
+        root.querySelector('.ext-other').value = '';
+      });
+    }
+    // Devuelve { list: [...] } o { error: '...' }
+    function extEditorCollect(root) {
+      const list = [];
+      root.querySelectorAll('.ext-groups input:checked').forEach(function (i) {
+        const g = EXT_GROUPS.filter(function (x) { return x.id === i.value; })[0];
+        if (g) g.exts.forEach(function (e) { if (list.indexOf(e) === -1) list.push(e); });
+      });
+      const raw = (root.querySelector('.ext-other').value || '').split(/[,;\s]+/).map(function (x) { return x.replace(/^\./, '').toLowerCase().trim(); }).filter(Boolean);
+      for (let i = 0; i < raw.length; i++) {
+        if (!/^[a-z0-9]{1,10}$/.test(raw[i])) return { error: 'Formato no válido: «' + raw[i] + '». Usa solo letras y números (ej. pdf, dwg).' };
+        if (list.indexOf(raw[i]) === -1) list.push(raw[i]);
+      }
+      return { list: list };
+    }
 
     async function openTopicsModal(month) {
       let topics = await gsRun('apiAdminGetMonthTopics', token, month.id);
@@ -1137,7 +1177,6 @@
 
       function editTopic(t) {
         const listWrap = document.getElementById('topicsListModal');
-        const hasExt = function (g) { return g.exts.some(function (e) { return t.extensiones.indexOf(e) !== -1; }); };
         listWrap.innerHTML =
           '<div class="topic-edit">' +
             '<div class="field"><label>Nombre del tema</label><input type="text" id="teNombre" value="' + escapeHtml(t.nombre) + '"></div>' +
@@ -1145,20 +1184,21 @@
               '<div class="field"><label>Se exige</label><select id="teObl"><option value="1"' + (t.obligatorio ? ' selected' : '') + '>Obligatorio (cuenta para el avance)</option><option value="0"' + (!t.obligatorio ? ' selected' : '') + '>Opcional (no cuenta)</option></select></div>' +
               '<div class="field"><label>Fecha límite propia</label><input type="date" id="teFecha" value="' + (t.fechaLimite || '') + '"></div>' +
             '</div>' +
-            '<div class="field"><label>Tipos de archivo permitidos <span class="muted">(ninguno marcado = todos)</span></label><div class="chk-list cols" id="teExt">' +
-              EXT_GROUPS.map(function (g) { return '<label><input type="checkbox" value="' + g.id + '"' + (hasExt(g) ? ' checked' : '') + '> ' + g.label + '</label>'; }).join('') + '</div></div>' +
+            '<div class="field"><label>Tipos de archivo permitidos</label><div id="teExt">' + extEditorHtml(t.extensiones) + '</div></div>' +
             '<div class="field" style="margin-bottom:6px;"><label>Contratos a los que se exige <span class="muted">(ninguno marcado = todos)</span></label><div class="chk-list" id="teContratos">' +
               (contratos.length ? contratos.map(function (c) { return '<label><input type="checkbox" value="' + c.id + '"' + (t.contratoIds.indexOf(c.id) !== -1 ? ' checked' : '') + '> ' + escapeHtml(c.nombre) + '</label>'; }).join('') : '<span class="muted">No hay contratos creados.</span>') + '</div></div>' +
             '<div id="teErr" class="alert alert-error" style="display:none;"></div>' +
             '<div style="display:flex;gap:8px;justify-content:flex-end;"><button class="btn btn-secondary btn-sm" id="teCancel" type="button">Cancelar</button><button class="btn btn-primary btn-sm" id="teSave" type="button">Guardar tema</button></div>' +
           '</div>';
+        extEditorBind(document.getElementById('teExt'));
         document.getElementById('teCancel').addEventListener('click', renderTopicsList);
         document.getElementById('teSave').addEventListener('click', function () {
           const btn = this;
           withBusyBtn(btn, async function () {
-            const groups = Array.prototype.map.call(document.querySelectorAll('#teExt input:checked'), function (i) { return i.value; });
-            const exts = [];
-            EXT_GROUPS.forEach(function (g) { if (groups.indexOf(g.id) !== -1) g.exts.forEach(function (e) { exts.push(e); }); });
+            const er0 = document.getElementById('teErr'); er0.style.display = 'none';
+            const ec = extEditorCollect(document.getElementById('teExt'));
+            if (ec.error) { er0.textContent = ec.error; er0.style.display = 'block'; return; }
+            const exts = ec.list;
             const ctr = Array.prototype.map.call(document.querySelectorAll('#teContratos input:checked'), function (i) { return i.value; });
             const f = {
               nombre: document.getElementById('teNombre').value.trim(),
@@ -1167,7 +1207,7 @@
               extensiones: exts, contratoIds: ctr
             };
             try {
-              await gsRun('apiAdminUpdateTopic', token, t.id, f);
+              await gsRun('apiAdminUpdateTopic', token, t.id, f, perfilActual);
               topics = await gsRun('apiAdminGetMonthTopics', token, month.id);
               renderTopicsList(); afterChange();
             } catch (e) { const er = document.getElementById('teErr'); er.textContent = e.message; er.style.display = 'block'; }
@@ -1670,11 +1710,19 @@
 
     // ---- Detalle de una casilla de la matriz (panel lateral con revisión) ----
     let cdCurrent = null;
+    let cdKey = '', cdOpen = null, cdSecOpen = true, cdFlash = '';   // plegado de «Archivos cargados» y mensaje de la última acción
+    const CHEV_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+    const SWAP_SVG = SVG('<path d="M17 3l4 4-4 4"/><path d="M3 11V9a2 2 0 012-2h16"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a2 2 0 01-2 2H3"/>');
+    const TRASH_SVG = SVG('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>');
     function openCellDrawer(userId, topicId) {
       const row = currentStatus.matrix.find(function (r) { return r.userId === userId; });
       const cell = row.cells.find(function (c) { return c.topicId === topicId; });
       const topic = currentStatus.topics.find(function (t) { return t.id === topicId; });
       cdCurrent = { userId: userId, topicId: topicId };
+      if (cdKey !== userId + '::' + topicId) { cdKey = userId + '::' + topicId; cdOpen = null; cdSecOpen = true; }
+      // Primera vez en esta carpeta: con 1-2 archivos se ven abiertos; con más, plegados para ver la lista completa de un vistazo
+      if (!cdOpen) { cdOpen = {}; cell.files.forEach(function (f) { cdOpen[f.id] = cell.files.length <= 2; }); }
+      const flash = cdFlash; cdFlash = '';
       const e = ESTADO[cell.estado];
       const colMap = { verde: ['#1e9e5a', '#e9f9ef'], amarillo: ['#a56a00', '#fff6d9'], naranja: ['#c2540a', '#ffe9d6'], rojo: ['#e0393e', '#fdeceb'], gris: ['#6f7c95', '#eef1f6'], excl: ['#6f7c95', '#eef1f6'] };
       const col = colMap[cell.vencido && cell.estado === 'vacio' ? 'rojo' : e.color];
@@ -1703,7 +1751,7 @@
       if (cell.estado === 'noaplica' && cell.marcadoAt) bSub.push('Marcado el ' + formatDate(cell.marcadoAt) + '.');
       const ultima = cell.files.reduce(function (m, f) { return !m || f.uploadedAt > m ? f.uploadedAt : m; }, '');
 
-      let html =
+      let html = (flash ? '<div class="dr-flash">' + escapeHtml(flash) + '</div>' : '') +
         '<div class="dr-banner ' + (cell.estado === 'vacio' ? (cell.vencido ? 'vencido' : 'vacio') : (cell.estado === 'excluido' ? 'noaplica' : cell.estado)) + '">' +
           '<div><strong>' + escapeHtml(bTitle) + '</strong>' + escapeHtml(bSub.join(' ')) + '</div></div>' +
         '<div><div class="dr-title">Información</div><div class="dr-info">' +
@@ -1715,34 +1763,50 @@
           '<div><div class="k">Último cargue en el tema</div><div class="v">' + (ultima ? formatDate(ultima) : '—') + '</div></div>' +
         '</div></div>';
 
+      const fmts = topic.extensiones || [];
+      html += '<div><div class="dr-title">Formatos de esta carpeta</div><div class="dr-fmt">' +
+        '<div class="ext-chips">' + (fmts.length ? fmts.map(function (x) { return '<span class="tag gris">' + escapeHtml(x.toUpperCase()) + '</span>'; }).join('') : '<span class="tag verde">Cualquier formato</span>') + '</div>' +
+        '<button class="btn btn-secondary btn-sm" id="cdFmt" type="button">Editar formatos</button></div>' +
+        '<div class="dr-note">El cambio aplica al tema «' + escapeHtml(topic.nombre) + '» para todas las unidades de este mes.</div></div>';
+
       if (!n && (cell.estado === 'vacio' || cell.estado === 'noaplica')) {
         html += '<div><button class="btn btn-secondary btn-sm" id="cdNa" type="button">' + (cell.estado === 'noaplica' ? 'Quitar «No aplica»' : 'Marcar como «No aplica»') + '</button></div>';
       }
 
-      html += '<div><div class="dr-title">Archivos cargados (' + n + ')</div><div class="dr-files">';
+      const allOpen = n > 0 && cell.files.every(function (f) { return cdOpen[f.id]; });
+      html += '<div class="dr-sec' + (cdSecOpen ? '' : ' collapsed') + '" id="cdSec">' +
+        '<div class="dr-title dr-sec-toggle" id="cdSecToggle" role="button" tabindex="0" aria-expanded="' + cdSecOpen + '"><span class="chev">' + CHEV_SVG + '</span>Archivos cargados (' + n + ')' +
+        (n > 1 ? '<button class="btn btn-ghost btn-sm" id="cdFoldAll" type="button" style="margin-left:auto;">' + (allOpen ? 'Plegar todo' : 'Desplegar todo') + '</button>' : '') + '</div>' +
+        '<div class="dr-files">';
       if (!n) {
         html += '<div class="dr-empty">No hay archivos cargados en este tema.</div>';
       } else {
         cell.files.slice().sort(function (a, b) { return a.uploadedAt < b.uploadedAt ? 1 : -1; }).forEach(function (f) {
           const parts = splitFileName(f.originalName);
           const ext = parts.ext ? parts.ext.slice(1).toUpperCase() : 'Archivo';
-          html += '<div class="dr-file">' +
-            '<div class="dr-file-head"><span class="ftype-icon">' + fileTypeIcon(f.originalName) + '</span>' +
+          const open = !!cdOpen[f.id];
+          html += '<div class="dr-file' + (open ? '' : ' collapsed') + '" data-fid="' + f.id + '">' +
+            '<div class="dr-file-head" data-fold role="button" tabindex="0" aria-expanded="' + open + '"><span class="chev">' + CHEV_SVG + '</span><span class="ftype-icon">' + fileTypeIcon(f.originalName) + '</span>' +
               '<div class="dr-file-name">' + escapeHtml(f.originalName) + '</div>' + arTag(f.estado) + '</div>' +
+            '<div class="dr-file-sub">Subido ' + formatDate(f.uploadedAt) + ' · ' + formatBytes(f.size) + ' · ' + escapeHtml(ext) + '</div>' +
+            '<div class="dr-file-detail">' +
             '<div class="dr-file-meta">' +
               '<div class="full"><div class="k">Fecha y hora de subida</div><div class="v">' + formatDate(f.uploadedAt) + (f.tardio ? ' · <span class="tag gris">Fuera de plazo</span>' : '') + '</div></div>' +
               '<div><div class="k">Tamaño</div><div class="v">' + formatBytes(f.size) + '</div></div>' +
               '<div><div class="k">Tipo</div><div class="v">' + escapeHtml(ext) + '</div></div>' +
               (f.nombreCargado && f.nombreCargado !== f.originalName ? '<div class="full"><div class="k">Nombre original</div><div class="v">' + escapeHtml(f.nombreCargado) + '</div></div>' : '') +
+              (f.reemplazadoAt ? '<div class="full"><div class="k">Reemplazado por</div><div class="v">' + escapeHtml(f.reemplazadoPor) + ' · ' + formatDate(f.reemplazadoAt) + '</div></div>' : '') +
               (f.estado !== 'pendiente' && f.revisadoAt ? '<div class="full"><div class="k">Revisado por</div><div class="v">' + escapeHtml(f.revisadoPor) + ' · ' + formatDate(f.revisadoAt) + '</div></div>' : '') +
               (f.observacion ? '<div class="full"><div class="k">Motivo del rechazo</div><div class="v" style="color:#9a3a0a;">' + escapeHtml(f.observacion) + '</div></div>' : '') +
             '</div>' +
             '<div class="dr-file-actions">' +
               '<button class="btn btn-secondary btn-sm" data-view="' + f.id + '">' + EYE_SVG + ' Ver</button>' +
               '<button class="btn btn-secondary btn-sm" data-download="' + f.id + '">' + DL_SVG + ' Descargar</button>' +
+              '<button class="btn btn-secondary btn-sm" data-replace="' + f.id + '" title="Subir una versión ajustada con el mismo nombre">' + SWAP_SVG + ' Reemplazar</button>' +
               (f.estado !== 'aprobado' ? '<button class="btn btn-primary btn-sm" data-ok="' + f.id + '">' + OK_SVG + ' Aprobar</button>' : '') +
               (f.estado !== 'rechazado' ? '<button class="btn btn-danger btn-sm" data-no="' + f.id + '">' + NO_SVG + ' Rechazar</button>' : '') +
-            '</div></div>';
+              '<button class="btn btn-danger btn-sm" data-del="' + f.id + '">' + TRASH_SVG + ' Eliminar</button>' +
+            '</div></div></div>';
         });
       }
       html += '</div></div>';
@@ -1752,6 +1816,44 @@
       body.querySelectorAll('[data-view]').forEach(function (btn) { btn.addEventListener('click', function () { fileAction(btn, btn.dataset.view, 'view'); }); });
       body.querySelectorAll('[data-download]').forEach(function (btn) { btn.addEventListener('click', function () { fileAction(btn, btn.dataset.download, 'download'); }); });
       const reopen = function () { return loadStatusKeepDrawer(); };
+      const fileById = function (id) { return cell.files.filter(function (x) { return x.id === id; })[0]; };
+      body.querySelectorAll('[data-replace]').forEach(function (btn) { btn.addEventListener('click', function () { replaceFileFlow(btn, fileById(btn.dataset.replace), row, topic, reopen); }); });
+      body.querySelectorAll('[data-del]').forEach(function (btn) { btn.addEventListener('click', function () { deleteFileFlow(btn, fileById(btn.dataset.del), row, topic, reopen); }); });
+      const fmtBtn = body.querySelector('#cdFmt');
+      if (fmtBtn) fmtBtn.addEventListener('click', function () { editFolderFormats(topic, reopen); });
+      // Plegar / desplegar
+      const setFoldAllLabel = function () {
+        const b = body.querySelector('#cdFoldAll'); if (!b) return;
+        b.textContent = cell.files.every(function (f) { return cdOpen[f.id]; }) ? 'Plegar todo' : 'Desplegar todo';
+      };
+      const toggleSec = function () {
+        cdSecOpen = !cdSecOpen;
+        body.querySelector('#cdSec').classList.toggle('collapsed', !cdSecOpen);
+        body.querySelector('#cdSecToggle').setAttribute('aria-expanded', String(cdSecOpen));
+      };
+      const secT = body.querySelector('#cdSecToggle');
+      secT.addEventListener('click', function (ev) { if (ev.target.closest('#cdFoldAll')) return; toggleSec(); });
+      secT.addEventListener('keydown', function (ev) { if ((ev.key === 'Enter' || ev.key === ' ') && !ev.target.closest('#cdFoldAll')) { ev.preventDefault(); toggleSec(); } });
+      const foldAll = body.querySelector('#cdFoldAll');
+      if (foldAll) foldAll.addEventListener('click', function () {
+        const open = !cell.files.every(function (f) { return cdOpen[f.id]; });
+        cell.files.forEach(function (f) { cdOpen[f.id] = open; });
+        body.querySelectorAll('.dr-file').forEach(function (el) { el.classList.toggle('collapsed', !open); el.querySelector('[data-fold]').setAttribute('aria-expanded', String(open)); });
+        if (!cdSecOpen) toggleSec();
+        setFoldAllLabel();
+      });
+      body.querySelectorAll('.dr-file').forEach(function (el) {
+        const head = el.querySelector('[data-fold]');
+        const toggle = function () {
+          const open = el.classList.contains('collapsed');
+          el.classList.toggle('collapsed', !open);
+          head.setAttribute('aria-expanded', String(open));
+          cdOpen[el.dataset.fid] = open;
+          setFoldAllLabel();
+        };
+        head.addEventListener('click', toggle);
+        head.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(); } });
+      });
       body.querySelectorAll('[data-ok]').forEach(function (btn) { btn.addEventListener('click', function () { reviewOne(btn, btn.dataset.ok, 'aprobado', reopen); }); });
       body.querySelectorAll('[data-no]').forEach(function (btn) { btn.addEventListener('click', function () { reviewOne(btn, btn.dataset.no, 'rechazado', reopen); }); });
       const na = body.querySelector('#cdNa');
@@ -1785,7 +1887,99 @@
       dr.classList.remove('open');
       dr.setAttribute('aria-hidden', 'true');
       document.getElementById('cellDrawerBg').classList.remove('open');
-      cdCurrent = null;
+      cdCurrent = null; cdKey = ''; cdOpen = null;
+    }
+
+    // ---- Acciones de administración sobre un archivo: reemplazar, eliminar, editar formatos ----
+    function normName(n) {
+      n = String(n || '');
+      const i = n.lastIndexOf('.'); if (i > 0) n = n.slice(0, i);
+      return n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[\s_\-]+/g, ' ').trim();
+    }
+    // Los avisos de la página quedan detrás del panel, por eso los errores de estas acciones se muestran en un diálogo.
+    function dlgNotice(title, html) { return openDlg(title, '<p style="margin:0;line-height:1.5;">' + html + '</p>', [{ label: 'Entendido', cls: 'btn-primary', value: true }]); }
+
+    async function replaceFileFlow(btn, f, row, topic, reopen) {
+      if (!f) return;
+      const inp = document.createElement('input');
+      inp.type = 'file'; inp.style.display = 'none';
+      document.body.appendChild(inp);
+      inp.addEventListener('change', async function () {
+        const file = inp.files && inp.files[0];
+        inp.remove();
+        if (!file) return;
+        if (file.size > MAX_FILE_MB * 1024 * 1024) { dlgNotice('Archivo demasiado grande', 'El archivo supera el límite de ' + MAX_FILE_MB + ' MB.'); return; }
+        if (file.name.lastIndexOf('.') < 1) { dlgNotice('Falta la extensión', 'El archivo debe tener una extensión válida (por ejemplo .pdf, .docx).'); return; }
+        const keys = [normName(f.nombreCargado), normName(f.originalName)].filter(Boolean);
+        if (keys.indexOf(normName(file.name)) === -1) {
+          dlgNotice('El nombre no coincide',
+            'Para reemplazar este archivo, el nuevo debe llamarse igual (la extensión puede cambiar):<br><b>' + escapeHtml(f.originalName) + '</b>' +
+            (f.nombreCargado && f.nombreCargado !== f.originalName ? '<br>o <b>' + escapeHtml(f.nombreCargado) + '</b>' : '') +
+            '<br><br>Elegiste: <b>' + escapeHtml(file.name) + '</b>.<br>Si descargaste el archivo desde aquí, conserva su nombre al guardar tu ajuste.');
+          return;
+        }
+        const ajuste = await openDlg('Reemplazar archivo',
+          '<p style="margin:0 0 12px;line-height:1.5;">Se reemplazará <b>' + escapeHtml(f.originalName) + '</b> por <b>' + escapeHtml(file.name) + '</b> (' + formatBytes(file.size) + ').</p>' +
+          '<div class="field" style="margin-bottom:10px;"><label>¿Qué ajustaste? <span class="muted">(la unidad lo verá en su aviso)</span></label><textarea id="dlgText" rows="3" placeholder="Ej: Se corrigió la fecha y se agregó la firma."></textarea></div>' +
+          '<div class="muted" style="font-size:12px;line-height:1.45;">El archivo volverá a «Por revisar», se avisará a ' + escapeHtml(row.nombreUnidad) + ' y quedará en la bitácora. La versión anterior queda en la papelera de Drive.</div>', [
+          { label: 'Cancelar', value: null },
+          { label: 'Reemplazar archivo', cls: 'btn-primary',
+            validate: function (b) { return b.querySelector('#dlgText').value.trim() ? true : 'Describe el ajuste: es obligatorio.'; },
+            collect: function (b) { return b.querySelector('#dlgText').value.trim(); } }
+        ], function (b) { b.querySelector('#dlgText').focus(); });
+        if (ajuste === null) return;
+        await withBusyBtn(btn, async function () {
+          try {
+            const data = await readFileAsBase64(file);
+            await gsRun('apiAdminReplaceFile', token, f.id, data, ajuste, perfilActual);
+            cdFlash = 'Archivo reemplazado. ' + row.nombreUnidad + ' recibió el aviso y quedó registrado en la bitácora.';
+            await reopen(); markDirtyExceptCurrent(); refreshBadges();
+          } catch (err) { dlgNotice('No se pudo reemplazar', escapeHtml(err.message || String(err))); }
+        });
+      });
+      inp.click();
+    }
+
+    async function deleteFileFlow(btn, f, row, topic, reopen) {
+      if (!f) return;
+      const motivo = await openDlg('Eliminar archivo',
+        '<div class="dlg-warn"><b>' + escapeHtml(f.originalName) + '</b><br><span class="muted">' + escapeHtml(row.nombreUnidad) + ' · ' + escapeHtml(topic.nombre) + '</span></div>' +
+        '<div class="field" style="margin:12px 0 10px;"><label>Motivo de la eliminación <span class="muted">(la unidad lo recibirá)</span></label><textarea id="dlgText" rows="3" placeholder="Ej: El archivo corresponde a otro mes."></textarea></div>' +
+        '<label class="dlg-check"><input type="checkbox" id="dlgConfirm"> Confirmo que quiero eliminar este archivo y notificar a la unidad.</label>' +
+        '<div class="muted" style="font-size:12px;line-height:1.45;margin-top:8px;">Pasa a la papelera (se puede restaurar desde «Papelera») y queda en la bitácora.</div>', [
+        { label: 'Cancelar', value: null },
+        { label: 'Eliminar archivo', cls: 'btn-danger',
+          validate: function (b) {
+            if (!b.querySelector('#dlgText').value.trim()) return 'Escribe el motivo: es obligatorio.';
+            return b.querySelector('#dlgConfirm').checked ? true : 'Marca la casilla para confirmar la eliminación.';
+          },
+          collect: function (b) { return b.querySelector('#dlgText').value.trim(); } }
+      ], function (b) { b.querySelector('#dlgText').focus(); });
+      if (motivo === null) return;
+      await withBusyBtn(btn, async function () {
+        try {
+          await gsRun('apiAdminDeleteFile', token, f.id, motivo, perfilActual);
+          cdFlash = 'Archivo eliminado. ' + row.nombreUnidad + ' recibió el aviso con el motivo y quedó registrado en la bitácora.';
+          await reopen(); markDirtyExceptCurrent(); refreshBadges();
+        } catch (err) { dlgNotice('No se pudo eliminar', escapeHtml(err.message || String(err))); }
+      });
+    }
+
+    async function editFolderFormats(topic, reopen) {
+      const list = await openDlg('Formatos de la carpeta «' + topic.nombre + '»',
+        '<div id="fmtRoot">' + extEditorHtml(topic.extensiones || []) + '</div>' +
+        '<div class="muted" style="font-size:12px;margin-top:10px;">Aplica a todas las unidades de este mes. Los archivos ya cargados no se tocan.</div>', [
+        { label: 'Cancelar', value: null },
+        { label: 'Guardar formatos', cls: 'btn-primary',
+          validate: function (b) { const r = extEditorCollect(b); return r.error ? r.error : true; },
+          collect: function (b) { return extEditorCollect(b).list; } }
+      ], function (b) { extEditorBind(b); });
+      if (list === null) return;
+      try {
+        await gsRun('apiAdminUpdateTopic', token, topic.id, { extensiones: list }, perfilActual);
+        cdFlash = list.length ? 'Formatos actualizados: ' + list.map(function (x) { return x.toUpperCase(); }).join(', ') + '.' : 'Formatos actualizados: ahora se acepta cualquier formato.';
+        await reopen(); markDirtyExceptCurrent();
+      } catch (err) { dlgNotice('No se pudieron guardar los formatos', escapeHtml(err.message || String(err))); }
     }
 
 
@@ -1830,7 +2024,7 @@
 
       if (d.avisos.length) {
         html += '<div class="dr-title">Últimos avisos enviados</div>' + d.avisos.map(function (a) {
-          return '<div class="aviso ' + (a.tipo === 'rechazo' ? 'rechazo' : '') + '" style="font-size:12px;"><div class="av-body">' + escapeHtml(a.mensaje) + '<div class="muted" style="font-size:11px;margin-top:3px;">' + formatDate(a.creadoAt) + (a.leidoAt ? ' · leído' : ' · sin leer') + '</div></div></div>';
+          return '<div class="aviso ' + (a.tipo === 'rechazo' || a.tipo === 'eliminacion' ? 'rechazo' : (a.tipo === 'reemplazo' ? 'info' : '')) + '" style="font-size:12px;"><div class="av-body">' + escapeHtml(a.mensaje) + '<div class="muted" style="font-size:11px;margin-top:3px;">' + formatDate(a.creadoAt) + (a.leidoAt ? ' · leído' : ' · sin leer') + '</div></div></div>';
         }).join('');
       }
 

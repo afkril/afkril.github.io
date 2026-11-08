@@ -172,7 +172,7 @@
   <script>
     const alertEl = document.getElementById('alert');
     const drawerAlertEl = document.getElementById('drawerAlert');
-    const ACCEPT_EXT = '.jpg,.jpeg,.png,.gif,.webp,.pdf,.rar,.zip,.7z,.xls,.xlsx,.doc,.docx';
+    const ACCEPT_EXT = '';   // vacío = cualquier formato (cada tema puede limitarlo)
     const VIEW_TOKEN = new URLSearchParams(location.search).get('vt') || '';
     let token = VIEW_TOKEN || localStorage.getItem('userToken');
     let currentMonthId = null;
@@ -425,8 +425,8 @@
       if (isVenc(t)) return t.estado === 'vacio' ? 'Vencido' : 'Rechazado · vencido';
       return ESTADO_LABEL[t.estado];
     }
-    function acceptFor(t) { return t.extensiones && t.extensiones.length ? t.extensiones.map(function (e) { return '.' + e; }).join(',') : ACCEPT_EXT; }
-    function extsText(t) { return (t.extensiones && t.extensiones.length ? t.extensiones : ACCEPT_EXT.split(',').map(function (e) { return e.slice(1); })).map(function (e) { return e.toUpperCase(); }).join(', '); }
+    function acceptFor(t) { return t.extensiones && t.extensiones.length ? t.extensiones.map(function (e) { return '.' + e; }).join(',') : ''; }
+    function extsText(t) { return t.extensiones && t.extensiones.length ? t.extensiones.map(function (e) { return e.toUpperCase(); }).join(', ') : 'cualquier formato'; }
 
     // Mensaje claro según el estado, la fecha límite y si el tema es obligatorio
     function topicMessage(t) {
@@ -455,8 +455,8 @@
       wrap.innerHTML = '';
       (avisos || []).forEach(function (a) {
         const el = document.createElement('div');
-        el.className = 'aviso ' + (a.tipo === 'rechazo' ? 'rechazo' : '');
-        el.innerHTML = '<span class="av-ico">' + (a.tipo === 'rechazo' ? BACK_SVG : BANNER_ICON.vacio) + '</span>' +
+        el.className = 'aviso ' + (a.tipo === 'rechazo' || a.tipo === 'eliminacion' ? 'rechazo' : (a.tipo === 'reemplazo' ? 'info' : ''));
+        el.innerHTML = '<span class="av-ico">' + (a.tipo === 'rechazo' || a.tipo === 'eliminacion' ? BACK_SVG : BANNER_ICON.vacio) + '</span>' +
           '<div class="av-body">' + escapeHtml(a.mensaje) + '</div>' +
           (viewAs ? '' : '<button class="btn btn-secondary btn-sm" type="button">Entendido</button>');
         const btn = el.querySelector('button');
@@ -712,8 +712,9 @@
         return;
       }
       const ext = (file.name.split('.').pop() || '').toLowerCase();
-      const allowed = t.extensiones && t.extensiones.length ? t.extensiones : ACCEPT_EXT.split(',').map(function (e) { return e.slice(1); });
-      if (allowed.indexOf(ext) === -1) {
+      const restricted = t.extensiones && t.extensiones.length;
+      if (file.name.indexOf('.') === -1) { reportError('El archivo debe tener una extensión (por ejemplo .pdf, .docx).'); const inp1 = zone.querySelector('input[type=file]'); if (inp1) inp1.value = ''; return; }
+      if (restricted && t.extensiones.indexOf(ext) === -1) {
         reportError('En este tema solo se permiten archivos ' + extsText(t) + '.');
         const inp0 = zone.querySelector('input[type=file]'); if (inp0) inp0.value = '';
         return;

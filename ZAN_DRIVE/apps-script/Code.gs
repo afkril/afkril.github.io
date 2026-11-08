@@ -31,8 +31,12 @@ const CACHE_CHUNK = 90000;                 // CacheService guarda ~100 KB por cl
 const CACHE_MAX_CHUNKS = 40;
 const AUTO_NOMBRE_ARCHIVOS = true;         // nombra los archivos como unidad_tema_fecha
 const TRASH_DAYS = 30;                     // días en papelera antes de purgar (purgarPapelera)
-const SCHEMA_VERSION = '4';                // sube este número si agregas columnas nuevas
-const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'rar', 'zip', '7z', 'xls', 'xlsx', 'doc', 'docx'];
+const SCHEMA_VERSION = '5';                // sube este número si agregas columnas nuevas
+// Formatos: se acepta CUALQUIER extensión (letras/números, hasta 10 caracteres). Cada tema puede restringirlos con su lista «extensiones».
+function cleanExt_(e) {
+  e = String(e || '').toLowerCase().replace(/^\./, '').trim();
+  return /^[a-z0-9]{1,10}$/.test(e) ? e : '';
+}
 
 const SHEET_NAMES = {
   USUARIOS: 'Usuarios',
@@ -51,7 +55,7 @@ const SCHEMAS = {
   Meses: ['id', 'nombre', 'activo', 'createdAt', 'fechaLimite', 'cerrado', 'cerradoAt', 'cerradoPor'].concat(DEL_COLS),
   Temas: ['id', 'monthId', 'nombre', 'orden', 'obligatorio', 'fechaLimite', 'extensiones', 'contratoIds'].concat(DEL_COLS),
   Uploads: ['id', 'userId', 'topicId', 'monthId', 'driveFileId', 'originalName', 'mimeType', 'size', 'uploadedAt',
-    'nombreCargado', 'estado', 'observacion', 'revisadoPor', 'revisadoAt', 'tardio', 'ocultoHistorial'].concat(DEL_COLS),
+    'nombreCargado', 'estado', 'observacion', 'revisadoPor', 'revisadoAt', 'tardio', 'ocultoHistorial', 'reemplazadoAt', 'reemplazadoPor'].concat(DEL_COLS),
   Contratos: ['id', 'nombre', 'activo', 'createdAt'],
   NoAplica: ['id', 'userId', 'topicId', 'monthId', 'marcadoAt', 'marcadoPor'],
   Auditoria: ['id', 'fecha', 'actorTipo', 'actor', 'accion', 'detalle', 'monthId', 'userId'],
@@ -751,7 +755,9 @@ function fileInfo_(u) {
     observacion: u.observacion || '',
     revisadoPor: u.revisadoPor || '',
     revisadoAt: u.revisadoAt || '',
-    tardio: truthy_(u.tardio)
+    tardio: truthy_(u.tardio),
+    reemplazadoAt: u.reemplazadoAt || '',
+    reemplazadoPor: u.reemplazadoPor || ''
   };
 }
 
@@ -989,8 +995,8 @@ function apiUploadFile(token, monthId, topicId, fileObj) {
   if (approxBytes > MAX_FILE_BYTES) {
     throw new Error('El archivo supera el límite de ' + (MAX_FILE_BYTES / (1024 * 1024)) + ' MB permitido.');
   }
-  const ext = (String(fileObj.fileName).split('.').pop() || '').toLowerCase();
-  if (ALLOWED_EXT.indexOf(ext) === -1) throw new Error('Tipo de archivo no permitido: .' + ext);
+  const ext = cleanExt_(String(fileObj.fileName).indexOf('.') === -1 ? '' : String(fileObj.fileName).split('.').pop());
+  if (!ext) throw new Error('El archivo debe tener una extensión válida (por ejemplo .pdf, .docx).');
   const topicExt = csv_(topic.extensiones).map(function (e) { return e.toLowerCase(); });
   if (topicExt.length && topicExt.indexOf(ext) === -1) {
     throw new Error('En el tema "' + topic.nombre + '" solo se permiten archivos ' + topicExt.map(function (e) { return e.toUpperCase(); }).join(', ') + '.');
@@ -1581,7 +1587,7 @@ function apiAdminCreateTopics(token, monthId, temas) {
 
 // Edita las reglas de un tema: nombre, si es obligatorio, fecha límite propia,
 // tipos de archivo permitidos y contratos a los que se les exige.
-function apiAdminUpdateTopic(token, topicId, f) {
+function apiAdminUpdateTopic(token, topicId, f, perfil) {
   const session = requireAdminSession_(token);
   return withLock_(function () {
     f = f || {};
@@ -1597,8 +1603,13 @@ function apiAdminUpdateTopic(token, topicId, f) {
     if (f.obligatorio !== undefined) fields.obligatorio = !!f.obligatorio;
     if (f.fechaLimite !== undefined) fields.fechaLimite = cleanDate_(f.fechaLimite, 'límite del tema');
     if (f.extensiones !== undefined) {
-      const list = (Array.isArray(f.extensiones) ? f.extensiones : csv_(f.extensiones)).map(function (e) { return String(e).toLowerCase().replace('.', '').trim(); }).filter(Boolean);
-      list.forEach(function (e) { if (ALLOWED_EXT.indexOf(e) === -1) throw new Error('Tipo de archivo no permitido: .' + e); });
+      const raw = (Array.isArray(f.extensiones) ? f.extensiones : csv_(f.extensiones)).map(function (e) { return String(e).trim(); }).filter(Boolean);
+      const list = [];
+      raw.forEach(function (e) {
+        const c = cleanExt_(e);
+        if (!c) throw new Error('Formato no válido: «' + e + '». Usa solo letras y números (ej. pdf, docx, dwg).');
+        if (list.indexOf(c) === -1) list.push(c);
+      });
       fields.extensiones = list.join(',');
     }
     if (f.contratoIds !== undefined) {
@@ -1609,7 +1620,12 @@ function apiAdminUpdateTopic(token, topicId, f) {
     }
     updateRow_(sheet, topic.__row, fields);
     const cambios = Object.keys(fields).map(function (k) { return k; }).join(', ');
-    audit_('admin', adminActor_(session), 'tema_editado', 'Editó el tema "' + topic.nombre + '" (' + cambios + ')', topic.monthId, '');
+    let extra = '';
+    if (fields.extensiones !== undefined) {
+      const fmt = function (v) { const l = csv_(v); return l.length ? l.join(', ').toUpperCase() : 'cualquier formato'; };
+      extra = ' · Formatos permitidos: ' + fmt(topic.extensiones) + ' → ' + fmt(fields.extensiones);
+    }
+    audit_('admin', reviewerLabel_(session, perfil), 'tema_editado', 'Editó el tema "' + topic.nombre + '" (' + cambios + ')' + extra, topic.monthId, '');
     return { ok: true };
   });
 }
@@ -1702,6 +1718,130 @@ function apiAdminDownloadFile(token, uploadId) {
   const up = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === uploadId; });
   if (!up) throw new Error('Archivo no encontrado.');
   return getFileAsBase64_(up);
+}
+
+// ---------------------------------------------------------------------
+// ADMIN - ELIMINAR Y REEMPLAZAR ARCHIVOS DE UNA UNIDAD
+// (siempre notifican a la unidad y quedan en la bitácora)
+// ---------------------------------------------------------------------
+// Nombre del perfil que actúa, para hablarle a la unidad («Pedagoga», «Psicóloga»…).
+function perfilNombre_(perfil) { return PERFILES_REVISION[String(perfil || '')] || 'Administración'; }
+
+// Compara nombres de archivo ignorando extensión, mayúsculas, tildes y separadores (espacio, _ y -).
+function nameKey_(name) {
+  let n = String(name || '');
+  const dot = n.lastIndexOf('.');
+  if (dot > 0) n = n.slice(0, dot);
+  n = n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  return n.replace(/[\s_\-]+/g, ' ').trim();
+}
+
+// Elimina un archivo de una unidad. Es reversible (va a la papelera), exige el motivo y avisa a la unidad.
+// La confirmación la pide el panel antes de llamar a esta función.
+function apiAdminDeleteFile(token, uploadId, motivo, perfil) {
+  const session = requireAdminSession_(token);
+  motivo = String(motivo || '').trim().slice(0, 400);
+  if (!motivo) throw new Error('Escribe el motivo de la eliminación: la unidad lo recibirá en su aviso.');
+  return withLock_(function () {
+    MEMO_.tables = {};
+    const up = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === uploadId; });
+    if (!up) throw new Error('Archivo no encontrado (quizá ya fue eliminado).');
+    const user = rows_(SHEET_NAMES.USUARIOS).find(function (u) { return u.id === up.userId; });
+    const topic = rowsAll_(SHEET_NAMES.TEMAS).find(function (t) { return t.id === up.topicId; });
+    const month = rowsAll_(SHEET_NAMES.MESES).find(function (m) { return m.id === up.monthId; });
+    const by = reviewerLabel_(session, perfil), at = nowIso_();
+    const tn = topic ? topic.nombre : '', mn = month ? month.nombre : '', un = user ? user.nombreUnidad : '';
+
+    updateRow_(getSheet_(SHEET_NAMES.UPLOADS), up.__row, {
+      eliminado: true, eliminadoAt: at, eliminadoPor: by, eliminadoLote: Utilities.getUuid()
+    });
+
+    if (user) {
+      appendRow_(getSheet_(SHEET_NAMES.AVISOS), {
+        id: Utilities.getUuid(), userId: user.id, monthId: up.monthId, tipo: 'eliminacion', creadoAt: at, creadoPor: by,
+        mensaje: perfilNombre_(perfil) + ' eliminó tu archivo \"' + up.originalName + '\" del tema \"' + tn + '\" (' + mn + '). Motivo: ' +
+          motivo + (/[.!?]$/.test(motivo) ? '' : '.') + ' Si hace falta, vuelve a cargar el archivo en ese tema.'
+      });
+    }
+    auditMany_([
+      { tipo: 'admin', actor: by, accion: 'archivo_eliminado_admin', monthId: up.monthId, userId: up.userId,
+        detalle: up.originalName + ' · ' + un + ' · ' + tn + ' (' + mn + ') → papelera · Motivo: ' + motivo },
+      { tipo: 'admin', actor: by, accion: 'notificacion_unidad', monthId: up.monthId, userId: up.userId,
+        detalle: 'Aviso a ' + un + ': archivo eliminado (' + up.originalName + ')' }
+    ]);
+    return { ok: true };
+  });
+}
+
+// Reemplaza UN archivo de una unidad por una versión ajustada. El archivo nuevo debe llamarse igual que el
+// que se reemplaza (sin importar la extensión), así se evita pisar otro archivo del mismo tema por error.
+// El archivo reemplazado conserva su lugar y su fecha de cargue original, vuelve a «por revisar»,
+// se avisa a la unidad y todo queda en la bitácora.
+function apiAdminReplaceFile(token, uploadId, fileObj, ajuste, perfil) {
+  const session = requireAdminSession_(token);
+  ajuste = String(ajuste || '').trim().slice(0, 300);
+  if (!ajuste) throw new Error('Describe brevemente el ajuste realizado: la unidad lo verá en su aviso.');
+  if (!fileObj || !fileObj.base64Data || !fileObj.fileName) throw new Error('No se recibió ningún archivo.');
+  if (Math.floor(fileObj.base64Data.length * 0.75) > MAX_FILE_BYTES) {
+    throw new Error('El archivo supera el límite de ' + (MAX_FILE_BYTES / (1024 * 1024)) + ' MB permitido.');
+  }
+  const newName = String(fileObj.fileName);
+  const newExt = cleanExt_(newName.indexOf('.') === -1 ? '' : newName.split('.').pop());
+  if (!newExt) throw new Error('El archivo debe tener una extensión válida (por ejemplo .pdf, .docx).');
+
+  const up0 = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === uploadId; });
+  if (!up0) throw new Error('Archivo no encontrado (quizá ya fue eliminado).');
+  const keys = [nameKey_(up0.nombreCargado), nameKey_(up0.originalName)].filter(Boolean);
+  if (keys.indexOf(nameKey_(newName)) === -1) {
+    const esperado = String(up0.originalName) + (up0.nombreCargado && up0.nombreCargado !== up0.originalName ? '» o «' + up0.nombreCargado : '');
+    throw new Error('El nombre no coincide. Para reemplazar este archivo, el nuevo debe llamarse «' + esperado + '» (la extensión puede cambiar).');
+  }
+  const user = rows_(SHEET_NAMES.USUARIOS).find(function (u) { return u.id === up0.userId; });
+  const topic = rowsAll_(SHEET_NAMES.TEMAS).find(function (t) { return t.id === up0.topicId; });
+  const month = rowsAll_(SHEET_NAMES.MESES).find(function (m) { return m.id === up0.monthId; });
+  if (!user || !topic || !month) throw new Error('No se encontró la unidad, el tema o el mes de este archivo.');
+
+  // Nombre guardado: el mismo del archivo reemplazado, con la extensión del nuevo.
+  const oldStored = String(up0.originalName);
+  const dot = oldStored.lastIndexOf('.');
+  const storedName = (dot > 0 ? oldStored.slice(0, dot) : oldStored) + '.' + newExt;
+
+  const bytes = Utilities.base64Decode(fileObj.base64Data);
+  const blob = Utilities.newBlob(bytes, fileObj.mimeType || 'application/octet-stream', storedName);
+  const folder = getUserTopicFolder_(month.nombre, user.cedula, user.nombreUnidad, topic.nombre);
+  const driveFile = folder.createFile(blob);
+
+  return withLock_(function () {
+    MEMO_.tables = {};
+    const up = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === uploadId; });
+    if (!up) { try { driveFile.setTrashed(true); } catch (e) {} throw new Error('El archivo fue eliminado mientras se subía el reemplazo.'); }
+    const by = reviewerLabel_(session, perfil), at = nowIso_();
+
+    updateRow_(getSheet_(SHEET_NAMES.UPLOADS), up.__row, {
+      driveFileId: driveFile.getId(), originalName: storedName, mimeType: fileObj.mimeType || '', size: bytes.length,
+      nombreCargado: newName, estado: 'pendiente', observacion: '', revisadoPor: '', revisadoAt: '',
+      reemplazadoAt: at, reemplazadoPor: by
+    });
+    // La versión anterior queda en la papelera de Drive (recuperable ~30 días).
+    try { DriveApp.getFileById(up.driveFileId).setTrashed(true); } catch (e) {}
+
+    const cambioExt = storedName !== oldStored ? ' (ahora se llama \"' + storedName + '\")' : '';
+    appendRow_(getSheet_(SHEET_NAMES.AVISOS), {
+      id: Utilities.getUuid(), userId: user.id, monthId: up.monthId, tipo: 'reemplazo', creadoAt: at, creadoPor: by,
+      mensaje: perfilNombre_(perfil) + ' ajustó tu archivo \"' + oldStored + '\" del tema \"' + topic.nombre + '\" (' + month.nombre + ') y lo reemplazó por una versión corregida' +
+        cambioExt + '. Ajuste realizado: ' + ajuste + (/[.!?]$/.test(ajuste) ? '' : '.') + ' El archivo quedó por revisar de nuevo.'
+    });
+    auditMany_([
+      { tipo: 'admin', actor: by, accion: 'archivo_reemplazado', monthId: up.monthId, userId: up.userId,
+        detalle: oldStored + (storedName !== oldStored ? ' → ' + storedName : '') + ' · ' + user.nombreUnidad + ' · ' + topic.nombre + ' (' + month.nombre + ') · Ajuste: ' + ajuste },
+      { tipo: 'admin', actor: by, accion: 'notificacion_unidad', monthId: up.monthId, userId: up.userId,
+        detalle: 'Aviso a ' + user.nombreUnidad + ': archivo reemplazado (' + oldStored + ')' }
+    ]);
+    return { ok: true, file: fileInfo_(Object.assign({}, up, {
+      driveFileId: driveFile.getId(), originalName: storedName, size: bytes.length, nombreCargado: newName, estado: 'pendiente',
+      observacion: '', revisadoPor: '', revisadoAt: '', reemplazadoAt: at, reemplazadoPor: by
+    })) };
+  });
 }
 
 // ---------------------------------------------------------------------
@@ -2659,7 +2799,7 @@ function manualUnidad_() {
       { t: '1. Entrar y elegir el mes', p: 'Ingresa con tu cédula y el código de tu unidad. En la parte superior elige el <b>mes</b>: cada tema es una carpeta donde debes cargar tus documentos.' },
       { t: '2. Cargar un documento', li: [
         'Haz clic en la carpeta del tema (o en <b>Detalles</b>) y arrastra el archivo o pulsa <b>Seleccionar archivo</b>.',
-        'Tamaño máximo por archivo: 25 MB. Algunos temas solo aceptan ciertos formatos (por ejemplo, solo PDF); el panel te lo indica.',
+        'Tamaño máximo por archivo: 25 MB. Puedes subir cualquier formato, salvo que el tema indique uno específico (por ejemplo, solo PDF); el panel te lo indica.',
         'El sistema le pone al archivo un nombre automático con la forma <b>unidad_tema_fecha</b>.',
         'Puedes cargar varios archivos en un mismo tema, y ver, descargar, renombrar o eliminar los tuyos.'
       ] },

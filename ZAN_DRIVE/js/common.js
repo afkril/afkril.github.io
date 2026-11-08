@@ -51,7 +51,10 @@ function triggerDownload(fileResult, mode) {
   const blob = new Blob([new Uint8Array(byteNumbers)], { type: fileResult.mimeType || 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
   if (mode === 'view') {
-    window.open(url, '_blank');
+    // Vista previa dentro de la página (PDF, imágenes, Word, Excel, CSV, texto)
+    URL.revokeObjectURL(url);
+    openFileViewer(fileResult);
+    return;
   } else {
     const a = document.createElement('a');
     a.href = url;
@@ -432,3 +435,249 @@ window.addEventListener('pagehide', function () {
     } catch (e) {}
   });
 });
+
+
+// ---------------------------------------------------------------------
+// Visor de archivos dentro de la página (sin descargar)
+// PDF e imágenes: nativo. Word (.docx): docx-preview (respaldo mammoth). Excel (.xlsx): ExcelJS con estilos;
+// .xls y CSV (o si falla): SheetJS.
+// Las librerías se cargan solo cuando se abre un archivo de ese tipo.
+// ---------------------------------------------------------------------
+const FV_LIBS = {
+  jszip: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+  docxpreview: 'https://cdnjs.cloudflare.com/ajax/libs/docx-preview/0.3.3/docx-preview.min.js',
+  mammoth: 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js',
+  exceljs: 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
+  xlsx: 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+};
+const fvLoaded_ = {};
+function fvLoadLib_(key, globalName) {
+  if (window[globalName]) return Promise.resolve();
+  if (fvLoaded_[key]) return fvLoaded_[key];
+  fvLoaded_[key] = new Promise(function (resolve, reject) {
+    const sc = document.createElement('script');
+    sc.src = FV_LIBS[key];
+    sc.onload = function () { window[globalName] ? resolve() : reject(new Error('lib')); };
+    sc.onerror = function () { delete fvLoaded_[key]; reject(new Error('lib')); };
+    document.head.appendChild(sc);
+  });
+  return fvLoaded_[key];
+}
+function fvBytes_(fileResult) {
+  const bin = atob(fileResult.base64Data), arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+
+let fvState_ = null;
+function closeFileViewer() {
+  if (!fvState_) return;
+  document.removeEventListener('keydown', fvState_.onKey, true);
+  fvState_.urls.forEach(function (u) { URL.revokeObjectURL(u); });
+  fvState_.root.remove();
+  fvState_ = null;
+}
+
+function openFileViewer(fileResult) {
+  closeFileViewer();
+  const name = fileResult.fileName || 'archivo';
+  const ext = name.split('.').pop().toLowerCase();
+  const mime = fileResult.mimeType || 'application/octet-stream';
+  const root = document.createElement('div');
+  root.className = 'fv-bg';
+  root.innerHTML =
+    '<div class="fv-panel" role="dialog" aria-modal="true" aria-label="Vista previa del archivo">' +
+      '<div class="fv-head"><span class="fv-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + '</span>' +
+        '<span class="fv-actions"><button type="button" class="btn btn-secondary btn-sm" data-fv="tab" style="display:none;">Abrir en pestaña</button>' +
+        '<button type="button" class="btn btn-secondary btn-sm" data-fv="dl">Descargar</button>' +
+        '<button type="button" class="fv-x" data-fv="x" aria-label="Cerrar">&times;</button></span></div>' +
+      '<div class="fv-body"><div class="fv-msg"><span class="fv-spin"></span>Preparando vista previa…</div></div>' +
+    '</div>';
+  document.body.appendChild(root);
+  const body = root.querySelector('.fv-body');
+  const urls = [];
+  const state = { root: root, urls: urls, onKey: function (e) { if (e.key === 'Escape') { e.stopPropagation(); closeFileViewer(); } } };
+  fvState_ = state;
+  document.addEventListener('keydown', state.onKey, true);
+  root.addEventListener('click', function (e) { if (e.target === root) closeFileViewer(); });
+  root.querySelector('[data-fv="x"]').addEventListener('click', closeFileViewer);
+  root.querySelector('[data-fv="dl"]').addEventListener('click', function () { triggerDownload(fileResult, 'download'); });
+
+  function msg(html) { if (fvState_ === state) body.innerHTML = '<div class="fv-msg">' + html + '</div>'; }
+  function fallback(why) {
+    msg('<b>' + escapeHtml(why) + '</b><br><span class="muted">Puedes descargarlo para abrirlo en tu equipo.</span><br><button type="button" class="btn btn-primary btn-sm" data-fv="dl2" style="margin-top:12px;">Descargar archivo</button>');
+    const b = body.querySelector('[data-fv="dl2"]');
+    if (b) b.addEventListener('click', function () { triggerDownload(fileResult, 'download'); });
+  }
+  function enableTab(url) {
+    const t = root.querySelector('[data-fv="tab"]');
+    t.style.display = '';
+    t.addEventListener('click', function () { window.open(url, '_blank'); });
+  }
+
+  (async function render() {
+    try {
+      const bytes = fvBytes_(fileResult);
+      const big = bytes.length > 15 * 1024 * 1024;
+      if (ext === 'pdf' || mime === 'application/pdf') {
+        const u = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })); urls.push(u);
+        body.innerHTML = '<iframe class="fv-frame" src="' + u + '" title="' + escapeHtml(name) + '"></iframe>'; enableTab(u);
+      } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) !== -1) {
+        const u = URL.createObjectURL(new Blob([bytes], { type: mime })); urls.push(u);
+        body.innerHTML = '<div class="fv-img"><img src="' + u + '" alt="' + escapeHtml(name) + '"></div>'; enableTab(u);
+      } else if (ext === 'docx') {
+        if (big) return fallback('El documento es muy pesado para la vista previa.');
+        let done = false;
+        try {
+          // Visor fiel: páginas con márgenes, fuentes, encabezados, tablas e imágenes
+          await fvLoadLib_('jszip', 'JSZip');
+          await fvLoadLib_('docxpreview', 'docx');
+          if (fvState_ !== state) return;
+          body.innerHTML = '<div class="fv-note">Vista del documento. Si algún detalle (fuentes, espaciados) se ve distinto, descárgalo para verlo exacto.</div><div class="fv-pages"><div class="fv-pages-in"></div></div>';
+          const host = body.querySelector('.fv-pages-in');
+          await window.docx.renderAsync(bytes.buffer.slice(0), host, host, {
+            className: 'docx', inWrapper: true, ignoreWidth: false, ignoreHeight: false, breakPages: true,
+            renderHeaders: true, renderFooters: true, renderFootnotes: true, renderEndnotes: true, useBase64URL: true
+          });
+          done = true;
+        } catch (e1) { done = false; }
+        if (!done) {
+          // Respaldo: versión simplificada con mammoth
+          await fvLoadLib_('mammoth', 'mammoth');
+          const r = await window.mammoth.convertToHtml({ arrayBuffer: bytes.buffer.slice(0) });
+          if (fvState_ !== state) return;
+          const html = String(r.value || '').trim();
+          body.innerHTML = '<div class="fv-note">Vista simplificada: el formato original puede variar un poco.</div><div class="fv-doc">' + (html || '<p class="muted">El documento no tiene contenido para mostrar.</p>') + '</div>';
+        }
+      } else if (['xlsx', 'xls', 'csv'].indexOf(ext) !== -1) {
+        if (big) return fallback('La hoja de cálculo es muy pesada para la vista previa.');
+        const MAXR = 500, MAXC = 40;
+        function colName(n) { let t = ''; n++; while (n > 0) { const m = (n - 1) % 26; t = String.fromCharCode(65 + m) + t; n = Math.floor((n - 1) / 26); } return t; }
+        let sheets = null, styled = false;
+
+        // 1) Con estilos (colores, negritas, bordes, celdas combinadas, anchos) — solo .xlsx
+        if (ext === 'xlsx') {
+          try {
+            await fvLoadLib_('jszip', 'JSZip');
+            await fvLoadLib_('exceljs', 'ExcelJS');
+            const wb = new window.ExcelJS.Workbook();
+            await wb.xlsx.load(bytes.buffer.slice(0));
+            const THEME = ['FFFFFF', '000000', 'E7E6E6', '44546A', '4472C4', 'ED7D31', 'A5A5A5', 'FFC000', '5B9BD5', '70AD47'];
+            const hex = function (c) {
+              if (!c) return '';
+              if (c.argb && /^[0-9A-Fa-f]{8}$/.test(c.argb)) return '#' + c.argb.slice(2);
+              if (c.argb && /^[0-9A-Fa-f]{6}$/.test(c.argb)) return '#' + c.argb;
+              if (typeof c.theme === 'number' && THEME[c.theme]) return '#' + THEME[c.theme];
+              return '';
+            };
+            const bd = function (b) {
+              if (!b || !b.style) return '';
+              const w = (b.style === 'medium' || b.style === 'thick') ? 2 : 1;
+              return w + 'px ' + (b.style === 'dashed' || b.style === 'mediumDashed' ? 'dashed' : (b.style === 'dotted' || b.style === 'hair' ? 'dotted' : 'solid')) + ' ' + (hex(b.color) || '#444');
+            };
+            sheets = [];
+            wb.eachSheet(function (ws) {
+              if (ws.state && ws.state !== 'visible') return;
+              const nRows = Math.min(ws.rowCount || 0, MAXR);
+              const nCols = Math.min(ws.columnCount || 0, MAXC);
+              const skip = {}, span = {};
+              (ws.model && ws.model.merges || []).forEach(function (m) {
+                const mm = /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/.exec(m); if (!mm) return;
+                const tc = function (L) { let n = 0; for (let i = 0; i < L.length; i++) n = n * 26 + (L.charCodeAt(i) - 64); return n; };
+                const c1 = tc(mm[1]), r1 = +mm[2], c2 = tc(mm[3]), r2 = +mm[4];
+                span[r1 + ',' + c1] = [r2 - r1 + 1, c2 - c1 + 1];
+                for (let r = r1; r <= r2; r++) for (let c = c1; c <= c2; c++) if (r !== r1 || c !== c1) skip[r + ',' + c] = true;
+              });
+              const grid = !(ws.views && ws.views[0] && ws.views[0].showGridLines === false);
+              let h = '<table class="fv-xl' + (grid ? ' grid' : '') + '"><colgroup><col style="width:42px">';
+              for (let c = 1; c <= nCols; c++) { const col = ws.getColumn(c); h += '<col style="width:' + (col.hidden ? 0 : Math.round(((col.width || 9) * 7) + 5)) + 'px">'; }
+              h += '</colgroup><thead><tr><th></th>';
+              for (let c = 0; c < nCols; c++) h += '<th>' + colName(c) + '</th>';
+              h += '</tr></thead><tbody>';
+              for (let r = 1; r <= nRows; r++) {
+                const row = ws.getRow(r);
+                if (row.hidden) continue;
+                h += '<tr' + (row.height ? ' style="height:' + Math.round(row.height * 1.333) + 'px"' : '') + '><th>' + r + '</th>';
+                for (let c = 1; c <= nCols; c++) {
+                  if (skip[r + ',' + c]) continue;
+                  const cell = row.getCell(c);
+                  let txt = '';
+                  try { txt = cell.text === undefined || cell.text === null ? '' : String(cell.text); } catch (e) { txt = ''; }
+                  const st = [];
+                  const f = cell.font || {};
+                  if (f.bold) st.push('font-weight:700');
+                  if (f.italic) st.push('font-style:italic');
+                  if (f.underline) st.push('text-decoration:underline');
+                  if (f.size) st.push('font-size:' + Math.round(f.size * 1.333) + 'px');
+                  const fc = hex(f.color); if (fc) st.push('color:' + fc);
+                  const fl = cell.fill; if (fl && fl.type === 'pattern' && fl.pattern === 'solid') { const bg = hex(fl.fgColor); if (bg) st.push('background:' + bg); }
+                  const al = cell.alignment || {};
+                  if (al.horizontal && /^(left|center|right)$/.test(al.horizontal)) st.push('text-align:' + al.horizontal);
+                  else if (typeof cell.value === 'number') st.push('text-align:right');
+                  if (al.vertical) st.push('vertical-align:' + (al.vertical === 'middle' ? 'middle' : (al.vertical === 'top' ? 'top' : 'bottom')));
+                  if (al.wrapText) st.push('white-space:normal;word-break:break-word');
+                  const b = cell.border || {};
+                  const bt = bd(b.top), br = bd(b.right), bb = bd(b.bottom), bl = bd(b.left);
+                  if (bt) st.push('border-top:' + bt); if (br) st.push('border-right:' + br); if (bb) st.push('border-bottom:' + bb); if (bl) st.push('border-left:' + bl);
+                  const sp = span[r + ',' + c];
+                  h += '<td' + (sp ? ' rowspan="' + sp[0] + '" colspan="' + sp[1] + '"' : '') + (st.length ? ' style="' + st.join(';') + '"' : '') + '>' + escapeHtml(txt) + '</td>';
+                }
+                h += '</tr>';
+              }
+              h += '</tbody></table>';
+              if ((ws.rowCount || 0) > MAXR) h += '<p class="fv-note" style="margin:8px 0 0;">Se muestran las primeras ' + MAXR + ' de ' + ws.rowCount + ' filas. Descarga el archivo para verlo completo.</p>';
+              sheets.push({ name: ws.name, html: h });
+            });
+            styled = sheets.length > 0;
+          } catch (e2) { sheets = null; styled = false; }
+        }
+
+        // 2) Respaldo: tabla simple con SheetJS (.xls, .csv o si falló lo anterior)
+        if (!styled) {
+          await fvLoadLib_('xlsx', 'XLSX');
+          const wb2 = ext === 'csv'
+            ? window.XLSX.read(new TextDecoder('utf-8').decode(bytes), { type: 'string' })
+            : window.XLSX.read(bytes, { type: 'array' });
+          sheets = wb2.SheetNames.map(function (sn) {
+            const rows = window.XLSX.utils.sheet_to_json(wb2.Sheets[sn], { header: 1, blankrows: false, defval: '', raw: false });
+            let h;
+            if (!rows.length) h = '<p class="muted" style="padding:16px;">Hoja sin datos.</p>';
+            else {
+              const nc = Math.min(MAXC, rows.reduce(function (m, r) { return Math.max(m, r.length); }, 0));
+              h = '<table class="fv-table"><thead><tr><th></th>';
+              for (let c = 0; c < nc; c++) h += '<th>' + colName(c) + '</th>';
+              h += '</tr></thead><tbody>';
+              rows.slice(0, MAXR).forEach(function (r, i) {
+                h += '<tr><th>' + (i + 1) + '</th>';
+                for (let c = 0; c < nc; c++) h += '<td>' + escapeHtml(r[c] === undefined ? '' : r[c]) + '</td>';
+                h += '</tr>';
+              });
+              h += '</tbody></table>';
+              if (rows.length > MAXR) h += '<p class="fv-note" style="margin:8px 0 0;">Se muestran las primeras ' + MAXR + ' de ' + rows.length + ' filas. Descarga el archivo para verlo completo.</p>';
+            }
+            return { name: sn, html: h };
+          });
+        }
+        if (fvState_ !== state) return;
+        let cur = 0;
+        function draw() {
+          body.innerHTML = '<div class="fv-tabs">' + sheets.map(function (sh, i) {
+            return '<button type="button" class="fv-tab' + (i === cur ? ' on' : '') + '" data-sh="' + i + '">' + escapeHtml(sh.name) + '</button>';
+          }).join('') + '</div><div class="fv-sheet">' + sheets[cur].html + '</div>';
+          body.querySelectorAll('[data-sh]').forEach(function (b) { b.addEventListener('click', function () { cur = +b.dataset.sh; draw(); }); });
+        }
+        draw();
+      } else if (['txt', 'log', 'md', 'json', 'xml'].indexOf(ext) !== -1) {
+        body.innerHTML = '<pre class="fv-pre">' + escapeHtml(new TextDecoder('utf-8').decode(bytes.slice(0, 400000))) + '</pre>';
+      } else if (ext === 'doc') {
+        fallback('Los archivos .doc (Word antiguo) no se pueden previsualizar.');
+      } else if (['zip', 'rar', '7z'].indexOf(ext) !== -1) {
+        fallback('Los archivos comprimidos no tienen vista previa.');
+      } else {
+        fallback('Este tipo de archivo no tiene vista previa.');
+      }
+    } catch (e) {
+      fallback('No se pudo mostrar la vista previa.');
+    }
+  })();
+}
