@@ -1775,6 +1775,109 @@ function apiAdminDownloadFile(token, uploadId) {
 }
 
 // ---------------------------------------------------------------------
+// ADMIN - SINCRONIZACIÓN CON DRIVE PARA EL PAQUETE ZIP
+// Detecta carpetas y archivos que se agregaron directamente en Drive (dentro de la carpeta de una unidad)
+// y que la plataforma no tiene registrados, para incluirlos en «Descargar paquete completo».
+// ---------------------------------------------------------------------
+const DRIVE_EXTRA_MAX_BYTES = 35 * 1024 * 1024;   // tope por archivo al descargarlo por la web (límite de respuesta de Apps Script)
+
+// Carpeta de la unidad dentro del mes: primero por nombre exacto («cédula - unidad») y, si la renombraron, por la cédula.
+function findUnitFolder_(monthFolder, cedula, nombreUnidad) {
+  const exact = String(cedula + ' - ' + nombreUnidad).trim().replace(/[\\/:*?\"<>|]/g, '-');   // mismo saneado con que se crea la carpeta
+  let it = monthFolder.getFoldersByName(exact);
+  if (it.hasNext()) return it.next();
+  // Si la renombraron: cualquier carpeta que empiece por la cédula
+  const all = monthFolder.getFolders(), ced = String(cedula).trim();
+  while (all.hasNext()) {
+    const f = all.next(), n = f.getName().trim();
+    if (n.indexOf(ced) === 0 && !/[0-9]/.test(n.charAt(ced.length) || ' ')) return f;
+  }
+  return null;
+}
+
+// Carpeta del mes bajo la raíz: nombre saneado como al crearla, o igual sin distinguir mayúsculas.
+function findMonthFolder_(root, nombre) {
+  const clean = String(nombre).trim().replace(/[\\/:*?\"<>|]/g, '-');
+  let it = root.getFoldersByName(clean);
+  if (it.hasNext()) return it.next();
+  const all = root.getFolders(), low = clean.toLowerCase();
+  while (all.hasNext()) { const f = all.next(); if (f.getName().trim().toLowerCase() === low) return f; }
+  return null;
+}
+
+function scanFolderTree_(folder, prefix, registered, out, depth) {
+  const files = folder.getFiles();
+  while (files.hasNext()) {
+    const f = files.next();
+    if (registered[f.getId()]) continue;
+    let size = 0; try { size = f.getSize(); } catch (e) {}
+    out.files.push({ id: f.getId(), path: prefix + f.getName(), size: size, mimeType: f.getMimeType() });
+  }
+  const subs = folder.getFolders();
+  while (subs.hasNext()) {
+    const sf = subs.next(), p = prefix + sf.getName() + '/';
+    out.folders.push(p);
+    if (depth < 8) scanFolderTree_(sf, p, registered, out, depth + 1);
+  }
+}
+
+// Revisa en Drive las carpetas de las unidades indicadas (el panel lo llama en lotes pequeños).
+function apiAdminScanDriveExtras(token, monthId, userIds) {
+  requireAdminSession_(token);
+  const month = rowsAll_(SHEET_NAMES.MESES).find(function (m) { return m.id === monthId; });
+  if (!month) throw new Error('Mes no encontrado.');
+  const rootId = PropertiesService.getScriptProperties().getProperty('ROOT_FOLDER_ID');
+  const root = DriveApp.getFolderById(rootId);
+  const monthFolder = findMonthFolder_(root, month.nombre);
+  // Todo archivo que la plataforma conoce (incluso los de la papelera) se excluye: solo salen los «nuevos».
+  const registered = {};
+  rowsAll_(SHEET_NAMES.UPLOADS).forEach(function (u) { if (u.driveFileId) registered[u.driveFileId] = true; });
+  const users = rows_(SHEET_NAMES.USUARIOS);
+  return (userIds || []).slice(0, 10).map(function (uid) {
+    const user = users.find(function (u) { return u.id === uid; });
+    const out = { userId: uid, files: [], folders: [], found: false, monthFound: !!monthFolder, folderName: '' };
+    if (!user || !monthFolder) return out;
+    const uf = findUnitFolder_(monthFolder, user.cedula, user.nombreUnidad);
+    if (!uf) return out;
+    out.found = true; out.folderName = uf.getName();
+    scanFolderTree_(uf, '', registered, out, 0);
+    return out;
+  });
+}
+
+// ¿El archivo está dentro de la carpeta raíz de la plataforma? (evita descargar archivos ajenos a ella)
+function isUnderRoot_(file, rootId) {
+  let level = [file], guard = 0;
+  while (level.length && guard++ < 10) {
+    const next = [];
+    for (let i = 0; i < level.length; i++) {
+      const ps = level[i].getParents();
+      while (ps.hasNext()) { const p = ps.next(); if (p.getId() === rootId) return true; next.push(p); }
+    }
+    level = next;
+  }
+  return false;
+}
+
+// Descarga un archivo de Drive detectado por el escaneo anterior (los documentos de Google se exportan a PDF).
+function apiAdminDownloadDriveFile(token, fileId) {
+  requireAdminSession_(token);
+  const rootId = PropertiesService.getScriptProperties().getProperty('ROOT_FOLDER_ID');
+  const file = DriveApp.getFileById(fileId);
+  if (!isUnderRoot_(file, rootId)) throw new Error('Ese archivo no pertenece a la carpeta de la plataforma.');
+  const mime = file.getMimeType();
+  let name = file.getName(), blob;
+  if (mime.indexOf('application/vnd.google-apps') === 0) {
+    blob = file.getAs('application/pdf');
+    if (!/\.pdf$/i.test(name)) name += '.pdf';
+  } else {
+    if (file.getSize() > DRIVE_EXTRA_MAX_BYTES) throw new Error('Pesa más de ' + Math.round(DRIVE_EXTRA_MAX_BYTES / 1048576) + ' MB: descárgalo directamente desde Drive.');
+    blob = file.getBlob();
+  }
+  return { fileName: name, mimeType: blob.getContentType(), base64Data: Utilities.base64Encode(blob.getBytes()) };
+}
+
+// ---------------------------------------------------------------------
 // ADMIN - ELIMINAR Y REEMPLAZAR ARCHIVOS DE UNA UNIDAD
 // (siempre notifican a la unidad y quedan en la bitácora)
 // ---------------------------------------------------------------------

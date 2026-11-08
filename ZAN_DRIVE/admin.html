@@ -2665,6 +2665,38 @@
       document.getElementById('zipSub').textContent = sub || '';
     }
 
+    // CSV de la matriz para el paquete ZIP (una fila por unidad, una columna por tema)
+    function buildMatrixCsv(matrixRows, topics) {
+      const headers = ['Unidad de servicio', 'Código UDS', 'Cédula', 'Contrato', 'Completados', 'Total temas', 'Última fecha de cargue'].concat(topics.map(function (t) { return t.nombre; }));
+      const lines = [headers.map(csvEscape).join(';')];
+      matrixRows.forEach(function (r) {
+        const base = [r.nombreUnidad, r.codigoPlano || '', r.cedula, r.contratoNombre, r.completados, r.total, r.ultimaFecha ? formatDate(r.ultimaFecha) : ''];
+        const cols = r.states.map(function (c) {
+          return (ESTADO[c.estado] || ESTADO.vacio).label + (c.venc ? ' (vencido)' : '') + (c.n ? ' · ' + c.n + (c.n === 1 ? ' archivo' : ' archivos') : '');
+        });
+        lines.push(base.concat(cols).map(csvEscape).join(';'));
+      });
+      return lines.join('\r\n');
+    }
+
+    // Busca en Drive lo agregado a mano dentro de las carpetas de las unidades (lotes de 5, 2 a la vez).
+    async function scanDriveExtras(rows, monthId, state) {
+      const byUser = {}, batches = [];
+      for (let i = 0; i < rows.length; i += 5) batches.push(rows.slice(i, i + 5));
+      let next = 0, done = 0;
+      async function w() {
+        while (!state.cancel) {
+          const bi = next++; if (bi >= batches.length) return;
+          const res = await gsRun('apiAdminScanDriveExtras', token, monthId, batches[bi].map(function (r) { return r.userId; }));
+          (res || []).forEach(function (x) { byUser[x.userId] = x; });
+          done += batches[bi].length;
+          zipUi('Sincronizando con Drive…', 'Unidad ' + done + ' de ' + rows.length, done / rows.length * 10, '');
+        }
+      }
+      await Promise.all([w(), w()]);
+      return byUser;
+    }
+
     async function downloadFullPackage() {
       hideAlert(alertEl);
       if (!currentReport) { showAlert(alertEl, 'Aún no se ha cargado el reporte. Espera un momento e intenta de nuevo.'); return; }
@@ -2693,18 +2725,23 @@
       // 2) Carpetas por unidad + RESUMEN.txt; se listan los archivos a descargar
       const usedUnits = {};
       const tasks = [];
+      const unitInfos = {};
       rows.forEach(function (r) {
         const codigo = r.codigoPlano || r.cedula;
         const unitName = uniqueName(usedUnits, safeName(r.nombreUnidad + ' (' + codigo + ')', 100));
         const unit = root.folder(unitName);
         unit.file('RESUMEN.txt', buildSummaryTxt(r, codigo, monthName));
+        const info = unitInfos[r.userId] = { r: r, codigo: codigo, unit: unit, unitName: unitName, used: {} };
         const usedTopics = {};
         r.temas.forEach(function (t) {
           if (!t.files.length) return;
-          const folder = unit.folder(uniqueName(usedTopics, safeName(t.nombre, 80)));
+          const tName = uniqueName(usedTopics, safeName(t.nombre, 80));
+          const folder = unit.folder(tName);
           const usedFiles = {};
           t.files.forEach(function (f) {
-            tasks.push({ folder: folder, f: f, name: uniqueName(usedFiles, safeName(f.originalName, 120)), unit: unitName, tema: t.nombre });
+            const fName = uniqueName(usedFiles, safeName(f.originalName, 120));
+            info.used[(tName + '/' + fName).toLowerCase()] = true;
+            tasks.push({ folder: folder, f: f, name: fName, unit: unitName, tema: t.nombre });
           });
         });
       });
@@ -2712,8 +2749,47 @@
       zipState = { cancel: false, done: 0, errors: [] };
       const state = zipState;
       document.getElementById('zipModalBg').classList.add('open');
-      zipUi('Preparando paquete…', rows.length + ' unidad(es) · ' + tasks.length + ' archivo(s)', 0, '');
+      zipUi('Sincronizando con Drive…', 'Buscando carpetas y archivos nuevos', 0, '');
       document.getElementById('zipCancel').disabled = false;
+
+      // Carpetas y archivos agregados directamente en Drive (la plataforma no los tiene registrados)
+      let scanWarn = '', extraCount = 0, syncLines = [], foundUnits = 0;
+      try {
+        const found = await scanDriveExtras(rows, currentReport.month.id, state);
+        Object.keys(found).forEach(function (uid) {
+          const info = unitInfos[uid], x = found[uid];
+          if (!info || !x) return;
+          if (x.found) foundUnits++;
+          syncLines.push(info.unitName + ' → ' + (x.found ? 'carpeta en Drive «' + x.folderName + '»: ' + (x.files || []).length + ' archivo(s) y ' + (x.folders || []).length + ' subcarpeta(s) nuevos'
+            : (x.monthFound ? 'NO se encontró su carpeta en Drive dentro del mes' : 'NO se encontró la carpeta del mes en Drive')));
+          const seg = function (path) { return path.split('/').filter(Boolean).map(function (n) { return safeName(n, 100); }); };
+          (x.folders || []).forEach(function (fp) { info.unit.folder(seg(fp).join('/')); });
+          const extraLines = [];
+          (x.files || []).forEach(function (ef) {
+            const parts = seg(ef.path);
+            let fileName = parts.pop();
+            if (String(ef.mimeType || '').indexOf('application/vnd.google-apps') === 0 && !/\.pdf$/i.test(fileName)) fileName += '.pdf';
+            const dir = parts.join('/');
+            let final = fileName, n = 2;
+            while (info.used[((dir ? dir + '/' : '') + final).toLowerCase()]) {
+              const dot = fileName.lastIndexOf('.');
+              final = (dot > 0 ? fileName.slice(0, dot) : fileName) + ' (' + (n++) + ')' + (dot > 0 ? fileName.slice(dot) : '');
+            }
+            info.used[((dir ? dir + '/' : '') + final).toLowerCase()] = true;
+            tasks.push({ folder: dir ? info.unit.folder(dir) : info.unit, drive: true, id: ef.id, f: { originalName: ef.path }, name: final, unit: info.unitName, tema: dir || '(carpeta de la unidad)' });
+            extraLines.push('  - ' + ef.path);
+            extraCount++;
+          });
+          if (extraLines.length) {
+            info.unit.file('RESUMEN.txt', buildSummaryTxt(info.r, info.codigo, monthName) +
+              '\r\nARCHIVOS AGREGADOS DIRECTAMENTE EN DRIVE (' + extraLines.length + ') — no están registrados en la plataforma\r\n' + extraLines.join('\r\n') + '\r\n');
+          }
+        });
+      } catch (err) {
+        scanWarn = 'No se pudo sincronizar con Drive (se incluyeron solo los archivos registrados): ' + err.message;
+      }
+      if (state.cancel) { document.getElementById('zipModalBg').classList.remove('open'); zipState = null; return; }
+      zipUi('Preparando paquete…', rows.length + ' unidad(es) · ' + tasks.length + ' archivo(s)', 10, '');
 
       let idx = 0;
       async function worker() {
@@ -2722,14 +2798,14 @@
           if (i >= tasks.length) return;
           const tk = tasks[i];
           try {
-            const res = await gsRun('apiAdminDownloadFile', token, tk.f.id);
+            const res = tk.drive ? await gsRun('apiAdminDownloadDriveFile', token, tk.id) : await gsRun('apiAdminDownloadFile', token, tk.f.id);
             tk.folder.file(tk.name, res.base64Data, { base64: true });
           } catch (err) {
             state.errors.push(tk.unit + ' / ' + tk.tema + ' / ' + tk.f.originalName + ' — ' + err.message);
           }
           state.done++;
           zipUi('Descargando archivos…', 'Archivo ' + state.done + ' de ' + tasks.length,
-            tasks.length ? state.done / tasks.length * 90 : 90, state.errors.length ? state.errors.length + ' archivo(s) no se pudieron descargar' : '');
+            tasks.length ? 10 + state.done / tasks.length * 80 : 90, state.errors.length ? state.errors.length + ' archivo(s) no se pudieron descargar' : '');
         }
       }
       const WORKERS = 4;
@@ -2739,8 +2815,11 @@
 
       if (state.cancel) { document.getElementById('zipModalBg').classList.remove('open'); zipState = null; return; }
 
-      if (state.errors.length) {
-        root.file('ERRORES.txt', '\uFEFFArchivos que no se pudieron incluir en el paquete:\r\n\r\n' + state.errors.join('\r\n') + '\r\n');
+      root.file('SINCRONIZACION_DRIVE.txt', '\uFEFFSincronización con Drive — ' + monthName + '\r\n' + '='.repeat(40) + '\r\n' +
+        (scanWarn ? scanWarn + '\r\n' : 'Carpetas de unidad encontradas: ' + foundUnits + ' de ' + rows.length + '\r\nArchivos nuevos incluidos: ' + extraCount + '\r\n\r\n' + syncLines.join('\r\n') + '\r\n'));
+      if (state.errors.length || scanWarn) {
+        root.file('ERRORES.txt', '\uFEFF' + (scanWarn ? scanWarn + '\r\n\r\n' : '') +
+          (state.errors.length ? 'Archivos que no se pudieron incluir en el paquete:\r\n\r\n' + state.errors.join('\r\n') + '\r\n' : ''));
       }
 
       try {
@@ -2758,9 +2837,9 @@
         a.remove();
         setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
         document.getElementById('zipModalBg').classList.remove('open');
-        showAlert(alertEl, 'Paquete generado: ' + rows.length + ' unidad(es), ' + (tasks.length - state.errors.length) + ' archivo(s).' +
-          (state.errors.length ? ' ' + state.errors.length + ' archivo(s) no se pudieron incluir (ver ERRORES.txt dentro del ZIP).' : ''),
-          state.errors.length ? 'error' : 'ok');
+        showAlert(alertEl, 'Paquete generado: ' + rows.length + ' unidad(es), ' + (tasks.length - state.errors.length) + ' archivo(s)' + (extraCount ? ' (' + extraCount + ' agregados directamente en Drive)' : '') + '. Drive: ' + (scanWarn ? 'no se pudo sincronizar' : foundUnits + ' de ' + rows.length + ' carpetas de unidad encontradas') + '.' +
+          (state.errors.length || scanWarn ? ' Hubo avisos: revisa ERRORES.txt dentro del ZIP.' : ''),
+          state.errors.length || scanWarn ? 'error' : 'ok');
       } catch (err) {
         document.getElementById('zipModalBg').classList.remove('open');
         showAlert(alertEl, 'No se pudo generar el ZIP: ' + err.message);

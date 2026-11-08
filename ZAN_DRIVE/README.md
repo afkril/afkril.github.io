@@ -51,3 +51,15 @@ Pega el Code.gs nuevo, ejecuta `setup()` una vez (o abre la app: el esquema pasa
 - Al hacer clic se abre el detalle completo: perfil que la realizó (resaltado), archivo/tema/mes/fecha, observación resaltada y mensaje completo.
 - Al verla pasa de «nuevas» a «Notificaciones anteriores» (historial) y se retira el cartel superior. También hay «Marcar todas como leídas».
 - Solo se guardan las últimas 10 por unidad (`AVISOS_KEEP`); al crear una nueva se borra la más antigua. Endpoints: `apiGetNotifications`, `apiMarkAllAvisosLeidos`.
+
+## Cambios: paquete ZIP sincronizado con Drive (v3.4)
+**Importante:** toca `Code.gs` (nuevos `apiAdminScanDriveExtras` y `apiAdminDownloadDriveFile`). Pega el Code.gs y crea **Nueva versión**; al volver a desplegar, Apps Script puede pedir autorizar de nuevo el acceso a Drive.
+- Corregido: «Descargar paquete completo» fallaba con `buildMatrixCsv is not defined` (la función no existía desde V3). Ya se genera la matriz CSV.
+- Antes de comprimir, el panel revisa en Drive la carpeta de cada unidad (`raíz / mes / «cédula - unidad» / tema`) e incluye lo agregado a mano: archivos y carpetas (también vacías), en cualquier subcarpeta, respetando la misma ruta.
+- Lo que la plataforma ya tiene registrado no se duplica. Si el nombre choca, se renombra «(2)».
+- Documentos de Google (Docs/Sheets/Slides) se exportan a PDF. Los archivos de más de 35 MB no se pueden bajar por la web: quedan listados en ERRORES.txt.
+- RESUMEN.txt de cada unidad lista los archivos «agregados directamente en Drive». Si el escaneo falla, el paquete sale solo con lo registrado y ERRORES.txt lo explica.
+- Si renombraste la carpeta de una unidad en Drive, se encuentra igual por la cédula (la parte «cédula - …» del nombre debe conservarse).
+
+## v3.5 — diagnóstico de la sincronización con Drive
+El ZIP incluye `SINCRONIZACION_DRIVE.txt`: por cada unidad indica si encontró su carpeta en Drive (y cómo se llama) y cuántos archivos/subcarpetas nuevos incluyó. El aviso final del panel resume «Drive: X de Y carpetas de unidad encontradas». La búsqueda del mes y de la unidad ahora usa el mismo saneado de nombres con que se crean las carpetas.
