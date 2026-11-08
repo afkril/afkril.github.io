@@ -205,3 +205,82 @@ async function comprimirImagenSiAplica(file, maxDim = 1600, calidad = 0.72) {
         return file; // ante cualquier error, seguir con el archivo tal cual
     }
 }
+
+
+/* ============================================================
+   RANGO PERMITIDO PARA FECHAS DE INGRESO / RETIRO
+   Entre 1 año atrás y 6 meses adelante respecto a la fecha actual.
+   - Se aplican min/max a los campos (el calendario bloquea el resto).
+   - Al salir del campo se corrige el año de 2 dígitos (26 → 2026) y,
+     si la fecha queda fuera del rango, se avisa y se limpia el campo.
+   - validarFechaMovimiento() se usa también al enviar/guardar.
+============================================================ */
+function _isoLocal(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function rangoFechaMovimiento() {
+    const hoy = new Date();
+    const min = new Date(hoy.getFullYear() - 1, hoy.getMonth(), hoy.getDate());
+    const max = new Date(hoy.getFullYear(), hoy.getMonth() + 6, hoy.getDate());
+    return { min: _isoLocal(min), max: _isoLocal(max) };
+}
+
+/* Devuelve '' si la fecha es válida y está en rango; si no, el mensaje de error. */
+function validarFechaMovimiento(valor, etiqueta) {
+    const nombre = etiqueta || 'La fecha';
+    if (!valor) return '';
+    const { min, max } = rangoFechaMovimiento();
+    const f = /^\d{4}-\d{2}-\d{2}$/.test(valor) ? new Date(valor + 'T00:00:00') : null;
+    if (!f || isNaN(f) || _isoLocal(f) !== valor) {
+        return `${nombre} no es válida. Revise el año.`;
+    }
+    if (valor < min || valor > max) {
+        return `${nombre} debe estar entre ${formatDateDMY(min)} y ${formatDateDMY(max)} (máximo 1 año atrás y 6 meses adelante).`;
+    }
+    return '';
+}
+
+const _esCampoFechaMov = (el) => !!el && el.tagName === 'INPUT' && el.type === 'date' && (
+    ['retiroDate', 'ingresoDate', 'cudsRetiroFecha', 'cudsReingresoFecha'].includes(el.id) ||
+    /^ne-(retiroDate|ingresoDate)-/.test(el.id)
+);
+
+function aplicarRangoFechaMovimiento(el) {
+    const { min, max } = rangoFechaMovimiento();
+    el.min = min;
+    el.max = max;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input[type="date"]').forEach(el => { if (_esCampoFechaMov(el)) aplicarRangoFechaMovimiento(el); });
+});
+
+// Los campos pueden crearse después (modales, panel de detalle): se aplica al enfocarlos
+document.addEventListener('focusin', (e) => { if (_esCampoFechaMov(e.target)) aplicarRangoFechaMovimiento(e.target); });
+
+document.addEventListener('focusout', (e) => {
+    const el = e.target;
+    if (!_esCampoFechaMov(el) || !el.value) return;
+
+    // Año de 2 dígitos tecleado a mano (0026 → 2026)
+    const m = el.value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m && parseInt(m[1], 10) < 100) {
+        const corregido = `${2000 + parseInt(m[1], 10)}-${m[2]}-${m[3]}`;
+        if (!validarFechaMovimiento(corregido)) {
+            el.value = corregido;
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    }
+
+    const etiqueta = /retiro/i.test(el.id) ? 'La fecha de retiro' : 'La fecha de ingreso';
+    const error = validarFechaMovimiento(el.value, etiqueta);
+    if (error) {
+        if (typeof showToast === 'function') showToast(error, 'error');
+        el.value = '';
+        el.classList.add('input-error');
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    } else {
+        el.classList.remove('input-error');
+    }
+});

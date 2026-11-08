@@ -567,6 +567,8 @@ const ConsultaUDSModule = (() => {
         if (errorBox) errorBox.style.display = 'none';
 
         if (!fecha) { mostrarErrorRetiro('Ingrese la fecha de retiro.'); fechaInput?.focus(); return; }
+        const errFechaRet = validarFechaMovimiento(fecha, 'La fecha de retiro');
+        if (errFechaRet) { mostrarErrorRetiro(errFechaRet); fechaInput?.focus(); return; }
         if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
             mostrarErrorRetiro('Ingrese un correo válido para el seguimiento.'); correoInput?.focus(); return;
         }
@@ -717,6 +719,8 @@ const ConsultaUDSModule = (() => {
 
         if (!dob) return mostrarErrorReingreso('Ingrese la fecha de nacimiento.');
         if (!fechaIngreso) return mostrarErrorReingreso('Ingrese la fecha de reingreso.');
+        const errFechaReing = validarFechaMovimiento(fechaIngreso, 'La fecha de reingreso');
+        if (errFechaReing) return mostrarErrorReingreso(errFechaReing);
         if (!genero) return mostrarErrorReingreso('Seleccione el género.');
         if (!direccion || !telefono) return mostrarErrorReingreso('Complete dirección y teléfono.');
         if (!acudienteNombre || !acudienteDoc) return mostrarErrorReingreso('Complete los datos del acudiente.');

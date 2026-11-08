@@ -89,7 +89,7 @@ const CambioTipoModule = (() => {
                 id: n.id, path: n._path, origen: n._origen,
                 doc: `${i.docType || ''} ${i.document}`.trim(), documento: i.document,
                 nombre: i.name || n.name || '-',
-                uds: n.udsName || n.udsFull || '-', contrato: n.contract || n.contrato || '-',
+                uds: n.udsName || n.udsFull || '-', codigoUds: (String(n.udsFull || '').split(' - ')[1] || n.udsCode || '').trim(), contrato: n.contract || n.contrato || '-',
                 modalidad: n.modalidad || '-',
                 nac, cumple6, edad, atraso: Math.round((hoy - cumple6) / 86400000),
                 ingreso: n._fIng
@@ -205,7 +205,7 @@ const CambioTipoModule = (() => {
         if (!lista.length) { if (typeof showToast === 'function') showToast('No hay casos para exportar', 'warning'); return; }
         if (typeof XLSX === 'undefined') { if (typeof showToast === 'function') showToast('No se pudo cargar la librería de Excel', 'error'); return; }
         const filas = lista.map(c => ({
-            'Nombre': String(c.nombre).toUpperCase(), 'Tipo documento / N°': c.doc, 'UDS': c.uds, 'Contrato': c.contrato,
+            'Nombre': String(c.nombre).toUpperCase(), 'Tipo documento / N°': c.doc, 'UDS': c.uds, 'Código UDS': c.codigoUds || '', 'Contrato': c.contrato,
             'Fecha nacimiento': iso(c.nac), 'Edad hoy': c.edad.texto, 'Cumplió 6 meses': iso(c.cumple6),
             'Días desde que cumplió': c.atraso, 'Fecha ingreso': iso(c.ingreso), 'Tipo nuevo': '6 meses a 5 años'
         }));

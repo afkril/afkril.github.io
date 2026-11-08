@@ -3,6 +3,16 @@
 // (novedades activas, archivadas, análisis nutricional)
 // ============================================================
 
+// Código de la UDS (las UDS pueden repetirse por nombre dentro de un mismo contrato).
+// Se guarda en udsFull con el formato "NOMBRE - CÓDIGO".
+function getCodigoUds(n) {
+    if (!n) return '';
+    if (n.udsCode) return String(n.udsCode);
+    const full = String(n.udsFull || '');
+    const i = full.lastIndexOf(' - ');
+    return i >= 0 ? full.slice(i + 3).trim() : '';
+}
+
 function exportNutricionalToExcel() {
     if (datosNutricionalesFiltrados.length === 0) {
         showToast('No hay datos para exportar', 'warning');
@@ -195,6 +205,7 @@ function exportArchivedToExcel() {
                     'Fecha Movimiento': fechaMovimiento,
                     'Contrato': n.contract || '',
                     'UDS Nombre': n.udsName,
+                    'Código UDS': getCodigoUds(n),
                     'Tipo Novedad': n.type ? n.type.toUpperCase() : '',
                     'Documento Retiro': docRetiro,
                     'Nombre Retiro': nombreRetiro,
@@ -369,6 +380,7 @@ function _getFilteredCurrentExportRows() {
                     'Fecha Movimiento': fechaMovimiento,
                     'Contrato': n.contract || '',
                     'UDS Nombre': n.udsName,
+                    'Código UDS': getCodigoUds(n),
                     'Tipo Novedad': tipoNovedad,
                     'Doc Retiro': docRetiro,
                     'Nombre Retiro': nombreRetiro,
@@ -534,6 +546,7 @@ function exportToExcelFull() {
                         'Fecha Movimiento': fechaMovimiento,
                         'Contrato': n.contract || '',
                         'UDS Nombre': n.udsName,
+                    'Código UDS': getCodigoUds(n),
                         'Tipo': tipo,
                         'Doc Retiro': docRetiro,
                         'Nombre Retiro': nombreRetiro,
@@ -605,8 +618,8 @@ function exportToPDF() {
                 doc.rect(10, y, 277, 10, 'F');
                 doc.setFontSize(9);
                 
-                const headers = ['Estado', 'Fecha Reg', 'Fecha Mov', 'Contrato', 'UDS', 'Tipo', 'Doc Ret', 'Nom Ret', 'Doc Ing', 'Nom Ing'];
-                const colWidths = [25, 25, 35, 25, 35, 25, 30, 45, 30, 47];
+                const headers = ['Estado', 'Fecha Reg', 'Fecha Mov', 'Contrato', 'UDS', 'Cód UDS', 'Tipo', 'Doc Ret', 'Nom Ret', 'Doc Ing', 'Nom Ing'];
+                const colWidths = [18, 22, 26, 20, 30, 18, 18, 24, 34, 24, 34];
                 let x = 12;
                 
                 headers.forEach((header, i) => {
@@ -670,6 +683,7 @@ function exportToPDF() {
                         fechaMovimiento.length > 18 ? fechaMovimiento.substring(0, 18) : fechaMovimiento,
                         n.contract || '-',
                         n.udsName ? (n.udsName.length > 18 ? n.udsName.substring(0, 18) + '...' : n.udsName) : '',
+                        getCodigoUds(n) || '-',
                         tipoDisplay,
                         docRet,
                         nomRet,

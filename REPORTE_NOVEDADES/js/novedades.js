@@ -1580,6 +1580,18 @@ function guardarEditarBasicos(rol) {
         if (nuevo.dob > nuevo.ingresoDate) { showToast('La fecha de nacimiento no puede ser posterior a la fecha de ingreso.', 'error'); return; }
         nuevo.age = calculateAge(nuevo.dob, nuevo.ingresoDate);
     }
+    // Rango permitido (1 año atrás / 6 meses adelante): solo si la fecha se modificó,
+    // para poder corregir otros datos de registros antiguos sin tocar sus fechas.
+    {
+        const chequeos = rol === 'retiro'
+            ? [['retiroDate', 'La fecha de retiro']]
+            : [['ingresoDate', 'La fecha de ingreso']];
+        for (const [campo, etiqueta] of chequeos) {
+            if (String(nuevo[campo]) === String(_neValor(novelty, rol, campo))) continue;
+            const err = validarFechaMovimiento(nuevo[campo], etiqueta);
+            if (err) { showToast(err, 'error'); return; }
+        }
+    }
     // Si la novedad tiene retiro e ingreso, el retiro debe ser anterior al ingreso
     if (novelty.retiro && novelty.ingreso) {
         const fRet = rol === 'retiro' ? nuevo.retiroDate : _neValor(novelty, 'retiro', 'retiroDate');
@@ -3420,6 +3432,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             retiroDate?.focus();
                             return;
                         }
+                        const errFechaRet = validarFechaMovimiento(retiroDate.value, 'La fecha de retiro');
+                        if (errFechaRet) {
+                            showToast(errFechaRet, "error");
+                            retiroDate.classList.add('input-error');
+                            retiroDate.focus();
+                            return;
+                        }
                         retiroDate.classList.remove('input-error');
 
                         // Género obligatorio
@@ -3518,6 +3537,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             showToast("La FECHA DE INGRESO es OBLIGATORIA", "error");
                             ingresoDate?.classList.add('input-error');
                             ingresoDate?.focus();
+                            return;
+                        }
+                        const errFechaIng = validarFechaMovimiento(ingresoDate.value, 'La fecha de ingreso');
+                        if (errFechaIng) {
+                            showToast(errFechaIng, "error");
+                            ingresoDate.classList.add('input-error');
+                            ingresoDate.focus();
                             return;
                         }
                         ingresoDate.classList.remove('input-error');
