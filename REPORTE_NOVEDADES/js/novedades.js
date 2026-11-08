@@ -1428,7 +1428,7 @@ function tipoBeneficiarioLabel(t) {
 }
 
 /* ============================================================
-   CORRECCIÓN DE NOMBRE Y DOCUMENTO (cuando no coinciden con el RC adjunto)
+   EDICIÓN DE DATOS DEL BENEFICIARIO (nombre, documento, fechas y género)
    Se edita desde la pestaña Retiro / Ingreso del detalle.
 ============================================================ */
 function _neEsc(t) {
@@ -1437,29 +1437,98 @@ function _neEsc(t) {
         .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/* Valor de un campo del beneficiario, tolerando registros planos (sin retiro/ingreso anidado) */
+function _neValor(novelty, rol, campo) {
+    const anidado = novelty[rol] && typeof novelty[rol] === 'object';
+    const d = anidado ? novelty[rol] : novelty;
+    switch (campo) {
+        case 'dob': return d.dob || d.ingresoDOB || novelty.ingresoDOB || '';
+        case 'ingresoDate': return d.ingresoDate || novelty.ingresoDate || '';
+        case 'retiroDate': return d.retiroDate || novelty.retiroDate || '';
+        default: return d[campo] != null ? d[campo] : '';
+    }
+}
+
+function _neFechaValida(s) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    const d = new Date(s + 'T00:00:00');
+    return !isNaN(d) && d.toISOString().slice(0, 10) === s;
+}
+
 function renderEditarBasicos(novelty, rol) {
-    const d = novelty[rol] || novelty;
+    const v = (c) => _neEsc(_neValor(novelty, rol, c));
+    const docType = _neValor(novelty, rol, 'docType') || 'RC';
+    const gender = _neValor(novelty, rol, 'gender');
+    const tiposDoc = [['RC', 'RC - Registro Civil'], ['AN', 'AN - Acta Nacimiento'], ['PEP', 'PEP / PPT'], ['SD', 'SD - Sin Documento']];
+    const opcionesDoc = tiposDoc.map(([k, t]) => `<option value="${k}" ${k === docType ? 'selected' : ''}>${t}</option>`).join('');
+    const opcionesGen = `
+        <option value="" ${!gender ? 'selected' : ''}>Seleccione…</option>
+        <option value="M" ${gender === 'M' ? 'selected' : ''}>Masculino</option>
+        <option value="F" ${gender === 'F' ? 'selected' : ''}>Femenino</option>`;
+
+    const camposFechas = rol === 'retiro'
+        ? `
+            <div class="ne-field">
+                <label for="ne-retiroDate-${rol}">Fecha de retiro</label>
+                <input type="date" id="ne-retiroDate-${rol}" value="${v('retiroDate')}">
+            </div>`
+        : `
+            <div class="ne-field">
+                <label for="ne-dob-${rol}">Fecha de nacimiento</label>
+                <input type="date" id="ne-dob-${rol}" value="${v('dob')}" onchange="_neActualizarEdad('${rol}')">
+            </div>
+            <div class="ne-field">
+                <label for="ne-ingresoDate-${rol}">Fecha de ingreso</label>
+                <input type="date" id="ne-ingresoDate-${rol}" value="${v('ingresoDate')}" onchange="_neActualizarEdad('${rol}')">
+            </div>`;
+
+    const edadPreview = rol === 'ingreso'
+        ? `
+            <div class="ne-field">
+                <label>Edad al ingreso (automática)</label>
+                <input type="text" id="ne-age-${rol}" value="${v('age')}" readonly tabindex="-1">
+            </div>`
+        : '';
+
     return `
         <div class="ne-wrap">
             <button type="button" class="ne-btn" id="ne-btn-${rol}" onclick="abrirEditarBasicos('${rol}')">
-                <i class=ic-pencil></i> Corregir nombre y documento
+                <i class=ic-pencil></i> Editar datos del beneficiario
             </button>
             <div class="ne-form" id="ne-form-${rol}" style="display:none;">
-                <div class="ne-field">
+                <div class="ne-field ne-full">
                     <label for="ne-name-${rol}">Nombres y apellidos</label>
-                    <input type="text" id="ne-name-${rol}" value="${_neEsc(d.name || '')}" autocomplete="off">
+                    <input type="text" id="ne-name-${rol}" value="${v('name')}" autocomplete="off">
                 </div>
                 <div class="ne-field">
-                    <label for="ne-doc-${rol}">N° de documento (${_neEsc(d.docType || 'RC')})</label>
-                    <input type="text" id="ne-doc-${rol}" value="${_neEsc(d.document || '')}" autocomplete="off">
+                    <label for="ne-doctype-${rol}">Tipo de documento</label>
+                    <select id="ne-doctype-${rol}">${opcionesDoc}</select>
                 </div>
-                <div class="ne-actions">
+                <div class="ne-field">
+                    <label for="ne-doc-${rol}">N° de documento</label>
+                    <input type="text" id="ne-doc-${rol}" value="${v('document')}" autocomplete="off">
+                </div>
+                ${camposFechas}
+                <div class="ne-field">
+                    <label for="ne-gender-${rol}">Género</label>
+                    <select id="ne-gender-${rol}">${opcionesGen}</select>
+                </div>
+                ${edadPreview}
+                <div class="ne-actions ne-full">
                     <button type="button" class="ne-save" id="ne-save-${rol}" onclick="guardarEditarBasicos('${rol}')"><i class=ic-check></i> Guardar</button>
                     <button type="button" class="ne-cancel" onclick="cerrarEditarBasicos('${rol}')">Cancelar</button>
                 </div>
             </div>
         </div>
     `;
+}
+
+function _neActualizarEdad(rol) {
+    const dob = document.getElementById(`ne-dob-${rol}`)?.value;
+    const ing = document.getElementById(`ne-ingresoDate-${rol}`)?.value;
+    const out = document.getElementById(`ne-age-${rol}`);
+    if (!out) return;
+    out.value = (_neFechaValida(dob) && _neFechaValida(ing)) ? calculateAge(dob, ing) : '';
 }
 
 function abrirEditarBasicos(rol) {
@@ -1484,17 +1553,50 @@ function guardarEditarBasicos(rol) {
     if (!novelty || !novelty.id) return;
 
     const anidado = novelty[rol] && typeof novelty[rol] === 'object';
-    const actual = anidado ? novelty[rol] : novelty;
+    const val = (id) => document.getElementById(`${id}-${rol}`)?.value || '';
 
-    const nuevoNombre = (document.getElementById(`ne-name-${rol}`)?.value || '').replace(/\s+/g, ' ').trim();
-    const nuevoDoc = (document.getElementById(`ne-doc-${rol}`)?.value || '').replace(/\s+/g, '').trim();
+    const nuevo = {
+        name: val('ne-name').replace(/\s+/g, ' ').trim(),
+        document: val('ne-doc').replace(/\s+/g, '').trim(),
+        docType: val('ne-doctype') || 'RC',
+        gender: val('ne-gender')
+    };
+    if (rol === 'retiro') {
+        nuevo.retiroDate = val('ne-retiroDate');
+    } else {
+        nuevo.dob = val('ne-dob');
+        nuevo.ingresoDate = val('ne-ingresoDate');
+    }
 
-    if (nuevoNombre.length < 3) { showToast('Escribe los nombres y apellidos completos.', 'error'); return; }
-    if (!/^[A-Za-z0-9]{3,20}$/.test(nuevoDoc)) { showToast('El documento solo puede tener letras y números (3 a 20 caracteres).', 'error'); return; }
+    // ---- Validaciones ----
+    if (nuevo.name.length < 3) { showToast('Escribe los nombres y apellidos completos.', 'error'); return; }
+    if (!/^[A-Za-z0-9]{3,20}$/.test(nuevo.document)) { showToast('El documento solo puede tener letras y números (3 a 20 caracteres).', 'error'); return; }
+    if (nuevo.gender !== 'M' && nuevo.gender !== 'F') { showToast('Selecciona el género.', 'error'); return; }
+    if (rol === 'retiro') {
+        if (!_neFechaValida(nuevo.retiroDate)) { showToast('La fecha de retiro no es válida.', 'error'); return; }
+    } else {
+        if (!_neFechaValida(nuevo.dob)) { showToast('La fecha de nacimiento no es válida.', 'error'); return; }
+        if (!_neFechaValida(nuevo.ingresoDate)) { showToast('La fecha de ingreso no es válida.', 'error'); return; }
+        if (nuevo.dob > nuevo.ingresoDate) { showToast('La fecha de nacimiento no puede ser posterior a la fecha de ingreso.', 'error'); return; }
+        nuevo.age = calculateAge(nuevo.dob, nuevo.ingresoDate);
+    }
+    // Si la novedad tiene retiro e ingreso, el retiro debe ser anterior al ingreso
+    if (novelty.retiro && novelty.ingreso) {
+        const fRet = rol === 'retiro' ? nuevo.retiroDate : _neValor(novelty, 'retiro', 'retiroDate');
+        const fIng = rol === 'ingreso' ? nuevo.ingresoDate : _neValor(novelty, 'ingreso', 'ingresoDate');
+        if (fRet && fIng && fRet >= fIng) {
+            showToast('La fecha de retiro debe ser anterior a la fecha de ingreso.', 'error');
+            return;
+        }
+    }
 
-    const nombreAntes = actual.name || '';
-    const docAntes = actual.document || '';
-    if (nuevoNombre === nombreAntes && nuevoDoc === docAntes) {
+    // ---- Detectar cambios ----
+    const campos = Object.keys(nuevo);
+    const antes = {};
+    campos.forEach(c => { antes[c] = _neValor(novelty, rol, c); });
+    if (rol === 'ingreso') antes.age = _neValor(novelty, rol, 'age');
+    const cambiaron = campos.filter(c => c !== 'age' && String(nuevo[c]) !== String(antes[c]));
+    if (!cambiaron.length) {
         cerrarEditarBasicos(rol);
         showToast('No hay cambios para guardar.', 'info');
         return;
@@ -1502,21 +1604,41 @@ function guardarEditarBasicos(rol) {
 
     // El nombre/documento "principal" de la fila sale del retiro si existe, si no del ingreso
     const rolPrincipal = novelty.retiro ? 'retiro' : (novelty.ingreso ? 'ingreso' : null);
+    const esPrincipal = !anidado || rol === rolPrincipal;
+
+    // Ruta de escritura de cada campo: anidada (retiro/…, ingreso/…) o plana (registros antiguos)
+    const rutaPlana = { dob: 'ingresoDOB' };
+    const ruta = (c) => anidado ? `${rol}/${c}` : (rutaPlana[c] || c);
     const updates = {};
-    if (anidado) {
-        updates[`${rol}/name`] = nuevoNombre;
-        updates[`${rol}/document`] = nuevoDoc;
+    campos.forEach(c => { updates[ruta(c)] = nuevo[c]; });
+    if (!anidado && rol === 'ingreso' && novelty.dob !== undefined) updates['dob'] = nuevo.dob;
+    if (anidado && esPrincipal) { updates['name'] = nuevo.name; updates['document'] = nuevo.document; }
+
+    // Si cambió algo que influye en la valoración nutricional, se recalcula el estado
+    let nutricionNueva = null;
+    if (rol === 'ingreso' && novelty.nutricion && !novelty.nutricion.pendiente &&
+        novelty.nutricion.peso && novelty.nutricion.talla &&
+        typeof calcularEstadoNutricionalDirecto === 'function' &&
+        ['dob', 'ingresoDate', 'gender'].some(c => cambiaron.includes(c))) {
+        try {
+            const estado = calcularEstadoNutricionalDirecto(
+                parseFloat(novelty.nutricion.peso), parseFloat(novelty.nutricion.talla),
+                nuevo.dob, nuevo.ingresoDate, nuevo.gender);
+            if (estado) {
+                nutricionNueva = estado;
+                updates['nutricion/estadoNutricional'] = estado;
+            }
+        } catch (e) { /* se deja el estado anterior */ }
     }
-    if (!anidado || rol === rolPrincipal) {
-        updates['name'] = nuevoNombre;
-        updates['document'] = nuevoDoc;
-    }
+
     // Rastro de la corrección (qué había antes)
+    const antesLog = {}, despuesLog = {};
+    cambiaron.forEach(c => { antesLog[c] = antes[c]; despuesLog[c] = nuevo[c]; });
     updates[`historialEdiciones/${Date.now()}`] = {
         rol,
         fecha: new Date().toISOString(),
-        antes: { name: nombreAntes, document: docAntes },
-        despues: { name: nuevoNombre, document: nuevoDoc }
+        antes: antesLog,
+        despues: despuesLog
     };
 
     const esArchivada = currentNoveltyIsArchived;
@@ -1528,13 +1650,21 @@ function guardarEditarBasicos(rol) {
         .then(() => {
             const aplicar = (n) => {
                 if (!n) return;
-                if (n[rol] && typeof n[rol] === 'object') { n[rol].name = nuevoNombre; n[rol].document = nuevoDoc; }
-                if (!(n[rol] && typeof n[rol] === 'object') || rol === rolPrincipal) { n.name = nuevoNombre; n.document = nuevoDoc; }
+                const anid = n[rol] && typeof n[rol] === 'object';
+                campos.forEach(c => {
+                    if (anid) n[rol][c] = nuevo[c];
+                    else {
+                        n[rutaPlana[c] || c] = nuevo[c];
+                        if (c === 'dob' && n.dob !== undefined) n.dob = nuevo.dob;
+                    }
+                });
+                if (anid && esPrincipal) { n.name = nuevo.name; n.document = nuevo.document; }
+                if (nutricionNueva && n.nutricion) n.nutricion.estadoNutricional = nutricionNueva;
             };
             aplicar(novelty);
             aplicar((esArchivada ? archivedNovelties : currentNovelties).find(n => n.id === novelty.id));
 
-            showToast('Nombre y documento actualizados.', 'success');
+            showToast('Datos del beneficiario actualizados.', 'success');
             refreshNoveltyModal();
             if (esArchivada) filterArchivedNovelties(); else filterNovelties();
         })

@@ -6266,15 +6266,17 @@ body.dark-mode .novelty-empty-state strong {
 }
 .ne-btn:hover { background: rgba(37, 99, 235, .15); }
 .ne-form {
-    grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: end;
+    grid-template-columns: 1fr 1fr; gap: 8px 10px; align-items: end;
     padding: 10px 12px; border: 1px dashed #cbd5e1; border-radius: 10px; background: #f8fafc;
 }
 .ne-field label { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: .03em; }
-.ne-field input {
+.ne-full { grid-column: 1 / -1; }
+.ne-field input, .ne-field select {
     width: 100%; padding: 6px 9px; font-size: 13px; border: 1px solid #cbd5e1;
     border-radius: 8px; background: #fff; color: #1e293b;
 }
-.ne-field input:focus { outline: 2px solid rgba(37, 99, 235, .35); border-color: #2563eb; }
+.ne-field input[readonly] { background: #f1f5f9; color: #64748b; cursor: default; }
+.ne-field input:focus, .ne-field select:focus { outline: 2px solid rgba(37, 99, 235, .35); border-color: #2563eb; }
 .ne-actions { display: flex; gap: 6px; }
 .ne-save, .ne-cancel { padding: 7px 12px; font-size: 12px; font-weight: 700; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
 .ne-save { background: #2563eb; color: #fff; }
@@ -6282,6 +6284,7 @@ body.dark-mode .novelty-empty-state strong {
 .ne-cancel { background: transparent; color: #64748b; border-color: #cbd5e1; }
 body.dark-mode .ne-form { background: rgba(255,255,255,.04); border-color: #475569; }
 body.dark-mode .ne-field label { color: #94a3b8; }
-body.dark-mode .ne-field input { background: #0f172a; border-color: #475569; color: #f1f5f9; }
+body.dark-mode .ne-field input[readonly] { background: #1e293b; color: #94a3b8; }
+body.dark-mode .ne-field input, body.dark-mode .ne-field select { background: #0f172a; border-color: #475569; color: #f1f5f9; }
 body.dark-mode .ne-cancel { color: #cbd5e1; border-color: #475569; }
 @media (max-width: 640px) { .ne-form { grid-template-columns: 1fr; } }
