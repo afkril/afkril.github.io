@@ -68,39 +68,48 @@
         </div>
       </div>
       <div class="dh-right" id="dashProgressCol" style="display:none;">
-        <div id="progressWrap" class="progress-card-v2">
-          <div class="progress-card-head">
-            <div>
-              <div class="progress-title">Avance del mes</div>
-              <div class="progress-motiv" id="progressMotiv"></div>
-            </div>
-            <div class="progress-pct" id="progressPct"></div>
+        <div id="progressWrap" class="progress-card-v2 pr-split">
+          <!-- Columna izquierda (30%): medallas -->
+          <div class="pr-medals" id="prMedals" aria-label="Medallas del mes">
+            <div class="pm-hero" id="pmHero"></div>
+            <div class="pm-row" id="pmRow"></div>
           </div>
-          <div class="progress-track-v2"><div class="progress-fill-v2" id="progressFill"></div><div class="progress-fill-v2 rev" id="progressRev"></div></div>
-          <div class="progress-label" id="progressLabel"></div>
+          <!-- Columna derecha (70%): progreso, notas y mensajes -->
+          <div class="pr-main">
+            <div class="progress-card-head">
+              <div>
+                <div class="progress-title">Avance del mes</div>
+                <div class="progress-motiv" id="progressMotiv"></div>
+              </div>
+              <div class="progress-pct" id="progressPct"></div>
+            </div>
+            <div class="progress-track-v2"><div class="progress-fill-v2" id="progressFill"></div><div class="progress-fill-v2 rev" id="progressRev"></div><i class="pt" style="left:20%"></i><i class="pt" style="left:40%"></i><i class="pt" style="left:60%"></i><i class="pt" style="left:80%"></i></div>
+            <div class="pr-next" id="progressNext"></div>
+            <div class="progress-label" id="progressLabel"></div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Resumen colorido -->
     <div class="dash-kpis five" id="dashKpis" style="display:none;">
-      <div class="kpi-c azul">
+      <div class="kpi-c azul" data-filter="all" role="button" tabindex="0" aria-pressed="false" title="Mostrar todos los temas">
         <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg></span>
         <div><div class="kc-num" id="kpiTotal">0</div><div class="kc-lbl">Temas exigibles</div></div>
       </div>
-      <div class="kpi-c verde">
+      <div class="kpi-c verde" data-filter="aprobado" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas aprobados">
         <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg></span>
         <div><div class="kc-num" id="kpiAprobados">0</div><div class="kc-lbl">Aprobados</div></div>
       </div>
-      <div class="kpi-c amarillo">
+      <div class="kpi-c amarillo" data-filter="pendiente" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas en revisión">
         <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
         <div><div class="kc-num" id="kpiRevision">0</div><div class="kc-lbl">En revisión</div></div>
       </div>
-      <div class="kpi-c naranja">
+      <div class="kpi-c naranja" data-filter="rechazado" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas por corregir">
         <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></span>
         <div><div class="kc-num" id="kpiRechazados">0</div><div class="kc-lbl">Por corregir</div></div>
       </div>
-      <div class="kpi-c rojo">
+      <div class="kpi-c rojo" data-filter="vacio" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas por cargar">
         <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16.2v.1"/></svg></span>
         <div><div class="kc-num" id="kpiVacios">0</div><div class="kc-lbl">Por cargar</div></div>
       </div>
@@ -117,7 +126,10 @@
     </div>
 
     <div class="folders-toolbar" id="foldersToolbar" style="display:none;">
-      <span class="muted" id="foldersCount"></span>
+      <div class="ft-left">
+        <span class="muted" id="foldersCount"></span>
+        <button class="filter-chip" id="clearFilter" type="button" style="display:none;" title="Quitar el filtro"></button>
+      </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <button class="btn btn-secondary btn-sm" id="btnToggleCollapseAll" type="button">Desplegar todos</button>
         <label class="switch-toggle">
@@ -165,6 +177,7 @@
     let token = VIEW_TOKEN || localStorage.getItem('userToken');
     let currentMonthId = null;
     let lastTopics = [];
+    let introNext = false; // true en la primera carga de un mes: las carpetas "aparecen" una a una
     let openTopicId = null;
     let searchTerm = '';
     // Por defecto las tarjetas se ven compactas (plegadas); "Desplegar todos" muestra
@@ -197,9 +210,183 @@
     if (!token) { goTo('login'); }
 
     // ---------- Iconos ----------
-    function folderSvg(size) {
-      return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>';
+    // Paleta por estado: [fondo-arriba, fondo-abajo, frente-arriba, frente-abajo, acento]
+    const FOLDER_PAL = {
+      vacio:     ['#f77f83', '#d9343a', '#ffa3a5', '#ec4a50', '#e0393e'],
+      vencido:   ['#d4474b', '#8f1519', '#e56a6d', '#b82226', '#a61b1f'],
+      pendiente: ['#ffd466', '#e29a0c', '#ffe595', '#f7b928', '#c98200'],
+      aprobado:  ['#5fd896', '#16854a', '#8defb9', '#2fc474', '#1e9e5a'],
+      rechazado: ['#ffb066', '#d9690f', '#ffc78f', '#f58a2e', '#c2540a'],
+      noaplica:  ['#c3ccdd', '#8190ab', '#dde3ef', '#a9b5cb', '#6f7c95'],
+      azul:      ['#6fa8ff', '#1f56d9', '#9cc3ff', '#3b82f6', '#1456d6']
+    };
+    const FILE_PAL = {
+      pdf: ['#ff7a7e', '#d42f35'], doc: ['#6fa8ff', '#1f56d9'], xls: ['#4fd491', '#14864a'],
+      img: ['#b794ff', '#6d3fd6'], zip: ['#ffcf5c', '#d98c0a'], otro: ['#a9b5cb', '#6f7c95']
+    };
+    // Degradados compartidos (un solo bloque oculto; las carpetas los referencian por id)
+    (function injectSprite() {
+      const g = function (id, a, b) {
+        return '<linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient>';
+      };
+      let d = '';
+      Object.keys(FOLDER_PAL).forEach(function (k) {
+        const c = FOLDER_PAL[k];
+        d += g('fgB-' + k, c[0], c[1]) + g('fgF-' + k, c[2], c[3]) + g('fgE-' + k, c[2], c[4]);
+      });
+      Object.keys(FILE_PAL).forEach(function (k) { d += g('ffK-' + k, FILE_PAL[k][0], FILE_PAL[k][1]); });
+      document.body.insertAdjacentHTML('afterbegin', '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>' + d + '</defs></svg>');
+    })();
+
+    // Carpeta con volumen: fondo, hojas asomando (según n archivos), frente con brillo e
+    // insignia de estado. key = estado (vacio, pendiente, aprobado...). plain = sin insignia.
+    function folderSvg(size, key, n, plain) {
+      const k = FOLDER_PAL[key] ? key : 'noaplica';
+      n = n || 0;
+      const sheet = function (cls, x, y, r) {
+        return '<g class="fg-p ' + cls + '" style="--r:' + r + 'deg">' +
+          '<rect x="' + x + '" y="' + y + '" width="26" height="22" rx="2.4" fill="#fff" stroke="rgba(15,27,61,.12)" stroke-width=".6"/>' +
+          '<rect x="' + (x + 4) + '" y="' + (y + 4.5) + '" width="13" height="1.7" rx=".85" fill="#c3d2ee"/>' +
+          '<rect x="' + (x + 4) + '" y="' + (y + 8) + '" width="18" height="1.7" rx=".85" fill="#dbe4f5"/></g>';
+      };
+      let papers = '';
+      if (n >= 2) papers += sheet('fg-p1', 10, 7, -6);
+      if (n >= 1) papers += sheet('fg-p2', 12, 8, 4);
+      if (n >= 3) papers += sheet('fg-p3', 11, 9, -1);
+      const W = { fill: 'none', stroke: '#fff', 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+      const wa = Object.keys(W).map(function (a) { return a + '="' + W[a] + '"'; }).join(' ');
+      const glyph = {
+        aprobado:  '<path ' + wa + ' d="M33.6 37.4l2.7 2.7 5-5.6"/>',
+        pendiente: '<path ' + wa + ' stroke-width="2" d="M37.5 37l2.6 1.5"/><path class="fg-hand" ' + wa + ' stroke-width="2" d="M37.5 37v-4.6"/>',
+        rechazado: '<path ' + wa + ' stroke-width="2.2" d="M41 40a4 4 0 00-4-4h-3.6M35.4 33.8l-2.2 2.2 2.2 2.2"/>',
+        vacio:     '<g class="fg-bob"><path ' + wa + ' stroke-width="2.2" d="M37.5 41.2v-8.2M34 36.6l3.5-3.6 3.5 3.6"/></g>',
+        vencido:   '<path ' + wa + ' d="M37.5 32.6v5.2M37.5 41.2v.1"/>',
+        noaplica:  '<path ' + wa + ' d="M34 37h7"/>'
+      }[k] || '';
+      const emblem = (plain || !glyph) ? '' :
+        '<g class="fg-emb"><circle cx="37.5" cy="37" r="8.6" fill="url(#fgE-' + k + ')" stroke="#fff" stroke-width="2"/>' + glyph + '</g>';
+      return '<svg class="fg fg-' + k + '" width="' + size + '" height="' + size + '" viewBox="0 0 48 48" aria-hidden="true">' +
+        '<path d="M4 11a4 4 0 014-4h9.2a4 4 0 012.9 1.25l2.6 2.75H40a4 4 0 014 4v22a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="url(#fgB-' + k + ')"/>' +
+        papers +
+        '<g class="fg-front"><path d="M4 20a4 4 0 014-4h32a4 4 0 014 4v17a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="url(#fgF-' + k + ')"/>' +
+        '<path d="M4 20a4 4 0 014-4h32a4 4 0 014 4v1.4H4z" fill="#fff" opacity=".3"/>' +
+        '<path d="M8 41.3h32" stroke="#000" stroke-opacity=".08" stroke-width=".8"/></g>' +
+        emblem + '</svg>';
     }
+
+    // Icono de archivo con etiqueta de tipo (PDF, DOC, XLS...) y color propio
+    function fileKind(name) {
+      const ext = String(name || '').split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) !== -1) return ['img', 'IMG'];
+      if (ext === 'pdf') return ['pdf', 'PDF'];
+      if (['zip', 'rar', '7z'].indexOf(ext) !== -1) return ['zip', 'ZIP'];
+      if (['doc', 'docx'].indexOf(ext) !== -1) return ['doc', 'DOC'];
+      if (['xls', 'xlsx'].indexOf(ext) !== -1) return ['xls', 'XLS'];
+      return ['otro', ext.slice(0, 4).toUpperCase() || 'FILE'];
+    }
+    function fileBadgeSvg(name) {
+      const kd = fileKind(name);
+      return '<svg class="fbadge" width="28" height="35" viewBox="0 0 32 40" aria-hidden="true">' +
+        '<path d="M6 1h14l10 10v25a3 3 0 01-3 3H6a3 3 0 01-3-3V4a3 3 0 013-3z" fill="url(#ffK-' + kd[0] + ')"/>' +
+        '<path d="M20 1l10 10h-7a3 3 0 01-3-3z" fill="#fff" opacity=".4"/>' +
+        '<text x="16" y="30" text-anchor="middle" font-family="Plus Jakarta Sans,system-ui,sans-serif" font-weight="800" font-size="' + (kd[1].length > 3 ? 7.5 : 9) + '" fill="#fff">' + escapeHtml(kd[1]) + '</text></svg>';
+    }
+
+    // Cuenta animada de un número (desde el valor que ya tenía hasta el nuevo)
+    function countTo(el, to, suffix) {
+      suffix = suffix || '';
+      const from = el._v === undefined ? 0 : el._v;
+      el._v = to;
+      const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (from === to || still) { el.textContent = to + suffix; return; }
+      const t0 = performance.now(), dur = 650;
+      cancelAnimationFrame(el._raf);
+      (function step(now) {
+        const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(from + (to - from) * e) + suffix;
+        if (p < 1) el._raf = requestAnimationFrame(step);
+      })(t0);
+    }
+
+    // ---------- Medallas: 5 calidades, una por cada 20% de avance (la mejor solo al 100%) ----------
+    const MEDALS = [
+      { pct: 20,  name: 'Bronce', file: 'bronce',   c: ['#f6c9a3', '#c27a38', '#7d4519'], rib: '#d6584f' },
+      { pct: 40,  name: 'Plata', file: 'plata',    c: ['#fbfcfe', '#bcc5d4', '#7c879c'], rib: '#4b7bd8' },
+      { pct: 60,  name: 'Oro', file: 'oro',      c: ['#fff3b0', '#f4b41f', '#b27300'], rib: '#d6584f' },
+      { pct: 80,  name: 'Platino', file: 'platino',  c: ['#effaff', '#8fd0ee', '#3f8bb8'], rib: '#2f6fd0' },
+      { pct: 100, name: 'Diamante', file: 'diamante', c: ['#eafcff', '#5fd4ff', '#7a5cff'], rib: '#7a5cff', gem: true }
+    ];
+    // Medallas: imágenes PNG con fondo transparente (assets/medals/). El brillo que las cruza
+    // se dibuja con una máscara de la propia imagen, así respeta su silueta.
+    function medalSvg(i, size, cls) {
+      const m = MEDALS[i], src = 'assets/medals/' + m.file + '.png';
+      return '<span class="md md-img ' + (cls || '') + '" style="width:' + size + 'px;height:' + Math.round(size * 1.28) + 'px;--mi:url(' + src + ')">' +
+        '<img src="' + src + '" alt="Medalla de ' + m.name + '" draggable="false"></span>';
+    }
+    function tierOf(pct) {
+      let t = -1;
+      MEDALS.forEach(function (m, i) { if (pct >= m.pct) t = i; });
+      return t;
+    }
+    // Cuántos temas aprobados más hacen falta para llegar a cierto %
+    function remainingFor(r, thr) {
+      for (let k = 1; k <= r.total - r.resueltos; k++) {
+        if (Math.round((r.resueltos + k) / r.total * 100) >= thr) return k;
+      }
+      return null;
+    }
+    let prevTier;
+    function renderMedals(r) {
+      const t = r.total ? tierOf(r.pct) : -1;
+      const m = MEDALS[t];
+      const hero = document.getElementById('pmHero');
+      const grew = prevTier !== undefined && t > prevTier;
+      prevTier = t;
+      hero.innerHTML =
+        medalSvg(t >= 0 ? t : 0, 76, t < 0 ? 'md-locked' : 'md-live' + (grew ? ' md-pop' : '')) +
+        '<div class="pm-name">' + (m ? 'Medalla de ' + m.name : 'Aún sin medalla') + '</div>' +
+        '<div class="pm-sub">' + (m ? (t === MEDALS.length - 1 ? '¡Nivel máximo!' : 'Nivel ' + (t + 1) + ' de ' + MEDALS.length) : 'Llega al 20% y gana la de Bronce') + '</div>';
+      hero.classList.toggle('is-top', t === MEDALS.length - 1);
+      document.getElementById('pmRow').innerHTML = MEDALS.map(function (md, i) {
+        const on = i <= t;
+        return '<div class="pm-mini ' + (on ? 'on' : 'off') + (i === t ? ' cur' : '') + '" title="' + md.name + ' · ' + md.pct + '%' + (on ? ' (lograda)' : '') + '">' +
+          medalSvg(i, 28, on ? '' : 'md-locked') + '<span>' + md.pct + '%</span></div>';
+      }).join('');
+
+      // Siguiente meta
+      const nx = document.getElementById('progressNext');
+      if (!r.total) { nx.innerHTML = ''; return; }
+      if (t === MEDALS.length - 1) {
+        nx.innerHTML = '<span class="pn-ico">' + medalSvg(t, 22, '') + '</span><span><strong>¡Medalla máxima conseguida!</strong> Todos los temas exigibles de este mes están resueltos.</span>';
+      } else {
+        const ni = t + 1, k = remainingFor(r, MEDALS[ni].pct);
+        nx.innerHTML = '<span class="pn-ico">' + medalSvg(ni, 22, 'md-locked-soft') + '</span><span>Siguiente: <strong>medalla de ' + MEDALS[ni].name + '</strong>' +
+          (k ? ' · te ' + (k === 1 ? 'falta ' : 'faltan ') + k + (k === 1 ? ' tema aprobado.' : ' temas aprobados.') : '.') + '</span>';
+      }
+    }
+
+    // ---------- Resumen calculado en el navegador (mismas reglas que el servidor) ----------
+    // Así los números, las medallas y los filtros siempre coinciden con las carpetas visibles.
+    function computeResumen(topics) {
+      const ex = topics.filter(function (t) { return t.obligatorio; });
+      const cnt = function (st) { return ex.filter(function (t) { return t.estado === st; }).length; };
+      const resueltos = ex.filter(function (t) { return t.estado === 'noaplica' || t.files.some(function (f) { return f.estado === 'aprobado'; }); }).length;
+      return {
+        total: ex.length, resueltos: resueltos,
+        aprobados: cnt('aprobado'), pendientes: cnt('pendiente'), rechazados: cnt('rechazado'), vacios: cnt('vacio'),
+        noAplica: cnt('noaplica'), vencidos: ex.filter(function (t) { return t.vencido; }).length,
+        pct: ex.length ? Math.round(resueltos / ex.length * 100) : 0
+      };
+    }
+
+    // ---------- Filtros desde las fichas de resumen ----------
+    const FILTER_LABEL = { aprobado: 'Aprobados', pendiente: 'En revisión', rechazado: 'Por corregir', vacio: 'Por cargar' };
+    let kpiFilter = null;
+    function setKpiFilter(f) {
+      kpiFilter = (f === 'all' || f === kpiFilter) ? null : f;
+      renderFolders();
+    }
+
     const DOC_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/></svg>';
     const CHEV_DOWN_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
     const CHEV_RIGHT_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
@@ -213,7 +400,11 @@
     const UP_SMALL_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
     const CLIP_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8"/></svg>';
     const UP_ICON_LG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
-    const FOLDER_SMALL_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>';
+    const FOLDER_SMALL_SVG = folderSvg(20, 'azul', 0, true);
+    // Iconos fijos de la cabecera: misma carpeta con volumen, en azul de marca
+    document.querySelector('.topbar .brand-icon').innerHTML = folderSvg(32, 'azul', 2, true);
+    document.querySelector('.du-icon').innerHTML = folderSvg(46, 'azul', 3, true);
+    document.querySelector('.sh-icon').innerHTML = folderSvg(40, 'azul', 2, true);
 
     function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
 
@@ -314,6 +505,8 @@
       currentMonthId = monthId;
       const sel = document.getElementById('monthSelect');
       if (!silent) {
+        introNext = true;
+        kpiFilter = null;
         closeDrawer();
         hideAlert(alertEl);
         document.getElementById('foldersToolbar').style.display = 'none';
@@ -327,6 +520,7 @@
       try {
         lastData = await gsRun('apiGetTopics', token, monthId);
         lastTopics = lastData.topics;
+        applyPendingDeletes();
       } catch (e) {
         reportError(e.message);
         if (!silent) { lastData = null; lastTopics = []; }
@@ -341,6 +535,66 @@
 
     function refreshTopics() { return loadTopics(currentMonthId, true); }
 
+    // ---------- Eliminar con "Deshacer" (10 s) ----------
+    // El archivo se oculta al instante; solo va a la papelera si pasan los 10 s sin deshacer.
+    const pendingDel = new Set();
+
+    function recalcEstado(t) {
+      if (t.estado === 'noaplica' || t.estado === 'excluido') return;
+      const fs = t.files;
+      if (!fs.length) t.estado = 'vacio';
+      else if (fs.some(function (x) { return x.estado === 'pendiente'; })) t.estado = 'pendiente';
+      else if (fs.some(function (x) { return x.estado === 'aprobado'; })) t.estado = 'aprobado';
+      else t.estado = 'rechazado';
+    }
+    // Si los datos se recargan durante los 10 s (p. ej. al subir otro archivo), el servidor aún
+    // devuelve el archivo; aquí se vuelve a ocultar.
+    function applyPendingDeletes() {
+      if (!pendingDel.size) return;
+      lastTopics.forEach(function (t) {
+        const n = t.files.length;
+        t.files = t.files.filter(function (x) { return !pendingDel.has(x.id); });
+        if (t.files.length !== n) recalcEstado(t);
+      });
+    }
+    function rerenderFiles() { renderFolders(); renderPanel(); }
+
+    function deleteFileWithUndo(f) {
+      const owner = lastTopics.find(function (t) { return t.files.some(function (x) { return x.id === f.id; }); });
+      if (!owner) return;
+      const topicId = owner.id, monthId = currentMonthId;
+      const pos = owner.files.findIndex(function (x) { return x.id === f.id; });
+      deleteWithUndo({
+        title: 'Archivo eliminado',
+        detail: f.originalName,
+        call: ['apiDeleteFile', token, f.id],
+        onHide: function () {
+          pendingDel.add(f.id);
+          owner.files.splice(pos, 1);
+          recalcEstado(owner);
+          rerenderFiles();
+        },
+        onUndo: function () {
+          pendingDel.delete(f.id);
+          if (currentMonthId !== monthId) return;
+          const t = lastTopics.find(function (x) { return x.id === topicId; });
+          if (!t || t.files.some(function (x) { return x.id === f.id; })) return;
+          t.files.splice(Math.min(pos, t.files.length), 0, f);
+          recalcEstado(t);
+          rerenderFiles();
+        },
+        onCommitted: function () {
+          pendingDel.delete(f.id);
+          if (currentMonthId === monthId) refreshTopics();
+        },
+        onError: function (err) {
+          pendingDel.delete(f.id);
+          reportError(err.message);
+          if (currentMonthId === monthId) refreshTopics();
+        }
+      });
+    }
+
     function motivText(r) {
       if (r.total && r.resueltos >= r.total) return '¡Todos los temas de este mes están aprobados! 🎉';
       if (r.vencidos) return 'Tienes ' + r.vencidos + (r.vencidos === 1 ? ' tema vencido' : ' temas vencidos') + ': cárgalos cuanto antes.';
@@ -354,26 +608,27 @@
     function renderFolders() {
       const topics = lastTopics;
       const total = topics.length;
-      const r = (lastData && lastData.resumen) || { total: 0, resueltos: 0, aprobados: 0, pendientes: 0, rechazados: 0, vacios: 0, noAplica: 0, vencidos: 0, pct: 0 };
+      const r = computeResumen(topics);
 
       const kpis = document.getElementById('dashKpis');
       if (total) {
         kpis.style.display = 'grid';
         document.getElementById('dashProgressCol').style.display = 'flex';
-        document.getElementById('kpiTotal').textContent = r.total;
-        document.getElementById('kpiAprobados').textContent = r.aprobados;
-        document.getElementById('kpiRevision').textContent = r.pendientes;
-        document.getElementById('kpiRechazados').textContent = r.rechazados;
-        document.getElementById('kpiVacios').textContent = r.vacios;
+        countTo(document.getElementById('kpiTotal'), r.total);
+        countTo(document.getElementById('kpiAprobados'), r.aprobados);
+        countTo(document.getElementById('kpiRevision'), r.pendientes);
+        countTo(document.getElementById('kpiRechazados'), r.rechazados);
+        countTo(document.getElementById('kpiVacios'), r.vacios);
         document.getElementById('progressLabel').textContent = r.resueltos + ' de ' + r.total + ' temas exigibles aprobados' +
           (r.noAplica ? ' o sin aplicar' : '') + (r.pendientes ? ' · ' + r.pendientes + ' en revisión' : '') + '. Los temas opcionales no cuentan.';
         document.getElementById('progressMotiv').textContent = motivText(r);
         const pctEl = document.getElementById('progressPct');
-        pctEl.textContent = r.pct + '%';
+        countTo(pctEl, r.pct, '%');
         pctEl.className = 'progress-pct' + (r.pct >= 100 ? ' complete' : '');
         const fillEl = document.getElementById('progressFill');
         fillEl.style.width = r.pct + '%';
         fillEl.className = 'progress-fill-v2' + (r.pct >= 100 ? ' complete' : '');
+        renderMedals(r);
         const revEl = document.getElementById('progressRev');
         const revPct = r.total ? Math.min(100 - r.pct, Math.round(r.pendientes / r.total * 100)) : 0;
         revEl.style.left = r.pct + '%'; revEl.style.width = revPct + '%';
@@ -382,6 +637,15 @@
         document.getElementById('dashProgressCol').style.display = 'none';
       }
 
+      kpis.classList.toggle('has-filter', !!kpiFilter);
+      kpis.querySelectorAll('.kpi-c[data-filter]').forEach(function (el) {
+        const on = el.dataset.filter === kpiFilter;
+        el.classList.toggle('active', on);
+        el.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      const chip = document.getElementById('clearFilter');
+      chip.style.display = kpiFilter ? '' : 'none';
+      if (kpiFilter) chip.textContent = 'Filtro: ' + FILTER_LABEL[kpiFilter] + '  ✕';
       document.getElementById('foldersToolbar').style.display = total ? 'flex' : 'none';
       document.getElementById('dashLegend').style.display = total ? 'flex' : 'none';
 
@@ -399,23 +663,33 @@
       let visibleTopics = hideCompleted ? topics.filter(function (t) { return t.estado === 'vacio' || t.estado === 'rechazado'; }) : topics;
       const q = norm(searchTerm).trim();
       if (q) visibleTopics = visibleTopics.filter(function (t) { return norm(t.nombre).indexOf(q) !== -1; });
+      if (kpiFilter) visibleTopics = visibleTopics.filter(function (t) { return t.obligatorio && t.estado === kpiFilter; });
 
       document.getElementById('foldersCount').textContent = 'Mostrando ' + visibleTopics.length + ' de ' + total + ' temas';
 
       if (!visibleTopics.length) {
         const msg = q
           ? 'No se encontraron temas que coincidan con "' + escapeHtml(searchTerm.trim()) + '".'
-          : '¡No tienes temas por cargar ni corregir! 🎉 Puedes desactivar "Ocultar temas completados" para verlos todos.';
+          : kpiFilter
+            ? 'No hay temas «' + FILTER_LABEL[kpiFilter] + '» con la vista actual. <button class="link-btn" type="button" data-clear>Ver todos los temas</button>'
+            : '¡No tienes temas por cargar ni corregir! 🎉 Puedes desactivar "Ocultar temas completados" para verlos todos.';
         grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;">' + msg + '</div>';
+        const clr = grid.querySelector('[data-clear]'); if (clr) clr.addEventListener('click', function () { setKpiFilter('all'); });
         renderPanel();
         return;
       }
 
-      visibleTopics.forEach(function (t) {
+      const intro = introNext; introNext = false;
+      visibleTopics.forEach(function (t, i) {
         // Si un tema falla al construirse no se cae la pantalla completa:
         // se muestra una tarjeta de error solo para ese tema y se sigue con los demás.
         try {
-          grid.appendChild(buildFolderCard(t));
+          const cardEl = buildFolderCard(t);
+          if (intro) {
+            const ic = cardEl.querySelector('.fc-icon');
+            ic.classList.add('intro'); ic.style.setProperty('--d', Math.min(i, 20) * 40 + 'ms');
+          }
+          grid.appendChild(cardEl);
         } catch (e) {
           console.error('No se pudo construir el tema "' + t.nombre + '":', e);
           const errCard = document.createElement('div');
@@ -493,7 +767,7 @@
       card.dataset.id = t.id;
       card.innerHTML =
         '<div class="fc-top">' +
-          '<span class="fc-icon">' + folderSvg(30) + '</span>' +
+          '<span class="fc-icon">' + folderSvg(56, colorKey(t), n) + '</span>' +
           '<div class="fc-title" title="' + escapeHtml(t.nombre) + '">' + escapeHtml(t.nombre) + '</div>' +
           '<button class="fc-toggle" type="button" title="Plegar/desplegar" data-collapse>' + CHEV_DOWN_SVG + '</button>' +
         '</div>' +
@@ -552,7 +826,7 @@
       const ro = isReadonly();
       const IC = function (d, s) { return '<svg width="' + (s || 15) + '" height="' + (s || 15) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
       item.innerHTML =
-        '<span class="ftype-icon">' + fileTypeIcon(f.originalName) + '</span>' +
+        '<span class="ftype-icon">' + fileBadgeSvg(f.originalName) + '</span>' +
         '<div class="fi-info">' +
           '<span class="fi-name" title="' + escapeHtml(f.originalName) + '">' + escapeHtml(f.originalName) + '</span>' +
           '<span class="fi-meta">' + formatBytes(f.size) + ' · ' + formatDate(f.uploadedAt) + '</span>' +
@@ -579,11 +853,7 @@
         btn.disabled = false;
       });
       const del = item.querySelector('[data-del]');
-      if (del) del.addEventListener('click', async function () {
-        if (!confirm('¿Eliminar este archivo? El administrador podrá recuperarlo desde la papelera si fue un error.')) return;
-        try { await gsRun('apiDeleteFile', token, f.id); await refreshTopics(); }
-        catch (err) { reportError(err.message); }
-      });
+      if (del) del.addEventListener('click', function () { deleteFileWithUndo(f); });
       const ren = item.querySelector('[data-rename]');
       if (ren) ren.addEventListener('click', function () { startRename(item, f, parts); });
 
@@ -605,7 +875,7 @@
       head.style.setProperty('--fc', col[0]);
       head.style.setProperty('--fc-bg', col[1]);
       const iconEl = document.getElementById('drawerIcon');
-      iconEl.innerHTML = folderSvg(30);
+      iconEl.innerHTML = folderSvg(44, ck, n);
       iconEl.style.color = col[0];
       document.getElementById('drawerTitle').textContent = t.nombre;
       document.getElementById('drawerBadge').innerHTML = '<i class="dot"></i>' + badgeLabel(t);
@@ -700,7 +970,8 @@
     function tourSteps() {
       return [
         { sel: '#monthSelect', title: 'Elige el mes', text: 'Aquí cambias de mes. Cada mes tiene sus propios temas y fechas límite.' },
-        { sel: '#progressWrap', title: 'Tu avance', text: 'Muestra cuántos temas exigibles ya fueron aprobados. La parte amarilla es lo que está en revisión.' },
+        { sel: '#progressWrap', title: 'Tu avance', text: 'Muestra cuántos temas exigibles ya fueron aprobados. La parte amarilla es lo que está en revisión. Cada 20% de avance te da una medalla; la mejor llega al 100%.' },
+        { sel: '#dashKpis', title: 'Filtra con un clic', text: 'Pulsa Aprobados, En revisión, Por corregir o Por cargar para ver solo esos temas. Pulsa Temas exigibles para volver a ver todos.' },
         { sel: '#dashLegend', title: 'Los colores', text: 'Verde: aprobado. Amarillo: en revisión. Naranja: rechazado, debes corregirlo. Rojo: aún vacío. Gris: no aplica.' },
         { sel: '#foldersGrid .folder-card', title: 'Cada carpeta es un tema', text: 'Te dice qué falta y hasta cuándo. Arrastra un archivo sobre la carpeta para cargarlo.' },
         { sel: '#foldersGrid .folder-card .fc-detail', title: 'Detalles', text: 'Abre el panel del tema: ahí ves tus archivos, el motivo si fueron rechazados y puedes cargar uno nuevo.' },
@@ -780,6 +1051,14 @@
         searchTerm = this.value;
         renderFolders();
       });
+
+      document.querySelectorAll('.kpi-c[data-filter]').forEach(function (el) {
+        el.addEventListener('click', function () { setKpiFilter(el.dataset.filter); });
+        el.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setKpiFilter(el.dataset.filter); }
+        });
+      });
+      document.getElementById('clearFilter').addEventListener('click', function () { setKpiFilter('all'); });
 
       document.getElementById('drawerClose').addEventListener('click', closeDrawer);
       document.getElementById('drawerBg').addEventListener('click', closeDrawer);

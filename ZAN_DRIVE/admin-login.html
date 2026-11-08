@@ -1,90 +1,43 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-  <div class="split">
-    <div class="split-left">
-  <img class="brand-image" alt="Gestor de Documentos - Sistema de gestión y control documental" src="assets/brand.jpg">
-</div>
-
-
-    <div class="split-right">
-      <div class="split-right-inner">
-        <p class="auth-eyebrow">Acceso administrativo</p>
-        <h2 class="auth-heading">Panel de <em>Administración</em></h2>
-        <p class="auth-subtitle">Ingresa con tu usuario y contraseña de administrador.</p>
-
-        <div id="alert" class="alert"></div>
-
-        <form id="loginForm">
-          <div class="ifield">
-            <label><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg> Usuario</label>
-            <div class="iwrap">
-              <svg class="iwrap-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
-              <input type="text" id="usuario" placeholder="Usuario administrador" required>
-            </div>
-          </div>
-          <div class="ifield">
-            <label><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Contraseña</label>
-            <div class="iwrap">
-              <svg class="iwrap-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-              <input type="password" id="password" placeholder="Contraseña" required>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary btn-block" id="btnSubmit">
-            Ingresar
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </button>
-        </form>
-
-        <div class="auth-divider">Opciones adicionales</div>
-
-        <div class="opt-links">
-          <a class="opt-link" href="index.html">
-            <span class="opt-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
-            <span><strong>¿Eres una unidad de servicio?</strong><span style="display:block;">Ingresa aquí</span></span>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="js/config.js"></script>
-  <script src="js/common.js"></script>
-  <script>
-    const alertEl = document.getElementById('alert');
-
-    (function checkSession() {
-      const token = localStorage.getItem('adminToken');
-      if (!token) return;
-      gsRun('apiAdminMe', token).then(function (r) {
-        if (r.authenticated) goTo('admin');
-      }).catch(function () {});
-    })();
-
-    document.getElementById('loginForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      hideAlert(alertEl);
-      const btn = document.getElementById('btnSubmit');
-      btn.disabled = true; btn.textContent = 'Ingresando...';
-      const usuario = document.getElementById('usuario').value.trim();
-      const password = document.getElementById('password').value;
-      gsRun('apiAdminLogin', usuario, password).then(function (r) {
-        localStorage.setItem('adminToken', r.token);
-        goTo('admin');
-      }).catch(function (err) {
-        showAlert(alertEl, err.message);
-        btn.disabled = false; btn.textContent = 'Ingresar';
-      });
-    });
-  </script>
-</body>
-</html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acceso administrativo · Gestor de Documentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/login.css"></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+<symbol id="i-in" viewBox="0 0 24 24"><path d="M4 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.1"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-bld" viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></symbol>
+</defs></svg>
+<div class="brand"><svg viewBox="0 0 48 48"><path d="M4 12a4 4 0 014-4h10l4 5h18a4 4 0 014 4v21a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="#1456d6"/><path d="M4 20h40v17a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="#2d7cf6"/></svg><span>Gestor de<br>Documentos</span></div>
+<div class="hero"><h1>Supervisa y gestiona los documentos de tus unidades</h1><p>Un panel completo para revisar, aprobar y mantener el control documental.</p></div>
+<main class="card">
+<div class="tabs one" id="tabs"><i></i>
+<div class="tab on"><svg><use href="#i-shield"/></svg>Acceso administrativo</div></div>
+<div id="alert" class="alert"></div>
+<section class="panel on" id="p-login"><h2>Panel de administración</h2><p class="sub">Ingresa con tu usuario y contraseña de administrador.</p>
+<form id="loginForm"><div class="f"><label>Usuario</label><div class="w"><svg class="ic"><use href="#i-user"/></svg><input type="text" id="usuario" autocomplete="username" placeholder="Usuario administrador" required></div></div><div class="f"><label>Contraseña</label><div class="w"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="password" placeholder="Contraseña" autocomplete="current-password" required><button type="button" class="eye" data-eye="password" aria-label="Mostrar u ocultar"><svg class="ic"><use href="#i-eye"/></svg></button></div></div><button class="btn p" id="btnSubmit" type="submit"><svg class="ic"><use href="#i-in"/></svg>Ingresar</button></form></section>
+<div class="or">o</div>
+<a class="btn s" href="index.html"><svg class="ic"><use href="#i-bld"/></svg>¿Eres una unidad de servicio? Ingresa aquí</a>
+<button class="help" id="help" type="button"><svg class="ic"><use href="#i-info"/></svg>¿Olvidaste tus datos?</button>
+<p class="note" id="note">Comunícate con quien administra el sistema para que restablezca tus credenciales de administrador.</p>
+</main>
+<script src="js/config.js"></script><script src="js/common.js"></script>
+<script>
+const alertEl=document.getElementById('alert');
+document.getElementById('help').onclick=()=>{const n=document.getElementById('note');n.style.display=n.style.display==='block'?'none':'block';};
+document.querySelectorAll('[data-eye]').forEach(b=>b.onclick=()=>{const i=document.getElementById(b.dataset.eye);i.type=i.type==='password'?'text':'password';});
+(function(){const t=localStorage.getItem('adminToken');if(!t)return;
+  gsRun('apiAdminMe',t).then(r=>{if(r.authenticated)goTo('admin');}).catch(()=>{});})();
+function busy(b,on,txt){b.disabled=on;b.lastChild.textContent=on?txt:b.dataset.l;}
+const btn=document.getElementById('btnSubmit');btn.dataset.l=btn.textContent;
+document.getElementById('loginForm').onsubmit=function(e){e.preventDefault();hideAlert(alertEl);
+  busy(btn,true,'Ingresando...');
+  gsRun('apiAdminLogin',document.getElementById('usuario').value.trim(),document.getElementById('password').value)
+  .then(r=>{localStorage.setItem('adminToken',r.token);goTo('admin');})
+  .catch(err=>{showAlert(alertEl,err.message);busy(btn,false);});};
+</script></body></html>

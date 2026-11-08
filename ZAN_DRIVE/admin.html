@@ -32,6 +32,7 @@
           <option value="1">100%</option>
         </select>
       </label>
+      <div class="perfil-slot perfil-top"></div>
       <div class="user-chip">
         <span class="avatar" id="adminAvatar"></span>
         <span id="adminUsuario"></span>
@@ -67,6 +68,7 @@
     <!-- ==================== INICIO ==================== -->
     <div class="tab-panel active" id="tab-inicio">
       <div class="page-head">
+        <div class="perfil-slot"></div>
         <h1 class="page-title">Inicio</h1>
         <p class="subtitle">Panorama del mes: cumplimiento por contrato, temas que más se incumplen, unidades rezagadas y avance semanal.</p>
       </div>
@@ -81,6 +83,7 @@
     <!-- ==================== POR REVISAR ==================== -->
     <div class="tab-panel" id="tab-revision">
       <div class="page-head">
+        <div class="perfil-slot"></div>
         <h1 class="page-title">Revisión de archivos</h1>
         <p class="subtitle">Aprueba o rechaza lo que cargan las unidades. Al rechazar escribes el motivo y la unidad lo ve para corregir y volver a subir.</p>
       </div>
@@ -88,6 +91,7 @@
         <div class="filters-bar">
           <div class="field"><label>Mes</label><select id="revMonthSelect"></select></div><div class="field"><label>Contrato</label><select id="revContratoSelect"></select></div>
           <div class="field"><label>Mostrar</label><select id="revEstadoSelect"><option value="pendiente">Por revisar</option><option value="rechazado">Rechazados</option><option value="aprobado">Aprobados</option></select></div>
+          <div class="field" id="revPerfilField" style="display:none;"><label>Revisado por</label><select id="revPerfilSelect"><option value="todos">Todos los perfiles</option></select></div>
           <div class="field" id="reviewCounts" style="margin-left:auto;align-self:flex-end;"></div>
         </div>
         <div class="bulk-bar" id="revBulkBar" style="display:none;">
@@ -100,6 +104,7 @@
     <!-- ==================== MATRIZ DE ESTADO ==================== -->
     <div class="tab-panel" id="tab-estado">
       <div class="page-head">
+        <div class="perfil-slot"></div>
         <h1 class="page-title">Matriz de Estado Global</h1>
         <p class="subtitle">Cada punto es un tema de una unidad. Haz clic en un punto para revisar sus archivos, o en el nombre de la unidad para abrir su ficha.</p>
       </div>
@@ -430,6 +435,16 @@
     </div>
     <div class="drawer-body" id="udBody"></div>
   </aside>
+  <!-- Selector de perfil de revisión -->
+  <div class="modal-bg" id="perfilBg" style="z-index:400;">
+    <div class="modal perfil-modal" role="dialog" aria-modal="true" aria-labelledby="perfilTitle">
+      <button class="modal-close" id="perfilClose" type="button" aria-label="Cerrar">&times;</button>
+      <div class="pm-head"><span class="pm-folder" id="perfilFolder"></span>
+        <div><h2 id="perfilTitle">¿Quién va a realizar la revisión?</h2>
+        <p class="muted">Elige tu perfil. Cada aprobación o rechazo quedará registrado con tu perfil y el contrato de la unidad.</p></div></div>
+      <div class="perfil-grid" id="perfilGrid"></div>
+    </div>
+  </div>
   <div id="printArea"></div>
 
   <script src="js/config.js"></script>
@@ -446,6 +461,152 @@
 
     function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
     function lsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
+
+    // ---------- Iconos con volumen (mismas carpetas e íconos que dashboard.html) ----------
+    // Paleta por estado: [fondo-arriba, fondo-abajo, frente-arriba, frente-abajo, acento]
+    const FOLDER_PAL = {
+      vacio:     ['#f77f83', '#d9343a', '#ffa3a5', '#ec4a50', '#e0393e'],
+      vencido:   ['#d4474b', '#8f1519', '#e56a6d', '#b82226', '#a61b1f'],
+      pendiente: ['#ffd466', '#e29a0c', '#ffe595', '#f7b928', '#c98200'],
+      aprobado:  ['#5fd896', '#16854a', '#8defb9', '#2fc474', '#1e9e5a'],
+      rechazado: ['#ffb066', '#d9690f', '#ffc78f', '#f58a2e', '#c2540a'],
+      noaplica:  ['#c3ccdd', '#8190ab', '#dde3ef', '#a9b5cb', '#6f7c95'],
+      azul:      ['#6fa8ff', '#1f56d9', '#9cc3ff', '#3b82f6', '#1456d6']
+    };
+    const FILE_PAL = {
+      pdf: ['#ff7a7e', '#d42f35'], doc: ['#6fa8ff', '#1f56d9'], xls: ['#4fd491', '#14864a'],
+      img: ['#b794ff', '#6d3fd6'], zip: ['#ffcf5c', '#d98c0a'], otro: ['#a9b5cb', '#6f7c95']
+    };
+    // Degradados compartidos (un solo bloque oculto; las carpetas los referencian por id)
+    (function injectSprite() {
+      const g = function (id, a, b) {
+        return '<linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient>';
+      };
+      let d = '';
+      Object.keys(FOLDER_PAL).forEach(function (k) {
+        const c = FOLDER_PAL[k];
+        d += g('fgB-' + k, c[0], c[1]) + g('fgF-' + k, c[2], c[3]) + g('fgE-' + k, c[2], c[4]);
+      });
+      Object.keys(FILE_PAL).forEach(function (k) { d += g('ffK-' + k, FILE_PAL[k][0], FILE_PAL[k][1]); });
+      document.body.insertAdjacentHTML('afterbegin', '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>' + d + '</defs></svg>');
+    })();
+
+    // Carpeta con volumen: fondo, hojas asomando (según n archivos), frente con brillo e
+    // insignia de estado. key = estado (vacio, pendiente, aprobado...). plain = sin insignia.
+    function folderSvg(size, key, n, plain) {
+      const k = FOLDER_PAL[key] ? key : 'noaplica';
+      n = n || 0;
+      const sheet = function (cls, x, y, r) {
+        return '<g class="fg-p ' + cls + '" style="--r:' + r + 'deg">' +
+          '<rect x="' + x + '" y="' + y + '" width="26" height="22" rx="2.4" fill="#fff" stroke="rgba(15,27,61,.12)" stroke-width=".6"/>' +
+          '<rect x="' + (x + 4) + '" y="' + (y + 4.5) + '" width="13" height="1.7" rx=".85" fill="#c3d2ee"/>' +
+          '<rect x="' + (x + 4) + '" y="' + (y + 8) + '" width="18" height="1.7" rx=".85" fill="#dbe4f5"/></g>';
+      };
+      let papers = '';
+      if (n >= 2) papers += sheet('fg-p1', 10, 7, -6);
+      if (n >= 1) papers += sheet('fg-p2', 12, 8, 4);
+      if (n >= 3) papers += sheet('fg-p3', 11, 9, -1);
+      const W = { fill: 'none', stroke: '#fff', 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+      const wa = Object.keys(W).map(function (a) { return a + '="' + W[a] + '"'; }).join(' ');
+      const glyph = {
+        aprobado:  '<path ' + wa + ' d="M33.6 37.4l2.7 2.7 5-5.6"/>',
+        pendiente: '<path ' + wa + ' stroke-width="2" d="M37.5 37l2.6 1.5"/><path class="fg-hand" ' + wa + ' stroke-width="2" d="M37.5 37v-4.6"/>',
+        rechazado: '<path ' + wa + ' stroke-width="2.2" d="M41 40a4 4 0 00-4-4h-3.6M35.4 33.8l-2.2 2.2 2.2 2.2"/>',
+        vacio:     '<g class="fg-bob"><path ' + wa + ' stroke-width="2.2" d="M37.5 41.2v-8.2M34 36.6l3.5-3.6 3.5 3.6"/></g>',
+        vencido:   '<path ' + wa + ' d="M37.5 32.6v5.2M37.5 41.2v.1"/>',
+        noaplica:  '<path ' + wa + ' d="M34 37h7"/>'
+      }[k] || '';
+      const emblem = (plain || !glyph) ? '' :
+        '<g class="fg-emb"><circle cx="37.5" cy="37" r="8.6" fill="url(#fgE-' + k + ')" stroke="#fff" stroke-width="2"/>' + glyph + '</g>';
+      return '<svg class="fg fg-' + k + '" width="' + size + '" height="' + size + '" viewBox="0 0 48 48" aria-hidden="true">' +
+        '<path d="M4 11a4 4 0 014-4h9.2a4 4 0 012.9 1.25l2.6 2.75H40a4 4 0 014 4v22a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="url(#fgB-' + k + ')"/>' +
+        papers +
+        '<g class="fg-front"><path d="M4 20a4 4 0 014-4h32a4 4 0 014 4v17a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="url(#fgF-' + k + ')"/>' +
+        '<path d="M4 20a4 4 0 014-4h32a4 4 0 014 4v1.4H4z" fill="#fff" opacity=".3"/>' +
+        '<path d="M8 41.3h32" stroke="#000" stroke-opacity=".08" stroke-width=".8"/></g>' +
+        emblem + '</svg>';
+    }
+
+    // Icono de archivo con etiqueta de tipo (PDF, DOC, XLS...) y color propio
+    function fileKind(name) {
+      const ext = String(name || '').split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) !== -1) return ['img', 'IMG'];
+      if (ext === 'pdf') return ['pdf', 'PDF'];
+      if (['zip', 'rar', '7z'].indexOf(ext) !== -1) return ['zip', 'ZIP'];
+      if (['doc', 'docx'].indexOf(ext) !== -1) return ['doc', 'DOC'];
+      if (['xls', 'xlsx'].indexOf(ext) !== -1) return ['xls', 'XLS'];
+      return ['otro', ext.slice(0, 4).toUpperCase() || 'FILE'];
+    }
+    function fileBadgeSvg(name) {
+      const kd = fileKind(name);
+      return '<svg class="fbadge" width="28" height="35" viewBox="0 0 32 40" aria-hidden="true">' +
+        '<path d="M6 1h14l10 10v25a3 3 0 01-3 3H6a3 3 0 01-3-3V4a3 3 0 013-3z" fill="url(#ffK-' + kd[0] + ')"/>' +
+        '<path d="M20 1l10 10h-7a3 3 0 01-3-3z" fill="#fff" opacity=".4"/>' +
+        '<text x="16" y="30" text-anchor="middle" font-family="Plus Jakarta Sans,system-ui,sans-serif" font-weight="800" font-size="' + (kd[1].length > 3 ? 7.5 : 9) + '" fill="#fff">' + escapeHtml(kd[1]) + '</text></svg>';
+    }
+
+
+    // En el panel, los archivos usan la misma insignia de tipo (PDF, DOC, XLS…) que el dashboard
+    function fileTypeIcon(name) { return fileBadgeSvg(name); }
+
+    // ---------- Perfiles de revisión ----------
+    const PERFILES = [
+      { id: 'pedagoga',       nombre: 'Pedagoga',       desc: 'Revisión pedagógica',        tono: 'azul',
+        ico: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/>' },
+      { id: 'psicologa',      nombre: 'Psicóloga',      desc: 'Revisión psicosocial',       tono: 'morado',
+        ico: '<path d="M12 21s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.5-7 10-7 10z"/>' },
+      { id: 'nutricionista',  nombre: 'Nutricionista',  desc: 'Revisión nutricional',       tono: 'verde',
+        ico: '<path d="M12 7c-2-2-7-1.5-7 4 0 5 3 9 5 9 1 0 1.2-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9 0-5.5-5-6-7-4z"/><path d="M12 7c0-2 1-3.5 3-4"/>' },
+      { id: 'administrativo', nombre: 'Administrativo', desc: 'Revisión administrativa',    tono: 'naranja',
+        ico: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18"/>' }
+    ];
+    let perfilActual = null;   // id del perfil que está revisando en esta sesión
+    function perfilById(id) { return PERFILES.filter(function (p) { return p.id === id; })[0] || null; }
+    function perfilIconHtml(p, size) {
+      return '<span class="perfil-ico pf-' + p.tono + '" style="--pi:' + (size || 40) + 'px"><svg width="' + Math.round((size || 40) * 0.5) + '" height="' + Math.round((size || 40) * 0.5) +
+        '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + p.ico + '</svg></span>';
+    }
+    function ssGet(k) { try { return window.sessionStorage.getItem(k); } catch (e) { return null; } }
+    function ssSet(k, v) { try { if (v === null) window.sessionStorage.removeItem(k); else window.sessionStorage.setItem(k, v); } catch (e) {} }
+    // Pastilla "Perfil: X · Cambiar" (arriba, en Inicio, en la Matriz y en Por revisar)
+    function renderPerfilSlots() {
+      const p = perfilById(perfilActual);
+      document.querySelectorAll('.perfil-slot').forEach(function (el) {
+        el.innerHTML = p
+          ? '<button class="perfil-pill" type="button" data-cambiar-perfil title="Cambiar de perfil">' + perfilIconHtml(p, 26) +
+              '<span class="pp-txt"><span class="pp-k">Revisa como</span><b>' + p.nombre + '</b></span>' +
+              '<span class="pp-chg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M3 11V9a2 2 0 012-2h16"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a2 2 0 01-2 2H3"/></svg> Cambiar perfil</span></button>'
+          : '';
+        const b = el.querySelector('[data-cambiar-perfil]');
+        if (b) b.addEventListener('click', function () { openPerfilPicker(true); });
+      });
+    }
+    function setPerfil(id) {
+      if (!perfilById(id)) return;
+      const cambio = perfilActual && perfilActual !== id;
+      perfilActual = id; ssSet('adminPerfil', id);
+      renderPerfilSlots();
+      document.getElementById('perfilBg').classList.remove('open');
+      if (cambio) toast('Ahora revisas como ' + perfilById(id).nombre + '.');
+    }
+    // Selector de perfil. Al entrar es obligatorio (no se puede cerrar); después se puede cancelar.
+    function openPerfilPicker(canCancel) {
+      const bg = document.getElementById('perfilBg');
+      document.getElementById('perfilGrid').innerHTML = PERFILES.map(function (p) {
+        return '<button type="button" class="perfil-card' + (p.id === perfilActual ? ' on' : '') + '" data-pf="' + p.id + '">' + perfilIconHtml(p, 54) +
+          '<span class="pc-name">' + p.nombre + '</span><span class="pc-desc">' + p.desc + '</span>' +
+          (p.id === perfilActual ? '<span class="pc-now">Perfil actual</span>' : '') + '</button>';
+      }).join('');
+      document.querySelectorAll('#perfilGrid [data-pf]').forEach(function (b) { b.addEventListener('click', function () { setPerfil(b.dataset.pf); }); });
+      document.getElementById('perfilClose').style.display = canCancel && perfilActual ? '' : 'none';
+      bg.classList.add('open');
+    }
+    function initPerfil() {
+      document.getElementById('perfilClose').addEventListener('click', function () { document.getElementById('perfilBg').classList.remove('open'); });
+      const saved = ssGet('adminPerfil');
+      if (perfilById(saved)) { perfilActual = saved; renderPerfilSlots(); }
+      else { renderPerfilSlots(); openPerfilPicker(false); }
+    }
 
     // Aplica la escala a todo el panel. En pantallas angostas (celular) no se reduce.
     function applyUiScale(v) {
@@ -638,10 +799,14 @@
         document.getElementById('adminUsuario').textContent = me.usuario;
         document.getElementById('adminAvatar').textContent = getInitials(me.usuario);
       } catch (e) { goTo('admin-login'); return; }
+      document.querySelector('.topbar .brand-icon').innerHTML = folderSvg(32, 'azul', 2, true);
+      document.getElementById('perfilFolder').innerHTML = folderSvg(46, 'azul', 3, true);
+      initPerfil();
 
       document.getElementById('btnLogout').addEventListener('click', async function () {
         try { await gsRun('apiAdminLogout', token); } catch (e) {}
         localStorage.removeItem('adminToken');
+        ssSet('adminPerfil', null);
         goTo('admin-login');
       });
       document.getElementById('btnManual').addEventListener('click', function () {
@@ -678,6 +843,7 @@
       document.getElementById('dlgClose').addEventListener('click', function () { closeDlg(null); });
 
       document.getElementById('revEstadoSelect').addEventListener('change', function () { tabLoaded.revision = false; reviewSel = {}; activateTab('revision'); });
+      document.getElementById('revPerfilSelect').addEventListener('change', function () { if (reviewData) renderReview(); });
       document.getElementById('repEstadoSelect').addEventListener('change', renderReport);
       document.getElementById('repSearch').addEventListener('input', renderReport);
       document.getElementById('btnExportCsv').addEventListener('click', exportReportCsv);
@@ -830,7 +996,16 @@
           const m = byId(btn.dataset.delmonth);
           if (!await askConfirm('Eliminar el mes «' + escapeHtml(m.nombre) + '»',
             'El mes, sus temas y todos los archivos cargados en él pasan a la <b>Papelera</b>. Desde ahí puedes restaurarlos si fue un error.', 'Enviar a la papelera', true)) return;
-          try { await gsRun('apiAdminDeleteMonth', token, m.id); toast('Mes enviado a la papelera.'); await loadMonths(); } catch (e) { fail(e); }
+          const row = btn.closest('.manage-row');
+          deleteWithUndo({
+            title: 'Mes eliminado',
+            detail: m.nombre,
+            call: ['apiAdminDeleteMonth', token, m.id],
+            onHide: function () { if (row) row.style.display = 'none'; },
+            onUndo: function () { if (row) row.style.display = ''; },
+            onCommitted: function () { invalidateAll(); loadMonths().catch(function () {}); },
+            onError: fail
+          });
         });
       });
     }
@@ -938,11 +1113,24 @@
           btn.addEventListener('click', async function () {
             const t = topics.find(function (x) { return x.id === btn.dataset.deltopic; });
             if (!await askConfirm('Eliminar «' + escapeHtml(t.nombre) + '»', 'El tema y los archivos que las unidades cargaron en él pasan a la <b>Papelera</b>; puedes restaurarlos desde ahí.', 'Enviar a la papelera', true)) return;
-            try {
-              await gsRun('apiAdminDeleteTopic', token, t.id);
-              topics = topics.filter(function (x) { return x.id !== t.id; });
-              renderTopicsList(); afterChange();
-            } catch (e) { fail(e); }
+            const pos = topics.findIndex(function (x) { return x.id === t.id; });
+            const redraw = function () { if (document.getElementById('topicsListModal')) renderTopicsList(); };
+            deleteWithUndo({
+              title: 'Tema eliminado',
+              detail: t.nombre,
+              call: ['apiAdminDeleteTopic', token, t.id],
+              onHide: function () {
+                topics = topics.filter(function (x) { return x.id !== t.id; });
+                redraw();
+              },
+              onUndo: function () {
+                if (topics.some(function (x) { return x.id === t.id; })) return;
+                topics.splice(Math.min(pos, topics.length), 0, t);
+                redraw();
+              },
+              onCommitted: afterChange,
+              onError: fail
+            });
           });
         });
       }
@@ -1109,19 +1297,28 @@
       document.getElementById('reviewCounts').innerHTML =
         '<span class="tag amarillo">' + d.counts.pendiente + ' por revisar</span> <span class="tag naranja">' + d.counts.rechazado + ' rechazados</span> <span class="tag verde">' + d.counts.aprobado + ' aprobados</span>';
       const wrap = document.getElementById('reviewBody');
-      if (!d.rows.length) {
+      // Perfil que revisó: solo se muestra en aprobados / rechazados
+      const showBy = estado !== 'pendiente';
+      const pfSel = document.getElementById('revPerfilSelect');
+      document.getElementById('revPerfilField').style.display = showBy ? '' : 'none';
+      if (!pfSel.options[1]) { PERFILES.forEach(function (pf) { pfSel.add(new Option(pf.nombre, pf.id)); }); }
+      const pfNow = showBy ? pfSel.value : 'todos';
+      const pfName = pfNow === 'todos' ? '' : perfilById(pfNow).nombre;
+      const rowsView = pfName ? d.rows.filter(function (r) { return String(r.revisadoPor || '').indexOf(pfName) === 0; }) : d.rows;
+      if (!rowsView.length) {
         wrap.innerHTML = '<p class="empty-hint big">' + (estado === 'pendiente' ? '¡Todo revisado! No hay archivos por revisar. 🎉' : 'No hay archivos en este estado.') + '</p>';
         updateReviewBar();
         return;
       }
-      wrap.innerHTML = '<table class="review-table"><thead><tr><th style="width:30px;"><input type="checkbox" id="revAll"></th><th>Cargado</th><th>Unidad</th><th>Tema</th><th>Archivo</th><th style="text-align:right;">Revisión</th></tr></thead><tbody>' +
-        d.rows.map(function (r) {
+      wrap.innerHTML = '<table class="review-table"><thead><tr><th style="width:30px;"><input type="checkbox" id="revAll"></th><th>Cargado</th><th>Unidad</th><th>Tema</th><th>Archivo</th>' + (showBy ? '<th>Revisado por</th>' : '') + '<th style="text-align:right;">Revisión</th></tr></thead><tbody>' +
+        rowsView.map(function (r) {
           return '<tr data-row="' + r.id + '"><td><input type="checkbox" data-rsel="' + r.id + '"></td>' +
             '<td>' + formatDate(r.uploadedAt) + (r.tardio ? '<br><span class="tag gris">Fuera de plazo</span>' : '') + '</td>' +
             '<td class="unit-link" data-unit="' + r.userId + '"><div class="mn-title" style="font-weight:600;">' + escapeHtml(r.nombreUnidad) + '</div><div class="muted" style="font-size:11.5px;">' + escapeHtml(r.contratoNombre) + '</div></td>' +
             '<td>' + escapeHtml(r.temaNombre) + '</td>' +
             '<td><div class="file-item" style="display:inline-flex;"><span class="ftype-icon">' + fileTypeIcon(r.originalName) + '</span><span class="name" title="' + escapeHtml(r.originalName) + '">' + escapeHtml(r.originalName) + '</span></div><div class="muted" style="font-size:11.5px;">' + formatBytes(r.size) + '</div>' +
               (r.observacion ? '<div class="obs-text"><b>Motivo:</b> ' + escapeHtml(r.observacion) + '</div>' : '') + '</td>' +
+            (showBy ? '<td>' + (r.revisadoPor ? '<div class="mn-title" style="font-weight:600;">' + escapeHtml(r.revisadoPor) + '</div><div class="muted" style="font-size:11.5px;">' + (r.revisadoAt ? formatDate(r.revisadoAt) : '') + '</div><div class="muted" style="font-size:11.5px;">' + escapeHtml(r.contratoNombre) + '</div>' : '<span class="muted">—</span>') + '</td>' : '') +
             '<td><div class="file-actions" style="justify-content:flex-end;gap:6px;">' +
               '<button class="btn btn-secondary btn-sm" data-rview="' + r.id + '" title="Ver">' + EYE_SVG + '</button>' +
               '<button class="btn btn-secondary btn-sm" data-rdl="' + r.id + '" title="Descargar">' + DL_SVG + '</button>' +
@@ -1165,7 +1362,7 @@
       }
       await withBusyBtn(btn, async function () {
         try {
-          await gsRun('apiAdminReviewFile', token, id, estado, obs);
+          await gsRun('apiAdminReviewFile', token, id, estado, obs, perfilActual);
           toast(estado === 'aprobado' ? 'Archivo aprobado.' : 'Archivo rechazado: la unidad verá el motivo.');
           if (after) { await after(); markDirtyExceptCurrent(); refreshBadges(); } else { await invalidateAll(); }
         } catch (e) { fail(e); }
@@ -1177,7 +1374,7 @@
       if (!ids.length) return;
       if (!await askConfirm('Aprobar ' + ids.length + (ids.length === 1 ? ' archivo' : ' archivos'), 'Los archivos seleccionados quedarán como aprobados.', 'Aprobar')) return;
       await withBusyBtn(document.getElementById('btnBulkApprove'), async function () {
-        try { await gsRun('apiAdminBulkReview', token, ids, 'aprobado', ''); toast(ids.length + ' archivo(s) aprobado(s).'); await invalidateAll(); } catch (e) { fail(e); }
+        try { await gsRun('apiAdminBulkReview', token, ids, 'aprobado', '', perfilActual); toast(ids.length + ' archivo(s) aprobado(s).'); await invalidateAll(); } catch (e) { fail(e); }
       });
     }
 
@@ -1386,7 +1583,7 @@
       if (!ids.length) return;
       if (!await askConfirm('Aprobar pendientes de ' + ids.length + ' unidad(es)', 'Todo lo que esté <b>por revisar</b> de las unidades seleccionadas en este mes quedará aprobado. Úsalo solo si ya los verificaste.', 'Aprobar pendientes')) return;
       try {
-        const r = await gsRun('apiAdminApprovePendingOfUnits', token, curMonth, ids);
+        const r = await gsRun('apiAdminApprovePendingOfUnits', token, curMonth, ids, perfilActual);
         toast(r.cambiados + ' archivo(s) aprobado(s).');
         selectedUsers = {};
         await invalidateAll();
@@ -1488,8 +1685,7 @@
       dr.style.setProperty('--fc', col[0]);
       dr.style.setProperty('--fc-bg', col[1]);
       const iconEl = document.getElementById('cdIcon');
-      iconEl.innerHTML = FOLDER_SVG_ADM;
-      iconEl.style.color = col[0];
+      iconEl.innerHTML = folderSvg(46, cell.vencido && cell.estado === 'vacio' ? 'vencido' : cell.estado, n);
       document.getElementById('cdTitle').textContent = topic.nombre;
       document.getElementById('cdBadge').innerHTML = '<i class="dot"></i>' + e.label + (cell.vencido ? ' · vencido' : '');
 

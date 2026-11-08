@@ -16,3 +16,13 @@ Backend: Google Apps Script (Code.gs con doPost). Frontend: esta carpeta.
 - js/common.js    → utilidades + gsRun (ahora usa fetch)
 - js/config.js    → URL del backend
 - assets/brand.jpg → imagen del panel izquierdo (antes era base64 embebido)
+
+## Cambios recientes
+- **Medallas**: ahora son imágenes PNG con fondo transparente en `assets/medals/` (bronce, plata, oro, platino, diamante).
+- **Carpetas**: al pasar el cursor se abren más y las hojas salen más (css/styles.css, reglas `.fg-p` y `.fg-front`).
+- **Perfiles de revisión** (admin.html): al entrar se elige Pedagoga, Psicóloga, Nutricionista o Administrativo.
+  «Cambiar perfil» está arriba, en Inicio, en Matriz de estado y en Por revisar.
+  El perfil queda escrito en «Revisado por» (ej. `Pedagoga · usuario`) junto al contrato de la unidad.
+  En Por revisar → Aprobados/Rechazados hay columna y filtro «Revisado por».
+- **Importante**: este cambio toca `apps-script/Code.gs` (parámetro `perfil`). Repite el paso 2 de «Puesta en marcha»
+  (nueva versión de la implementación). No se agregan columnas a la hoja de cálculo.

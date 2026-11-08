@@ -718,3 +718,206 @@ body.dash-page{--ui-scale:.8;}
   .dash-page .ui-size{display:none;}
   .dash-page .topbar .userinfo{flex-wrap:wrap;gap:8px;}
 }
+
+/* ============ AVISO "DESHACER" (arriba, con cuenta regresiva de 10 s) ============ */
+#undoContainer{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:950;display:flex;flex-direction:column;gap:10px;width:min(440px,calc(100% - 24px));pointer-events:none;}
+.undo-toast{pointer-events:auto;background:#0f1b3d;color:#fff;border-radius:14px;box-shadow:0 16px 40px rgba(15,27,61,.35);overflow:hidden;animation:undoIn .28s cubic-bezier(.2,.8,.2,1);transition:opacity .2s,transform .2s;}
+.undo-toast.out{opacity:0;transform:translateY(-10px);}
+@keyframes undoIn{from{opacity:0;transform:translateY(-14px) scale(.98);}to{opacity:1;transform:none;}}
+.undo-main{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 14px;}
+.undo-icon{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.undo-body{flex:1;min-width:0;}
+.undo-title{font-family:var(--font-display);font-weight:700;font-size:13.5px;}
+.undo-detail{font-size:12.5px;color:#c9d4f2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.undo-sub{font-size:11.5px;color:#8fa2d6;margin-top:2px;}
+.undo-btn{border:0;border-radius:9px;background:#fff;color:var(--azul-osc);font-family:var(--font-display);font-weight:700;font-size:13px;padding:8px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;transition:background .15s,transform .15s;}
+.undo-btn:hover{background:var(--azul-suave);transform:translateY(-1px);}
+.undo-bar{height:4px;background:rgba(255,255,255,.14);}
+.undo-bar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#6c8cff,#2d7cf6);transform-origin:left center;animation:undoBar linear forwards;}
+@keyframes undoBar{from{transform:scaleX(1);}to{transform:scaleX(0);}}
+
+/* ============ DASHBOARD: iconos con volumen y vida ============ */
+/* Carpeta: hojas que asoman, tapa que se abre y sombra del color del estado */
+.dash-page .fg,.admin-page .fg{display:block;overflow:visible;}
+.dash-page .folder-card .fg,.admin-page .folder-card .fg{filter:drop-shadow(0 5px 5px color-mix(in srgb,var(--fc) 34%,transparent));transition:filter .3s;}
+.dash-page .folder-card:hover .fg,.admin-page .folder-card:hover .fg,.dash-page .folder-card.selected .fg,.admin-page .folder-card.selected .fg{filter:drop-shadow(0 8px 8px color-mix(in srgb,var(--fc) 42%,transparent));}
+.fg-p{transform-origin:24px 30px;transform:translateY(var(--y,0px)) rotate(calc(var(--r,0deg) * var(--k,1)));transition:transform .5s cubic-bezier(.3,1.5,.5,1);}
+.fg-p1{--rise:-11px;}.fg-p2{--rise:-9px;}.fg-p3{--rise:-7px;}
+.fg-front{transform-origin:24px 41px;transition:transform .45s cubic-bezier(.3,1.3,.5,1);}
+.fg-emb{transform-origin:37.5px 37px;transition:transform .35s cubic-bezier(.3,1.6,.5,1);}
+.dash-page .folder-card:hover .fg-p,.admin-page .folder-card:hover .fg-p,.dash-page .folder-card.selected .fg-p,.admin-page .folder-card.selected .fg-p,.dash-page .drawer-head .fg-p,.admin-page .drawer-head .fg-p{--y:var(--rise);--k:1.7;}
+.dash-page .folder-card:hover .fg-front,.admin-page .folder-card:hover .fg-front,.dash-page .folder-card.selected .fg-front,.admin-page .folder-card.selected .fg-front{transform:scaleY(.7) skewX(-4deg);}
+.dash-page .folder-card:hover .fg-emb,.admin-page .folder-card:hover .fg-emb{transform:translateY(2px) scale(1.14) rotate(-6deg);}
+/* Movimiento propio de cada estado (solo donde informa) */
+.fg-hand{transform-origin:37.5px 37px;animation:fgTick 6s linear infinite;}
+.fg-bob{animation:fgBob 1.8s ease-in-out infinite;}
+@keyframes fgTick{to{transform:rotate(360deg);}}
+@keyframes fgBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-1.4px);}}
+/* Entrada de la primera carga: las carpetas aparecen una a una */
+.fc-icon.intro{animation:fgPop .55s cubic-bezier(.3,1.5,.5,1) both;animation-delay:var(--d,0ms);}
+@keyframes fgPop{from{opacity:0;transform:translateY(8px) scale(.6) rotate(-6deg);}to{opacity:1;transform:none;}}
+.dash-page .fc-icon,.admin-page .fc-icon{margin:-2px 0 0 -2px;}
+
+/* Cabecera: la carpeta de marca va sin recuadro plano */
+.dash-page .topbar .brand-icon,.admin-page .topbar .brand-icon{background:none;box-shadow:none;width:38px;height:38px;}
+.dash-page .dash-unit .du-icon,.admin-page .dash-unit .du-icon,.dash-page .section-head .sh-icon,.admin-page .section-head .sh-icon{background:none;width:auto;height:auto;}
+.dash-page .du-icon .fg,.admin-page .du-icon .fg,.dash-page .sh-icon .fg,.admin-page .sh-icon .fg,.dash-page .brand-icon .fg,.admin-page .brand-icon .fg{filter:drop-shadow(0 4px 4px rgba(20,86,214,.28));}
+.dash-page .drawer-head .fg,.admin-page .drawer-head .fg{filter:drop-shadow(0 4px 5px rgba(15,27,61,.18));}
+
+/* Resumen: fichas con degradado, brillo y un leve giro al pasar el mouse */
+.dash-page .kpi-c,.admin-page .kpi-c{transition:transform .2s,box-shadow .2s;}
+.dash-page .kpi-c:hover,.admin-page .kpi-c:hover{transform:translateY(-2px);box-shadow:0 10px 22px -12px rgba(15,27,61,.28);}
+.dash-page .kpi-c.azul,.admin-page .kpi-c.azul{--k1:#6fa8ff;--k2:#1f56d9;}
+.dash-page .kpi-c.verde,.admin-page .kpi-c.verde{--k1:#4fd491;--k2:#14864a;}
+.dash-page .kpi-c.amarillo,.admin-page .kpi-c.amarillo{--k1:#ffd466;--k2:#d98c0a;}
+.dash-page .kpi-c.naranja,.admin-page .kpi-c.naranja{--k1:#ffb066;--k2:#d9690f;}
+.dash-page .kpi-c.rojo,.admin-page .kpi-c.rojo{--k1:#ff8a8e;--k2:#d9343a;}
+.dash-page .kpi-c .kc-icon,.admin-page .kpi-c .kc-icon{position:relative;width:46px;height:46px;border-radius:15px;color:#fff;background:linear-gradient(145deg,var(--k1),var(--k2));box-shadow:0 8px 16px -6px var(--k2),inset 0 1.5px 0 rgba(255,255,255,.5),inset 0 -2px 0 rgba(0,0,0,.08);transition:transform .3s cubic-bezier(.3,1.6,.5,1);}
+.dash-page .kpi-c .kc-icon::after,.admin-page .kpi-c .kc-icon::after{content:'';position:absolute;inset:2px 2px 52% 2px;border-radius:13px 13px 45% 45%;background:linear-gradient(rgba(255,255,255,.38),rgba(255,255,255,0));pointer-events:none;}
+.dash-page .kpi-c .kc-icon svg,.admin-page .kpi-c .kc-icon svg{position:relative;z-index:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
+.dash-page .kpi-c:hover .kc-icon,.admin-page .kpi-c:hover .kc-icon{transform:translateY(-2px) rotate(-6deg) scale(1.06);}
+.dash-page .kpi-c .kc-num,.admin-page .kpi-c .kc-num{font-variant-numeric:tabular-nums;}
+
+/* Archivos: icono por tipo y acciones que reaccionan con su color */
+.dash-page .file-item-v2 .ftype-icon,.admin-page .file-item-v2 .ftype-icon,.dash-page .dr-file-head .ftype-icon,.admin-page .dr-file-head .ftype-icon{width:auto;height:auto;background:none;border:0;padding:0;flex-shrink:0;display:flex;filter:drop-shadow(0 3px 3px rgba(15,27,61,.2));transition:transform .25s cubic-bezier(.3,1.6,.5,1);}
+.dash-page .file-item-v2:hover .ftype-icon,.admin-page .file-item-v2:hover .ftype-icon{transform:translateY(-1px) rotate(-4deg);}
+.dash-page .file-actions button,.admin-page .file-actions button{transition:background .15s,color .15s,transform .2s cubic-bezier(.3,1.6,.5,1);}
+.dash-page .file-actions button:hover,.admin-page .file-actions button:hover{transform:scale(1.18);}
+.dash-page .file-actions [data-view]:hover,.admin-page .file-actions [data-view]:hover{background:#e6efff;color:var(--azul);}
+.dash-page .file-actions [data-download]:hover,.admin-page .file-actions [data-download]:hover{background:var(--verde-bg);color:var(--verde);}
+.dash-page .file-actions [data-rename]:hover,.admin-page .file-actions [data-rename]:hover{background:var(--ambar-bg);color:var(--ambar);}
+.dash-page .file-actions [data-del]:hover,.admin-page .file-actions [data-del]:hover{background:var(--rojo-bg);color:var(--rojo);}
+
+/* Zona de carga: icono en relieve; la flecha sube cuando entras o arrastras */
+.dash-page .dropzone.dz-attach .dz-icon,.admin-page .dropzone.dz-attach .dz-icon{background:linear-gradient(145deg,#6fa8ff,#1f56d9);box-shadow:0 8px 16px -6px #1f56d9,inset 0 1.5px 0 rgba(255,255,255,.45);}
+.dash-page .dropzone.dz-attach:hover .dz-icon svg,.admin-page .dropzone.dz-attach:hover .dz-icon svg,.dash-page .dropzone.dz-attach.dragover .dz-icon svg,.admin-page .dropzone.dz-attach.dragover .dz-icon svg{animation:dzUp .8s ease-in-out infinite;}
+@keyframes dzUp{0%,100%{transform:translateY(1px);}50%{transform:translateY(-3px);}}
+.dash-page .dropzone.dz-attach.dragover .dz-icon,.admin-page .dropzone.dz-attach.dragover .dz-icon{transform:scale(1.12);}
+
+@media (prefers-reduced-motion:reduce){
+  .fg-hand,.fg-bob,.fc-icon.intro,.dash-page .dropzone.dz-attach:hover .dz-icon svg{animation:none !important;}
+  .fg-p,.fg-front,.fg-emb{transition:none;}
+}
+
+/* ============ DASHBOARD: fichas de resumen como filtros ============ */
+.dash-page .dash-kpis.five{gap:10px;}
+.dash-page .kpi-c{position:relative;padding:9px 12px;gap:10px;border-radius:12px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .2s,box-shadow .25s,opacity .25s,filter .25s,border-color .2s;}
+.dash-page .kpi-c .kc-icon{width:36px;height:36px;border-radius:12px;}
+.dash-page .kpi-c .kc-icon::after{border-radius:10px 10px 45% 45%;}
+.dash-page .kpi-c .kc-icon svg{width:17px;height:17px;}
+.dash-page .kpi-c .kc-num{font-size:20px;}
+.dash-page .kpi-c .kc-lbl{font-size:11.5px;margin-top:2px;}
+.dash-page .kpi-c:active{transform:scale(.97);}
+.dash-page .kpi-c:focus-visible{outline:2px solid var(--k2);outline-offset:2px;}
+/* Hay un filtro activo: la ficha elegida resalta y las demás se apagan */
+.dash-page .dash-kpis.has-filter .kpi-c:not(.active){opacity:.45;filter:saturate(.5);}
+.dash-page .dash-kpis.has-filter .kpi-c:not(.active):hover{opacity:.85;filter:none;}
+.dash-page .kpi-c.active{border-color:var(--k2);box-shadow:0 0 0 2px var(--k2),0 12px 22px -12px var(--k2);transform:translateY(-2px);}
+.dash-page .kpi-c.active::before{content:'';position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:var(--k2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/11px no-repeat;border:2px solid #fff;animation:kpiTick .3s cubic-bezier(.3,1.7,.5,1);}
+@keyframes kpiTick{from{transform:scale(0);}to{transform:scale(1);}}
+.ft-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
+.filter-chip{border:0;border-radius:20px;background:#0f1b3d;color:#fff;font-family:var(--font-display);font-weight:700;font-size:11.5px;padding:4px 11px;cursor:pointer;transition:background .15s,transform .15s;}
+.filter-chip:hover{background:var(--azul-osc);transform:translateY(-1px);}
+
+/* ============ DASHBOARD: avance del mes en dos columnas (30% medallas · 70% progreso) ============ */
+.dash-page .dash-head .dh-left{flex:1 1 40%;}
+.dash-page .dash-head .dh-right{flex:1 1 60%;padding:14px 22px 14px 14px;}
+.dash-page .progress-card-v2.pr-split{display:grid;grid-template-columns:30% 70%;align-items:center;}
+.pr-medals{display:flex;flex-direction:column;align-items:center;gap:8px;padding-right:14px;border-right:1px solid var(--gris-borde);min-width:0;align-self:stretch;justify-content:center;}
+.pr-main{padding-left:18px;min-width:0;}
+.pm-hero{display:flex;flex-direction:column;align-items:center;text-align:center;}
+.pm-hero .md{filter:drop-shadow(0 6px 6px rgba(15,27,61,.22));}
+.pm-name{font-family:var(--font-display);font-weight:800;font-size:13.5px;color:#0f1b3d;margin-top:2px;}
+.pm-sub{font-size:11.5px;color:var(--texto-suave);}
+.pm-hero.is-top .pm-name{background:linear-gradient(90deg,#1f9ed9,#7a5cff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.pm-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+.pm-mini{display:flex;flex-direction:column;align-items:center;gap:1px;padding:3px 3px 2px;border-radius:9px;transition:transform .2s;}
+.pm-mini:hover{transform:translateY(-2px);}
+.pm-mini span{font-family:var(--font-display);font-size:9.5px;font-weight:800;color:var(--texto-suave);}
+.pm-mini.on span{color:#0f1b3d;}
+.pm-mini.cur{background:var(--azul-suave);box-shadow:inset 0 0 0 1.5px #bcd0fb;}
+.md-locked{filter:grayscale(1) contrast(.85);opacity:.4;}
+.md-locked-soft{filter:grayscale(.7);opacity:.75;}
+/* Brillo que cruza la medalla actual cada cierto tiempo; la de diamante además centellea */
+.md-shine{transform:translateX(-30px) skewX(-20deg);}
+.md-live .md-shine{animation:mdShine 4.2s ease-in-out infinite;}
+@keyframes mdShine{0%,55%{transform:translateX(-30px) skewX(-20deg);}85%,100%{transform:translateX(78px) skewX(-20deg);}}
+.md-spark{transform-box:fill-box;transform-origin:center;animation:mdSpark 2.2s ease-in-out infinite;}
+.md-spark.s2{animation-delay:1.1s;}
+@keyframes mdSpark{0%,100%{transform:scale(.2);opacity:0;}50%{transform:scale(1);opacity:1;}}
+/* Al subir de nivel la medalla aparece con un rebote */
+.md-pop{animation:mdPop .8s cubic-bezier(.3,1.6,.5,1);}
+@keyframes mdPop{0%{transform:scale(.3) rotate(-18deg);opacity:0;}60%{transform:scale(1.18) rotate(6deg);opacity:1;}100%{transform:none;}}
+/* Progreso: marcas cada 20% (una por medalla) y siguiente meta */
+.dash-page .progress-track-v2 .pt{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:rgba(255,255,255,.9);z-index:3;pointer-events:none;}
+.pr-next{display:flex;align-items:center;gap:8px;margin-top:9px;padding:6px 10px;border-radius:10px;background:var(--gris-bg);font-size:12px;color:#33405c;line-height:1.3;}
+.pr-next strong{color:#0f1b3d;}
+.pr-next .pn-ico{display:flex;flex-shrink:0;}
+.pr-next .md{filter:drop-shadow(0 2px 2px rgba(15,27,61,.2));}
+.dash-page .pr-main .progress-label{margin-top:8px;}
+@media (max-width:560px){
+  .dash-page .progress-card-v2.pr-split{grid-template-columns:1fr;gap:12px;}
+  .pr-medals{border-right:0;border-bottom:1px solid var(--gris-borde);padding:0 0 12px;}
+  .pr-main{padding-left:0;}
+}
+@media (prefers-reduced-motion:reduce){
+  .md-live .md-shine,.md-spark,.md-pop,.dash-page .kpi-c.active::before{animation:none !important;}
+}
+
+
+/* ============ Medallas en imagen (PNG con fondo transparente) ============ */
+.md-img{display:inline-block;position:relative;flex-shrink:0;line-height:0;}
+.md-img img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none;user-select:none;}
+.md-img::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;
+  -webkit-mask-image:var(--mi);mask-image:var(--mi);-webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.85) 50%,transparent 62%);background-size:260% 100%;background-position:130% 0;}
+.md-live::after{opacity:1;animation:mdImgShine 4.2s ease-in-out infinite;}
+@keyframes mdImgShine{0%,55%{background-position:130% 0;}90%,100%{background-position:-30% 0;}}
+@media (prefers-reduced-motion:reduce){.md-live::after{animation:none;opacity:0;}}
+
+/* KPI: tonos extra */
+.dash-page .kpi-c.gris,.admin-page .kpi-c.gris{--k1:#b4bfd3;--k2:#6f7c95;}
+.dash-page .kpi-c.morado,.admin-page .kpi-c.morado{--k1:#b794ff;--k2:#6d3fd6;}
+
+/* ============ Admin: insignia de archivo igual a la del dashboard ============ */
+.admin-page .file-item .ftype-icon,.admin-page .sheet-file .ftype-icon{width:auto;height:auto;background:none;border:0;padding:0;border-radius:0;flex-shrink:0;display:flex;filter:drop-shadow(0 3px 3px rgba(15,27,61,.2));transition:transform .25s cubic-bezier(.3,1.6,.5,1);}
+.admin-page .file-item:hover .ftype-icon{transform:translateY(-1px) rotate(-4deg);}
+.admin-page .fbadge{width:22px;height:27px;}
+.admin-page .dr-file-head .fbadge{width:26px;height:32px;}
+.admin-page .drawer-head .dh-icon .fg{filter:drop-shadow(0 4px 5px rgba(15,27,61,.18));}
+
+/* ============ Perfiles de revisión ============ */
+.perfil-ico{--pi:40px;position:relative;width:var(--pi);height:var(--pi);border-radius:calc(var(--pi) * .32);flex-shrink:0;color:#fff;display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,var(--k1),var(--k2));box-shadow:0 8px 16px -8px var(--k2),inset 0 1.5px 0 rgba(255,255,255,.5),inset 0 -2px 0 rgba(0,0,0,.08);transition:transform .3s cubic-bezier(.3,1.6,.5,1);}
+.perfil-ico::after{content:'';position:absolute;inset:2px 2px 52% 2px;border-radius:calc(var(--pi) * .28) calc(var(--pi) * .28) 45% 45%;background:linear-gradient(rgba(255,255,255,.38),rgba(255,255,255,0));pointer-events:none;}
+.perfil-ico svg{position:relative;z-index:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
+.pf-azul{--k1:#6fa8ff;--k2:#1f56d9;}.pf-morado{--k1:#b794ff;--k2:#6d3fd6;}.pf-verde{--k1:#4fd491;--k2:#14864a;}.pf-naranja{--k1:#ffb066;--k2:#d9690f;}
+
+.perfil-slot{display:flex;}
+.page-head > .perfil-slot{float:right;margin:0 0 8px 16px;}
+.perfil-pill{display:inline-flex;align-items:center;gap:10px;padding:5px 12px 5px 6px;border:1.5px solid var(--gris-borde);border-radius:14px;background:#fff;cursor:pointer;font:inherit;color:#0f1b3d;text-align:left;transition:box-shadow .15s,transform .15s,border-color .15s;}
+.perfil-pill:hover{box-shadow:0 8px 20px rgba(15,27,61,.10);transform:translateY(-1px);border-color:#bcd0fb;}
+.perfil-pill:hover .perfil-ico{transform:rotate(-6deg) scale(1.06);}
+.perfil-pill .pp-txt{display:flex;flex-direction:column;line-height:1.15;}
+.perfil-pill .pp-k{font-size:10.5px;color:var(--texto-suave);font-weight:600;}
+.perfil-pill b{font-family:var(--font-display);font-size:13.5px;font-weight:800;}
+.perfil-pill .pp-chg{display:inline-flex;align-items:center;gap:5px;margin-left:4px;padding:4px 9px;border-radius:9px;background:var(--azul-suave);color:var(--azul);font-size:11.5px;font-weight:700;}
+.perfil-top .perfil-pill{padding:3px 10px 3px 4px;}
+.perfil-top .pp-chg{display:none;}
+@media (max-width:760px){.page-head > .perfil-slot{float:none;margin:0 0 10px;}.perfil-pill .pp-chg{display:none;}}
+
+.perfil-modal{max-width:640px;width:min(640px,94vw);}
+.perfil-modal .pm-head{display:flex;gap:14px;align-items:center;margin-bottom:16px;padding-right:26px;}
+.perfil-modal .pm-head h2{margin:0 0 3px;font-size:19px;}
+.perfil-modal .pm-head p{margin:0;font-size:12.5px;}
+.perfil-modal .pm-folder{display:flex;flex-shrink:0;filter:drop-shadow(0 4px 4px rgba(20,86,214,.28));}
+.perfil-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.perfil-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 12px 14px;border:1.5px solid var(--gris-borde);border-radius:16px;background:#fff;cursor:pointer;font:inherit;color:#0f1b3d;transition:box-shadow .2s,transform .2s,border-color .2s;}
+.perfil-card:hover,.perfil-card:focus-visible{outline:0;transform:translateY(-3px);box-shadow:0 12px 24px -10px rgba(15,27,61,.28);border-color:#8fb0f5;}
+.perfil-card:hover .perfil-ico{transform:translateY(-2px) rotate(-6deg) scale(1.08);}
+.perfil-card.on{border-color:#2d7cf6;background:#f1f5ff;}
+.perfil-card .pc-name{font-family:var(--font-display);font-weight:800;font-size:15px;margin-top:6px;}
+.perfil-card .pc-desc{font-size:12px;color:var(--texto-suave);}
+.perfil-card .pc-now{position:absolute;top:8px;right:8px;font-size:10px;font-weight:800;color:var(--azul);background:#dbe6ff;padding:2px 7px;border-radius:99px;}
+@media (max-width:480px){.perfil-grid{grid-template-columns:1fr;}}
+@media (prefers-reduced-motion:reduce){.perfil-card,.perfil-pill,.perfil-ico{transition:none;}}

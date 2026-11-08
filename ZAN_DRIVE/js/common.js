@@ -327,3 +327,108 @@ function enableDropzone(zoneEl, onFile) {
 const PAGE_FILES = { 'login': 'index.html', 'register': 'register.html', 'dashboard': 'dashboard.html', 'admin-login': 'admin-login.html', 'admin': 'admin.html' };
 function pageUrl(name, query) { return PAGE_FILES[name] + (query ? '?' + query : ''); }
 function goTo(name, query) { window.location.href = pageUrl(name, query); }
+
+// ---- Aviso "Deshacer" (borrado diferido de 10 s) ----
+// El elemento se oculta de inmediato en pantalla, pero la llamada al servidor (que lo manda a la
+// papelera) solo se hace cuando termina la cuenta regresiva. Si la persona pulsa "Deshacer" antes,
+// no se llama al servidor y el elemento vuelve a mostrarse.
+//
+// opts: {
+//   title:   'Archivo eliminado',
+//   detail:  'nombre del archivo',
+//   seconds: 10,                          (opcional)
+//   call:    ['apiDeleteFile', token, id], (función del backend + argumentos)
+//   onHide():            oculta el elemento en la interfaz (se ejecuta al instante)
+//   onUndo():            lo vuelve a mostrar (Deshacer, o si el servidor falla)
+//   onCommitted(result): se ejecuta cuando el servidor confirmó el borrado
+//   onError(err):        se ejecuta si el servidor falló
+// }
+const UNDO_SECONDS = 10;
+const undoPending_ = new Set();
+
+function getUndoContainer_() {
+  let c = document.getElementById('undoContainer');
+  if (!c) {
+    c = document.createElement('div');
+    c.id = 'undoContainer';
+    document.body.appendChild(c);
+  }
+  return c;
+}
+
+function deleteWithUndo(opts) {
+  const seconds = opts.seconds || UNDO_SECONDS;
+  const el = document.createElement('div');
+  el.className = 'undo-toast';
+  el.setAttribute('role', 'status');
+  el.setAttribute('aria-live', 'polite');
+  el.innerHTML =
+    '<div class="undo-main">' +
+      '<div class="undo-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7"/></svg></div>' +
+      '<div class="undo-body">' +
+        '<div class="undo-title">' + escapeHtml(opts.title || 'Elemento eliminado') + '</div>' +
+        '<div class="undo-detail" title="' + escapeHtml(opts.detail || '') + '">' + escapeHtml(opts.detail || '') + '</div>' +
+        '<div class="undo-sub"></div>' +
+      '</div>' +
+      '<button type="button" class="undo-btn">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>Deshacer' +
+      '</button>' +
+    '</div>' +
+    '<div class="undo-bar"><i style="animation-duration:' + seconds + 's"></i></div>';
+  getUndoContainer_().appendChild(el);
+
+  const item = { call: opts.call, done: false };
+  undoPending_.add(item);
+  if (opts.onHide) opts.onHide();
+
+  const sub = el.querySelector('.undo-sub');
+  const deadline = Date.now() + seconds * 1000;
+  function paint() {
+    const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+    sub.textContent = 'Se enviará a la papelera en ' + left + ' s';
+  }
+  paint();
+  const tick = setInterval(paint, 250);
+  const timer = setTimeout(commit, seconds * 1000);
+
+  function close() {
+    clearInterval(tick); clearTimeout(timer);
+    undoPending_.delete(item);
+    el.classList.add('out');
+    setTimeout(function () { el.remove(); }, 220);
+  }
+  function undo() {
+    if (item.done) return;
+    item.done = true; close();
+    if (opts.onUndo) opts.onUndo();
+  }
+  function commit() {
+    if (item.done) return;
+    item.done = true; close();
+    gsRun.apply(null, opts.call).then(function (r) {
+      if (opts.onCommitted) opts.onCommitted(r);
+    }).catch(function (err) {
+      if (opts.onUndo) opts.onUndo();
+      if (opts.onError) opts.onError(err);
+    });
+  }
+  el.querySelector('.undo-btn').addEventListener('click', undo);
+  return { undo: undo, commit: commit };
+}
+
+// Si la persona cierra la pestaña o cambia de página antes de los 10 s, el borrado se confirma
+// de todos modos (fetch con keepalive sobrevive a la navegación).
+window.addEventListener('pagehide', function () {
+  undoPending_.forEach(function (item) {
+    if (item.done) return;
+    item.done = true;
+    try {
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ fn: item.call[0], args: item.call.slice(1) }),
+        keepalive: true
+      });
+    } catch (e) {}
+  });
+});

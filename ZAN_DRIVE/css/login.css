@@ -12,6 +12,7 @@ body::before{content:"";position:fixed;left:0;bottom:0;width:58vw;height:34vh;ba
 .tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;background:#e6eefb;border-radius:14px;padding:4px}
 .tabs i{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:linear-gradient(135deg,var(--blue2),var(--blue));border-radius:11px;box-shadow:0 6px 16px rgba(20,86,214,.35);transition:transform .35s cubic-bezier(.4,.1,.2,1)}
 .tabs[data-t=reg] i{transform:translateX(100%)}
+.tabs.one{grid-template-columns:1fr}.tabs.one i{width:calc(100% - 8px)}.tabs.one .tab{cursor:default}
 .tab{position:relative;z-index:1;border:0;background:none;font:inherit;font-weight:700;font-size:14px;color:var(--muted);padding:11px 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:color .25s}
 .tab.on{color:#fff}
 .tab svg,.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}

@@ -1707,7 +1707,17 @@ function apiAdminDownloadFile(token, uploadId) {
 // ---------------------------------------------------------------------
 // ADMIN - REVISIÓN DE ARCHIVOS (aprobar / rechazar con observación)
 // ---------------------------------------------------------------------
-function reviewMany_(session, ids, estado, observacion) {
+// Perfiles de revisión que se eligen al entrar al panel (quedan escritos en «Revisado por»).
+const PERFILES_REVISION = {
+  pedagoga: 'Pedagoga', psicologa: 'Psicóloga', nutricionista: 'Nutricionista', administrativo: 'Administrativo'
+};
+// «Pedagoga · usuario»: perfil que revisó + cuenta de administrador usada. Sin perfil válido, solo la cuenta.
+function reviewerLabel_(session, perfil) {
+  const label = PERFILES_REVISION[String(perfil || '')];
+  return label ? label + ' · ' + adminActor_(session) : adminActor_(session);
+}
+
+function reviewMany_(session, ids, estado, observacion, perfil) {
   if (['aprobado', 'rechazado', 'pendiente'].indexOf(estado) === -1) throw new Error('Estado de revisión no válido.');
   observacion = String(observacion || '').trim().slice(0, 400);
   if (estado === 'rechazado' && !observacion) throw new Error('Escribe el motivo del rechazo: la unidad lo verá para corregir y volver a subir el archivo.');
@@ -1721,7 +1731,7 @@ function reviewMany_(session, ids, estado, observacion) {
     const ups = rows_(SHEET_NAMES.UPLOADS).filter(function (u) { return wanted[u.id]; });
     if (!ups.length) throw new Error('No se encontraron los archivos (quizá ya fueron eliminados).');
 
-    const by = adminActor_(session), at = nowIso_();
+    const by = reviewerLabel_(session, perfil), at = nowIso_();
     const upd = {};
     ups.forEach(function (u) {
       upd[u.__row] = estado === 'pendiente'
@@ -1754,18 +1764,18 @@ function reviewMany_(session, ids, estado, observacion) {
   });
 }
 
-function apiAdminReviewFile(token, uploadId, estado, observacion) {
+function apiAdminReviewFile(token, uploadId, estado, observacion, perfil) {
   const session = requireAdminSession_(token);
-  return reviewMany_(session, [uploadId], estado, observacion);
+  return reviewMany_(session, [uploadId], estado, observacion, perfil);
 }
 
-function apiAdminBulkReview(token, uploadIds, estado, observacion) {
+function apiAdminBulkReview(token, uploadIds, estado, observacion, perfil) {
   const session = requireAdminSession_(token);
-  return reviewMany_(session, uploadIds, estado, observacion);
+  return reviewMany_(session, uploadIds, estado, observacion, perfil);
 }
 
 // Aprueba de una vez todo lo que está por revisar en las unidades indicadas (útil tras actualizar o con unidades de confianza).
-function apiAdminApprovePendingOfUnits(token, monthId, userIds) {
+function apiAdminApprovePendingOfUnits(token, monthId, userIds, perfil) {
   const session = requireAdminSession_(token);
   const set = {};
   (userIds || []).forEach(function (id) { set[id] = true; });
@@ -1774,7 +1784,7 @@ function apiAdminApprovePendingOfUnits(token, monthId, userIds) {
     .filter(function (u) { return u.monthId === monthId && set[u.userId] && (u.estado || 'pendiente') === 'pendiente'; })
     .map(function (u) { return u.id; });
   if (!ids.length) return { ok: true, cambiados: 0 };
-  return reviewMany_(session, ids, 'aprobado', '');
+  return reviewMany_(session, ids, 'aprobado', '', perfil);
 }
 
 function apiAdminGetReviewQueue(token, monthId, contratoId, estado) {
