@@ -44,3 +44,10 @@ Pega el Code.gs nuevo, ejecuta `setup()` una vez (o abre la app: el esquema pasa
 - **Panel de detalle**: «Archivos cargados» se pliega/despliega (sección completa, cada archivo y *Desplegar todo*).
 - **Ficha de la unidad**: corregido el desplazamiento (las tarjetas se aplastaban dentro del panel).
 - **Bitácora**: nuevas acciones `archivo_eliminado_admin`, `archivo_reemplazado`, `notificacion_unidad`; `tema_editado` ahora indica el cambio de formatos y el perfil.
+
+## Cambios: bandeja de notificaciones (v3.2)
+**Importante:** toca `Code.gs` (esquema v6: la hoja `Avisos` gana `perfil`, `observacion`, `archivo`, `tema`, `mesNombre`). Pega el Code.gs, abre la app (o ejecuta `setup()`) y crea **Nueva versión**.
+- Botón de campana en `dashboard.html` con contador de nuevas y menú por categorías de color: recordatorio (amarillo), rechazo (naranja), eliminación (rojo), ajuste/reemplazo (azul).
+- Al hacer clic se abre el detalle completo: perfil que la realizó (resaltado), archivo/tema/mes/fecha, observación resaltada y mensaje completo.
+- Al verla pasa de «nuevas» a «Notificaciones anteriores» (historial) y se retira el cartel superior. También hay «Marcar todas como leídas».
+- Solo se guardan las últimas 10 por unidad (`AVISOS_KEEP`); al crear una nueva se borra la más antigua. Endpoints: `apiGetNotifications`, `apiMarkAllAvisosLeidos`.

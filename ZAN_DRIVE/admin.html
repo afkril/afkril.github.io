@@ -2024,7 +2024,7 @@
 
       if (d.avisos.length) {
         html += '<div class="dr-title">Últimos avisos enviados</div>' + d.avisos.map(function (a) {
-          return '<div class="aviso ' + (a.tipo === 'rechazo' || a.tipo === 'eliminacion' ? 'rechazo' : (a.tipo === 'reemplazo' ? 'info' : '')) + '" style="font-size:12px;"><div class="av-body">' + escapeHtml(a.mensaje) + '<div class="muted" style="font-size:11px;margin-top:3px;">' + formatDate(a.creadoAt) + (a.leidoAt ? ' · leído' : ' · sin leer') + '</div></div></div>';
+          return '<div class="aviso ' + (a.tipo === 'rechazo' ? 'rechazo' : (a.tipo === 'eliminacion' ? 'eliminacion' : (a.tipo === 'reemplazo' ? 'info' : ''))) + '" style="font-size:12px;"><div class="av-body">' + escapeHtml(a.mensaje) + '<div class="muted" style="font-size:11px;margin-top:3px;">' + formatDate(a.creadoAt) + (a.leidoAt ? ' · leído' : ' · sin leer') + '</div></div></div>';
         }).join('');
       }
 

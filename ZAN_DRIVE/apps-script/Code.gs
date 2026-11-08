@@ -30,8 +30,9 @@ const CACHE_TTL = 900;                     // 15 min: tope de "antigüedad" si s
 const CACHE_CHUNK = 90000;                 // CacheService guarda ~100 KB por clave
 const CACHE_MAX_CHUNKS = 40;
 const AUTO_NOMBRE_ARCHIVOS = true;         // nombra los archivos como unidad_tema_fecha
+const AVISOS_KEEP = 10;                    // notificaciones que se conservan por unidad (leídas + sin leer)
 const TRASH_DAYS = 30;                     // días en papelera antes de purgar (purgarPapelera)
-const SCHEMA_VERSION = '5';                // sube este número si agregas columnas nuevas
+const SCHEMA_VERSION = '6';                // sube este número si agregas columnas nuevas
 // Formatos: se acepta CUALQUIER extensión (letras/números, hasta 10 caracteres). Cada tema puede restringirlos con su lista «extensiones».
 function cleanExt_(e) {
   e = String(e || '').toLowerCase().replace(/^\./, '').trim();
@@ -59,7 +60,7 @@ const SCHEMAS = {
   Contratos: ['id', 'nombre', 'activo', 'createdAt'],
   NoAplica: ['id', 'userId', 'topicId', 'monthId', 'marcadoAt', 'marcadoPor'],
   Auditoria: ['id', 'fecha', 'actorTipo', 'actor', 'accion', 'detalle', 'monthId', 'userId'],
-  Avisos: ['id', 'userId', 'monthId', 'mensaje', 'tipo', 'creadoAt', 'creadoPor', 'leidoAt']
+  Avisos: ['id', 'userId', 'monthId', 'mensaje', 'tipo', 'creadoAt', 'creadoPor', 'leidoAt', 'perfil', 'observacion', 'archivo', 'tema', 'mesNombre']
 };
 // Columnas que deben guardarse como TEXTO (para que Sheets no convierta "2026-10-15" en fecha)
 const TEXT_FIELDS = { fechaLimite: true };
@@ -926,6 +927,59 @@ function apiMarkAvisoLeido(token, avisoId) {
   });
 }
 
+// Conserva solo las AVISOS_KEEP notificaciones más recientes de cada unidad (nunca rompe la operación principal).
+function pruneAvisos_(userIds) {
+  try {
+    const set = {};
+    (userIds || []).forEach(function (id) { set[id] = true; });
+    MEMO_.tables = {};
+    const by = {};
+    rows_(SHEET_NAMES.AVISOS).forEach(function (a) { if (set[a.userId]) (by[a.userId] = by[a.userId] || []).push(a); });
+    const del = [];
+    Object.keys(by).forEach(function (id) {
+      by[id].sort(function (a, b) { return a.creadoAt < b.creadoAt ? 1 : (a.creadoAt > b.creadoAt ? -1 : 0); })
+        .slice(AVISOS_KEEP).forEach(function (a) { del.push(a.__row); });
+    });
+    if (del.length) deleteRows_(getSheet_(SHEET_NAMES.AVISOS), del);
+  } catch (e) {}
+}
+
+// Forma de una notificación para la bandeja. Los avisos antiguos (sin campos propios) se completan leyendo el texto.
+function avisoPayload_(a) {
+  let perfil = a.perfil || '';
+  if (!perfil && a.creadoPor) { const first = String(a.creadoPor).split(' · ')[0]; if (Object.keys(PERFILES_REVISION).some(function (k) { return PERFILES_REVISION[k] === first; })) perfil = first; }
+  let obs = a.observacion || '';
+  if (!obs && (a.tipo === 'rechazo' || a.tipo === 'eliminacion' || a.tipo === 'reemplazo')) {
+    const m = String(a.mensaje || '').match(/(?:Motivo|Ajuste realizado): (.+?)(?:\.? (?:Corrígelo|Si hace falta|El archivo quedó)|\.?$)/);
+    if (m) obs = m[1];
+  }
+  return {
+    id: a.id, tipo: a.tipo || 'recordatorio', mensaje: a.mensaje || '', perfil: perfil || 'Administración', observacion: obs,
+    archivo: a.archivo || '', tema: a.tema || '', mesNombre: a.mesNombre || '', creadoAt: a.creadoAt, leidoAt: a.leidoAt || ''
+  };
+}
+
+// Bandeja de la unidad: sus últimas AVISOS_KEEP notificaciones (todos los meses), nuevas e ya leídas.
+function apiGetNotifications(token) {
+  const session = requireUserSession_(token);
+  const list = rows_(SHEET_NAMES.AVISOS).filter(function (a) { return a.userId === session.userId; })
+    .sort(function (a, b) { return a.creadoAt < b.creadoAt ? 1 : -1; })
+    .slice(0, AVISOS_KEEP).map(avisoPayload_);
+  return { nuevas: list.filter(function (n) { return !n.leidoAt; }), anteriores: list.filter(function (n) { return !!n.leidoAt; }), max: AVISOS_KEEP };
+}
+
+function apiMarkAllAvisosLeidos(token) {
+  const session = requireUserSession_(token);
+  if (session.viewAs) return { ok: true };
+  return withLock_(function () {
+    MEMO_.tables = {};
+    const sheet = getSheet_(SHEET_NAMES.AVISOS), at = nowIso_(), upd = {};
+    readSheetObjects_(sheet).forEach(function (a) { if (a.userId === session.userId && !a.leidoAt) upd[a.__row] = { leidoAt: at }; });
+    bulkUpdateRows_(sheet, upd);
+    return { ok: true };
+  });
+}
+
 // Marca o desmarca un tema como "No aplica este mes" para la unidad logueada.
 function apiSetNoAplica(token, monthId, topicId, valor) {
   const session = requireUserSession_(token, true);
@@ -1759,9 +1813,11 @@ function apiAdminDeleteFile(token, uploadId, motivo, perfil) {
     if (user) {
       appendRow_(getSheet_(SHEET_NAMES.AVISOS), {
         id: Utilities.getUuid(), userId: user.id, monthId: up.monthId, tipo: 'eliminacion', creadoAt: at, creadoPor: by,
+        perfil: perfilNombre_(perfil), observacion: motivo, archivo: up.originalName, tema: tn, mesNombre: mn,
         mensaje: perfilNombre_(perfil) + ' eliminó tu archivo \"' + up.originalName + '\" del tema \"' + tn + '\" (' + mn + '). Motivo: ' +
           motivo + (/[.!?]$/.test(motivo) ? '' : '.') + ' Si hace falta, vuelve a cargar el archivo en ese tema.'
       });
+      pruneAvisos_([user.id]);
     }
     auditMany_([
       { tipo: 'admin', actor: by, accion: 'archivo_eliminado_admin', monthId: up.monthId, userId: up.userId,
@@ -1828,9 +1884,11 @@ function apiAdminReplaceFile(token, uploadId, fileObj, ajuste, perfil) {
     const cambioExt = storedName !== oldStored ? ' (ahora se llama \"' + storedName + '\")' : '';
     appendRow_(getSheet_(SHEET_NAMES.AVISOS), {
       id: Utilities.getUuid(), userId: user.id, monthId: up.monthId, tipo: 'reemplazo', creadoAt: at, creadoPor: by,
+      perfil: perfilNombre_(perfil), observacion: ajuste, archivo: oldStored, tema: topic.nombre, mesNombre: month.nombre,
       mensaje: perfilNombre_(perfil) + ' ajustó tu archivo \"' + oldStored + '\" del tema \"' + topic.nombre + '\" (' + month.nombre + ') y lo reemplazó por una versión corregida' +
         cambioExt + '. Ajuste realizado: ' + ajuste + (/[.!?]$/.test(ajuste) ? '' : '.') + ' El archivo quedó por revisar de nuevo.'
     });
+    pruneAvisos_([user.id]);
     auditMany_([
       { tipo: 'admin', actor: by, accion: 'archivo_reemplazado', monthId: up.monthId, userId: up.userId,
         detalle: oldStored + (storedName !== oldStored ? ' → ' + storedName : '') + ' · ' + user.nombreUnidad + ' · ' + topic.nombre + ' (' + month.nombre + ') · Ajuste: ' + ajuste },
@@ -1894,12 +1952,14 @@ function reviewMany_(session, ids, estado, observacion, perfil) {
       if (estado === 'rechazado') {
         avisos.push({
           id: Utilities.getUuid(), userId: u.userId, monthId: u.monthId, tipo: 'rechazo', creadoAt: at, creadoPor: by,
+          perfil: perfilNombre_(perfil), observacion: observacion, archivo: u.originalName, tema: tp.nombre || '', mesNombre: mo.nombre || '',
           mensaje: 'Se rechazó tu archivo "' + u.originalName + '" del tema "' + (tp.nombre || '') + '" (' + (mo.nombre || '') + '). Motivo: ' + observacion + (/[.!?]$/.test(observacion) ? '' : '.') + ' Corrígelo y vuelve a subirlo.'
         });
       }
     });
     auditMany_(entries);
     appendRows_(getSheet_(SHEET_NAMES.AVISOS), avisos);
+    pruneAvisos_(avisos.map(function (a) { return a.userId; }));
     return { ok: true, cambiados: ups.length };
   });
 }
@@ -2064,7 +2124,7 @@ function apiAdminSendReminders(token, monthId, userIds, nota) {
       const msg = reminderText_(ctx, unitCells_(ctx, u), nota);
       if (!msg) { omitidos++; return; }
       targets[u.id] = true;
-      nuevos.push({ id: Utilities.getUuid(), userId: u.id, monthId: monthId, mensaje: msg, tipo: 'recordatorio', creadoAt: at, creadoPor: by });
+      nuevos.push({ id: Utilities.getUuid(), userId: u.id, monthId: monthId, mensaje: msg, tipo: 'recordatorio', creadoAt: at, creadoPor: by, perfil: 'Administración', observacion: nota, archivo: '', tema: '', mesNombre: ctx.month.nombre });
     });
     if (!nuevos.length) return { ok: true, enviados: 0, omitidos: omitidos };
 
@@ -2075,6 +2135,7 @@ function apiAdminSendReminders(token, monthId, userIds, nota) {
       .map(function (a) { return a.__row; });
     deleteRows_(avSheet, viejos);
     appendRows_(avSheet, nuevos);
+    pruneAvisos_(Object.keys(targets));
 
     audit_('admin', by, 'recordatorio', 'Envió recordatorio a ' + nuevos.length + ' unidad(es) · ' + ctx.month.nombre + (nota ? ' · Nota: ' + nota : ''), monthId, '');
     return { ok: true, enviados: nuevos.length, omitidos: omitidos };

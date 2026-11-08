@@ -28,6 +28,18 @@
           <option value="1">100%</option>
         </select>
       </label>
+      <div class="notif-wrap" id="notifWrap">
+        <button class="btn btn-secondary btn-sm notif-btn" id="btnNotif" type="button" aria-haspopup="true" aria-expanded="false" title="Notificaciones">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="notif-badge" id="notifBadge" hidden>0</span>
+        </button>
+        <div class="notif-menu" id="notifMenu" role="menu" hidden>
+          <div class="nm-head"><div class="nm-title" id="nmTitle">Notificaciones</div><button class="btn btn-ghost btn-sm" id="nmReadAll" type="button">Marcar todas como leídas</button></div>
+          <div class="nm-list" id="nmList"></div>
+          <div class="nm-warn" id="nmFallback" hidden>Historial no disponible: falta publicar la nueva versión del Code.gs.</div>
+          <div class="nm-foot"><button class="btn btn-secondary btn-sm" id="nmToggle" type="button"></button><span class="muted nm-note">Se guardan las últimas 10</span></div>
+        </div>
+      </div>
       <div class="user-chip">
         <span class="avatar" id="userAvatar"></span>
         <span id="nombreUsuario"></span>
@@ -169,7 +181,15 @@
 
   <script src="js/config.js"></script>
   <script src="js/common.js"></script>
-  <script>
+    <!-- Detalle de una notificación -->
+  <div class="modal-bg" id="notifDetailBg" style="z-index:300;">
+    <div class="modal notif-detail" role="dialog" aria-modal="true" aria-labelledby="ndTitle">
+      <button class="modal-close" id="notifDetailClose" type="button" aria-label="Cerrar">&times;</button>
+      <div id="notifDetailBody"></div>
+    </div>
+  </div>
+
+<script>
     const alertEl = document.getElementById('alert');
     const drawerAlertEl = document.getElementById('drawerAlert');
     const ACCEPT_EXT = '';   // vacío = cualquier formato (cada tema puede limitarlo)
@@ -450,19 +470,135 @@
       return '<span class="tag ' + m[0] + '">' + m[1] + '</span>' + (f.tardio ? ' <span class="tag gris" title="Se cargó después de la fecha límite">Fuera de plazo</span>' : '');
     }
 
+
+    // ---------------- BANDEJA DE NOTIFICACIONES ----------------
+    const NF_SVG = function (d) { return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+    const NF_TIPOS = {
+      recordatorio: { label: 'Recordatorio', icon: NF_SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'), obsLabel: 'Nota del administrador' },
+      rechazo: { label: 'Archivo rechazado', icon: NF_SVG('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'), obsLabel: 'Motivo del rechazo' },
+      eliminacion: { label: 'Archivo eliminado', icon: NF_SVG('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>'), obsLabel: 'Motivo de la eliminación' },
+      reemplazo: { label: 'Archivo ajustado', icon: NF_SVG('<path d="M17 3l4 4-4 4"/><path d="M3 11V9a2 2 0 012-2h16"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a2 2 0 01-2 2H3"/>'), obsLabel: 'Ajuste realizado' }
+    };
+    let notif = { nuevas: [], anteriores: [] }, notifView = 'nuevas', notifFallback = false;
+    // Reconstruye notificaciones desde los avisos sin leer del mes (solo si el Code.gs publicado es anterior a esta versión)
+    function nfFromTopics() {
+      const list = (lastData && lastData.avisos) || [];
+      return { max: 10, anteriores: [], nuevas: list.map(function (a) {
+        const m = a.mensaje || '', g = function (re) { const x = m.match(re); return x ? x[1] : ''; };
+        return { id: a.id, tipo: a.tipo || 'recordatorio', mensaje: m, creadoAt: a.creadoAt, leidoAt: '',
+          perfil: g(/^([^"]+?) (?:eliminó|ajustó) tu archivo/) || 'Administración',
+          observacion: g(/(?:Motivo|Ajuste realizado): (.+?)(?:\.? (?:Corrígelo|Si hace falta|El archivo quedó)|\.?$)/),
+          archivo: g(/archivo "([^"]+)"/), tema: g(/tema "([^"]+)"/), mesNombre: g(/tema "[^"]+" \(([^)]+)\)/) };
+      }) };
+    }
+    function nfTipo(t) { return NF_TIPOS[t] ? t : 'recordatorio'; }
+
+    async function loadNotifications() {
+      try { notif = await gsRun('apiGetNotifications', token); notifFallback = false; }
+      catch (e) { notif = nfFromTopics(); notifFallback = true; }   // backend anterior: usa los avisos que ya llegan con los temas
+      renderNotifBadge();
+      if (!document.getElementById('notifMenu').hidden) renderNotifMenu();
+    }
+    function renderNotifBadge() {
+      const n = notif.nuevas.length, b = document.getElementById('notifBadge');
+      b.hidden = !n; b.textContent = n > 9 ? '9+' : String(n);
+      document.getElementById('btnNotif').classList.toggle('has-new', n > 0);
+      document.getElementById('btnNotif').title = n ? n + (n === 1 ? ' notificación nueva' : ' notificaciones nuevas') : 'Notificaciones';
+    }
+    function nfSnippet(n) {
+      if (n.archivo) return n.archivo + (n.tema ? ' · ' + n.tema : '');
+      return n.mensaje.length > 90 ? n.mensaje.slice(0, 90) + '…' : n.mensaje;
+    }
+    function renderNotifMenu() {
+      const list = notifView === 'nuevas' ? notif.nuevas : notif.anteriores;
+      document.getElementById('nmTitle').textContent = notifView === 'nuevas' ? 'Notificaciones' : 'Notificaciones anteriores';
+      document.getElementById('nmReadAll').style.display = notifView === 'nuevas' && notif.nuevas.length && !viewAs ? '' : 'none';
+      const tg = document.getElementById('nmToggle');
+      tg.textContent = notifView === 'nuevas' ? 'Notificaciones anteriores (' + notif.anteriores.length + ')' : '← Volver a las nuevas';
+      document.getElementById('nmFallback').hidden = !notifFallback;
+      document.getElementById('nmList').innerHTML = list.length ? list.map(function (n) {
+        const t = nfTipo(n.tipo);
+        return '<button type="button" class="nf-item tipo-' + t + (n.leidoAt ? '' : ' unread') + '" data-nid="' + n.id + '">' +
+          '<span class="nf-ico">' + NF_TIPOS[t].icon + '</span>' +
+          '<span class="nf-main"><span class="nf-top"><b>' + NF_TIPOS[t].label + '</b><span class="nf-time">' + escapeHtml(formatDate(n.creadoAt)) + '</span></span>' +
+          '<span class="nf-sub">' + escapeHtml(nfSnippet(n)) + '</span>' +
+          '<span class="nf-by">Por <b>' + escapeHtml(n.perfil) + '</b></span></span>' +
+          (n.leidoAt ? '' : '<i class="nf-dot"></i>') + '</button>';
+      }).join('') : '<div class="nf-empty">' + (notifView === 'nuevas' ? 'No tienes notificaciones nuevas.' : 'Todavía no hay notificaciones anteriores.') + '</div>';
+      document.querySelectorAll('#nmList [data-nid]').forEach(function (b) { b.addEventListener('click', function () { openNotif(b.dataset.nid); }); });
+    }
+    function toggleNotifMenu(force) {
+      const menu = document.getElementById('notifMenu');
+      const open = force === undefined ? menu.hidden : force;
+      menu.hidden = !open;
+      document.getElementById('btnNotif').setAttribute('aria-expanded', String(open));
+      if (open) { notifView = 'nuevas'; renderNotifMenu(); loadNotifications(); }
+    }
+
+    function openNotif(id) {
+      const all = notif.nuevas.concat(notif.anteriores);
+      const n = all.filter(function (x) { return x.id === id; })[0];
+      if (!n) return;
+      const t = nfTipo(n.tipo), T = NF_TIPOS[t];
+      const rows = [['Archivo', n.archivo], ['Tema', n.tema], ['Mes', n.mesNombre], ['Fecha', formatDate(n.creadoAt)]].filter(function (r) { return r[1]; });
+      document.getElementById('notifDetailBody').innerHTML =
+        '<div class="nd-head tipo-' + t + '"><span class="nd-ico">' + T.icon + '</span><div><div class="nd-cat">' + T.label + '</div><div class="nd-date" id="ndTitle">' + escapeHtml(formatDate(n.creadoAt)) + '</div></div></div>' +
+        '<div class="nd-by tipo-' + t + '"><span class="nd-av">' + escapeHtml(n.perfil.charAt(0).toUpperCase()) + '</span>' +
+          '<div><div class="nd-by-k">Realizada por el perfil</div><div class="nd-by-v">' + escapeHtml(n.perfil) + '</div></div></div>' +
+        (rows.length ? '<div class="nd-info">' + rows.map(function (r) { return '<div><div class="k">' + r[0] + '</div><div class="v">' + escapeHtml(r[1]) + '</div></div>'; }).join('') + '</div>' : '') +
+        (n.observacion ? '<div class="nd-obs tipo-' + t + '"><div class="nd-obs-k">' + T.obsLabel + '</div><div class="nd-obs-v">' + escapeHtml(n.observacion) + '</div></div>' : '') +
+        '<div class="nd-full"><div class="k">Mensaje completo</div>' + escapeHtml(n.mensaje) + '</div>' +
+        '<div class="nd-foot"><button class="btn btn-primary btn-sm" id="ndOk" type="button">Entendido</button></div>';
+      document.getElementById('notifDetailBg').classList.add('open');
+      document.getElementById('ndOk').addEventListener('click', closeNotifDetail);
+      document.getElementById('ndOk').focus();
+      // Al verla, pasa de «nuevas» a «anteriores» (en la vista «ver como unidad» no se modifica nada)
+      if (!n.leidoAt && !viewAs) {
+        n.leidoAt = new Date().toISOString();
+        notif.nuevas = notif.nuevas.filter(function (x) { return x.id !== id; });
+        notif.anteriores.unshift(n);
+        renderNotifBadge(); renderNotifMenu();
+        const banner = document.querySelector('#avisos [data-aviso-id="' + id + '"]'); if (banner) banner.remove();
+        gsRun('apiMarkAvisoLeido', token, id).catch(function () { loadNotifications(); });
+      }
+    }
+    function closeNotifDetail() { document.getElementById('notifDetailBg').classList.remove('open'); }
+
+    document.getElementById('btnNotif').addEventListener('click', function (ev) { ev.stopPropagation(); toggleNotifMenu(); });
+    document.getElementById('notifMenu').addEventListener('click', function (ev) { ev.stopPropagation(); });
+    document.addEventListener('click', function (ev) { if (ev.target.closest && ev.target.closest('#notifDetailBg')) return; toggleNotifMenu(false); });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Escape') return;
+      if (document.getElementById('notifDetailBg').classList.contains('open')) closeNotifDetail(); else toggleNotifMenu(false);
+    });
+    document.getElementById('notifDetailClose').addEventListener('click', closeNotifDetail);
+    document.getElementById('notifDetailBg').addEventListener('click', function (ev) { if (ev.target === this) closeNotifDetail(); });
+    document.getElementById('nmToggle').addEventListener('click', function () { notifView = notifView === 'nuevas' ? 'anteriores' : 'nuevas'; renderNotifMenu(); });
+    document.getElementById('nmReadAll').addEventListener('click', async function () {
+      const btn = this;
+      await withBusyBtn(btn, async function () {
+        try {
+          await gsRun('apiMarkAllAvisosLeidos', token);
+          document.querySelectorAll('#avisos [data-aviso-id]').forEach(function (e) { e.remove(); });
+          await loadNotifications();
+        } catch (e) { reportError(e.message); }
+      });
+    });
+
     function renderAvisos(avisos) {
       const wrap = document.getElementById('avisos');
       wrap.innerHTML = '';
       (avisos || []).forEach(function (a) {
         const el = document.createElement('div');
-        el.className = 'aviso ' + (a.tipo === 'rechazo' || a.tipo === 'eliminacion' ? 'rechazo' : (a.tipo === 'reemplazo' ? 'info' : ''));
+        el.className = 'aviso ' + (a.tipo === 'rechazo' ? 'rechazo' : (a.tipo === 'eliminacion' ? 'eliminacion' : (a.tipo === 'reemplazo' ? 'info' : '')));
+        el.dataset.avisoId = a.id;
         el.innerHTML = '<span class="av-ico">' + (a.tipo === 'rechazo' || a.tipo === 'eliminacion' ? BACK_SVG : BANNER_ICON.vacio) + '</span>' +
           '<div class="av-body">' + escapeHtml(a.mensaje) + '</div>' +
           (viewAs ? '' : '<button class="btn btn-secondary btn-sm" type="button">Entendido</button>');
         const btn = el.querySelector('button');
         if (btn) btn.addEventListener('click', async function () {
           btn.disabled = true;
-          try { await gsRun('apiMarkAvisoLeido', token, a.id); el.remove(); } catch (e) { reportError(e.message); btn.disabled = false; }
+          try { await gsRun('apiMarkAvisoLeido', token, a.id); el.remove(); loadNotifications(); } catch (e) { reportError(e.message); btn.disabled = false; }
         });
         wrap.appendChild(el);
       });
@@ -527,7 +663,8 @@
       }
       if (!silent) sel.disabled = false;
       if (currentMonthId !== monthId) return; // el usuario ya cambió de mes mientras cargaba
-      renderAvisos(lastData ? lastData.avisos : []);
+      document.getElementById('avisos').innerHTML = '';   // los avisos viven en la bandeja (campana)
+      loadNotifications();
       renderMonthBanner();
       renderFolders();
       maybeStartTour();
