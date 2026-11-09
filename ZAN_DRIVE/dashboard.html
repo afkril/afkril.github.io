@@ -477,6 +477,7 @@
       recordatorio: { label: 'Recordatorio', icon: NF_SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'), obsLabel: 'Nota del administrador' },
       rechazo: { label: 'Archivo rechazado', icon: NF_SVG('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'), obsLabel: 'Motivo del rechazo' },
       eliminacion: { label: 'Archivo eliminado', icon: NF_SVG('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>'), obsLabel: 'Motivo de la eliminación' },
+      aprobado: { label: 'Archivo aprobado', icon: NF_SVG('<path d="M5 12.5l4.5 4.5L19 7.5"/>'), obsLabel: 'Observación' },
       reemplazo: { label: 'Archivo ajustado', icon: NF_SVG('<path d="M17 3l4 4-4 4"/><path d="M3 11V9a2 2 0 012-2h16"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a2 2 0 01-2 2H3"/>'), obsLabel: 'Ajuste realizado' }
     };
     let notif = { nuevas: [], anteriores: [] }, notifView = 'nuevas', notifFallback = false;
@@ -491,6 +492,28 @@
           archivo: g(/archivo "([^"]+)"/), tema: g(/tema "([^"]+)"/), mesNombre: g(/tema "[^"]+" \(([^)]+)\)/) };
       }) };
     }
+    // Perfiles de revisión (mismos íconos y colores que en el modo administración)
+    const NF_PERFILES = [
+      { nombre: 'Pedagoga', tono: 'azul', ico: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/>' },
+      { nombre: 'Psicóloga', tono: 'morado', ico: '<path d="M12 21s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.5-7 10-7 10z"/>' },
+      { nombre: 'Nutricionista', tono: 'verde', ico: '<path d="M12 7c-2-2-7-1.5-7 4 0 5 3 9 5 9 1 0 1.2-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9 0-5.5-5-6-7-4z"/><path d="M12 7c0-2 1-3.5 3-4"/>' },
+      { nombre: 'Administrativo', tono: 'naranja', ico: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18"/>' }
+    ];
+    function nfPerfilIcon(nombre, size) {
+      const k = String(nombre || '').toLowerCase();
+      const p = NF_PERFILES.filter(function (x) { return k.indexOf(x.nombre.toLowerCase()) === 0; })[0] || NF_PERFILES[3];   // «Administración» u otro → Administrativo
+      return '<span class="perfil-ico pf-' + p.tono + '" style="--pi:' + size + 'px"><svg width="' + Math.round(size * 0.5) + '" height="' + Math.round(size * 0.5) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + p.ico + '</svg></span>';
+    }
+    const ND_IC = {
+      file: '<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/>',
+      tag: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/>',
+      cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+      clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      warn: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/>',
+      doc: '<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+      check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+    };
+    function ndSvg(d, s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; }
     function nfTipo(t) { return NF_TIPOS[t] ? t : 'recordatorio'; }
 
     async function loadNotifications() {
@@ -540,15 +563,20 @@
       const n = all.filter(function (x) { return x.id === id; })[0];
       if (!n) return;
       const t = nfTipo(n.tipo), T = NF_TIPOS[t];
-      const rows = [['Archivo', n.archivo], ['Tema', n.tema], ['Mes', n.mesNombre], ['Fecha', formatDate(n.creadoAt)]].filter(function (r) { return r[1]; });
+      const dt = new Date(n.creadoAt);
+      const fechaHora = isNaN(dt) ? '' : dt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '.') + ' ' + dt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+      const fechaTit = isNaN(dt) ? '' : dt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) + ' • ' + dt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+      const rows = [['Archivo', n.archivo, 'file'], ['Tema', n.tema, 'tag'], ['Mes', n.mesNombre, 'cal'], ['Fecha y hora', fechaHora, 'clock']].filter(function (r) { return r[1]; });
       document.getElementById('notifDetailBody').innerHTML =
-        '<div class="nd-head tipo-' + t + '"><span class="nd-ico">' + T.icon + '</span><div><div class="nd-cat">' + T.label + '</div><div class="nd-date" id="ndTitle">' + escapeHtml(formatDate(n.creadoAt)) + '</div></div></div>' +
-        '<div class="nd-by tipo-' + t + '"><span class="nd-av">' + escapeHtml(n.perfil.charAt(0).toUpperCase()) + '</span>' +
-          '<div><div class="nd-by-k">Realizada por el perfil</div><div class="nd-by-v">' + escapeHtml(n.perfil) + '</div></div></div>' +
-        (rows.length ? '<div class="nd-info">' + rows.map(function (r) { return '<div><div class="k">' + r[0] + '</div><div class="v">' + escapeHtml(r[1]) + '</div></div>'; }).join('') + '</div>' : '') +
-        (n.observacion ? '<div class="nd-obs tipo-' + t + '"><div class="nd-obs-k">' + T.obsLabel + '</div><div class="nd-obs-v">' + escapeHtml(n.observacion) + '</div></div>' : '') +
-        '<div class="nd-full"><div class="k">Mensaje completo</div>' + escapeHtml(n.mensaje) + '</div>' +
-        '<div class="nd-foot"><button class="btn btn-primary btn-sm" id="ndOk" type="button">Entendido</button></div>';
+        '<div class="tipo-' + t + '">' +
+        '<div class="nd-head"><span class="nd-ico">' + T.icon + '</span><div><div class="nd-cat">' + T.label + '</div><div class="nd-date" id="ndTitle">' + escapeHtml(fechaTit) + '</div></div></div>' +
+        '<div class="nd-body">' +
+          '<div class="nd-by">' + nfPerfilIcon(n.perfil, 44) + '<div><div class="nd-by-k">Realizado por el perfil</div><div class="nd-by-v">' + escapeHtml(n.perfil) + '</div></div></div>' +
+          (rows.length ? '<div class="nd-info">' + rows.map(function (r) { return '<div class="nd-cell">' + ndSvg(ND_IC[r[2]], 18) + '<div style="min-width:0;"><div class="k">' + r[0] + '</div><div class="v">' + escapeHtml(r[1]) + '</div></div></div>'; }).join('') + '</div>' : '') +
+          (n.observacion ? '<div class="nd-obs">' + ndSvg(ND_IC.warn, 20) + '<div style="min-width:0;"><div class="nd-obs-k">' + T.obsLabel + '</div><div class="nd-obs-v">' + escapeHtml(n.observacion) + '</div></div></div>' : '') +
+          '<div class="nd-full">' + ndSvg(ND_IC.doc, 20) + '<div style="min-width:0;"><div class="k">Mensaje completo</div>' + escapeHtml(n.mensaje) + '</div></div>' +
+          '<div class="nd-foot"><button class="nd-ok" id="ndOk" type="button">' + ndSvg(ND_IC.check, 18) + 'Entendido</button></div>' +
+        '</div></div>';
       document.getElementById('notifDetailBg').classList.add('open');
       document.getElementById('ndOk').addEventListener('click', closeNotifDetail);
       document.getElementById('ndOk').focus();

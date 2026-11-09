@@ -18,6 +18,9 @@ Backend: Google Apps Script (Code.gs con doPost). Frontend: esta carpeta.
 - assets/brand.jpg → imagen del panel izquierdo (antes era base64 embebido)
 
 ## Cambios recientes
+- **Detalle de notificación rediseñado** (`dashboard.html` + `css/styles.css`): encabezado a color según el tipo (eliminado = rojo, rechazado = naranja, ajustado = azul, aprobado = verde, recordatorio = ámbar) con ícono en círculo blanco, fecha y botón cerrar; tarjetas con ícono para Archivo, Tema, Mes y Fecha y hora; tarjeta del motivo/observación; «Mensaje completo»; y botón «Entendido» del color del tipo. En «Realizado por el perfil» se muestra el mismo ícono que en modo administración (Pedagoga, Psicóloga, Nutricionista, Administrativo; «Administración» usa el de Administrativo).
+  El tipo `aprobado` ya tiene estilo, pero el backend hoy solo genera avisos de recordatorio, rechazo, eliminación y ajuste. No requiere cambios en Code.gs.
+- **Abrir en Drive (admin)**: el visor tiene el botón «Abrir en Drive», que abre el archivo original en Drive (visor nativo de Google, fiel para Word y Excel). También aparece en el aviso de «sin vista previa». Solo en administración: las unidades no tienen acceso a Drive. **Toca `Code.gs`** (`getFileAsBase64_` y `apiAdminDownloadDriveFile` devuelven `driveUrl`): pega el Code.gs y crea **Nueva versión**.
 - **Medallas**: ahora son imágenes PNG con fondo transparente en `assets/medals/` (bronce, plata, oro, platino, diamante).
 - **Carpetas**: al pasar el cursor se abren más y las hojas salen más (css/styles.css, reglas `.fg-p` y `.fg-front`).
 - **Perfiles de revisión** (admin.html): al entrar se elige Pedagoga, Psicóloga, Nutricionista o Administrativo.

@@ -489,6 +489,7 @@ function openFileViewer(fileResult) {
     '<div class="fv-panel" role="dialog" aria-modal="true" aria-label="Vista previa del archivo">' +
       '<div class="fv-head"><span class="fv-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + '</span>' +
         '<span class="fv-actions"><button type="button" class="btn btn-secondary btn-sm" data-fv="tab" style="display:none;">Abrir en pestaña</button>' +
+        (fileResult.driveUrl ? '<button type="button" class="btn btn-primary btn-sm" data-fv="drive" title="Abre el archivo original en Google Drive">Abrir en Drive</button>' : '') +
         '<button type="button" class="btn btn-secondary btn-sm" data-fv="dl">Descargar</button>' +
         '<button type="button" class="fv-x" data-fv="x" aria-label="Cerrar">&times;</button></span></div>' +
       '<div class="fv-body"><div class="fv-msg"><span class="fv-spin"></span>Preparando vista previa…</div></div>' +
@@ -502,10 +503,14 @@ function openFileViewer(fileResult) {
   root.addEventListener('click', function (e) { if (e.target === root) closeFileViewer(); });
   root.querySelector('[data-fv="x"]').addEventListener('click', closeFileViewer);
   root.querySelector('[data-fv="dl"]').addEventListener('click', function () { triggerDownload(fileResult, 'download'); });
+  const driveBtn = root.querySelector('[data-fv="drive"]');
+  if (driveBtn) driveBtn.addEventListener('click', function () { window.open(fileResult.driveUrl, '_blank', 'noopener'); });
 
   function msg(html) { if (fvState_ === state) body.innerHTML = '<div class="fv-msg">' + html + '</div>'; }
   function fallback(why) {
-    msg('<b>' + escapeHtml(why) + '</b><br><span class="muted">Puedes descargarlo para abrirlo en tu equipo.</span><br><button type="button" class="btn btn-primary btn-sm" data-fv="dl2" style="margin-top:12px;">Descargar archivo</button>');
+    msg('<b>' + escapeHtml(why) + '</b><br><span class="muted">Puedes descargarlo para abrirlo en tu equipo.</span><br><button type="button" class="btn btn-primary btn-sm" data-fv="dl2" style="margin-top:12px;">Descargar archivo</button>' + (fileResult.driveUrl ? ' <button type="button" class="btn btn-secondary btn-sm" data-fv="drive2" style="margin-top:12px;">Abrir en Drive</button>' : ''));
+    const d2 = body.querySelector('[data-fv="drive2"]');
+    if (d2) d2.addEventListener('click', function () { window.open(fileResult.driveUrl, '_blank', 'noopener'); });
     const b = body.querySelector('[data-fv="dl2"]');
     if (b) b.addEventListener('click', function () { triggerDownload(fileResult, 'download'); });
   }
@@ -533,7 +538,7 @@ function openFileViewer(fileResult) {
           await fvLoadLib_('jszip', 'JSZip');
           await fvLoadLib_('docxpreview', 'docx');
           if (fvState_ !== state) return;
-          body.innerHTML = '<div class="fv-note">Vista del documento. Si algún detalle (fuentes, espaciados) se ve distinto, descárgalo para verlo exacto.</div><div class="fv-pages"><div class="fv-pages-in"></div></div>';
+          body.innerHTML = '<div class="fv-note">Vista del documento. Si algún detalle (fuentes, espaciados) se ve distinto, ábrelo en Drive o descárgalo para verlo exacto.</div><div class="fv-pages"><div class="fv-pages-in"></div></div>';
           const host = body.querySelector('.fv-pages-in');
           await window.docx.renderAsync(bytes.buffer.slice(0), host, host, {
             className: 'docx', inWrapper: true, ignoreWidth: false, ignoreHeight: false, breakPages: true,

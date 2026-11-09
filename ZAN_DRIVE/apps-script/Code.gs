@@ -1163,14 +1163,17 @@ function apiRenameFile(token, uploadId, nuevoNombreBase) {
   });
 }
 
-function getFileAsBase64_(uploadRecord) {
+function getFileAsBase64_(uploadRecord, withDriveUrl) {
   const driveFile = DriveApp.getFileById(uploadRecord.driveFileId);
   const blob = driveFile.getBlob();
-  return {
+  const out = {
     fileName: uploadRecord.originalName,
     mimeType: uploadRecord.mimeType || blob.getContentType(),
     base64Data: Utilities.base64Encode(blob.getBytes())
   };
+  // Solo para administración: enlace al archivo original en Drive (el visor de Drive muestra Word/Excel fielmente)
+  if (withDriveUrl) out.driveUrl = 'https://drive.google.com/file/d/' + uploadRecord.driveFileId + '/view';
+  return out;
 }
 
 // ---------------------------------------------------------------------
@@ -1771,7 +1774,7 @@ function apiAdminDownloadFile(token, uploadId) {
   requireAdminSession_(token);
   const up = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === uploadId; });
   if (!up) throw new Error('Archivo no encontrado.');
-  return getFileAsBase64_(up);
+  return getFileAsBase64_(up, true);
 }
 
 // ---------------------------------------------------------------------
@@ -1874,7 +1877,7 @@ function apiAdminDownloadDriveFile(token, fileId) {
     if (file.getSize() > DRIVE_EXTRA_MAX_BYTES) throw new Error('Pesa más de ' + Math.round(DRIVE_EXTRA_MAX_BYTES / 1048576) + ' MB: descárgalo directamente desde Drive.');
     blob = file.getBlob();
   }
-  return { fileName: name, mimeType: blob.getContentType(), base64Data: Utilities.base64Encode(blob.getBytes()) };
+  return { fileName: name, mimeType: blob.getContentType(), base64Data: Utilities.base64Encode(blob.getBytes()), driveUrl: 'https://drive.google.com/file/d/' + fileId + '/view' };
 }
 
 // ---------------------------------------------------------------------
