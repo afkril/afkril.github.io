@@ -476,3 +476,21 @@
     .cuds-accion-grid { grid-template-columns: 1fr; }
     .cuds-ficha-panel { width: 100%; }
 }
+
+/* ── Acciones especiales: modal ancho, subsecciones, radios, notas ── */
+.cuds-accion-box--ancho { max-width: 580px; }
+.cuds-hidden { display: none !important; }
+.cuds-radio-row { display: flex; gap: 16px; align-items: center; padding: 8px 0; font-size: 0.88rem; font-weight: 500; }
+.cuds-radio-row label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.cuds-subseccion { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.cuds-subseccion strong { font-size: 0.82rem; color: #64748b; }
+.dark-mode .cuds-subseccion strong { color: #94a3b8; }
+.cuds-opcional, .cuds-obligatorio { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.cuds-opcional { background: #e2e8f0; color: #475569; }
+.cuds-obligatorio { background: #fee2e2; color: #b91c1c; }
+.cuds-nota { font-size: 0.74rem; color: #64748b; margin-top: 6px; line-height: 1.35; }
+.cuds-pendiente-box { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 10px 12px; }
+.cuds-pendiente-box label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.84rem; font-weight: 700; color: #b45309; }
+.dark-mode .cuds-pendiente-box { background: #3b2f0a; border-color: #92400e; }
+.cuds-accion-box .dropzone.input-error { border-color: #ef4444; }
+select.cuds-input { width: 100%; }

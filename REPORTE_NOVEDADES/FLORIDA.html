@@ -1338,7 +1338,7 @@
          MODAL: REPORTAR RETIRO (compacto, desde Consulta UDS)
     ═══════════════════════════════════════════════════════════ -->
     <div id="consultaUdsModalRetiro" class="cuds-accion-overlay" onclick="if(event.target===this) ConsultaUDSModule.cerrarModalRetiro()">
-        <div class="cuds-accion-box" onclick="event.stopPropagation()">
+        <div class="cuds-accion-box cuds-accion-box--ancho" onclick="event.stopPropagation()">
             <h3 class="cuds-accion-titulo"><i class=ic-log-out></i> Reportar retiro</h3>
             <p class="cuds-accion-sub">Se enviará como una novedad de retiro para este participante.</p>
 
@@ -1348,11 +1348,63 @@
                 <div><b>UDS:</b> <span id="cudsRetiroUDS">—</span></div>
             </div>
 
-            <label class="cuds-label" for="cudsRetiroFecha">Fecha de retiro</label>
-            <input type="date" id="cudsRetiroFecha" class="cuds-input">
+            <div class="cuds-accion-grid">
+                <div>
+                    <label class="cuds-label" for="cudsRetiroFecha">Fecha de retiro</label>
+                    <input type="date" id="cudsRetiroFecha" class="cuds-input">
+                </div>
+                <div>
+                    <label class="cuds-label">Género</label>
+                    <div class="cuds-radio-row">
+                        <label><input type="radio" name="cudsRetiroGenero" value="M"> M</label>
+                        <label><input type="radio" name="cudsRetiroGenero" value="F"> F</label>
+                    </div>
+                </div>
 
-            <label class="cuds-label" for="cudsRetiroCorreo" style="margin-top:12px;display:block;">Correo para seguimiento</label>
-            <input type="email" id="cudsRetiroCorreo" class="cuds-input" placeholder="correo@ejemplo.com">
+                <div class="cuds-field-full">
+                    <label class="cuds-label" for="cudsRetiroCorreo">Correo para seguimiento</label>
+                    <input type="email" id="cudsRetiroCorreo" class="cuds-input" placeholder="correo@ejemplo.com">
+                </div>
+
+                <div class="cuds-field-full cuds-subseccion">
+                    <strong>Soporte RAM</strong>
+                    <span class="cuds-opcional">Opcional</span>
+                </div>
+                <div class="cuds-field-full">
+                    <label class="cuds-label">Adjuntar Ram diligenciado</label>
+                    <div class="dropzone dropzone-orange">
+                        <input type="file" id="cudsRetiroRamFile" accept=".pdf,image/*" class="dropzone-input">
+                        <span class="dropzone-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><polyline points="7 9 12 4 17 9"/><line x1="12" y1="4" x2="12" y2="15"/></svg>
+                        </span>
+                        <div class="dropzone-copy">
+                            <p class="dropzone-title">Arrastra el RAM <span>o selecciona</span></p>
+                            <p class="dropzone-hint">Máx. 8MB · PDF, JPG, PNG</p>
+                        </div>
+                        <div class="dropzone-filename"></div>
+                    </div>
+                    <div class="cuds-nota">Se requiere el Ram diligenciado para marcar las asistencias correspondientes en el Ram Digital antes de desvincularlo. No se requiere si el retiro es a corte de mes.</div>
+                </div>
+
+                <div class="cuds-field-full cuds-subseccion">
+                    <strong>Formato de retiro voluntario</strong>
+                    <span class="cuds-obligatorio">Obligatorio</span>
+                </div>
+                <div class="cuds-field-full">
+                    <div class="dropzone dropzone-blue" id="cudsRetiroFormatoZone">
+                        <input type="file" id="cudsRetiroFormatoFile" accept=".pdf,image/*" class="dropzone-input">
+                        <span class="dropzone-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><polyline points="7 9 12 4 17 9"/><line x1="12" y1="4" x2="12" y2="15"/></svg>
+                        </span>
+                        <div class="dropzone-copy">
+                            <p class="dropzone-title">Arrastra el formato <span>o selecciona</span></p>
+                            <p class="dropzone-hint">Máx. 8MB · PDF, JPG, PNG</p>
+                        </div>
+                        <div class="dropzone-filename"></div>
+                    </div>
+                    <div class="cuds-nota">Adjunte el formato diligenciado y firmado por el padre, madre, representante legal o acudiente. Verifique que sea legible y corresponda al participante.</div>
+                </div>
+            </div>
 
             <div class="cuds-error" id="cudsRetiroError"></div>
 
@@ -1367,7 +1419,7 @@
          MODAL: REINGRESO (desde Consulta UDS)
     ═══════════════════════════════════════════════════════════ -->
     <div id="consultaUdsModalReingreso" class="cuds-accion-overlay" onclick="if(event.target===this) ConsultaUDSModule.cerrarModalReingreso()">
-        <div class="cuds-accion-box" onclick="event.stopPropagation()">
+        <div class="cuds-accion-box cuds-accion-box--ancho" onclick="event.stopPropagation()">
             <h3 class="cuds-accion-titulo"><i class=ic-refresh-cw></i> Reingreso</h3>
             <p class="cuds-accion-sub">Se enviará como una nueva novedad de ingreso para este participante ya existente.</p>
 
@@ -1380,11 +1432,11 @@
             <div class="cuds-accion-grid">
                 <div>
                     <label class="cuds-label" for="cudsReingresoFecha">Fecha de reingreso</label>
-                    <input type="date" id="cudsReingresoFecha" class="cuds-input">
+                    <input type="date" id="cudsReingresoFecha" class="cuds-input" onchange="ConsultaUDSModule.actualizarPrematurez()">
                 </div>
                 <div>
                     <label class="cuds-label" for="cudsReingresoDOB">Fecha de nacimiento</label>
-                    <input type="date" id="cudsReingresoDOB" class="cuds-input">
+                    <input type="date" id="cudsReingresoDOB" class="cuds-input" onchange="ConsultaUDSModule.actualizarPrematurez()">
                 </div>
 
                 <div class="cuds-field-full">
@@ -1423,32 +1475,126 @@
                     <input type="date" id="cudsReingresoAcudienteDOB" class="cuds-input">
                 </div>
 
-                <div class="cuds-field-full" style="border-top:1px dashed #e2e8f0; margin-top:6px; padding-top:14px;">
-                    <strong style="font-size:0.82rem;color:#64748b;">Valoración nutricional</strong>
+                <div class="cuds-field-full cuds-subseccion" style="border-top:1px dashed #e2e8f0; margin-top:6px; padding-top:14px;">
+                    <strong>Valoración nutricional</strong>
+                    <span class="cuds-opcional">Opcional</span>
                 </div>
-                <div>
-                    <label class="cuds-label" for="cudsReingresoFechaValoracion">Fecha de valoración</label>
-                    <input type="date" id="cudsReingresoFechaValoracion" class="cuds-input">
+                <div class="cuds-field-full cuds-pendiente-box">
+                    <label>
+                        <input type="checkbox" id="cudsReingresoNutriPendiente" onchange="ConsultaUDSModule.toggleNutriPendiente()">
+                        <span><i class=ic-hourglass></i> Dato pendiente — completar luego desde el panel</span>
+                    </label>
                 </div>
-                <div>
-                    <label class="cuds-label" for="cudsReingresoPeso">Peso (kg)</label>
-                    <input type="number" step="0.1" id="cudsReingresoPeso" class="cuds-input" placeholder="Ej: 12.5">
+
+                <div class="cuds-field-full" id="cudsReingresoNutriCampos">
+                    <div class="cuds-accion-grid">
+                        <div>
+                            <label class="cuds-label" for="cudsReingresoFechaValoracion">Fecha de valoración</label>
+                            <input type="date" id="cudsReingresoFechaValoracion" class="cuds-input">
+                        </div>
+                        <div>
+                            <label class="cuds-label" for="cudsReingresoPeso">Peso (kg)</label>
+                            <input type="number" step="0.1" min="5" max="30.5" id="cudsReingresoPeso" class="cuds-input" placeholder="Ej: 12.5">
+                        </div>
+                        <div>
+                            <label class="cuds-label" for="cudsReingresoTalla">Talla (cm)</label>
+                            <input type="number" step="0.1" min="50" max="130.5" id="cudsReingresoTalla" class="cuds-input" placeholder="Ej: 85.0">
+                        </div>
+                        <div>
+                            <label class="cuds-label" for="cudsReingresoPerimetro">Perímetro braquial (cm)</label>
+                            <input type="number" step="0.1" min="6" max="30" id="cudsReingresoPerimetro" class="cuds-input" placeholder="Ej: 15.5">
+                        </div>
+                        <div>
+                            <label class="cuds-label" for="cudsReingresoRegimen">Régimen</label>
+                            <input type="text" id="cudsReingresoRegimen" class="cuds-input">
+                        </div>
+                        <div>
+                            <label class="cuds-label" for="cudsReingresoEPS">EPS</label>
+                            <input type="text" id="cudsReingresoEPS" class="cuds-input" placeholder="Nombre de la EPS">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="cuds-label" for="cudsReingresoTalla">Talla (cm)</label>
-                    <input type="number" step="0.1" id="cudsReingresoTalla" class="cuds-input" placeholder="Ej: 85.0">
+
+                <div class="cuds-field-full cuds-hidden" id="cudsReingresoPrematurezBox">
+                    <div class="cuds-accion-grid">
+                        <div>
+                            <label class="cuds-label">Antecedente de prematurez *</label>
+                            <div class="cuds-radio-row">
+                                <label><input type="radio" name="cudsReingresoPrematurez" value="SI" onchange="ConsultaUDSModule.togglePrematurez()"> Sí</label>
+                                <label><input type="radio" name="cudsReingresoPrematurez" value="NO" onchange="ConsultaUDSModule.togglePrematurez()"> No</label>
+                            </div>
+                        </div>
+                        <div class="cuds-hidden" id="cudsReingresoEdadGestWrap">
+                            <label class="cuds-label" for="cudsReingresoEdadGest">Edad gestacional al nacer (semanas) *</label>
+                            <input type="number" step="1" min="3" max="36" id="cudsReingresoEdadGest" class="cuds-input" placeholder="Entre 3 y 36">
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="cuds-label" for="cudsReingresoPerimetro">Perímetro braquial (cm)</label>
-                    <input type="number" step="0.1" id="cudsReingresoPerimetro" class="cuds-input">
+
+                <div class="cuds-field-full cuds-subseccion" style="border-top:1px dashed #e2e8f0; margin-top:6px; padding-top:14px;">
+                    <strong>Discapacidad</strong>
+                    <span class="cuds-obligatorio">Obligatorio</span>
                 </div>
-                <div>
-                    <label class="cuds-label" for="cudsReingresoRegimen">Régimen</label>
-                    <input type="text" id="cudsReingresoRegimen" class="cuds-input">
+                <div class="cuds-field-full">
+                    <label class="cuds-label">¿Tiene discapacidad? *</label>
+                    <div class="cuds-radio-row"><label><input type="radio" name="cudsDiscTiene" value="SI" onchange="ConsultaUDSModule.toggleDiscapacidad()"> Sí</label><label><input type="radio" name="cudsDiscTiene" value="NO" onchange="ConsultaUDSModule.toggleDiscapacidad()"> No</label></div>
                 </div>
-                <div>
-                    <label class="cuds-label" for="cudsReingresoEPS">EPS</label>
-                    <input type="text" id="cudsReingresoEPS" class="cuds-input" placeholder="Nombre de la EPS">
+
+                <div class="cuds-field-full cuds-hidden" id="cudsDiscCampos">
+                    <div class="cuds-accion-grid">
+                    <div>
+                        <label class="cuds-label">La discapacidad está certificada *</label>
+                        <div class="cuds-radio-row"><label><input type="radio" name="cudsDiscCertificada" value="SI"> Sí</label><label><input type="radio" name="cudsDiscCertificada" value="NO"> No</label></div>
+                    </div>
+                    <div>
+                        <label class="cuds-label" for="cudsDiscEntidad">Entidad que certifica *</label>
+                        <select id="cudsDiscEntidad" class="cuds-input">
+                            <option value="">Seleccione...</option>
+                            <option value="IPS">IPS</option>
+                            <option value="NO DEFINE">No define</option>
+                            <option value="EPS">EPS</option>
+                            <option value="REGIMEN ESPECIAL">Régimen especial</option>
+                            <option value="INMLCF">INMLCF</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="cuds-label">Inscrito en el registro de localización y caracterización de personas con discapacidad *</label>
+                        <div class="cuds-radio-row"><label><input type="radio" name="cudsDiscRegistro" value="SI"> Sí</label><label><input type="radio" name="cudsDiscRegistro" value="NO"> No</label></div>
+                    </div>
+                    <div>
+                        <label class="cuds-label">Requiere la ayuda de otra persona *</label>
+                        <div class="cuds-radio-row"><label><input type="radio" name="cudsDiscAyudaPersona" value="SI"> Sí</label><label><input type="radio" name="cudsDiscAyudaPersona" value="NO"> No</label></div>
+                    </div>
+                    <div>
+                        <label class="cuds-label">Requiere ayuda técnica / producto de apoyo *</label>
+                        <div class="cuds-radio-row"><label><input type="radio" name="cudsDiscAyudaTecnica" value="SI"> Sí</label><label><input type="radio" name="cudsDiscAyudaTecnica" value="NO"> No</label></div>
+                    </div>
+                    <div>
+                        <label class="cuds-label">Cuenta con la ayuda técnica / producto de apoyo *</label>
+                        <div class="cuds-radio-row"><label><input type="radio" name="cudsDiscCuentaAyuda" value="SI"> Sí</label><label><input type="radio" name="cudsDiscCuentaAyuda" value="NO"> No</label></div>
+                    </div>
+                    <div>
+                        <label class="cuds-label">Requiere terapia y/o rehabilitación *</label>
+                        <div class="cuds-radio-row"><label><input type="radio" name="cudsDiscRequiereTerapia" value="SI"> Sí</label><label><input type="radio" name="cudsDiscRequiereTerapia" value="NO"> No</label></div>
+                    </div>
+                    <div>
+                        <label class="cuds-label">Recibe atención en terapia y/o rehabilitación</label>
+                        <div class="cuds-radio-row"><label><input type="radio" name="cudsDiscRecibeTerapia" value="SI"> Sí</label><label><input type="radio" name="cudsDiscRecibeTerapia" value="NO"> No</label></div>
+                    </div>
+                    <div class="cuds-field-full">
+                        <label class="cuds-label" for="cudsDiscCategoria">Categoría de discapacidad *</label>
+                        <select id="cudsDiscCategoria" class="cuds-input">
+                            <option value="">Seleccione...</option>
+                            <option value="Discapacidad auditiva">Discapacidad auditiva</option>
+                            <option value="Discapacidad física">Discapacidad física</option>
+                            <option value="Discapacidad intelectual">Discapacidad intelectual</option>
+                            <option value="Discapacidad múltiple">Discapacidad múltiple</option>
+                            <option value="Discapacidad psicosocial (mental)">Discapacidad psicosocial (mental)</option>
+                            <option value="Discapacidad visual">Discapacidad visual</option>
+                            <option value="Sordoceguera">Sordoceguera</option>
+                        </select>
+                    </div>
+                    </div>
                 </div>
             </div>
 

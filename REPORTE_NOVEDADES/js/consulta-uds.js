@@ -120,7 +120,8 @@ const ConsultaUDSModule = (() => {
                     udsFull: r.udsFull || '',
                     correoRespuesta: r.correoRespuesta || '',
                     detalle: r.ingreso,
-                    nutricion: r.nutricion || null
+                    nutricion: r.nutricion || null,
+                    discapacidad: r.discapacidad || r.ingreso.discapacidad || null
                 });
             }
             if ((r.hasRetiro || r.type === 'retiro' || r.type === 'ambos') && r.retiro && r.retiro.document) {
@@ -198,7 +199,10 @@ const ConsultaUDSModule = (() => {
             t += `[ DATOS DE RETIRO ]\n`;
             t += `  - Documento:  ${n.retiro.docType || ''} ${n.retiro.document || ''}\n`;
             t += `  - Nombre:     ${(n.retiro.name || '').toUpperCase()}\n`;
-            t += `  - Fecha:      ${formatDateDMY(n.retiro.retiroDate)}\n\n`;
+            t += `  - Fecha:      ${formatDateDMY(n.retiro.retiroDate)}\n`;
+            t += `  - Género:     ${n.retiro.gender === 'M' ? 'Masculino' : n.retiro.gender === 'F' ? 'Femenino' : 'N/A'}\n`;
+            t += `  - Ram Diligenciado: ${n.retiro.ramFileName || 'No adjuntado'}\n`;
+            t += `  - Formato Retiro Voluntario: ${n.retiro.formatoFileName || 'No adjuntado'}\n\n`;
         }
 
         if (n.ingreso) {
@@ -215,10 +219,39 @@ const ConsultaUDSModule = (() => {
 
             if (n.nutricion) {
                 t += `[ SEGUIMIENTO NUTRICIONAL ]\n`;
-                t += `  - F. Valoración: ${formatDateDMY(n.nutricion.fecha)}\n`;
-                t += `  - Peso:          ${n.nutricion.peso || ''} kg\n`;
-                t += `  - Talla:         ${n.nutricion.talla || ''} cm\n`;
-                t += `  - Estado:        ${n.nutricion.estadoNutricional || 'No calculado'}\n\n`;
+                if (n.nutricion.pendiente) {
+                    t += `  - Valoración nutricional: PENDIENTE (se completará luego desde el panel)\n\n`;
+                } else {
+                    t += `  - F. Valoración: ${formatDateDMY(n.nutricion.fecha)}\n`;
+                    t += `  - Peso:          ${n.nutricion.peso || ''} kg\n`;
+                    t += `  - Talla:         ${n.nutricion.talla || ''} cm\n`;
+                    t += `  - P. Braquial:   ${n.nutricion.perimetroBraquial ? n.nutricion.perimetroBraquial + ' cm' : '-'}\n`;
+                    t += `  - Régimen:       ${n.nutricion.regimen || '-'}\n`;
+                    t += `  - EPS:           ${n.nutricion.eps || '-'}\n`;
+                    t += `  - Estado:        ${n.nutricion.estadoNutricional || 'No calculado'}\n`;
+                    if (n.nutricion.antecedentePrematurez) {
+                        t += `  - Antecedente prematurez: ${n.nutricion.antecedentePrematurez}${n.nutricion.edadGestacional ? ' (' + n.nutricion.edadGestacional + ' sem.)' : ''}\n`;
+                    }
+                    t += `\n`;
+                }
+            }
+
+            const d = n.discapacidad;
+            if (d && d.tiene) {
+                t += `[ DISCAPACIDAD ]\n`;
+                t += `  - Tiene discapacidad:             ${d.tiene === 'SI' ? 'SÍ' : 'NO'}\n`;
+                if (d.tiene === 'SI') {
+                    t += `  - Certificada:                     ${d.certificada || '-'}\n`;
+                    t += `  - Entidad que certifica:           ${d.entidadCertifica || '-'}\n`;
+                    t += `  - Inscrito registro localización:  ${d.registroLocalizacion || '-'}\n`;
+                    t += `  - Requiere ayuda de otra persona:  ${d.requiereAyudaPersona || '-'}\n`;
+                    t += `  - Requiere ayuda técnica:          ${d.requiereAyudaTecnica || '-'}\n`;
+                    t += `  - Cuenta con ayuda técnica:        ${d.cuentaAyudaTecnica || '-'}\n`;
+                    t += `  - Requiere terapia/rehab:          ${d.requiereTerapia || '-'}\n`;
+                    t += `  - Recibe terapia/rehab:            ${d.recibeTerapia || '-'}\n`;
+                    t += `  - Categorías:                      ${(d.categorias || []).join(', ') || 'Ninguna'}\n`;
+                }
+                t += `\n`;
             }
         }
 
@@ -487,10 +520,14 @@ const ConsultaUDSModule = (() => {
 
         // Documentos y soportes (solo se conserva el nombre del Ram, si existe)
         const ramFile = hist.map(e => e.detalle?.ramFileName).find(Boolean);
+        const formatoFile = hist.map(e => e.detalle?.formatoFileName).find(Boolean);
         const docsBox = document.getElementById('consultaUdsFichaDocumentos');
         if (docsBox) {
-            docsBox.innerHTML = ramFile
-                ? `<div class="cuds-ficha-doc-item"><i class=ic-paperclip></i> ${_esc(ramFile)}</div>`
+            const items = [];
+            if (ramFile) items.push(`<div class="cuds-ficha-doc-item"><i class=ic-paperclip></i> RAM: ${_esc(ramFile)}</div>`);
+            if (formatoFile) items.push(`<div class="cuds-ficha-doc-item"><i class=ic-paperclip></i> Retiro voluntario: ${_esc(formatoFile)}</div>`);
+            docsBox.innerHTML = items.length
+                ? items.join('')
                 : `<div class="cuds-ficha-doc-empty">No hay documentos registrados en el sistema para este participante.</div>`;
         }
 
@@ -524,9 +561,160 @@ const ConsultaUDSModule = (() => {
     }
 
     // ════════════════════════════════════════════════════════════
+    // HELPERS COMPARTIDOS POR RETIRO Y REINGRESO
+    // ════════════════════════════════════════════════════════════
+    const _MAX_ARCHIVO = 8 * 1024 * 1024;
+
+    function _cierreDeMesActivo() {
+        try {
+            if (typeof configBloqueo === 'undefined' || !configBloqueo || !configBloqueo.activo) return false;
+            const dia = new Date().getDate();
+            return dia >= configBloqueo.fechaInicio && dia <= configBloqueo.fechaFin;
+        } catch (e) { return false; }
+    }
+
+    function _etiquetaTipoBenef(t) {
+        return t === 'estandar' ? '6 meses a 5 años'
+            : t === 'menor_6_meses' ? 'Menor de 6 meses'
+            : t === 'gestante' ? 'Persona gestante' : '';
+    }
+
+    function _tipoBenefPrevio(hist) {
+        const ing = hist.find(e => e.tipo === 'ingreso');
+        return ing?.detalle?.tipoBeneficiario || '';
+    }
+
+    function _generoPrevio(hist) {
+        return hist.map(e => e.detalle?.gender).find(Boolean) || '';
+    }
+
+    // Lee un archivo (comprimiendo si es foto) y lo devuelve en base64
+    async function _leerArchivo(file, etiqueta) {
+        if (file.size > _MAX_ARCHIVO) {
+            throw new Error(`El archivo de ${etiqueta} excede 8MB. Use un archivo más pequeño.`);
+        }
+        if (typeof comprimirImagenSiAplica === 'function') file = await comprimirImagenSiAplica(file);
+        const base64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => resolve(String(e.target.result).split(',')[1]);
+            reader.onerror = () => reject(new Error(`Error al leer el archivo de ${etiqueta}.`));
+            reader.readAsDataURL(file);
+        });
+        return { file, base64 };
+    }
+
+    function _limpiarDropzone(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.value = '';
+        const zone = input.closest('.dropzone');
+        if (zone) {
+            zone.classList.remove('has-file', 'is-dragover', 'input-error');
+            const nameEl = zone.querySelector('.dropzone-filename');
+            if (nameEl) nameEl.textContent = '';
+        }
+    }
+
+    function _valRadio(name) {
+        return document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+    }
+    function _setRadio(name, valor) {
+        document.querySelectorAll(`input[name="${name}"]`).forEach(r => { r.checked = (r.value === valor); });
+    }
+
+    // ── Discapacidad (mismo formato que getDiscapacidadData del formulario) ──
+    function _leerDiscapacidad() {
+        const tiene = _valRadio('cudsDiscTiene');
+        if (tiene !== 'SI') return { tiene: tiene || 'NO' };
+        const cat = document.getElementById('cudsDiscCategoria')?.value || '';
+        return {
+            tiene: 'SI',
+            certificada: _valRadio('cudsDiscCertificada'),
+            entidadCertifica: document.getElementById('cudsDiscEntidad')?.value || '',
+            registroLocalizacion: _valRadio('cudsDiscRegistro'),
+            requiereAyudaPersona: _valRadio('cudsDiscAyudaPersona'),
+            requiereAyudaTecnica: _valRadio('cudsDiscAyudaTecnica'),
+            cuentaAyudaTecnica: _valRadio('cudsDiscCuentaAyuda'),
+            requiereTerapia: _valRadio('cudsDiscRequiereTerapia'),
+            recibeTerapia: _valRadio('cudsDiscRecibeTerapia'),
+            categorias: cat ? [cat] : []
+        };
+    }
+
+    function _validarDiscapacidad() {
+        const tiene = _valRadio('cudsDiscTiene');
+        if (!tiene) return 'Indique si el beneficiario TIENE DISCAPACIDAD.';
+        if (tiene !== 'SI') return '';
+        const reqs = [
+            ['cudsDiscCertificada', '¿La discapacidad está certificada?'],
+            ['cudsDiscRegistro', '¿Está inscrito en el registro de localización y caracterización?'],
+            ['cudsDiscAyudaPersona', '¿Requiere la ayuda de otra persona?'],
+            ['cudsDiscAyudaTecnica', '¿Requiere ayuda técnica / producto de apoyo?'],
+            ['cudsDiscCuentaAyuda', '¿Cuenta con la ayuda técnica / producto de apoyo?'],
+            ['cudsDiscRequiereTerapia', '¿Requiere terapia y/o rehabilitación?']
+        ];
+        if (!_valRadio('cudsDiscCertificada')) return `Responda: ${reqs[0][1]}`;
+        if (!document.getElementById('cudsDiscEntidad')?.value) return 'Seleccione la ENTIDAD que certifica la discapacidad.';
+        for (const [name, label] of reqs.slice(1)) {
+            if (!_valRadio(name)) return `Responda: ${label}`;
+        }
+        if (!document.getElementById('cudsDiscCategoria')?.value) return 'Seleccione la CATEGORÍA DE DISCAPACIDAD.';
+        return '';
+    }
+
+    function toggleDiscapacidad() {
+        const si = _valRadio('cudsDiscTiene') === 'SI';
+        document.getElementById('cudsDiscCampos')?.classList.toggle('cuds-hidden', !si);
+    }
+
+    function _prefillDiscapacidad(d) {
+        _setRadio('cudsDiscTiene', d?.tiene || '');
+        _setRadio('cudsDiscCertificada', d?.certificada || '');
+        _setRadio('cudsDiscRegistro', d?.registroLocalizacion || '');
+        _setRadio('cudsDiscAyudaPersona', d?.requiereAyudaPersona || '');
+        _setRadio('cudsDiscAyudaTecnica', d?.requiereAyudaTecnica || '');
+        _setRadio('cudsDiscCuentaAyuda', d?.cuentaAyudaTecnica || '');
+        _setRadio('cudsDiscRequiereTerapia', d?.requiereTerapia || '');
+        _setRadio('cudsDiscRecibeTerapia', d?.recibeTerapia || '');
+        document.getElementById('cudsDiscEntidad').value = d?.entidadCertifica || '';
+        document.getElementById('cudsDiscCategoria').value = d?.categorias?.[0] || '';
+        toggleDiscapacidad();
+    }
+
+    // ── Valoración nutricional pendiente ──
+    function toggleNutriPendiente() {
+        const pend = document.getElementById('cudsReingresoNutriPendiente')?.checked;
+        document.getElementById('cudsReingresoNutriCampos')?.classList.toggle('cuds-hidden', !!pend);
+    }
+
+    // ── Prematurez: solo aplica si al reingresar tiene menos de 24 meses ──
+    function _edadEnMeses() {
+        const dob = document.getElementById('cudsReingresoDOB')?.value;
+        const fecha = document.getElementById('cudsReingresoFecha')?.value;
+        if (!dob || !fecha || typeof calculateAge !== 'function' || typeof parseEdadAMeses !== 'function') return null;
+        return parseEdadAMeses(calculateAge(dob, fecha));
+    }
+    function actualizarPrematurez() {
+        const meses = _edadEnMeses();
+        const mostrar = meses !== null && meses >= 0 && meses < 24;
+        document.getElementById('cudsReingresoPrematurezBox')?.classList.toggle('cuds-hidden', !mostrar);
+        if (!mostrar) {
+            _setRadio('cudsReingresoPrematurez', '');
+            const eg = document.getElementById('cudsReingresoEdadGest');
+            if (eg) eg.value = '';
+            document.getElementById('cudsReingresoEdadGestWrap')?.classList.add('cuds-hidden');
+        }
+    }
+    function togglePrematurez() {
+        const si = _valRadio('cudsReingresoPrematurez') === 'SI';
+        document.getElementById('cudsReingresoEdadGestWrap')?.classList.toggle('cuds-hidden', !si);
+        if (!si) { const eg = document.getElementById('cudsReingresoEdadGest'); if (eg) eg.value = ''; }
+    }
+
+    // ════════════════════════════════════════════════════════════
     // ACCIÓN ESPECIAL: REPORTAR RETIRO (desde un vinculado activo)
-    // Modal compacto: solo pide fecha de retiro y correo; el resto
-    // de los datos (nombre, documento, género, UDS) ya se conocen.
+    // Igual que el formulario original: fecha, género, correo,
+    // RAM (opcional) y Formato de Retiro Voluntario (obligatorio).
     // ════════════════════════════════════════════════════════════
     function abrirModalRetiro() {
         const documento = _documentoActivo;
@@ -542,8 +730,12 @@ const ConsultaUDSModule = (() => {
         document.getElementById('cudsRetiroUDS').textContent = `${_udsActual.nombre} (${_udsActual.codigo})`;
         document.getElementById('cudsRetiroFecha').value = new Date().toISOString().split('T')[0];
         document.getElementById('cudsRetiroCorreo').value = actual.correoRespuesta || '';
+        _setRadio('cudsRetiroGenero', _generoPrevio(hist));
+        _limpiarDropzone('cudsRetiroRamFile');
+        _limpiarDropzone('cudsRetiroFormatoFile');
         document.getElementById('cudsRetiroError').style.display = 'none';
 
+        if (typeof initDropzones === 'function') initDropzones();
         document.getElementById('consultaUdsModalRetiro')?.classList.add('is-open');
     }
 
@@ -557,21 +749,32 @@ const ConsultaUDSModule = (() => {
         const correoInput = document.getElementById('cudsRetiroCorreo');
         const errorBox = document.getElementById('cudsRetiroError');
         const btn = document.getElementById('cudsRetiroBtnConfirmar');
+        const ramInput = document.getElementById('cudsRetiroRamFile');
+        const formatoInput = document.getElementById('cudsRetiroFormatoFile');
 
         const fecha = fechaInput?.value || '';
         const correo = (correoInput?.value || '').trim();
+        const genero = _valRadio('cudsRetiroGenero');
 
         const mostrarErrorRetiro = (msg) => {
             if (errorBox) { errorBox.textContent = msg; errorBox.style.display = ''; }
         };
         if (errorBox) errorBox.style.display = 'none';
 
+        if (_cierreDeMesActivo()) { mostrarErrorRetiro('El sistema está en periodo de cierre de mes. No se pueden registrar novedades.'); return; }
         if (!fecha) { mostrarErrorRetiro('Ingrese la fecha de retiro.'); fechaInput?.focus(); return; }
         const errFechaRet = validarFechaMovimiento(fecha, 'La fecha de retiro');
         if (errFechaRet) { mostrarErrorRetiro(errFechaRet); fechaInput?.focus(); return; }
+        if (!genero) { mostrarErrorRetiro('Seleccione el género del participante.'); return; }
         if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
             mostrarErrorRetiro('Ingrese un correo válido para el seguimiento.'); correoInput?.focus(); return;
         }
+        if (!formatoInput?.files?.length) {
+            formatoInput?.closest('.dropzone')?.classList.add('input-error');
+            mostrarErrorRetiro('Debe adjuntar el FORMATO DE RETIRO VOLUNTARIO.');
+            return;
+        }
+        formatoInput.closest('.dropzone')?.classList.remove('input-error');
 
         const hist = _historialDe(documento);
         const actual = hist[0];
@@ -583,7 +786,7 @@ const ConsultaUDSModule = (() => {
         const perfil = AsociacionesModule.getPerfilActivo();
         const docType = actual.docType || 'RC';
         const nombre = actual.nombre;
-        const gender = actual.detalle?.gender || '';
+        const tipoBenef = _tipoBenefPrevio(hist);
 
         const noveltyData = {
             contract: _udsActual.contrato,
@@ -604,24 +807,47 @@ const ConsultaUDSModule = (() => {
             hasIngreso: false,
             document: documento,
             name: nombre,
-            retiro: { docType, document: documento, name: nombre, gender, retiroDate: fecha }
+            retiro: { docType, document: documento, name: nombre, gender: genero, retiroDate: fecha, tipoBeneficiario: tipoBenef }
         };
 
         const googleData = {
             Contrato: _udsActual.contrato,
             UDS_Full: noveltyData.udsFull,
-            REPORTE_DETALLADO: _generarReporteTexto(noveltyData),
             _subject: `Novedad UDS: ${_udsActual.nombre} (Retiro desde Consulta UDS)`,
             retiro_tipo_doc: docType,
             retiro_documento: documento,
             retiro_nombre: nombre,
             retiro_fecha: fecha,
-            _retiroGender: gender
+            _retiroGender: genero,
+            retiro_tipo_beneficiario: _etiquetaTipoBenef(tipoBenef)
         };
 
         if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
         if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.mostrar();
         try {
+            // RAM (opcional)
+            if (ramInput?.files?.length) {
+                const { file, base64 } = await _leerArchivo(ramInput.files[0], 'el Ram');
+                googleData.ram_file_base64 = base64;
+                googleData.ram_file_type = file.type;
+                googleData.ram_file_name = (typeof nombreArchivoNovedad === 'function')
+                    ? nombreArchivoNovedad(['Ram', mesArchivo(fecha), noveltyData.udsName, documento], file)
+                    : file.name;
+                noveltyData.retiro.ramFileName = googleData.ram_file_name;
+            }
+            // Formato de retiro voluntario (obligatorio)
+            {
+                const { file, base64 } = await _leerArchivo(formatoInput.files[0], 'el Formato de Retiro Voluntario');
+                googleData.retiro_formato_base64 = base64;
+                googleData.retiro_formato_type = file.type;
+                googleData.retiro_formato_name = (typeof nombreArchivoNovedad === 'function')
+                    ? nombreArchivoNovedad(['Retiro', documento, fechaArchivo(fecha)], file)
+                    : file.name;
+                noveltyData.retiro.formatoFileName = googleData.retiro_formato_name;
+            }
+
+            googleData.REPORTE_DETALLADO = _generarReporteTexto(noveltyData);
+
             const r = await _guardarNovedadDesdeConsulta(noveltyData, googleData);
             _todosEventos.push({
                 id: null, origen: 'activas', documento, docType, nombre, tipo: 'retiro',
@@ -637,7 +863,7 @@ const ConsultaUDSModule = (() => {
         } catch (e) {
             console.error('[ConsultaUDS] Error al reportar retiro:', e);
             if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.ocultar(0);
-            mostrarErrorRetiro('No se pudo guardar el retiro. Intente nuevamente.');
+            mostrarErrorRetiro(e?.message ? `No se pudo guardar el retiro: ${e.message}` : 'No se pudo guardar el retiro. Intente nuevamente.');
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = 'Confirmar retiro'; }
         }
@@ -645,10 +871,8 @@ const ConsultaUDSModule = (() => {
 
     // ════════════════════════════════════════════════════════════
     // ACCIÓN ESPECIAL: REINGRESO (desde un desvinculado)
-    // Autocompleta lo ya conocido (nombre, documento, UDS, género,
-    // dirección/teléfono/acudiente previos) y solo exige diligenciar
-    // lo que puede haber cambiado, incluida una nueva valoración
-    // nutricional (peso/talla), igual que un ingreso normal.
+    // Valoración nutricional opcional / pendiente, discapacidad con
+    // preguntas condicionales y prematurez si es menor de 24 meses.
     // ════════════════════════════════════════════════════════════
     function abrirModalReingreso() {
         const documento = _documentoActivo;
@@ -676,11 +900,22 @@ const ConsultaUDSModule = (() => {
         document.getElementById('cudsReingresoAcudienteDOB').value = prev.acudienteDOB || '';
         document.getElementById('cudsReingresoFecha').value = new Date().toISOString().split('T')[0];
 
-        const generoPrev = prev.gender || '';
+        const generoPrev = _generoPrevio(hist);
         document.querySelectorAll('input[name="cudsReingresoGenero"]').forEach(r => { r.checked = (r.value === generoPrev); });
 
-        ['cudsReingresoPeso', 'cudsReingresoTalla', 'cudsReingresoPerimetro', 'cudsReingresoRegimen', 'cudsReingresoEPS', 'cudsReingresoFechaValoracion']
+        ['cudsReingresoPeso', 'cudsReingresoTalla', 'cudsReingresoPerimetro', 'cudsReingresoRegimen', 'cudsReingresoEPS', 'cudsReingresoFechaValoracion', 'cudsReingresoEdadGest']
             .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        const chk = document.getElementById('cudsReingresoNutriPendiente');
+        if (chk) chk.checked = false;
+        toggleNutriPendiente();
+
+        _setRadio('cudsReingresoPrematurez', '');
+        document.getElementById('cudsReingresoEdadGestWrap')?.classList.add('cuds-hidden');
+        actualizarPrematurez();
+
+        // La discapacidad se precarga con lo último registrado (si existe) para confirmarla
+        const discPrev = hist.map(e => e.discapacidad).find(Boolean) || null;
+        _prefillDiscapacidad(discPrev);
 
         document.getElementById('cudsReingresoError').style.display = 'none';
         document.getElementById('consultaUdsModalReingreso')?.classList.add('is-open');
@@ -695,36 +930,74 @@ const ConsultaUDSModule = (() => {
         const btn = document.getElementById('cudsReingresoBtnConfirmar');
         const errorBox = document.getElementById('cudsReingresoError');
         const mostrarErrorReingreso = (msg) => {
-            if (errorBox) { errorBox.textContent = msg; errorBox.style.display = ''; }
+            if (errorBox) { errorBox.textContent = msg; errorBox.style.display = ''; errorBox.scrollIntoView?.({ block: 'nearest' }); }
         };
         if (errorBox) errorBox.style.display = 'none';
 
-        const dob = document.getElementById('cudsReingresoDOB').value;
-        const fechaIngreso = document.getElementById('cudsReingresoFecha').value;
-        const direccion = document.getElementById('cudsReingresoDireccion').value.trim();
-        const telefono = document.getElementById('cudsReingresoTelefono').value.trim();
-        const comuna = document.getElementById('cudsReingresoComuna').value.trim();
-        const barrio = document.getElementById('cudsReingresoBarrio').value.trim();
-        const acudienteNombre = document.getElementById('cudsReingresoAcudienteNombre').value.trim();
-        const acudienteDoc = document.getElementById('cudsReingresoAcudienteDoc').value.trim();
-        const acudienteDOB = document.getElementById('cudsReingresoAcudienteDOB').value;
-        const genero = document.querySelector('input[name="cudsReingresoGenero"]:checked')?.value || '';
+        const val = (id) => (document.getElementById(id)?.value || '').trim();
+        const dob = val('cudsReingresoDOB');
+        const fechaIngreso = val('cudsReingresoFecha');
+        const direccion = val('cudsReingresoDireccion');
+        const telefono = val('cudsReingresoTelefono');
+        const comuna = val('cudsReingresoComuna');
+        const barrio = val('cudsReingresoBarrio');
+        const acudienteNombre = val('cudsReingresoAcudienteNombre');
+        const acudienteDoc = val('cudsReingresoAcudienteDoc');
+        const acudienteDOB = val('cudsReingresoAcudienteDOB');
+        const genero = _valRadio('cudsReingresoGenero');
 
-        const peso = document.getElementById('cudsReingresoPeso').value;
-        const talla = document.getElementById('cudsReingresoTalla').value;
-        const perimetro = document.getElementById('cudsReingresoPerimetro').value;
-        const regimen = document.getElementById('cudsReingresoRegimen').value;
-        const eps = document.getElementById('cudsReingresoEPS').value.trim();
-        const fechaValoracion = document.getElementById('cudsReingresoFechaValoracion').value;
+        const peso = val('cudsReingresoPeso');
+        const talla = val('cudsReingresoTalla');
+        const perimetro = val('cudsReingresoPerimetro');
+        const regimen = val('cudsReingresoRegimen');
+        const eps = val('cudsReingresoEPS');
+        const fechaValoracion = val('cudsReingresoFechaValoracion');
+        const marcoPendiente = !!document.getElementById('cudsReingresoNutriPendiente')?.checked;
 
+        if (_cierreDeMesActivo()) return mostrarErrorReingreso('El sistema está en periodo de cierre de mes. No se pueden registrar novedades.');
         if (!dob) return mostrarErrorReingreso('Ingrese la fecha de nacimiento.');
         if (!fechaIngreso) return mostrarErrorReingreso('Ingrese la fecha de reingreso.');
         const errFechaReing = validarFechaMovimiento(fechaIngreso, 'La fecha de reingreso');
         if (errFechaReing) return mostrarErrorReingreso(errFechaReing);
         if (!genero) return mostrarErrorReingreso('Seleccione el género.');
+        if (!comuna) return mostrarErrorReingreso('Ingrese la comuna.');
+        if (!barrio) return mostrarErrorReingreso('Ingrese el barrio.');
         if (!direccion || !telefono) return mostrarErrorReingreso('Complete dirección y teléfono.');
         if (!acudienteNombre || !acudienteDoc) return mostrarErrorReingreso('Complete los datos del acudiente.');
-        if (!peso || !talla || !fechaValoracion) return mostrarErrorReingreso('Complete los datos nutricionales (peso, talla y fecha de valoración).');
+        if (!acudienteDOB) return mostrarErrorReingreso('Ingrese la fecha de nacimiento del acudiente.');
+
+        // Valoración nutricional: opcional. Si la marcan pendiente o no la llenan, queda pendiente.
+        const hayAlgunDato = !!(peso || talla || fechaValoracion || perimetro);
+        const nutricionPendiente = marcoPendiente || !hayAlgunDato;
+        if (!nutricionPendiente) {
+            if (!peso || !talla || !fechaValoracion) {
+                return mostrarErrorReingreso('Si diligencia la valoración, complete fecha, peso y talla (o márquela como dato pendiente).');
+            }
+            const p = parseFloat(peso), t = parseFloat(talla);
+            if (isNaN(p) || p < 5 || p > 30.5) return mostrarErrorReingreso('El peso debe estar entre 5 y 30.5 kg.');
+            if (isNaN(t) || t < 50 || t > 130.5) return mostrarErrorReingreso('La talla debe estar entre 50 y 130.5 cm.');
+            if (perimetro) {
+                const pb = parseFloat(perimetro);
+                if (isNaN(pb) || pb < 6 || pb > 30) return mostrarErrorReingreso('El perímetro braquial debe estar entre 6 y 30 cm.');
+            }
+        }
+
+        // Prematurez (solo si es menor de 24 meses)
+        let antecedentePrematurez = '', edadGestacional = '';
+        const prematurezVisible = !document.getElementById('cudsReingresoPrematurezBox')?.classList.contains('cuds-hidden');
+        if (prematurezVisible) {
+            antecedentePrematurez = _valRadio('cudsReingresoPrematurez');
+            if (!antecedentePrematurez) return mostrarErrorReingreso('Indique el ANTECEDENTE DE PREMATUREZ.');
+            if (antecedentePrematurez === 'SI') {
+                const eg = parseFloat(val('cudsReingresoEdadGest'));
+                if (isNaN(eg)) return mostrarErrorReingreso('Indique la EDAD GESTACIONAL AL NACER.');
+                if (eg < 3 || eg > 36) return mostrarErrorReingreso('La edad gestacional debe estar entre 3 y 36 semanas.');
+                edadGestacional = String(eg);
+            }
+        }
+
+        const errDisc = _validarDiscapacidad();
+        if (errDisc) return mostrarErrorReingreso(errDisc);
 
         const hist = _historialDe(documento);
         const actual = hist[0];
@@ -735,9 +1008,13 @@ const ConsultaUDSModule = (() => {
 
         const perfil = AsociacionesModule.getPerfilActivo();
         const edad = (typeof calculateAge === 'function') ? calculateAge(dob, fechaIngreso) : '';
-        const estadoNutricional = (typeof calcularEstadoNutricionalDirecto === 'function')
-            ? (calcularEstadoNutricionalDirecto(parseFloat(peso), parseFloat(talla), dob, fechaIngreso, genero) || 'No calculado')
-            : 'No calculado';
+        const estadoNutricional = nutricionPendiente
+            ? 'Pendiente'
+            : ((typeof calcularEstadoNutricionalDirecto === 'function')
+                ? (calcularEstadoNutricionalDirecto(parseFloat(peso), parseFloat(talla), dob, fechaIngreso, genero) || 'No calculado')
+                : 'No calculado');
+        const discapacidad = _leerDiscapacidad();
+        const tipoBenef = _tipoBenefPrevio(hist);
 
         const noveltyData = {
             contract: _udsActual.contrato,
@@ -765,17 +1042,24 @@ const ConsultaUDSModule = (() => {
                 dob, age: edad, gender: genero,
                 comuna, barrio, address: direccion, phone: telefono,
                 acudiente: acudienteNombre, acudienteDoc, acudienteDOB,
-                ingresoDate: fechaIngreso
+                ingresoDate: fechaIngreso,
+                tipoBeneficiario: tipoBenef
             },
             nutricion: {
-                pendiente: false,
-                fecha: fechaValoracion,
-                peso, talla,
-                perimetroBraquial: perimetro,
-                regimen, eps,
-                estadoNutricional
-            }
+                pendiente: nutricionPendiente,
+                fecha: nutricionPendiente ? '' : fechaValoracion,
+                peso: nutricionPendiente ? '' : peso,
+                talla: nutricionPendiente ? '' : talla,
+                perimetroBraquial: nutricionPendiente ? '' : perimetro,
+                regimen: nutricionPendiente ? '' : regimen,
+                eps: nutricionPendiente ? '' : eps,
+                estadoNutricional,
+                antecedentePrematurez,
+                edadGestacional
+            },
+            discapacidad
         };
+        if (tipoBenef) noveltyData.tipoBeneficiario = tipoBenef;
 
         const googleData = {
             Contrato: _udsActual.contrato,
@@ -796,13 +1080,28 @@ const ConsultaUDSModule = (() => {
             acudiente_documento: acudienteDoc,
             acudiente_nombre: acudienteNombre,
             acudiente_nacimiento: acudienteDOB,
-            nutricion_fecha: fechaValoracion,
-            nutricion_peso: peso,
-            nutricion_talla: talla,
-            nutricion_perimetro_braquial: perimetro,
-            nutricion_regimen: regimen,
-            nutricion_eps: eps
+            nutricion_fecha: noveltyData.nutricion.fecha,
+            nutricion_peso: noveltyData.nutricion.peso,
+            nutricion_talla: noveltyData.nutricion.talla,
+            nutricion_perimetro_braquial: noveltyData.nutricion.perimetroBraquial,
+            nutricion_regimen: noveltyData.nutricion.regimen,
+            nutricion_eps: noveltyData.nutricion.eps,
+            antecedente_prematurez: antecedentePrematurez,
+            edad_gestacional: edadGestacional,
+            discapacidad_tiene: discapacidad.tiene || 'NO'
         };
+        if (tipoBenef) googleData.ingreso_tipo_beneficiario = _etiquetaTipoBenef(tipoBenef);
+        if (discapacidad.tiene === 'SI') {
+            googleData.discapacidad_certificada = discapacidad.certificada;
+            googleData.discapacidad_entidad_certifica = discapacidad.entidadCertifica;
+            googleData.discapacidad_registro_localizacion = discapacidad.registroLocalizacion;
+            googleData.discapacidad_requiere_ayuda_persona = discapacidad.requiereAyudaPersona;
+            googleData.discapacidad_requiere_ayuda_tecnica = discapacidad.requiereAyudaTecnica;
+            googleData.discapacidad_cuenta_ayuda_tecnica = discapacidad.cuentaAyudaTecnica;
+            googleData.discapacidad_requiere_terapia = discapacidad.requiereTerapia;
+            googleData.discapacidad_recibe_terapia = discapacidad.recibeTerapia;
+            googleData.discapacidad_categorias = discapacidad.categorias.join(', ');
+        }
 
         if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
         if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.mostrar();
@@ -812,7 +1111,8 @@ const ConsultaUDSModule = (() => {
                 id: null, origen: 'activas', documento, docType: noveltyData.ingreso.docType,
                 nombre: actual.nombre, tipo: 'ingreso', fecha: fechaIngreso,
                 cuentameStatus: 'pendiente', contract: noveltyData.contract, udsFull: noveltyData.udsFull,
-                correoRespuesta: noveltyData.correoRespuesta, detalle: noveltyData.ingreso, nutricion: noveltyData.nutricion
+                correoRespuesta: noveltyData.correoRespuesta, detalle: noveltyData.ingreso,
+                nutricion: noveltyData.nutricion, discapacidad
             });
             _refrescarListasDesdeEstado();
             cerrarModalReingreso();
@@ -823,7 +1123,7 @@ const ConsultaUDSModule = (() => {
         } catch (e) {
             console.error('[ConsultaUDS] Error al reportar reingreso:', e);
             if (typeof EnvioProgresoUI !== 'undefined') EnvioProgresoUI.ocultar(0);
-            mostrarErrorReingreso('No se pudo guardar el reingreso. Intente nuevamente.');
+            mostrarErrorReingreso(e?.message ? `No se pudo guardar el reingreso: ${e.message}` : 'No se pudo guardar el reingreso. Intente nuevamente.');
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = 'Confirmar reingreso'; }
         }
@@ -833,7 +1133,8 @@ const ConsultaUDSModule = (() => {
         abrirModal, cerrarModal, consultar, nuevaConsulta, manejarTecla, mostrarSeccion,
         abrirFicha, cerrarFicha, scrollHistorialFicha, scrollDocumentosFicha,
         abrirModalRetiro, cerrarModalRetiro, confirmarRetiro,
-        abrirModalReingreso, cerrarModalReingreso, confirmarReingreso
+        abrirModalReingreso, cerrarModalReingreso, confirmarReingreso,
+        toggleNutriPendiente, toggleDiscapacidad, togglePrematurez, actualizarPrematurez
     };
 })();
 
