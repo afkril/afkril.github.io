@@ -122,6 +122,15 @@ tr:last-child td{border-bottom:0}
 <style>
 .plan-features{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.plan-features h4{margin:0 0 8px;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}.pf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px}.pf-grid label{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink)}.pf-grid input{accent-color:var(--g)}.plan-cap{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.plan-cap span{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:10px;color:var(--mut)}
 .dur-chips{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 14px}.dur-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 11px;font-size:11px;font-weight:600}.dur-chip.base{padding-right:11px}.dur-chip button{border:0;background:var(--redbg);color:var(--red);width:18px;height:18px;border-radius:50%;line-height:1;font-size:12px;padding:0}.dur-add{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}.dur-add .field{min-width:110px}.dur-add input,.dur-add select{width:130px}
+</style>
+<style>
+.nav .nbadge{margin-left:auto;background:var(--red);color:#fff;border-radius:99px;font-size:10px;font-weight:700;padding:1px 7px;display:none}.nav .nbadge.show{display:inline-block}
+.req-banner{display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 15px;border-radius:14px;background:var(--amberbg);color:var(--amber);font-size:12px;font-weight:600;margin-bottom:14px}.req-banner.show{display:flex}
+.req{display:grid;gap:8px;padding:13px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}.req.done{opacity:.65}
+.req-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.req b{font-size:12.5px}.req small{color:var(--mut);font-size:10.5px;display:block;margin-top:2px}
+.req-keys{display:grid;gap:6px}.req-key{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:var(--solid);border:1px solid var(--line);font-size:11px}.req-key code{font-weight:700;letter-spacing:.05em}
+.req-warn{font-size:11px;color:var(--amber);background:var(--amberbg);padding:8px 10px;border-radius:10px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs button{border:1px solid var(--line);background:var(--solid);color:var(--mut);border-radius:999px;padding:7px 14px;font-weight:700;font-size:11.5px}.tabs button.on{background:var(--g);border-color:var(--g);color:#fff}
 </style></head>
 <body>
 
@@ -153,6 +162,7 @@ tr:last-child td{border-bottom:0}
       <button class="active" data-section="dashboard" onclick="go('dashboard',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg><span>Resumen</span></button>
       <button data-section="licenses" onclick="go('licenses',this)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 9h10M7 13h6"/></svg><span>Licencias</span></button>
       <button data-section="customers" onclick="go('customers',this)"><svg viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M17 8h5M19.5 5.5v5"/></svg><span>Clientes</span></button>
+      <button data-section="requests" onclick="go('requests',this)"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg><span>Solicitudes</span><span id="reqBadge" class="nbadge">0</span></button>
       <button data-section="plans" onclick="go('plans',this)"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg><span>Planes</span></button>
       <button data-section="activity" onclick="go('activity',this)"><svg viewBox="0 0 24 24"><path d="M4 12h4l2-7 4 14 2-7h4"/><path d="M3 3v18h18"/></svg><span>Actividad</span></button>
       <button data-section="settings" onclick="go('settings',this)"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg><span>Ajustes</span></button>
@@ -170,6 +180,7 @@ tr:last-child td{border-bottom:0}
         <div><h1>Resumen de licencias</h1><p>Control de suscripciones, accesos y dispositivos de RAM360.</p></div>
         <div class="actions"><button class="btn" onclick="openLicenseModal()">+ Generar licencia</button><button class="btn alt" onclick="refreshAll()">Actualizar</button></div>
       </div>
+      <div id="reqBanner" class="req-banner"><span id="reqBannerTxt"></span><button class="btn small" onclick="go('requests',document.querySelector('[data-section=requests]'))">Ver solicitudes</button></div>
       <div class="grid kpis">
         <div class="card kpi feature"><span class="label">Licencias activas</span><span class="value" id="kActive">0</span><span class="hint">Con acceso permitido</span></div>
         <div class="card kpi"><span class="label">Por vencer</span><span class="value" id="kExp">0</span><span class="hint">Próximos 15 días</span></div>
@@ -203,6 +214,13 @@ tr:last-child td{border-bottom:0}
     <section id="customers" class="section">
       <div class="top"><div><h1>Clientes</h1><p>Organizaciones o personas a las que se asignan las licencias.</p></div><button class="btn" onclick="openCustomerModal()">+ Cliente</button></div>
       <div class="card"><div class="toolbar"><input id="customerSearch" oninput="renderCustomers()" placeholder="Buscar cliente…"></div><div style="overflow:auto"><table><thead><tr><th>Cliente</th><th>Contacto</th><th>Licencias</th><th>Estado</th><th>Creado</th><th></th></tr></thead><tbody id="customerRows"></tbody></table></div></div>
+    </section>
+
+    <section id="requests" class="section">
+      <div class="top"><div><h1>Solicitudes</h1><p>Recuperación de llaves y solicitudes de compra enviadas desde el acceso de clientes.</p></div></div>
+      <div class="tabs"><button id="tabRec" class="on" onclick="reqTab('rec')">Recuperar llave <span id="cntRec"></span></button><button id="tabBuy" onclick="reqTab('buy')">Solicitudes de compra <span id="cntBuy"></span></button></div>
+      <div id="reqRec"></div>
+      <div id="reqBuy" style="display:none"></div>
     </section>
 
     <section id="plans" class="section">
@@ -394,6 +412,7 @@ function go(section,btn){
   if(section==="customers")renderCustomers();
   if(section==="plans")renderPlans();
   if(section==="activity")renderActivity();
+  if(section==="requests")renderRequests();
 }
 window.go=go;
 
@@ -422,14 +441,14 @@ window.logout=()=>signOut(auth);
 
 onAuthStateChanged(auth,async user=>{
   currentUser=user;
-  if(!user){$("login").classList.remove("hide");$("app").style.display="none";return}
+  if(!user){stopRequestListeners();$("login").classList.remove("hide");$("app").style.display="none";return}
   $("adminEmail").textContent=user.email||user.uid;
   try{
     const a=await get(ref(db,"admins/"+user.uid));
     if(a.exists() && a.val()===true){
       $("login").classList.add("hide");$("app").style.display="flex";
       $("firebaseStatus").textContent="Conectado";$("firebaseStatus").className="badge active";
-      await refreshAll();
+      await refreshAll();startRequestListeners();
     }else{
       await signOut(auth);
       $("loginErr").textContent="Esta cuenta está autenticada, pero no tiene permisos de administrador.";
@@ -440,7 +459,7 @@ onAuthStateChanged(auth,async user=>{
     $("firebaseStatus").className="badge expiring";
     $("login").classList.add("hide");$("app").style.display="flex";
     toast("Firebase respondió, pero debes configurar las reglas de seguridad.");
-    await refreshAll();
+    await refreshAll();startRequestListeners();
   }
 });
 
@@ -573,6 +592,7 @@ window.createLicense=async()=>{
   };
   try{
     await set(ref(db,"licenses/"+id),x);
+    if(state.customers[customerId]?.status==="pending"){await update(ref(db,"customers/"+customerId),{status:"active",updatedAt:now()});state.customers[customerId].status="active";renderCustomers();}
     await logActivity("license_created",licenseKey,"Licencia creada");
     state.licenses[id]=x;closeModal("licenseModal");renderDashboard();renderLicenses();toast("Licencia generada correctamente.");
   }catch(e){toast("No se pudo guardar: "+e.message)}
@@ -641,7 +661,7 @@ window.createPlan=async()=>{
   }catch(e){toast("No se pudo guardar: "+(e.message||e))}
 };
 window.deletePlan=async id=>{const x=state.plans[id];if(!x)return;const linked=Object.values(state.licenses).filter(l=>l.planId===id);if(linked.length){toast(`No se puede eliminar: ${linked.length} licencia(s) usan este plan. Elimina o reasigna esas licencias primero.`);return;}if(!confirm(`¿Eliminar definitivamente el plan ${x.name}?`))return;try{await remove(ref(db,"plans/"+id));delete state.plans[id];renderPlans();fillPlanSelect();toast("Plan eliminado.");}catch(e){toast("No se pudo eliminar: "+(e.code||e.message))}};
-window.applyPlanToLicenseForm=()=>{const p=state.plans[$("licPlan")?.value];if(!p)return;const d=Number(p.devices)||2,u=Number(p.users)||3,r=Number(p.limits?.reportsActive)||1;$("licDevices").value=d;$("licUsers").value=u;$("licDuration").value=String(Number(p.durationDays??365));const feats=Object.entries(p.features||{}).filter(([,v])=>v).map(([k])=>({multiUpload:'Multicarga',simulators:'Simuladores',comparisons:'Comparador',advancedValidation:'Validación avanzada',alerts:'Alertas inteligentes',executiveSummary:'Resumen ejecutivo',excelExport:'Exportación Excel',customReports:'Reportes personalizados',operatorTracking:'Seguimiento de operadores',fullHistory:'Historial completo'}[k])).filter(Boolean);const sm=$("licPlanSummary");if(sm)sm.innerHTML=`<b>${esc(p.name)}</b> · ${d} dispositivos · ${u} usuarios · ${r} reportes simultáneos · Vigencia: ${esc(planDurLabel(p))}<br><span class="muted">Funciones: ${esc(feats.join(' · ')||'Funciones básicas')}</span>`};
+window.applyPlanToLicenseForm=()=>{const p=state.plans[$("licPlan")?.value];if(!p)return;const d=Number(p.devices)||2,u=Number(p.users)||3,r=Number(p.limits?.reportsActive)||1;$("licDevices").value=d;$("licUsers").value=u;{const _pd=planDuration(p);$("licDuration").value=durKey(_pd.unit,_pd.value);}const feats=Object.entries(p.features||{}).filter(([,v])=>v).map(([k])=>({multiUpload:'Multicarga',simulators:'Simuladores',comparisons:'Comparador',advancedValidation:'Validación avanzada',alerts:'Alertas inteligentes',executiveSummary:'Resumen ejecutivo',excelExport:'Exportación Excel',customReports:'Reportes personalizados',operatorTracking:'Seguimiento de operadores',fullHistory:'Historial completo'}[k])).filter(Boolean);const sm=$("licPlanSummary");if(sm)sm.innerHTML=`<b>${esc(p.name)}</b> · ${d} dispositivos · ${u} usuarios · ${r} reportes simultáneos · Vigencia: ${esc(planDurLabel(p))}<br><span class="muted">Funciones: ${esc(feats.join(' · ')||'Funciones básicas')}</span>`};
 
 function renderDashboard(){
   const arr=Object.values(state.licenses);
@@ -719,7 +739,7 @@ function renderCustomers(){
   const rows=Object.entries(state.customers).filter(([id,x])=>(x.name+" "+x.email+" "+x.phone).toLowerCase().includes(q));
   $("customerRows").innerHTML=rows.length?rows.map(([id,x])=>{
     const count=Object.values(state.licenses).filter(l=>l.customerId===id).length;
-    return `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.email||"—")}<br><span class="muted">${esc(x.phone||"")}</span></td><td>${count}</td><td><span class="badge active">${x.status||"active"}</span></td><td>${fmtDate(x.createdAt)}</td><td><button class="btn alt small" onclick="customerDetail('${id}')">Ver</button> <button class="btn alt small" onclick="editCustomer('${id}')">Editar</button> <button class="btn danger small" onclick="deleteCustomer('${id}')">Eliminar</button></td></tr>`
+    return `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.email||"—")}<br><span class="muted">${esc(x.phone||"")}</span></td><td>${count}</td><td><span class="badge ${x.status==="pending"?"pending":"active"}">${x.status==="pending"?"Pendiente (web)":(x.status||"active")}</span></td><td>${fmtDate(x.createdAt)}</td><td><button class="btn alt small" onclick="customerDetail('${id}')">Ver</button> <button class="btn alt small" onclick="editCustomer('${id}')">Editar</button> <button class="btn danger small" onclick="deleteCustomer('${id}')">Eliminar</button></td></tr>`
   }).join(""):`<tr><td colspan="6" class="empty">No hay clientes.</td></tr>`;
 }
 window.renderCustomers=renderCustomers;
@@ -766,6 +786,90 @@ window.saveSettings=async()=>{
 };
 
 document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
+
+
+/* ===== Solicitudes (recuperar llave y compras) =====
+   /keyRecoveryRequests/{id} = {email,name,phone,status:'pending'|'sent'|'dismissed',createdAt}
+   /purchaseRequests/{id}    = {name,email,phone,planId,planName,duration,customerId,customerCreated,status,createdAt} */
+let REQ={rec:{},buy:{}},REQ_TAB="rec",REQ_LISTENERS=[],REQ_FIRST={rec:true,buy:true};
+const BASE_TITLE=document.title;
+const pendingOf=o=>Object.values(o||{}).filter(x=>x&&x.status==="pending").length;
+function startRequestListeners(){
+  if(REQ_LISTENERS.length)return;
+  [["rec","keyRecoveryRequests"],["buy","purchaseRequests"]].forEach(([k,path])=>{
+    const r=ref(db,path),cb=snap=>{
+      const before=pendingOf(REQ[k]);
+      REQ[k]=snap.val()||{};
+      const after=pendingOf(REQ[k]);
+      if(!REQ_FIRST[k]&&after>before)toast(k==="rec"?"🔑 Nueva solicitud de recuperación de llave.":"🛒 Nueva solicitud de compra.");
+      REQ_FIRST[k]=false;
+      updateRequestBadges();renderRequests();
+    };
+    r.on("value",cb,e=>console.warn("Solicitudes ("+path+"):",e.code||e.message));
+    REQ_LISTENERS.push([r,cb]);
+  });
+}
+function stopRequestListeners(){REQ_LISTENERS.forEach(([r,cb])=>{try{r.off("value",cb)}catch(e){}});REQ_LISTENERS=[];REQ={rec:{},buy:{}};REQ_FIRST={rec:true,buy:true};document.title=BASE_TITLE}
+function updateRequestBadges(){
+  const a=pendingOf(REQ.rec),b=pendingOf(REQ.buy),t=a+b;
+  const bd=$("reqBadge");bd.textContent=t;bd.classList.toggle("show",t>0);
+  $("cntRec").textContent=a?"("+a+")":"";$("cntBuy").textContent=b?"("+b+")":"";
+  const bn=$("reqBanner");bn.classList.toggle("show",t>0);
+  $("reqBannerTxt").textContent=t?`Tienes ${t} solicitud${t>1?"es":""} pendiente${t>1?"s":""}: ${a} de recuperación de llave y ${b} de compra.`:"";
+  document.title=t?`(${t}) ${BASE_TITLE}`:BASE_TITLE;
+}
+window.reqTab=t=>{REQ_TAB=t;$("tabRec").classList.toggle("on",t==="rec");$("tabBuy").classList.toggle("on",t==="buy");$("reqRec").style.display=t==="rec"?"":"none";$("reqBuy").style.display=t==="buy"?"":"none"};
+const customerEntryByEmail=email=>{const e=String(email||"").trim().toLowerCase();const all=Object.entries(state.customers||{}).filter(([,c])=>String(c.email||"").trim().toLowerCase()===e);return all.find(([,c])=>c.source!=="solicitud-web")||all[0]||null};
+function reqSorted(o){return Object.entries(o||{}).sort((a,b)=>{const pa=a[1].status==="pending"?0:1,pb=b[1].status==="pending"?0:1;return pa-pb||(b[1].createdAt||0)-(a[1].createdAt||0)})}
+function reqStatusBadge(st){return st==="pending"?'<span class="badge pending">Pendiente</span>':st==="sent"?'<span class="badge active">Atendida</span>':'<span class="badge suspended">Descartada</span>'}
+function renderRequests(){
+  if(!$("reqRec"))return;
+  const rec=reqSorted(REQ.rec).slice(0,60);
+  $("reqRec").innerHTML=rec.length?`<div class="list">${rec.map(([id,r])=>{
+    const ce=customerEntryByEmail(r.email),cid=ce?.[0],c=ce?.[1];
+    const lics=cid?Object.entries(state.licenses).filter(([,l])=>l.customerId===cid).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0)):[];
+    const keys=lics.map(([lid,l])=>{const st=licenseStatus(l);return `<div class="req-key"><span><code>${esc(l.key)}</code> · ${esc(state.plans[l.planId]?.name||l.planNameSnapshot||"—")} · <span class="badge ${st[0]}">${st[1]}</span></span><span style="display:flex;gap:6px"><button class="btn alt small" onclick="copyText('${esc(l.key)}')">Copiar</button><button class="btn small" onclick="composeKeyMail('${id}','${lid}')">Redactar correo</button></span></div>`}).join("");
+    return `<div class="req ${r.status!=="pending"?"done":""}"><div class="req-top"><div><b>${esc(r.email)}</b><small>${esc(r.name||"Sin nombre")}${r.phone?" · "+esc(r.phone):""} · ${fmtDateTime(r.createdAt)}</small></div>${reqStatusBadge(r.status)}</div>
+      ${c?`<div class="muted" style="font-size:11px">Cliente: <b>${esc(c.name)}</b>${lics.length?"":" · sin licencias"}</div><div class="req-keys">${keys}</div>`:`<div class="req-warn">Este correo no coincide con ningún cliente registrado. Verifica antes de responder.</div>`}
+      ${r.status==="pending"?`<div class="actions" style="justify-content:flex-end"><button class="btn alt small" onclick="setRequestStatus('rec','${id}','sent')">Marcar como enviada</button><button class="btn ghost small" onclick="setRequestStatus('rec','${id}','dismissed')">Descartar</button></div>`:`<div class="actions" style="justify-content:flex-end"><button class="btn ghost small" onclick="deleteRequest('rec','${id}')">Eliminar registro</button></div>`}</div>`}).join("")}</div>`:'<div class="card empty">No hay solicitudes de recuperación.</div>';
+  const buy=reqSorted(REQ.buy).slice(0,60);
+  $("reqBuy").innerHTML=buy.length?`<div class="list">${buy.map(([id,r])=>{
+    const ce=(r.customerId&&state.customers[r.customerId]?[r.customerId,state.customers[r.customerId]]:null)||customerEntryByEmail(r.email);
+    const dup=ce&&r.customerId&&ce[0]!==r.customerId?"Ya existe un cliente con este correo; se usará ese.":"";
+    const tel=String(r.phone||"").replace(/\D/g,"");
+    return `<div class="req ${r.status!=="pending"?"done":""}"><div class="req-top"><div><b>${esc(r.name)}</b><small>${esc(r.email)}${r.phone?" · "+esc(r.phone):""} · ${fmtDateTime(r.createdAt)}</small></div>${reqStatusBadge(r.status)}</div>
+      <div style="font-size:11.5px">Plan: <b>${esc(r.planName||"—")}</b>${r.duration?" · Vigencia: "+esc(r.duration):""}</div>
+      <div class="muted" style="font-size:11px">${ce?"Cliente en la base de datos: <b>"+esc(ce[1].name)+"</b>":"El cliente aún no está en la base de datos."} ${esc(dup)}</div>
+      <div class="actions" style="justify-content:flex-end">${r.status==="pending"?`<button class="btn small" onclick="requestToLicense('${id}')">Crear licencia</button>`:""}${tel?`<button class="btn alt small" onclick="window.open('https://wa.me/${tel.length===10?"57"+tel:tel}','_blank','noopener')">WhatsApp</button>`:""}${r.status==="pending"?`<button class="btn alt small" onclick="setRequestStatus('buy','${id}','sent')">Marcar atendida</button><button class="btn ghost small" onclick="setRequestStatus('buy','${id}','dismissed')">Descartar</button>`:`<button class="btn ghost small" onclick="deleteRequest('buy','${id}')">Eliminar registro</button>`}</div></div>`}).join("")}</div>`:'<div class="card empty">No hay solicitudes de compra.</div>';
+}
+const reqPath=k=>k==="rec"?"keyRecoveryRequests":"purchaseRequests";
+window.setRequestStatus=async(k,id,status)=>{
+  try{await update(ref(db,reqPath(k)+"/"+id),{status,handledAt:now(),handledBy:currentUser?.uid||null});await logActivity(k==="rec"?"key_recovery_"+status:"purchase_request_"+status,null,(REQ[k][id]?.email||"")+"");toast(status==="sent"?"Marcada como atendida.":"Solicitud descartada.")}
+  catch(e){toast("No se pudo actualizar: "+(e.code||e.message))}
+};
+window.deleteRequest=async(k,id)=>{if(!confirm("¿Eliminar este registro?"))return;try{await remove(ref(db,reqPath(k)+"/"+id));toast("Registro eliminado.")}catch(e){toast("No se pudo eliminar: "+(e.code||e.message))}};
+window.composeKeyMail=(rid,lid)=>{
+  const r=REQ.rec[rid],l=state.licenses[lid];if(!r||!l)return;
+  const c=state.customers[l.customerId],to=(c?.email||r.email||"").trim();
+  const subject="Tu llave de acceso a RAM360";
+  const body=`Hola${c?.name?" "+c.name:""},\n\nRecibimos tu solicitud para recuperar la llave de RAM360. Tu código de licencia es:\n\n${l.key}\n\nPara ingresar usa este código junto con este mismo correo (${to}).\n\nSi tú no hiciste esta solicitud, avísanos respondiendo este mensaje.\n\nEquipo RAM360`;
+  window.location.href="mailto:"+encodeURIComponent(to)+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
+};
+window.requestToLicense=async id=>{
+  const r=REQ.buy[id];if(!r)return;
+  let ce=(r.customerId&&state.customers[r.customerId]?[r.customerId]:null)||customerEntryByEmail(r.email),cid=ce?.[0];
+  if(!cid){
+    cid=r.customerId||randomId();
+    const x={name:r.name,email:String(r.email||"").toLowerCase(),phone:r.phone||"",status:"active",source:"solicitud-web",createdAt:now(),updatedAt:now()};
+    try{await set(ref(db,"customers/"+cid),x);state.customers[cid]=x;renderCustomers();renderDashboard()}catch(e){toast("No se pudo crear el cliente: "+(e.code||e.message));return}
+  }
+  openLicenseModal();
+  $("licCustomer").value=cid;
+  const pid=r.planId&&state.plans[r.planId]?r.planId:Object.keys(state.plans).find(k=>state.plans[k].name===r.planName);
+  if(pid){$("licPlan").value=pid;applyPlanToLicenseForm()}
+  $("licNote").value="Solicitud web · "+(r.planName||"")+(r.duration?" · "+r.duration:"");
+  $("previewKey").textContent=key();
+};
 
 const savedTheme=localStorage.getItem("ram360_admin_theme");if(savedTheme)document.documentElement.setAttribute("data-theme",savedTheme);
 $("licDuration").addEventListener("change",()=>$("previewKey").textContent=key());

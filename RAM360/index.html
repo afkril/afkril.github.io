@@ -487,6 +487,28 @@ body.simMode #nav button.on{background:#FFD1F0;color:#8a1c6a;box-shadow:inset 0 
 /* Modales de compra / prueba por encima del acceso */
 #purchaseModal,#trialModal{position:fixed;inset:0;z-index:100000;background:rgba(10,30,32,.42);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}
 #purchaseModal.hide,#trialModal.hide{display:none}
+<style>
+/* ===== Acceso: tarjeta arriba, planes compactos abajo ===== */
+@media(min-width:1000px){.rg-wrap{max-width:980px;grid-template-columns:1fr}.rg-wrap .rg-card{position:static;max-width:460px;margin:0 auto}.rg-plans-link{display:block}}
+.gp{padding:14px 16px;border-radius:20px}
+.gp-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}.gp-head h2{font-size:16px;margin:0 0 2px}.gp-head p{font-size:11px;margin:0 0 8px}
+.gp-filter{margin-bottom:8px;gap:5px}.gp-filter button{padding:4px 10px;font-size:10.5px}
+.gp-grid{grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px}
+.gp-card{padding:10px 12px;border-radius:14px}
+.gp-top h3{font-size:13px}.gp-dur{font-size:9.5px;padding:2px 8px}
+.gp-price{font-size:18px;margin:6px 0 0}.gp-price small{font-size:10px}
+.gp-trial{font-size:9.5px;margin:1px 0 0}
+.gp-brief{font-size:10.5px;color:#718487;margin:4px 0 6px;line-height:1.35}
+.gp-more{margin:0 0 8px;flex:1}.gp-more summary{cursor:pointer;font-size:10.5px;font-weight:700;color:#0f8f80;list-style:none}.gp-more summary::-webkit-details-marker{display:none}.gp-more summary:before{content:'+ '}.gp-more[open] summary:before{content:'\2212 '}
+.gp-more ul{margin:6px 0 0;gap:3px}.gp-more li{font-size:10.5px}
+.gp-buy{padding:7px;font-size:11.5px;border-radius:10px}
+details.gp-how{margin-top:10px;padding:8px 12px;border-radius:14px}details.gp-how summary{cursor:pointer;font-size:12px;font-weight:800}details.gp-how ol{margin-top:8px;font-size:11.5px}
+.gp-actions{margin-top:8px}.gp-actions .rg-btn{padding:9px 12px;font-size:12px}
+.rg-recover{display:block;width:100%;margin-top:10px;border:0;background:transparent;color:#0f8f80;font-weight:700;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+#recoverModal{position:fixed;inset:0;z-index:100000;background:rgba(10,30,32,.42);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto}#recoverModal.hide{display:none}
+#recoverMsg{display:none;margin-top:10px;padding:10px 12px;border-radius:10px;font-size:11.5px;line-height:1.45}#recoverMsg.show{display:block}#recoverMsg.ok{background:#ebfaf2;color:#157548}#recoverMsg.err{background:#fff0f1;color:#b23c48}
+.menu-out{color:#b23c48!important;font-weight:700}
+@media(prefers-color-scheme:dark){.gp-brief{color:#91abad}.gp-more summary,.rg-recover{color:#63cbbe}}
 </style>
 </head>
 <body><div id="ram360Gate">
@@ -498,6 +520,7 @@ body.simMode #nav button.on{background:#FFD1F0;color:#8a1c6a;box-shadow:inset 0 
       <div class="rg-field"><label>Correo registrado</label><input id="rgEmail" type="email" placeholder="correo@empresa.com" autocomplete="email"></div>
       <label class="rg-remember"><input id="rgRemember" type="checkbox" checked> <span>Recordar licencia en este dispositivo</span></label>
       <button class="rg-btn" onclick="rgActivate()">Ingresar a RAM360</button>
+      <button type="button" class="rg-recover" onclick="openRecoverModal()">¿Olvidaste tu llave? Recuperar llave</button>
       <div id="rgActMsg" class="rg-msg"></div>
       <div id="rgDevice" class="rg-device"></div>
       <a class="rg-plans-link" href="#gatePlans" onclick="document.getElementById('gatePlans').scrollIntoView({behavior:'smooth'});return false">¿Aún no tienes licencia? Ver planes y cómo contactarnos ↓</a>
@@ -509,8 +532,7 @@ body.simMode #nav button.on{background:#FFD1F0;color:#8a1c6a;box-shadow:inset 0 
     <div class="gp-head"><h2>Planes RAM360</h2><p>Elige el plan y la vigencia que necesitas. Los precios se actualizan automáticamente.</p></div>
     <div id="gpFilter" class="gp-filter"></div>
     <div id="gpGrid" class="gp-grid"><div class="gp-empty">Cargando planes…</div></div>
-    <div class="gp-how">
-      <h3>¿Cómo adquirir tu licencia?</h3>
+    <details class="gp-how"><summary>¿Cómo adquirir tu licencia?</summary>
       <ol>
         <li><b>Elige</b> el plan y la vigencia que necesitas.</li>
         <li><b>Escríbenos por WhatsApp</b> al <span class="gp-phone" id="gpPhone"></span> (con el botón «Solicitar este plan» o el de abajo).</li>
@@ -524,9 +546,8 @@ body.simMode #nav button.on{background:#FFD1F0;color:#8a1c6a;box-shadow:inset 0 
         </li>
         <li><b>Realiza el pago</b> con los datos que te enviaremos. Validamos el pago manualmente.</li>
         <li><b>Recibe tu código</b> de licencia (formato RAM360-000-000-000-000) e ingresa con el código y tu correo.</li>
-      </ol>
+      </ol></details>
       <div class="gp-actions"><button class="rg-btn" type="button" onclick="contactWhatsApp()">Escribir por WhatsApp</button><button class="rg-btn secondary" type="button" onclick="requestEnterprise()">Solicitar Enterprise+</button></div>
-    </div>
   </section>
   </div>
 </div><a class="skip" href="#main">Saltar al contenido</a><div id="live" class="sr" aria-live="polite"></div>
@@ -580,7 +601,7 @@ body.simMode #nav button.on{background:#FFD1F0;color:#8a1c6a;box-shadow:inset 0 
 <button id="fab" onclick="fabGo()" title="Tutorial">?</button>
 <div id="tut" class="hide"></div>
 <div id="pop" class="hide"></div>
-<div id="menu" class="hide" role="menu" aria-label="Ajustes y ayuda"><div class="mh">Licencia</div><button type="button" role="menuitem" onclick="menuT();openLicenseInfo()">Ver licencia</button><button type="button" role="menuitem" onclick="menuT();openPlanStore()">Planes y beneficios</button><div class="mh">Apariencia</div><button type="button" role="menuitem" onclick="theme();menuT()">Cambiar tema claro / oscuro</button><div class="mr"><span>Tamaño del texto</span><span><button type="button" onclick="Zm(-.1)" aria-label="Reducir tamaño de texto">A−</button><button type="button" onclick="Zm(.1)" aria-label="Aumentar tamaño de texto">A+</button></span></div><div class="mh">Ayuda</div><button type="button" role="menuitem" onclick="menuT();tut(0)">Ver tutorial</button><button type="button" role="menuitem" onclick="menuT();demo()">Cargar datos de ejemplo</button></div>
+<div id="menu" class="hide" role="menu" aria-label="Ajustes y ayuda"><div class="mh">Licencia</div><button type="button" role="menuitem" onclick="menuT();openLicenseInfo()">Ver licencia</button><button type="button" role="menuitem" onclick="menuT();openPlanStore()">Planes y beneficios</button><div class="mh">Apariencia</div><button type="button" role="menuitem" onclick="theme();menuT()">Cambiar tema claro / oscuro</button><div class="mr"><span>Tamaño del texto</span><span><button type="button" onclick="Zm(-.1)" aria-label="Reducir tamaño de texto">A−</button><button type="button" onclick="Zm(.1)" aria-label="Aumentar tamaño de texto">A+</button></span></div><div class="mh">Ayuda</div><button type="button" role="menuitem" onclick="menuT();tut(0)">Ver tutorial</button><button type="button" role="menuitem" onclick="menuT();demo()">Cargar datos de ejemplo</button><div class="mh">Sesión</div><button type="button" role="menuitem" class="menu-out" onclick="menuT();rgLogoutConfirm()">Cerrar sesión</button></div>
 <div id="planStore" class="hide" role="dialog" aria-modal="true" aria-label="Planes y beneficios RAM360">
   <div class="ps-box">
     <div class="ps-head"><div><h2>Planes y beneficios RAM360</h2><p>Desbloquea más capacidad, análisis y herramientas para trabajar con tus reportes.</p></div><button class="ps-close" onclick="closePlanStore()" aria-label="Cerrar">×</button></div>
@@ -590,6 +611,7 @@ body.simMode #nav button.on{background:#FFD1F0;color:#8a1c6a;box-shadow:inset 0 
   </div>
 </div>
 <div id="purchaseModal" class="hide" role="dialog" aria-modal="true" aria-labelledby="purchaseTitle"><div class="buy-box"><h3 id="purchaseTitle">Solicitar plan RAM360</h3><p>Envíanos estos datos por WhatsApp. Con ellos registraremos el cliente y prepararemos la licencia después de validar manualmente el pago.</p><div id="purchasePlanTag" class="buy-selected">Plan seleccionado</div><div class="buy-field"><label>Nombre del cliente / organización</label><input id="purchaseName" autocomplete="name" placeholder="Ej. Asociación Renacer Integralidad"></div><div class="buy-field"><label>Correo</label><input id="purchaseEmail" type="email" autocomplete="email" placeholder="correo@empresa.com"></div><div class="buy-field"><label>Teléfono de contacto (opcional)</label><input id="purchasePhone" type="tel" autocomplete="tel" placeholder="+57 300 000 0000"></div><div class="buy-actions"><button class="btn alt" onclick="closePurchaseModal()">Cancelar</button><button class="btn" onclick="sendPurchaseWhatsApp()">Solicitar por WhatsApp</button></div></div></div>
+<div id="recoverModal" class="hide" role="dialog" aria-modal="true" aria-labelledby="recoverTitle"><div class="buy-box"><h3 id="recoverTitle">Recuperar llave</h3><p>Escribe el correo registrado en tu licencia. El administrador recibirá la solicitud y te enviará la llave manualmente a ese correo.</p><div class="buy-field"><label>Correo registrado</label><input id="recoverEmail" type="email" autocomplete="email" placeholder="correo@empresa.com"></div><div class="buy-field"><label>Nombre / organización (opcional)</label><input id="recoverName" autocomplete="name" placeholder="Ayuda a identificarte"></div><div class="buy-field"><label>Teléfono (opcional)</label><input id="recoverPhone" type="tel" autocomplete="tel" placeholder="+57 300 000 0000"></div><div id="recoverMsg"></div><div class="buy-actions"><button class="btn alt" type="button" onclick="closeRecoverModal()">Cancelar</button><button class="btn" id="recoverBtn" type="button" onclick="sendKeyRecovery()">Enviar solicitud</button></div></div></div>
 <div id="trialModal" class="hide" role="dialog" aria-modal="true" aria-labelledby="trialTitle"><div class="buy-box"><h3 id="trialTitle">Prueba gratuita</h3><p>Selecciona el plan de prueba disponible. La prueba dura 1 día y no requiere serial.</p><div id="trialModalGrid" class="rg-trial-grid"></div><div class="buy-actions"><button class="btn alt" onclick="closeTrialModal()">Cancelar</button></div></div></div>
 <div id="licenseModal" class="hide" role="dialog" aria-modal="true" aria-labelledby="licenseTitle">
   <div class="lc-box">
@@ -1759,7 +1781,9 @@ async function openPlanStore(){
 function closePlanStore(){rg('planStore')?.classList.add('hide')}
 let PURCHASE_PLAN_NAME='';
 let PURCHASE_PLAN_DURATION='';
-async function requestPlan(name){PURCHASE_PLAN_NAME=String(name||'');const plans=await planCatalog();const plan=plans.find(p=>p.id===PURCHASE_PLAN_NAME)||plans.find(p=>planKey(p.name)===planKey(PURCHASE_PLAN_NAME));if(plan)PURCHASE_PLAN_NAME=plan.name;PURCHASE_PLAN_DURATION=plan?planDurationLabel(plan):'';rg('purchasePlanTag').textContent='Plan seleccionado: '+PURCHASE_PLAN_NAME+(PURCHASE_PLAN_DURATION?' · Vigencia: '+PURCHASE_PLAN_DURATION:'');closePlanStore();rg('purchaseName').value=CURRENT_CUSTOMER?.name||'';rg('purchaseEmail').value=CURRENT_CUSTOMER?.email||getSavedLicense()?.email||'';rg('purchaseModal').classList.remove('hide')}
+let PURCHASE_PLAN_ID='';
+let REQ_FLOW=false;
+async function requestPlan(name){PURCHASE_PLAN_NAME=String(name||'');const plans=await planCatalog();const plan=plans.find(p=>p.id===PURCHASE_PLAN_NAME)||plans.find(p=>planKey(p.name)===planKey(PURCHASE_PLAN_NAME));PURCHASE_PLAN_ID=plan?.id||'';if(plan)PURCHASE_PLAN_NAME=plan.name;PURCHASE_PLAN_DURATION=plan?planDurationLabel(plan):'';rg('purchasePlanTag').textContent='Plan seleccionado: '+PURCHASE_PLAN_NAME+(PURCHASE_PLAN_DURATION?' · Vigencia: '+PURCHASE_PLAN_DURATION:'');closePlanStore();rg('purchaseName').value=CURRENT_CUSTOMER?.name||'';rg('purchaseEmail').value=CURRENT_CUSTOMER?.email||getSavedLicense()?.email||'';rg('purchaseModal').classList.remove('hide')}
 /* ===== Planes visibles en la pantalla de acceso ===== */
 let GP_PLANS=[],GP_FILTER='all';
 function planFeatureList(p){
@@ -1777,7 +1801,7 @@ function drawGatePlans(){
   const list=GP_PLANS.filter(p=>GP_FILTER==='all'||planDurationLabel(p)===GP_FILTER);
   grid.innerHTML=list.length?list.map(p=>{
     const pop=planKey(p.name)==='profesional';
-    return `<article class="gp-card${pop?' pop':''}"><div class="gp-top"><h3>${esc(p.name)}</h3><span class="gp-dur">${esc(planDurationLabel(p))}</span></div><div class="gp-price">${p.price?money(p.price):'Gratis'}<small>${p.price?' / '+esc(planPricePeriodLabel(p)):''}</small></div>${p.description?`<p class="gp-desc">${esc(p.description)}</p>`:''}${p.trialEnabled?'<div class="gp-trial">Incluye prueba gratis de 1 día</div>':''}<ul>${planFeatureList(p).map(f=>`<li>${esc(f)}</li>`).join('')}</ul><button type="button" class="gp-buy" onclick="requestPlan('${esc(p.id||p.name)}')">Solicitar este plan</button></article>`;
+    const feats=planFeatureList(p);return `<article class="gp-card${pop?' pop':''}"><div class="gp-top"><h3>${esc(p.name)}</h3><span class="gp-dur">${esc(planDurationLabel(p))}</span></div><div class="gp-price">${p.price?money(p.price):'Gratis'}<small>${p.price?' / '+esc(planPricePeriodLabel(p)):''}</small></div>${p.trialEnabled?'<div class="gp-trial">Incluye prueba gratis de 1 día</div>':''}<p class="gp-brief">${esc(feats.slice(0,3).join(' · '))}</p><details class="gp-more"><summary>Qué incluye</summary><ul>${feats.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></details><button type="button" class="gp-buy" onclick="requestPlan('${esc(p.id||p.name)}')">Solicitar este plan</button></article>`;
   }).join(''):'<div class="gp-empty">No hay planes disponibles en este momento. Escríbenos por WhatsApp y te ayudamos.</div>';
 }
 async function renderGatePlans(){
@@ -1790,7 +1814,49 @@ async function renderGatePlans(){
 function contactWhatsApp(){const url='https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent('Hola, quiero información sobre los planes de RAM360.');window.open(url,'_blank','noopener')||window.location.assign(url)}
 window.contactWhatsApp=contactWhatsApp;
 function closePurchaseModal(){rg('purchaseModal')?.classList.add('hide')}
-function sendPurchaseWhatsApp(){const name=rg('purchaseName').value.trim(),email=rg('purchaseEmail').value.trim().toLowerCase(),phone=(rg('purchasePhone')?.value||'').trim();if(!name)return alert('Ingresa el nombre del cliente u organización.');if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return alert('Ingresa un correo válido.');const text=`Hola, quiero adquirir el plan ${PURCHASE_PLAN_NAME} de RAM360.\nVigencia del plan: ${PURCHASE_PLAN_DURATION||'Según configuración vigente'}\n\nNombre del cliente: ${name}\nCorreo: ${email}${phone?'\nTeléfono: '+phone:''}\n\nQuedo atento(a) para recibir los datos de pago y la activación de la licencia.`;const url='https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(text);closePurchaseModal();setTimeout(()=>{window.location.assign(url)},50)}
+async function withAnon(fn){
+  REQ_FLOW=true;let signedHere=false;
+  try{
+    if(!ram360Auth.currentUser){await signInAnonymously(ram360Auth);signedHere=true}
+    return await fn();
+  }finally{
+    if(signedHere){try{await signOut(ram360Auth)}catch(e){}}
+    REQ_FLOW=false;
+  }
+}
+const newReqId=()=>crypto.randomUUID?crypto.randomUUID():'r_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+function throttleReq(k,ms){try{const t=Number(localStorage.getItem(k)||0);if(Date.now()-t<ms)return false;localStorage.setItem(k,String(Date.now()))}catch(e){}return true}
+async function registerPurchaseRequest(d){
+  const now=Date.now(),cid='web_'+(await sha256Hex(d.email)).slice(0,24);
+  let customerOk=false;
+  await withAnon(async()=>{
+    try{
+      await runTransaction(ref(ram360Db,'customers/'+cid),cur=>cur?{...cur,lastRequestAt:now,lastRequestPlan:d.planName}:{name:d.name,email:d.email,phone:d.phone||'',status:'pending',source:'solicitud-web',createdAt:now,updatedAt:now,lastRequestAt:now,lastRequestPlan:d.planName});
+      customerOk=true;
+    }catch(e){console.warn('No se pudo crear el cliente automáticamente',e)}
+    await set(ref(ram360Db,'purchaseRequests/'+newReqId()),{name:d.name,email:d.email,phone:d.phone||'',planId:d.planId||'',planName:d.planName,duration:d.duration||'',customerId:cid,customerCreated:customerOk,status:'pending',createdAt:now,deviceId:getDeviceId()});
+  });
+}
+async function sendPurchaseWhatsApp(){const name=rg('purchaseName').value.trim(),email=rg('purchaseEmail').value.trim().toLowerCase(),phone=(rg('purchasePhone')?.value||'').trim();if(!name)return alert('Ingresa el nombre del cliente u organización.');if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return alert('Ingresa un correo válido.');
+  const btn=document.querySelector('#purchaseModal .buy-actions .btn:not(.alt)');if(btn){btn.disabled=true;btn.textContent='Registrando…'}
+  try{await registerPurchaseRequest({name,email,phone,planId:PURCHASE_PLAN_ID,planName:PURCHASE_PLAN_NAME,duration:PURCHASE_PLAN_DURATION})}catch(e){console.warn('No se pudo registrar la solicitud',e)}
+  if(btn){btn.disabled=false;btn.textContent='Solicitar por WhatsApp'}
+  const text=`Hola, quiero adquirir el plan ${PURCHASE_PLAN_NAME} de RAM360.\nVigencia del plan: ${PURCHASE_PLAN_DURATION||'Según configuración vigente'}\n\nNombre del cliente: ${name}\nCorreo: ${email}${phone?'\nTeléfono: '+phone:''}\n\nQuedo atento(a) para recibir los datos de pago y la activación de la licencia.`;const url='https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(text);closePurchaseModal();setTimeout(()=>{window.location.assign(url)},50)}
+/* ===== Recuperar llave ===== */
+function openRecoverModal(){const m=rg('recoverMsg');m.className='';m.textContent='';rg('recoverEmail').value=rg('rgEmail')?.value||'';rg('recoverBtn').disabled=false;rg('recoverModal').classList.remove('hide');setTimeout(()=>rg('recoverEmail').focus(),50)}
+function closeRecoverModal(){rg('recoverModal')?.classList.add('hide')}
+async function sendKeyRecovery(){
+  const email=rg('recoverEmail').value.trim().toLowerCase(),name=rg('recoverName').value.trim(),phone=rg('recoverPhone').value.trim(),m=rg('recoverMsg'),b=rg('recoverBtn');
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){m.className='show err';m.textContent='Ingresa un correo válido.';return}
+  if(!throttleReq('ram360_recover_ts',60000)){m.className='show err';m.textContent='Ya enviaste una solicitud hace un momento. Espera un minuto antes de intentarlo de nuevo.';return}
+  b.disabled=true;b.textContent='Enviando…';
+  try{
+    await withAnon(()=>set(ref(ram360Db,'keyRecoveryRequests/'+newReqId()),{email,name,phone,status:'pending',createdAt:Date.now(),deviceId:getDeviceId()}));
+    m.className='show ok';m.textContent='Solicitud enviada. Si el correo está registrado, el administrador te enviará la llave a ese correo.';
+    b.textContent='Enviada';
+  }catch(e){console.error(e);try{localStorage.removeItem('ram360_recover_ts')}catch(_){}m.className='show err';m.textContent='No fue posible enviar la solicitud ('+(e.code||e.message)+'). Inténtalo de nuevo o escríbenos por WhatsApp.';b.disabled=false;b.textContent='Enviar solicitud'}
+}
+window.openRecoverModal=openRecoverModal;window.closeRecoverModal=closeRecoverModal;window.sendKeyRecovery=sendKeyRecovery;
 function requestEnterprise(){requestPlan('Enterprise+')}
 window.openPlanStore=openPlanStore;window.closePlanStore=closePlanStore;window.requestPlan=requestPlan;window.requestEnterprise=requestEnterprise;window.closePurchaseModal=closePurchaseModal;window.sendPurchaseWhatsApp=sendPurchaseWhatsApp;
 function withWorkspace(w,fn){const prev=S;try{S=w;return fn()}finally{S=prev}}
@@ -1938,6 +2004,11 @@ window.rgLogout=async()=>{
   try{await signOut(ram360Auth);}catch(e){}
   rg("ram360Gate").classList.remove("hide");rg("rgKey").value="";rg("rgEmail").value="";if(rg("rgRemember"))rg("rgRemember").checked=true;clearMsg();
 };
+window.rgLogoutConfirm=async()=>{
+  if(!confirm('¿Cerrar sesión en RAM360?\n\nSe cerrará el acceso en este dispositivo y se borrará lo cargado en pantalla. Para volver a entrar necesitarás tu código de licencia y tu correo.'))return;
+  await window.rgLogout();
+  setTimeout(()=>location.reload(),150);
+};
 async function autoRememberedAccess(){
   if(ACCESS_FLOW)return false;
   ACCESS_FLOW=true;
@@ -1967,7 +2038,7 @@ async function autoRememberedAccess(){
   return false;
 }
 onAuthStateChanged(ram360Auth,async user=>{
-  if(ACCESS_FLOW)return;
+  if(ACCESS_FLOW||REQ_FLOW)return;
   if(user && user.isAnonymous){
     const saved=getSavedLicense();
     if(saved){
