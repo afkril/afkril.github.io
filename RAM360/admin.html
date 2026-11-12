@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RAM360 · Administración de licencias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f8f7;--card:rgba(255,255,255,.86);--solid:#fff;--ink:#183a3f;--mut:#718487;
+  --line:#dfeae8;--g:#0f9f8f;--g2:#63cbbE;--g3:#e3f6f3;--blue:#3b82c4;
+  --red:#dc4f5b;--redbg:#fde9eb;--amber:#c68a18;--amberbg:#fff5d9;
+  --green:#16834e;--greenbg:#e3f7ed;--shadow:0 12px 35px rgba(30,90,85,.10);
+  --r:18px;--sidebar:238px;
+}
+[data-theme="dark"]{
+  --bg:#09191c;--card:rgba(18,42,47,.88);--solid:#122a2f;--ink:#e6f2f0;--mut:#91abad;
+  --line:#244247;--g:#2cc4b2;--g2:#63cbbe;--g3:#143a3b;--blue:#6db3e4;
+  --red:#ff7c87;--redbg:#4a2026;--amber:#e7b74e;--amberbg:#443716;
+  --green:#56d493;--greenbg:#123d2b;--shadow:0 12px 35px rgba(0,0,0,.30);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar);position:fixed;inset:0 auto 0 0;padding:18px 12px;background:var(--solid);border-right:1px solid var(--line);z-index:20}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 8px 20px}
+.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,var(--g),var(--g2));display:grid;place-items:center;color:#fff;box-shadow:0 8px 20px rgba(15,159,143,.25)}
+.brand b{display:block;font-size:18px}.brand small{display:block;color:var(--mut);font-size:10px;margin-top:2px}
+.nav{display:grid;gap:4px}
+.nav button{border:0;background:transparent;color:var(--mut);padding:11px 12px;border-radius:12px;text-align:left;display:flex;align-items:center;gap:11px;font-weight:600}
+.nav button:hover,.nav button.active{background:var(--g3);color:var(--g)}
+.nav svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+.side-bottom{position:absolute;left:12px;right:12px;bottom:16px;display:grid;gap:7px}
+.user-mini{padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--bg);font-size:11px;overflow:hidden}
+.user-mini b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.main{margin-left:var(--sidebar);width:calc(100% - var(--sidebar));padding:24px 30px 42px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}
+.top h1{font-size:23px;margin:0 0 4px;letter-spacing:-.03em}
+.top p{margin:0;color:var(--mut);font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:12px;padding:10px 14px;background:var(--g);color:#fff;font-weight:700;box-shadow:0 5px 15px rgba(15,159,143,.18)}
+.btn:hover{filter:brightness(1.04);transform:translateY(-1px)}
+.btn.alt{background:var(--g3);color:var(--g);box-shadow:none}
+.btn.ghost{background:transparent;color:var(--mut);border:1px solid var(--line);box-shadow:none}
+.btn.danger{background:var(--red);color:#fff}
+.btn.small{padding:7px 10px;border-radius:9px;font-size:11px}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:17px}
+.kpi{min-height:112px;display:flex;flex-direction:column;justify-content:space-between}
+.kpi .label{font-size:11px;color:var(--mut);font-weight:600}
+.kpi .value{font-size:27px;font-weight:700;letter-spacing:-.03em}
+.kpi .hint{font-size:10px;color:var(--mut)}
+.kpi.feature{background:linear-gradient(145deg,var(--g),#159f91);color:#fff;border:0}
+.kpi.feature .label,.kpi.feature .hint{color:rgba(255,255,255,.82)}
+.two{grid-template-columns:1.25fr .75fr}
+.three{grid-template-columns:repeat(3,1fr)}
+.card h2{font-size:14px;margin:0 0 13px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.search{display:flex;gap:7px;flex-wrap:wrap}
+input,select{border:1px solid var(--line);background:var(--solid);color:var(--ink);border-radius:11px;padding:9px 11px;outline:none}
+input:focus,select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(15,159,143,.12)}
+.search input{min-width:220px}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:11.5px}
+th{text-align:left;color:var(--mut);font-size:10px;padding:9px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:700}
+.badge.active{background:var(--greenbg);color:var(--green)}
+.badge.expiring{background:var(--amberbg);color:var(--amber)}
+.badge.suspended,.badge.revoked{background:var(--redbg);color:var(--red)}
+.badge.pending{background:var(--g3);color:var(--g)}
+.muted{color:var(--mut)}
+.progress{height:7px;background:var(--bg);border-radius:99px;overflow:hidden}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--g2),var(--g));border-radius:99px}
+.list{display:grid;gap:8px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border-radius:12px;background:var(--bg)}
+.item .left{min-width:0}.item b{display:block;font-size:11px}.item small{display:block;color:var(--mut);font-size:10px;margin-top:2px}
+.section{display:none}.section.active{display:block}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:13px}
+.empty{padding:35px;text-align:center;color:var(--mut)}
+.modal{position:fixed;inset:0;background:rgba(5,22,24,.48);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:15px;z-index:100}
+.modal.open{display:flex}
+.modal-box{width:min(720px,100%);max-height:92vh;overflow:auto;background:var(--solid);border:1px solid var(--line);border-radius:20px;box-shadow:0 25px 70px rgba(0,0,0,.25);padding:20px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.modal-head h3{margin:0;font-size:16px}
+.close{width:31px;height:31px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.form{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+.field{display:grid;gap:5px}.field.full{grid-column:1/-1}
+.field label{font-size:10px;color:var(--mut);font-weight:700}
+.form input,.form select{width:100%}
+.keybox{padding:16px;border-radius:14px;background:var(--bg);border:1px dashed var(--g);text-align:center;margin:12px 0}
+.keybox code{font-size:18px;font-weight:700;letter-spacing:.08em;word-break:break-all}
+.notice{padding:11px 13px;border-radius:12px;background:var(--amberbg);color:var(--amber);font-size:11px;line-height:1.45;margin-bottom:12px}
+.login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 20% 20%,rgba(99,203,190,.16),transparent 35%),var(--bg);z-index:500}
+.login.hide{display:none}
+.login-card{width:min(410px,92vw);background:var(--card);border:1px solid var(--line);border-radius:24px;padding:27px;box-shadow:var(--shadow)}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.login-brand .logo{width:48px;height:48px}
+.login-card h1{font-size:20px;margin:0}.login-card p{font-size:11px;color:var(--mut);margin:4px 0 18px}
+.login-form{display:grid;gap:10px}
+.login-form label{font-size:10px;color:var(--mut);font-weight:700}
+.login-form input{width:100%}
+.login-error{display:none;padding:9px;border-radius:10px;background:var(--redbg);color:var(--red);font-size:11px}
+.login-error.show{display:block}
+.footer-note{margin-top:12px;text-align:center;color:var(--mut);font-size:9px;line-height:1.5}
+.toast{position:fixed;right:18px;bottom:18px;z-index:300;background:var(--solid);border:1px solid var(--line);box-shadow:var(--shadow);padding:11px 14px;border-radius:12px;font-size:11px;display:none}
+.toast.show{display:block}
+.mobile-menu{display:none}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
+@media(max-width:720px){
+  .sidebar{width:68px}.main{margin-left:68px;width:calc(100% - 68px);padding:18px 13px}
+  .brand div:not(.logo),.nav span,.user-mini{display:none}.nav button{justify-content:center;padding:11px}.side-bottom{left:8px;right:8px}
+  .top{align-items:flex-start}.top h1{font-size:19px}.form{grid-template-columns:1fr}.field.full{grid-column:auto}
+  .kpis{grid-template-columns:1fr 1fr}.search input{min-width:150px;width:100%}
+}
+@media(max-width:450px){.kpis{grid-template-columns:1fr}.top{display:block}.actions{margin-top:12px}}
+</style>
+<style>
+.plan-features{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.plan-features h4{margin:0 0 8px;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}.pf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px}.pf-grid label{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink)}.pf-grid input{accent-color:var(--g)}.plan-cap{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.plan-cap span{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 8px;font-size:10px;color:var(--mut)}
+.dur-chips{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 14px}.dur-chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 11px;font-size:11px;font-weight:600}.dur-chip.base{padding-right:11px}.dur-chip button{border:0;background:var(--redbg);color:var(--red);width:18px;height:18px;border-radius:50%;line-height:1;font-size:12px;padding:0}.dur-add{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}.dur-add .field{min-width:110px}.dur-add input,.dur-add select{width:130px}
+</style></head>
+<body>
+
+<div id="login" class="login">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="logo"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.5"/><path d="m7.5 12.5 3 3 6-7"/></svg></div>
+      <div><h1>RAM360 Admin</h1><p>Gestión de suscripciones y licencias</p></div>
+    </div>
+    <div class="notice">El acceso administrativo se valida con Firebase Authentication. La autorización real de administrador debe reforzarse con reglas de Firebase o una función backend.</div>
+    <form class="login-form" id="loginForm" autocomplete="on" onsubmit="event.preventDefault();login()">
+      <div><label>Correo administrativo</label><input id="loginEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="admin@tu-dominio.com"></div>
+      <div><label>Contraseña</label><div style="position:relative"><input id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••" style="padding-right:86px"><button type="button" id="togglePass" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:var(--mut);font-size:11px;font-weight:700;padding:8px;cursor:pointer">Mostrar</button></div></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mut);cursor:pointer;margin-top:4px"><input id="rememberAdminEmail" type="checkbox" style="accent-color:var(--g)"> Recordar correo en este dispositivo</label>
+      <div id="loginErr" class="login-error"></div>
+      <button class="btn" id="loginBtn" type="submit">Ingresar al administrador</button>
+    </form>
+    <div class="footer-note">Firebase se utiliza como autenticación y base de datos. No se almacena la contraseña en este HTML.</div>
+  </div>
+</div>
+
+<div id="app" class="app" style="display:none">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.5"/><path d="m7.5 12.5 3 3 6-7"/></svg></div>
+      <div><b>RAM360</b><small>Centro administrativo</small></div>
+    </div>
+    <nav class="nav">
+      <button class="active" data-section="dashboard" onclick="go('dashboard',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg><span>Resumen</span></button>
+      <button data-section="licenses" onclick="go('licenses',this)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 9h10M7 13h6"/></svg><span>Licencias</span></button>
+      <button data-section="customers" onclick="go('customers',this)"><svg viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M17 8h5M19.5 5.5v5"/></svg><span>Clientes</span></button>
+      <button data-section="plans" onclick="go('plans',this)"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg><span>Planes</span></button>
+      <button data-section="activity" onclick="go('activity',this)"><svg viewBox="0 0 24 24"><path d="M4 12h4l2-7 4 14 2-7h4"/><path d="M3 3v18h18"/></svg><span>Actividad</span></button>
+      <button data-section="settings" onclick="go('settings',this)"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg><span>Ajustes</span></button>
+    </nav>
+    <div class="side-bottom">
+      <div class="user-mini"><b id="adminEmail">—</b><span>Administrador</span></div>
+      <button class="btn ghost small" onclick="toggleTheme()">Tema</button>
+      <button class="btn ghost small" onclick="logout()">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section id="dashboard" class="section active">
+      <div class="top">
+        <div><h1>Resumen de licencias</h1><p>Control de suscripciones, accesos y dispositivos de RAM360.</p></div>
+        <div class="actions"><button class="btn" onclick="openLicenseModal()">+ Generar licencia</button><button class="btn alt" onclick="refreshAll()">Actualizar</button></div>
+      </div>
+      <div class="grid kpis">
+        <div class="card kpi feature"><span class="label">Licencias activas</span><span class="value" id="kActive">0</span><span class="hint">Con acceso permitido</span></div>
+        <div class="card kpi"><span class="label">Por vencer</span><span class="value" id="kExp">0</span><span class="hint">Próximos 15 días</span></div>
+        <div class="card kpi"><span class="label">Suspendidas</span><span class="value" id="kSusp">0</span><span class="hint">Acceso bloqueado</span></div>
+        <div class="card kpi"><span class="label">Clientes</span><span class="value" id="kClients">0</span><span class="hint">Registrados en RAM360</span></div>
+      </div>
+      <div class="grid two">
+        <div class="card">
+          <div class="card-head"><h2>Licencias recientes</h2><button class="btn alt small" onclick="go('licenses')">Ver todas</button></div>
+          <div id="recentLicenses"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Estado del sistema</h2></div>
+          <div class="list">
+            <div class="item"><div class="left"><b>Firebase</b><small>Autenticación y Realtime Database</small></div><span id="firebaseStatus" class="badge pending">Conectando</span></div>
+            <div class="item"><div class="left"><b>Modelo de licencia</b><small>Cuenta + sesión + dispositivo opcional</small></div><span class="badge active">Activo</span></div>
+            <div class="item"><div class="left"><b>IP</b><small>No se utiliza como identidad de licencia</small></div><span class="badge active">Correcto</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="licenses" class="section">
+      <div class="top"><div><h1>Licencias</h1><p>Genera, consulta, suspende o revoca claves.</p></div><button class="btn" onclick="openLicenseModal()">+ Nueva licencia</button></div>
+      <div class="card">
+        <div class="toolbar"><div class="search"><input id="licenseSearch" oninput="renderLicenses()" placeholder="Buscar clave, cliente o plan…"><select id="licenseFilter" onchange="renderLicenses()"><option value="">Todos</option><option value="active">Activas</option><option value="expiring">Por vencer</option><option value="suspended">Suspendidas</option><option value="revoked">Revocadas</option><option value="expired">Vencidas</option></select></div><button class="btn alt small" onclick="exportLicenses()">Exportar JSON</button></div>
+        <div style="overflow:auto"><table><thead><tr><th>Clave</th><th>Cliente</th><th>Plan</th><th>Estado</th><th>Vigencia</th><th>Dispositivos</th><th></th></tr></thead><tbody id="licenseRows"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="customers" class="section">
+      <div class="top"><div><h1>Clientes</h1><p>Organizaciones o personas a las que se asignan las licencias.</p></div><button class="btn" onclick="openCustomerModal()">+ Cliente</button></div>
+      <div class="card"><div class="toolbar"><input id="customerSearch" oninput="renderCustomers()" placeholder="Buscar cliente…"></div><div style="overflow:auto"><table><thead><tr><th>Cliente</th><th>Contacto</th><th>Licencias</th><th>Estado</th><th>Creado</th><th></th></tr></thead><tbody id="customerRows"></tbody></table></div></div>
+    </section>
+
+    <section id="plans" class="section">
+      <div class="top"><div><h1>Planes</h1><p>Define límites y características para cada suscripción.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn alt" onclick="seedRecommendedPlans()">Crear planes recomendados</button><button class="btn" onclick="openPlanModal()">+ Nuevo plan</button></div></div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><h2>Vigencias disponibles</h2><small class="muted">Se usan al crear planes y licencias</small></div>
+        <div id="durChips" class="dur-chips"></div>
+        <div class="dur-add">
+          <div class="field"><label>Cantidad</label><input id="durValue" type="number" min="1" max="999" value="2" oninput="previewDuration()"></div>
+          <div class="field"><label>Unidad</label><select id="durUnit" onchange="previewDuration()"><option value="days">Días</option><option value="months" selected>Meses</option><option value="years">Años</option></select></div>
+          <div class="field"><label>Vista previa</label><div id="durPreview" class="badge pending" style="padding:9px 14px;font-size:11px">2 meses</div></div>
+          <button class="btn" onclick="createDuration()">+ Crear vigencia</button>
+        </div>
+      </div>
+      <div id="planCards" class="grid three"></div>
+    </section>
+
+    <section id="activity" class="section">
+      <div class="top"><div><h1>Actividad</h1><p>Registro de activaciones, sesiones y cambios administrativos.</p></div></div>
+      <div class="card"><div class="toolbar"><button class="btn alt small" onclick="clearActivity()">Limpiar vista</button></div><div style="overflow:auto"><table><thead><tr><th>Fecha</th><th>Evento</th><th>Clave</th><th>Usuario</th><th>IP</th><th>Detalle</th></tr></thead><tbody id="activityRows"></tbody></table></div></div>
+    </section>
+
+    <section id="settings" class="section">
+      <div class="top"><div><h1>Ajustes</h1><p>Configuración local del administrador y conexión.</p></div></div>
+      <div class="grid two">
+        <div class="card"><h2>Conexión Firebase</h2><div class="list"><div class="item"><div class="left"><b>Proyecto</b><small>ram360-ee788</small></div><span class="badge active">Configurado</span></div><div class="item"><div class="left"><b>Base</b><small>Realtime Database</small></div><span class="badge active">Lista</span></div></div></div>
+        <div class="card"><h2>Parámetros de seguridad</h2><div class="form"><div class="field"><label>Límite predeterminado de dispositivos</label><input id="defaultDevices" type="number" min="1" value="2"></div><div class="field"><label>Vencimiento de advertencia (días)</label><input id="warnDays" type="number" min="1" value="15"></div></div><div style="margin-top:12px"><button class="btn" onclick="saveSettings()">Guardar ajustes</button></div></div>
+      </div>
+      <div class="card" style="margin-top:14px"><h2>Importante para producción</h2><p class="muted" style="font-size:11px;line-height:1.6">Este HTML nunca debe ser la única barrera de seguridad. Las reglas de Realtime Database deben impedir que un cliente normal lea o modifique licencias de otros clientes. Para validar claves de forma resistente a manipulación, usa una Cloud Function o un backend para la activación y renovación de sesiones.</p></div>
+    </section>
+  </main>
+</div>
+
+<div id="licenseModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Generar licencia</h3><button class="close" onclick="closeModal('licenseModal')">×</button></div>
+    <div class="form">
+      <div class="field"><label>Cliente</label><select id="licCustomer"></select></div>
+      <div class="field"><label>Plan</label><select id="licPlan" onchange="applyPlanToLicenseForm()"></select></div>
+      <div class="field"><label>Duración</label><select id="licDuration"></select></div>
+      <div class="field"><label>Dispositivos incluidos por el plan</label><input id="licDevices" type="number" min="1" value="2" readonly></div>
+      <div class="field"><label>Usuarios incluidos por el plan</label><input id="licUsers" type="number" min="1" value="3" readonly></div>
+      <div class="field"><label>Inicio</label><input id="licStart" type="date"></div>
+      <div class="field full"><label>Nota interna</label><input id="licNote" placeholder="Ej. Contrato 667 · operador X"></div>
+      <div class="field full"><div id="licPlanSummary" class="notice">Selecciona un plan para cargar automáticamente sus límites y funciones.</div></div>
+    </div>
+    <div class="keybox"><div class="muted" style="font-size:10px;margin-bottom:5px">La clave se genera localmente y se guarda en Firebase</div><code id="previewKey">RAM360-••••-••••-••••-••••</code></div>
+    <div class="actions" style="justify-content:flex-end"><button class="btn ghost" onclick="closeModal('licenseModal')">Cancelar</button><button class="btn" onclick="createLicense()">Generar y guardar</button></div>
+  </div>
+</div>
+
+<div id="customerModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="customerModalTitle">Nuevo cliente</h3><button class="close" onclick="closeModal('customerModal')">×</button></div>
+    <div class="form">
+      <div class="field full"><label>Nombre / organización</label><input id="cusName" placeholder="Ej. Asociación Renacer Integralidad"></div>
+      <div class="field"><label>Correo</label><input id="cusEmail" type="email" placeholder="contacto@dominio.com"></div>
+      <div class="field"><label>Teléfono</label><input id="cusPhone" placeholder="+57"></div>
+    </div>
+    <div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn ghost" onclick="closeModal('customerModal')">Cancelar</button><button class="btn" id="customerSaveBtn" onclick="saveCustomer()">Guardar cliente</button></div>
+  </div>
+</div>
+
+<div id="planModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Nuevo plan</h3><button class="close" onclick="closeModal('planModal')">×</button></div>
+    <div class="form">
+      <div class="field"><label>Nombre</label><input id="planName" placeholder="Profesional"></div>
+      <div class="field"><label>Precio del plan (COP)</label><input id="planPrice" type="number" min="0" placeholder="59000"></div>
+      <div class="field"><label>Vigencia del plan</label><select id="planDuration"></select></div>
+      <div class="field"><label>Usuarios incluidos</label><input id="planUsers" type="number" min="1" value="5"></div>
+      <div class="field"><label>Dispositivos incluidos</label><input id="planDevices" type="number" min="1" value="5"></div>
+      <div class="field"><label>Reportes activos simultáneos</label><input id="planReports" type="number" min="1" value="1"></div>
+      <div class="field full"><label>Descripción</label><input id="planDesc" placeholder="RAM360 completo para un operador"></div>
+      <div class="field"><label><input id="planTrial" type="checkbox" style="accent-color:var(--g);margin-right:6px"> Plan de prueba gratuita</label><small class="muted">Disponible desde el acceso del cliente sin código de licencia.</small></div><div class="field"><label>Días de prueba</label><input id="planTrialDays" type="number" min="1" max="1" value="1" readonly></div>
+      <div class="field full plan-features"><h4>Funciones incluidas</h4><div class="pf-grid">
+        <label><input id="pfMulti" type="checkbox"> Multicarga de reportes</label>
+        <label><input id="pfSim" type="checkbox"> Simuladores</label>
+        <label><input id="pfComp" type="checkbox"> Comparador de períodos</label>
+        <label><input id="pfVal" type="checkbox"> Validación avanzada</label>
+        <label><input id="pfAlerts" type="checkbox"> Alertas inteligentes</label>
+        <label><input id="pfSummary" type="checkbox"> Resumen ejecutivo</label>
+        <label><input id="pfExcel" type="checkbox"> Exportación Excel</label>
+        <label><input id="pfCustom" type="checkbox"> Reportes personalizados</label>
+        <label><input id="pfOps" type="checkbox"> Seguimiento de operadores</label>
+        <label><input id="pfHistory" type="checkbox"> Historial completo</label>
+      </div></div>
+    </div>
+    <div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn ghost" onclick="closeModal('planModal')">Cancelar</button><button class="btn" onclick="createPlan()">Guardar plan</button></div>
+  </div>
+</div>
+
+<div id="detailModal" class="modal"><div class="modal-box"><div class="modal-head"><h3 id="detailTitle">Detalle</h3><button class="close" onclick="closeModal('detailModal')">×</button></div><div id="detailBody"></div></div></div>
+<div id="toast" class="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-database-compat.js"></script>
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCf03-zNjZQLQNXjWF0ffPtzIkleTd3Qp0",
+  authDomain: "ram360-ee788.firebaseapp.com",
+  databaseURL: "https://ram360-ee788-default-rtdb.firebaseio.com",
+  projectId: "ram360-ee788",
+  storageBucket: "ram360-ee788.firebasestorage.app",
+  messagingSenderId: "1090455600774",
+  appId: "1:1090455600774:web:6477a7e843c69f72bc9b07",
+  measurementId: "G-F57YM8RHZB"
+};
+
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+// Adaptadores para mantener el código del administrador compatible con Firebase modular/compat.
+const signInWithEmailAndPassword = (a,email,password) => a.signInWithEmailAndPassword(email,password);
+const onAuthStateChanged = (a,callback) => a.onAuthStateChanged(callback);
+const signOut = (a) => a.signOut();
+const ref = (d,path) => d.ref(path);
+const get = (r) => r.once('value');
+const set = (r,value) => r.set(value);
+const push = (r) => r.push();
+const update = (r,value) => r.update(value);
+const remove = (r) => r.remove();
+const onValue = (r,callback) => r.on('value',callback);
+
+// Mantiene la sesión administrativa en el dispositivo cuando el navegador lo permite.
+try { auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{}); } catch(e) {}
+
+window.addEventListener('error', (e) => {
+  const box = document.getElementById('loginErr');
+  if (box && !box.classList.contains('show')) {
+    box.textContent = 'No fue posible cargar el administrador. Revisa la conexión a Internet y vuelve a abrir el archivo.';
+    box.classList.add('show');
+  }
+  console.error(e.error || e.message);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error(e.reason);
+});
+
+/*
+  RAM360 ADMIN
+  Estructura RTDB:
+  /admins/{uid}: true
+  /customers/{id}
+  /plans/{id}
+  /licenses/{id}
+  /activity/{id}
+  /settings
+  /devices/{licenseId}/{deviceId}
+  /sessions/{licenseId}/{sessionId}
+  /licenseUsage/{licenseId}/devices/{deviceId}
+  /licenseUsage/{licenseId}/users/{uid}
+
+  IMPORTANTE:
+  Este HTML es el panel cliente. La seguridad real debe estar en Firebase Rules
+  y, preferiblemente, en Cloud Functions para activar/revocar sesiones.
+*/
+
+let state = {customers:{},plans:{},licenses:{},activity:{},settings:{}};
+let currentUser = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+const now = () => Date.now();
+const fmtDate = ts => ts ? new Date(ts).toLocaleDateString("es-CO",{year:"numeric",month:"short",day:"numeric"}) : "—";
+const fmtDateTime = ts => ts ? new Date(ts).toLocaleString("es-CO",{dateStyle:"short",timeStyle:"short"}) : "—";
+const money = n => new Intl.NumberFormat("es-CO",{style:"currency",currency:"COP",maximumFractionDigits:0}).format(Number(n)||0);
+
+function toast(msg){
+  $("toast").textContent=msg;$("toast").classList.add("show");
+  clearTimeout(window.__toast);window.__toast=setTimeout(()=>$("toast").classList.remove("show"),2800);
+}
+function theme(){
+  const d=document.documentElement;
+  const next=d.getAttribute("data-theme")==="dark"?"light":"dark";
+  d.setAttribute("data-theme",next);localStorage.setItem("ram360_admin_theme",next);
+}
+window.toggleTheme=theme;
+
+function go(section,btn){
+  document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+  $(section).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+  if(section==="licenses")renderLicenses();
+  if(section==="customers")renderCustomers();
+  if(section==="plans")renderPlans();
+  if(section==="activity")renderActivity();
+}
+window.go=go;
+
+function openModal(id){$(id).classList.add("open")}
+function closeModal(id){$(id).classList.remove("open")}
+window.closeModal=closeModal;
+
+function setLoginError(msg){$("loginErr").textContent=msg;$("loginErr").classList.add("show");}
+function loadRememberedAdminEmail(){try{const e=localStorage.getItem("ram360_admin_email");if(e){$("loginEmail").value=e;$("rememberAdminEmail").checked=true;}}catch(e){}}
+$("togglePass")?.addEventListener("click",()=>{const i=$("loginPass"),b=$("togglePass");if(i.type==="password"){i.type="text";b.textContent="Ocultar"}else{i.type="password";b.textContent="Mostrar"}});
+window.login=async()=>{
+  const email=$("loginEmail").value.trim(),pass=$("loginPass").value;
+  $("loginErr").classList.remove("show");
+  if(!email)return setLoginError("Ingresa el correo administrativo.");
+  if(!pass)return setLoginError("Ingresa la contraseña.");
+  if($("rememberAdminEmail").checked){try{localStorage.setItem("ram360_admin_email",email)}catch(e){}}else{try{localStorage.removeItem("ram360_admin_email")}catch(e){}}
+  const b=$("loginBtn");if(b){b.disabled=true;b.textContent="Validando…"}
+  try{await signInWithEmailAndPassword(auth,email,pass)}
+  catch(e){
+    const map={"auth/invalid-credential":"El correo o la contraseña no son correctos.","auth/invalid-email":"El correo administrativo no tiene un formato válido.","auth/user-disabled":"Esta cuenta administrativa está deshabilitada.","auth/too-many-requests":"Demasiados intentos. Espera unos minutos y vuelve a intentarlo.","auth/network-request-failed":"No hay conexión estable con Firebase. Revisa Internet e inténtalo nuevamente."};
+    setLoginError(map[e.code]||("No fue posible ingresar: "+(e.code||e.message)));
+  }finally{if(b){b.disabled=false;b.textContent="Ingresar al administrador"}}
+};
+loadRememberedAdminEmail();
+window.logout=()=>signOut(auth);
+
+onAuthStateChanged(auth,async user=>{
+  currentUser=user;
+  if(!user){$("login").classList.remove("hide");$("app").style.display="none";return}
+  $("adminEmail").textContent=user.email||user.uid;
+  try{
+    const a=await get(ref(db,"admins/"+user.uid));
+    if(a.exists() && a.val()===true){
+      $("login").classList.add("hide");$("app").style.display="flex";
+      $("firebaseStatus").textContent="Conectado";$("firebaseStatus").className="badge active";
+      await refreshAll();
+    }else{
+      await signOut(auth);
+      $("loginErr").textContent="Esta cuenta está autenticada, pero no tiene permisos de administrador.";
+      $("loginErr").classList.add("show");
+    }
+  }catch(e){
+    $("firebaseStatus").textContent="Revisar reglas";
+    $("firebaseStatus").className="badge expiring";
+    $("login").classList.add("hide");$("app").style.display="flex";
+    toast("Firebase respondió, pero debes configurar las reglas de seguridad.");
+    await refreshAll();
+  }
+});
+
+async function refreshAll(){
+  try{
+    const [c,p,l,a,s]=await Promise.all([
+      get(ref(db,"customers")),get(ref(db,"plans")),get(ref(db,"licenses")),get(ref(db,"activity")),get(ref(db,"settings"))
+    ]);
+    state.customers=c.val()||{};state.plans=p.val()||{};state.licenses=l.val()||{};state.activity=a.val()||{};state.settings=s.val()||{};
+  }catch(e){
+    console.error(e);
+    state={customers:state.customers||{},plans:state.plans||{},licenses:state.licenses||{},activity:state.activity||{},settings:state.settings||{}};
+  }
+  renderDashboard();renderLicenses();renderCustomers();renderPlans();renderActivity();
+}
+window.refreshAll=refreshAll;
+
+/* ===== Vigencias (catálogo) =====
+   Predeterminadas + personalizadas en /settings/durations/{id} = {unit,value,label}
+   unit: days | months | years | none */
+const BUILTIN_DURATIONS=[{unit:"days",value:15},{unit:"months",value:1},{unit:"months",value:2},{unit:"months",value:3},{unit:"months",value:6},{unit:"years",value:1},{unit:"none",value:0}];
+const durKey=(u,v)=>u==="none"?"none:0":`${u}:${Number(v)}`;
+function parseDurKey(k){const [u,v]=String(k||"years:1").split(":");return{unit:u,value:Number(v)||0}}
+function durLabel(u,v){v=Number(v);if(u==="none"||!v)return "Sin vencimiento";const w={days:["día","días"],months:["mes","meses"],years:["año","años"]}[u]||["día","días"];return `${v} ${v===1?w[0]:w[1]}`}
+function durApproxDays(u,v){v=Number(v)||0;return u==="months"?v*30:u==="years"?v*365:u==="days"?v:0}
+function durFromDays(d){d=Number(d);if(!d)return{unit:"none",value:0};if(d===365)return{unit:"years",value:1};if(d===180)return{unit:"months",value:6};if(d===90)return{unit:"months",value:3};if(d===30)return{unit:"months",value:1};return{unit:"days",value:d}}
+function planDuration(p){if(p&&p.durationUnit&&(p.durationUnit==="none"||Number(p.durationValue)>0))return{unit:p.durationUnit,value:Number(p.durationValue)||0};return durFromDays(p?.durationDays??365)}
+function planDurLabel(p){const d=planDuration(p);return durLabel(d.unit,d.value)}
+function planPeriodLabel(p){const l=planDurLabel(p);return l==="1 mes"?"mes":l==="1 año"?"año":l==="Sin vencimiento"?"sin vencimiento":l}
+function addDurationTo(d,u,v){const e=new Date(d);v=Number(v)||0;if(u==="months")e.setMonth(e.getMonth()+v);else if(u==="years")e.setFullYear(e.getFullYear()+v);else if(u==="days")e.setDate(e.getDate()+v);return e}
+function customDurations(){return Object.entries(state.settings?.durations||{}).map(([id,x])=>({id,unit:x.unit,value:Number(x.value)})).filter(x=>["days","months","years"].includes(x.unit)&&x.value>0)}
+function allDurations(){
+  const seen=new Set(),out=[];
+  BUILTIN_DURATIONS.forEach(x=>{seen.add(durKey(x.unit,x.value));out.push({...x,base:true})});
+  customDurations().forEach(x=>{const k=durKey(x.unit,x.value);if(!seen.has(k)){seen.add(k);out.push({...x,base:false})}});
+  Object.values(state.plans||{}).forEach(p=>{const d=planDuration(p),k=durKey(d.unit,d.value);if(!seen.has(k)){seen.add(k);out.push({unit:d.unit,value:d.value,base:true,legacy:true})}});
+  return out.sort((a,b)=>a.unit==="none"?1:b.unit==="none"?-1:durApproxDays(a.unit,a.value)-durApproxDays(b.unit,b.value));
+}
+function fillDurationSelect(id,sel){
+  const s=$(id);if(!s)return;const cur=sel||s.value;
+  s.innerHTML=allDurations().map(d=>`<option value="${durKey(d.unit,d.value)}">${esc(durLabel(d.unit,d.value))}</option>`).join("");
+  s.value=[...s.options].some(o=>o.value===cur)?cur:"years:1";
+}
+function renderDurations(){
+  const el=$("durChips");if(!el)return;
+  const used={};Object.values(state.plans||{}).forEach(p=>{const d=planDuration(p),k=durKey(d.unit,d.value);used[k]=(used[k]||0)+1});
+  el.innerHTML=allDurations().map(d=>{
+    const n=used[durKey(d.unit,d.value)]||0;
+    const del=(!d.base&&d.id)?`<button type="button" title="Eliminar vigencia" onclick="deleteDuration('${d.id}')">×</button>`:"";
+    return `<span class="dur-chip ${del?"":"base"}">${esc(durLabel(d.unit,d.value))}${n?` <span class="muted" style="font-weight:500">· ${n} plan${n>1?"es":""}</span>`:""}${del}</span>`;
+  }).join("");
+  previewDuration();
+}
+window.previewDuration=()=>{const el=$("durPreview");if(el)el.textContent=durLabel($("durUnit").value,$("durValue").value)};
+window.createDuration=async()=>{
+  const u=$("durUnit").value,v=Math.floor(Number($("durValue").value));
+  if(!(v>=1)||v>999){toast("Escribe una cantidad entre 1 y 999.");return}
+  const k=durKey(u,v);
+  if(allDurations().some(d=>durKey(d.unit,d.value)===k)){toast("Esa vigencia ya existe.");return}
+  const id=randomId(),x={unit:u,value:v,label:durLabel(u,v),createdAt:now()};
+  try{
+    await set(ref(db,"settings/durations/"+id),x);
+    state.settings.durations={...(state.settings.durations||{}),[id]:x};
+    renderDurations();fillDurationSelect("planDuration");fillDurationSelect("licDuration");
+    toast("Vigencia creada: "+x.label+".");
+  }catch(e){toast("No se pudo crear: "+(e.code||e.message))}
+};
+window.deleteDuration=async id=>{
+  const x=state.settings?.durations?.[id];if(!x)return;
+  const k=durKey(x.unit,x.value),used=Object.values(state.plans||{}).filter(p=>{const d=planDuration(p);return durKey(d.unit,d.value)===k}).length;
+  if(used){toast(`No se puede eliminar: ${used} plan(es) usan esta vigencia.`);return}
+  if(!confirm(`¿Eliminar la vigencia ${durLabel(x.unit,x.value)}?`))return;
+  try{await remove(ref(db,"settings/durations/"+id));delete state.settings.durations[id];renderDurations();fillDurationSelect("planDuration");fillDurationSelect("licDuration");toast("Vigencia eliminada.")}
+  catch(e){toast("No se pudo eliminar: "+(e.code||e.message))}
+};
+
+function licenseStatus(x){
+  if(x.status==="revoked")return ["revoked","Revocada"];
+  if(x.status==="suspended")return ["suspended","Suspendida"];
+  if(x.endAt && x.endAt<now())return ["revoked","Vencida"];
+  if(x.endAt){
+    const warnMs=(state.settings.warnDays||15)*86400000,total=x.endAt-(x.startAt||x.createdAt||0);
+    const eff=(total>0&&total<2*warnMs)?total/3:warnMs; // licencias cortas (ej. 15 días): aviso en el último tercio
+    if(x.endAt-now()<eff)return ["expiring","Por vencer"];
+  }
+  return ["active","Activa"];
+}
+function key(){
+  // Formato: RAM360-954-786-145-632
+  // Cada bloque contiene 3 dígitos aleatorios criptográficamente seguros.
+  const bytes=crypto.getRandomValues(new Uint32Array(4));
+  return "RAM360-"+Array.from(bytes).map(n=>String(n%1000).padStart(3,"0")).join("-");
+}
+async function uniqueLicenseKey(){
+  const existing=Object.values(state.licenses||{}).map(x=>x.key);
+  let k=key(), tries=0;
+  while(existing.includes(k) && tries++<20) k=key();
+  return k;
+}
+function randomId(){return crypto.randomUUID ? crypto.randomUUID() : "id_"+Date.now()+"_"+Math.random().toString(36).slice(2)}
+function dateInputValue(ts){return new Date(ts).toISOString().slice(0,10)}
+
+function fillPlanSelect(){const p=$("licPlan");if(!p)return;p.innerHTML=Object.entries(state.plans).map(([id,x])=>`<option value="${id}">${esc(x.name)} · ${money(x.price)}</option>`).join('')||'<option value="">No hay planes</option>'}
+window.openLicenseModal=()=>{
+  const c=$("licCustomer"),p=$("licPlan");
+  c.innerHTML=Object.entries(state.customers).map(([id,x])=>`<option value="${id}">${esc(x.name)}</option>`).join("") || `<option value="">Crear cliente primero</option>`;
+  fillPlanSelect();
+  fillDurationSelect("licDuration");
+  $("licStart").value=dateInputValue(now());
+  applyPlanToLicenseForm();
+  $("previewKey").textContent=key();
+  openModal("licenseModal");
+};
+
+window.createLicense=async()=>{
+  const customerId=$("licCustomer").value,planId=$("licPlan").value;
+  if(!customerId||!planId){toast("Necesitas un cliente y un plan.");return}
+  const startDate=new Date($("licStart").value+"T00:00:00");
+  const start=startDate.getTime()||now();
+  const dur=parseDurKey($("licDuration").value);
+  let endAt=null;
+  if(dur.unit!=="none"&&dur.value>0){endAt=addDurationTo(startDate,dur.unit,dur.value).getTime();}
+  const id=randomId(),licenseKey=await uniqueLicenseKey();
+  $("previewKey").textContent=licenseKey;
+  const x={
+    key:licenseKey,customerId,planId,status:"active",createdAt:now(),startAt:start,endAt,
+    maxDevices:Number(state.plans[planId]?.devices)||Number($("licDevices").value)||2,maxUsers:Number(state.plans[planId]?.users)||Number($("licUsers").value)||3,
+    planNameSnapshot:state.plans[planId]?.name||null,planFeaturesSnapshot:state.plans[planId]?.features||{},planLimitsSnapshot:state.plans[planId]?.limits||{},
+    note:$("licNote").value.trim(),createdBy:currentUser?.uid||null
+  };
+  try{
+    await set(ref(db,"licenses/"+id),x);
+    await logActivity("license_created",licenseKey,"Licencia creada");
+    state.licenses[id]=x;closeModal("licenseModal");renderDashboard();renderLicenses();toast("Licencia generada correctamente.");
+  }catch(e){toast("No se pudo guardar: "+e.message)}
+};
+
+let CUSTOMER_EDIT_ID=null;
+window.openCustomerModal=()=>{CUSTOMER_EDIT_ID=null;["cusName","cusEmail","cusPhone"].forEach(x=>$(x).value="");$("customerModalTitle").textContent="Nuevo cliente";$("customerSaveBtn").textContent="Guardar cliente";openModal("customerModal")};
+window.editCustomer=id=>{const x=state.customers[id];if(!x)return;CUSTOMER_EDIT_ID=id;$("cusName").value=x.name||"";$("cusEmail").value=x.email||"";$("cusPhone").value=x.phone||"";$("customerModalTitle").textContent="Editar cliente";$("customerSaveBtn").textContent="Guardar cambios";openModal("customerModal")};
+window.saveCustomer=async()=>{
+  const name=$("cusName").value.trim(),email=$("cusEmail").value.trim().toLowerCase(),phone=$("cusPhone").value.trim();
+  if(!name){toast("Escribe el nombre del cliente.");return}
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast("Ingresa un correo válido.");return}
+  const id=CUSTOMER_EDIT_ID||randomId(),old=state.customers[id];
+  const x={...(old||{}),name,email,phone,status:old?.status||"active",createdAt:old?.createdAt||now(),updatedAt:now()};
+  try{await set(ref(db,"customers/"+id),x);state.customers[id]=x;CUSTOMER_EDIT_ID=null;closeModal("customerModal");renderCustomers();renderDashboard();toast(old?"Cliente actualizado.":"Cliente creado.");}
+  catch(e){toast("No se pudo guardar: "+e.message)}
+};
+window.deleteCustomer=async id=>{const x=state.customers[id];if(!x)return;const linked=Object.values(state.licenses).filter(l=>l.customerId===id);if(linked.length){toast(`No se puede eliminar: el cliente tiene ${linked.length} licencia(s). Primero elimina o reasigna sus licencias.`);return;}if(!confirm(`¿Eliminar definitivamente a ${x.name}?`))return;try{await remove(ref(db,"customers/"+id));delete state.customers[id];renderCustomers();renderDashboard();toast("Cliente eliminado.");}catch(e){toast("No se pudo eliminar: "+(e.code||e.message))}};
+
+let PLAN_EDIT_ID=null;
+function planFeaturesFromForm(){return {multiUpload:$("pfMulti").checked,simulators:$("pfSim").checked,comparisons:$("pfComp").checked,advancedValidation:$("pfVal").checked,alerts:$("pfAlerts").checked,executiveSummary:$("pfSummary").checked,excelExport:$("pfExcel").checked,customReports:$("pfCustom").checked,operatorTracking:$("pfOps").checked,fullHistory:$("pfHistory").checked}}
+function setPlanForm(x,id=null){PLAN_EDIT_ID=id;$("planName").value=x?.name||'';$("planPrice").value=x?.price||0;fillDurationSelect("planDuration",x?durKey(planDuration(x).unit,planDuration(x).value):"years:1");$("planUsers").value=x?.users||5;$("planDevices").value=x?.devices||5;$("planReports").value=x?.limits?.reportsActive||1;$("planDesc").value=x?.description||'';$("planTrial").checked=!!x?.trialEnabled;$("planTrialDays").value=1;const f=x?.features||{};const map={pfMulti:'multiUpload',pfSim:'simulators',pfComp:'comparisons',pfVal:'advancedValidation',pfAlerts:'alerts',pfSummary:'executiveSummary',pfExcel:'excelExport',pfCustom:'customReports',pfOps:'operatorTracking',pfHistory:'fullHistory'};Object.entries(map).forEach(([id2,k])=>$(id2).checked=!!f[k]);$("planModal").querySelector('.modal-head h3').textContent=id?'Editar plan':'Nuevo plan'}
+window.openPlanModal=()=>{
+  PLAN_EDIT_ID=null;
+  fillDurationSelect("planDuration","years:1");
+  ["planName","planPrice","planDesc"].forEach(x=>$(x).value="");
+  $("planUsers").value=5;
+  $("planDevices").value=5;
+  $("planReports").value=1;
+  $("planTrial").checked=false;
+  $("planTrialDays").value=1;
+  document.querySelectorAll('#planModal input[type=checkbox]').forEach(x=>x.checked=false);
+  $("planModal").querySelector('.modal-head h3').textContent='Nuevo plan';
+  openModal("planModal");
+};
+window.duplicatePlan=id=>{const x=state.plans[id];if(!x)return;setPlanForm({...x,name:x.name+" (copia)",trialEnabled:false},null);openModal("planModal")};
+window.editPlan=id=>{const x=state.plans[id];if(!x)return;setPlanForm(x,id);openModal('planModal')};
+window.seedRecommendedPlans=async()=>{if(Object.keys(state.plans).length&& !confirm('Ya existen planes. ¿Deseas agregar los planes recomendados de RAM360?'))return;const defs=[{name:'Básico',price:49900,durationDays:365,users:5,devices:5,limits:{reportsActive:1,history:5},features:{multiUpload:false,simulators:false,comparisons:false,advancedValidation:false,alerts:false,executiveSummary:false,excelExport:false,customReports:false,operatorTracking:false,fullHistory:false},description:'Para comenzar con reportes individuales.'},{name:'Profesional',price:89900,durationDays:365,users:10,devices:10,limits:{reportsActive:10,history:50},features:{multiUpload:true,simulators:true,comparisons:true,advancedValidation:true,alerts:true,executiveSummary:true,excelExport:true,customReports:false,operatorTracking:false,fullHistory:false},description:'Para análisis, multicarga y simulaciones.'},{name:'Empresarial',price:149900,durationDays:365,users:25,devices:25,limits:{reportsActive:25,history:9999},features:{multiUpload:true,simulators:true,comparisons:true,advancedValidation:true,alerts:true,executiveSummary:true,excelExport:true,customReports:true,operatorTracking:true,fullHistory:true},description:'Para equipos y organizaciones.'}];try{for(const x of defs){const exists=Object.values(state.plans).some(p=>String(p.name).toLowerCase()===x.name.toLowerCase());if(exists)continue;const id=randomId();x.createdAt=now();await set(ref(db,'plans/'+id),x);state.plans[id]=x;}renderPlans();fillPlanSelect();toast('Planes recomendados creados.');}catch(e){toast('No se pudieron crear: '+(e.code||e.message))}};
+window.createPlan=async()=>{
+  const name=$("planName").value.trim();if(!name){toast("Escribe el nombre del plan.");return}
+  const id=PLAN_EDIT_ID||randomId();
+  const previous=PLAN_EDIT_ID?state.plans[id]:null;
+  const _d=parseDurKey($("planDuration").value);
+  const x={name,price:Number($("planPrice").value)||0,durationDays:durApproxDays(_d.unit,_d.value),durationUnit:_d.unit,durationValue:_d.value,durationLabel:durLabel(_d.unit,_d.value),users:Number($("planUsers").value)||1,devices:Number($("planDevices").value)||1,limits:{reportsActive:Number($("planReports").value)||1,history:Number($("planReports").value)||1},features:planFeaturesFromForm(),description:$("planDesc").value.trim(),trialEnabled:!!$("planTrial").checked,trialDays:1,updatedAt:now()};
+  if(!previous)x.createdAt=now();
+  try{
+    await set(ref(db,"plans/"+id),x);
+    state.plans[id]=x;
+    if(previous){
+      const linked=Object.entries(state.licenses).filter(([,l])=>l.planId===id);
+      if(linked.length){
+        const patch={};
+        linked.forEach(([lid])=>{
+          patch[`licenses/${lid}/planNameSnapshot`]=x.name;
+          patch[`licenses/${lid}/planFeaturesSnapshot`]=x.features||{};
+          patch[`licenses/${lid}/planLimitsSnapshot`]=x.limits||{};
+          patch[`licenses/${lid}/maxDevices`]=x.devices;
+          patch[`licenses/${lid}/maxUsers`]=x.users;
+        });
+        await update(ref(db),patch);
+        linked.forEach(([lid])=>{state.licenses[lid]={...state.licenses[lid],planNameSnapshot:x.name,planFeaturesSnapshot:x.features||{},planLimitsSnapshot:x.limits||{},maxDevices:x.devices,maxUsers:x.users};});
+      }
+    }
+    PLAN_EDIT_ID=null;closeModal("planModal");renderPlans();fillPlanSelect();
+    toast(previous?"Plan actualizado. Los clientes con este plan recibirán los nuevos límites y funciones.":"Plan creado.");
+  }catch(e){toast("No se pudo guardar: "+(e.message||e))}
+};
+window.deletePlan=async id=>{const x=state.plans[id];if(!x)return;const linked=Object.values(state.licenses).filter(l=>l.planId===id);if(linked.length){toast(`No se puede eliminar: ${linked.length} licencia(s) usan este plan. Elimina o reasigna esas licencias primero.`);return;}if(!confirm(`¿Eliminar definitivamente el plan ${x.name}?`))return;try{await remove(ref(db,"plans/"+id));delete state.plans[id];renderPlans();fillPlanSelect();toast("Plan eliminado.");}catch(e){toast("No se pudo eliminar: "+(e.code||e.message))}};
+window.applyPlanToLicenseForm=()=>{const p=state.plans[$("licPlan")?.value];if(!p)return;const d=Number(p.devices)||2,u=Number(p.users)||3,r=Number(p.limits?.reportsActive)||1;$("licDevices").value=d;$("licUsers").value=u;$("licDuration").value=String(Number(p.durationDays??365));const feats=Object.entries(p.features||{}).filter(([,v])=>v).map(([k])=>({multiUpload:'Multicarga',simulators:'Simuladores',comparisons:'Comparador',advancedValidation:'Validación avanzada',alerts:'Alertas inteligentes',executiveSummary:'Resumen ejecutivo',excelExport:'Exportación Excel',customReports:'Reportes personalizados',operatorTracking:'Seguimiento de operadores',fullHistory:'Historial completo'}[k])).filter(Boolean);const sm=$("licPlanSummary");if(sm)sm.innerHTML=`<b>${esc(p.name)}</b> · ${d} dispositivos · ${u} usuarios · ${r} reportes simultáneos · Vigencia: ${esc(planDurLabel(p))}<br><span class="muted">Funciones: ${esc(feats.join(' · ')||'Funciones básicas')}</span>`};
+
+function renderDashboard(){
+  const arr=Object.values(state.licenses);
+  const active=arr.filter(x=>licenseStatus(x)[0]==="active").length;
+  const exp=arr.filter(x=>licenseStatus(x)[0]==="expiring").length;
+  const susp=arr.filter(x=>x.status==="suspended").length;
+  $("kActive").textContent=active;$("kExp").textContent=exp;$("kSusp").textContent=susp;$("kClients").textContent=Object.keys(state.customers).length;
+  const recent=Object.entries(state.licenses).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0)).slice(0,6);
+  $("recentLicenses").innerHTML=recent.length?`<div class="list">${recent.map(([id,x])=>{
+    const c=state.customers[x.customerId]?.name||"Sin cliente",p=state.plans[x.planId]?.name||"—",st=licenseStatus(x);
+    return `<div class="item"><div class="left"><b>${esc(c)}</b><small>${esc(p)} · ${esc(x.key)}</small></div><span class="badge ${st[0]}">${st[1]}</span></div>`
+  }).join("")}</div>`:`<div class="empty">No hay licencias todavía.</div>`;
+}
+function renderLicenses(){
+  const q=($("licenseSearch")?.value||"").toLowerCase(),f=$("licenseFilter")?.value||"";
+  const rows=Object.entries(state.licenses).filter(([id,x])=>{
+    const c=state.customers[x.customerId]?.name||"",p=state.plans[x.planId]?.name||"",st=licenseStatus(x)[0];
+    return (!q||(x.key+" "+c+" "+p).toLowerCase().includes(q))&&(!f||st===f)
+  }).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  $("licenseRows").innerHTML=rows.length?rows.map(([id,x])=>{
+    const c=state.customers[x.customerId]?.name||"—",p=state.plans[x.planId]?.name||"—",st=licenseStatus(x);
+    return `<tr><td><b>${esc(x.key)}</b></td><td>${esc(c)}</td><td>${esc(p)}</td><td><span class="badge ${st[0]}">${st[1]}</span></td><td>${fmtDate(x.startAt)} → ${x.endAt?fmtDate(x.endAt):"Sin vencimiento"}</td><td>${x.maxDevices||1}</td><td><button class="btn alt small" onclick="licenseDetail('${id}')">Gestionar</button>${(st[0]==="revoked"||st[0]==="suspended")?` <button class="btn danger small" onclick="deleteLicense('${id}')">Eliminar</button>`:""}</td></tr>`
+  }).join(""):`<tr><td colspan="7" class="empty">No hay resultados.</td></tr>`;
+}
+window.renderLicenses=renderLicenses;
+
+window.licenseDetail=async(id)=>{
+  const x=state.licenses[id];if(!x)return;
+  const c=state.customers[x.customerId]?.name||"—",p=state.plans[x.planId]?.name||"—",st=licenseStatus(x);
+  $("detailTitle").textContent="Licencia "+x.key;
+  $("detailBody").innerHTML=`
+    <div class="grid two">
+      <div class="card" style="box-shadow:none;background:var(--bg)"><div class="muted" style="font-size:10px">Cliente</div><b>${esc(c)}</b><div class="muted" style="font-size:10px;margin-top:8px">Plan</div><b>${esc(p)}</b><div class="muted" style="font-size:10px;margin-top:8px">Estado</div><div><span class="badge ${st[0]}">${st[1]}</span></div></div>
+      <div class="card" style="box-shadow:none;background:var(--bg)"><div class="muted" style="font-size:10px">Vigencia</div><b>${fmtDate(x.startAt)} → ${x.endAt?fmtDate(x.endAt):"Sin vencimiento"}</b><div class="muted" style="font-size:10px;margin-top:8px">Límites</div><b>${x.maxDevices||1} dispositivos · ${x.maxUsers||1} usuarios</b></div>
+    </div>
+    <div id="licUsage" class="card" style="margin-top:12px;box-shadow:none;background:var(--bg)"><div class="muted">Uso actual</div><b>Cargando…</b></div>
+    <div class="notice" style="margin-top:12px">El acceso se controla por dispositivo y usuario registrado en Firebase. La licencia no está vinculada a una IP.</div>
+    <div class="actions" style="justify-content:flex-end">
+      ${x.status==="suspended"?`<button class="btn" onclick="changeLicense('${id}','active')">Reactivar</button>`:`<button class="btn alt" onclick="changeLicense('${id}','suspended')">Suspender</button>`}
+      <button class="btn danger" onclick="changeLicense('${id}','revoked')">Revocar</button>
+      ${(st[0]==="suspended" || (st[0]==="revoked" && st[1]==="Vencida"))?`<button class="btn danger" onclick="deleteLicense('${id}')">Eliminar</button>`:""}
+      <button class="btn ghost" onclick="copyText('${esc(x.key)}')">Copiar clave</button>
+    </div>`;
+  openModal("detailModal");
+  try{
+    const snap=await get(ref(db,"licenseUsage/"+id));
+    const u=snap.val()||{},dc=Object.keys(u.devices||{}).length,uc=Object.keys(u.users||{}).length;
+    const el=$("licUsage");
+    if(el)el.innerHTML=`<div class="muted">Uso actual</div><div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:4px"><b>${dc} / ${x.maxDevices||1} dispositivos</b><b>${uc} / ${x.maxUsers||1} usuarios</b></div>`;
+  }catch(e){const el=$("licUsage");if(el)el.innerHTML=`<div class="muted">Uso actual</div><div class="badge warn">No se pudo consultar el uso</div>`;}
+};
+window.changeLicense=async(id,status)=>{
+  const x=state.licenses[id];if(!x)return;
+  if(status==="revoked"&&!confirm("¿Revocar definitivamente esta licencia?"))return;
+  try{await update(ref(db,"licenses/"+id),{status,updatedAt:now(),updatedBy:currentUser?.uid||null});x.status=status;await logActivity("license_"+status,x.key,"Estado cambiado a "+status);closeModal("detailModal");renderLicenses();renderDashboard();toast("Licencia actualizada.");}
+  catch(e){toast("No se pudo actualizar: "+e.message)}
+};
+
+window.deleteLicense=async(id)=>{
+  const x=state.licenses[id]; if(!x)return;
+  const st=licenseStatus(x);
+  const deletable=(st[0]==="suspended" || (st[0]==="revoked" && st[1]==="Vencida"));
+  if(!deletable){toast("Solo puedes eliminar licencias suspendidas o vencidas.");return;}
+  if(!confirm(`¿Eliminar definitivamente la licencia ${x.key}? Esta acción no se puede deshacer.`))return;
+  try{
+    await remove(ref(db,"licenses/"+id));
+    delete state.licenses[id];
+    await logActivity("license_deleted",x.key,"Licencia eliminada: "+st[1]);
+    closeModal("detailModal");renderLicenses();renderDashboard();toast("Licencia eliminada correctamente.");
+  }catch(e){toast("No se pudo eliminar: "+(e.code||e.message));}
+};
+
+function renderCustomers(){
+  const q=($("customerSearch")?.value||"").toLowerCase();
+  const rows=Object.entries(state.customers).filter(([id,x])=>(x.name+" "+x.email+" "+x.phone).toLowerCase().includes(q));
+  $("customerRows").innerHTML=rows.length?rows.map(([id,x])=>{
+    const count=Object.values(state.licenses).filter(l=>l.customerId===id).length;
+    return `<tr><td><b>${esc(x.name)}</b></td><td>${esc(x.email||"—")}<br><span class="muted">${esc(x.phone||"")}</span></td><td>${count}</td><td><span class="badge active">${x.status||"active"}</span></td><td>${fmtDate(x.createdAt)}</td><td><button class="btn alt small" onclick="customerDetail('${id}')">Ver</button> <button class="btn alt small" onclick="editCustomer('${id}')">Editar</button> <button class="btn danger small" onclick="deleteCustomer('${id}')">Eliminar</button></td></tr>`
+  }).join(""):`<tr><td colspan="6" class="empty">No hay clientes.</td></tr>`;
+}
+window.renderCustomers=renderCustomers;
+window.customerDetail=id=>{
+  const x=state.customers[id];if(!x)return;
+  const ls=Object.entries(state.licenses).filter(([k,l])=>l.customerId===id);
+  $("detailTitle").textContent=x.name;
+  $("detailBody").innerHTML=`<div class="card" style="box-shadow:none;background:var(--bg)"><b>${esc(x.name)}</b><p class="muted">${esc(x.email||"Sin correo")} · ${esc(x.phone||"Sin teléfono")}</p><small>Licencias: ${ls.length}</small></div><div style="margin-top:12px">${ls.map(([k,l])=>`<div class="item" style="margin-bottom:7px"><div class="left"><b>${esc(l.key)}</b><small>${esc(state.plans[l.planId]?.name||"—")}</small></div><span class="badge ${licenseStatus(l)[0]}">${licenseStatus(l)[1]}</span></div>`).join("")||'<div class="empty">No tiene licencias.</div>'}</div>`;
+  openModal("detailModal");
+};
+
+function planKeyAdmin(name){return String(name||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'')}
+function renderPlans(){
+  renderDurations();
+  const arr=Object.entries(state.plans);
+  const names={multiUpload:'Multicarga',simulators:'Simuladores',comparisons:'Comparador',advancedValidation:'Validación avanzada',alerts:'Alertas',executiveSummary:'Resumen ejecutivo',excelExport:'Excel',customReports:'Personalizados',operatorTracking:'Operadores',fullHistory:'Historial completo'};
+  $("planCards").innerHTML=arr.length?arr.map(([id,x])=>{const f=x.features||{};const lim=x.limits||{};const tags=Object.entries(f).filter(([,v])=>v).map(([k])=>names[k]).filter(Boolean).slice(0,7);return `<div class="card"><div class="card-head"><h2>${esc(x.name)}</h2><span class="badge active">${x.trialEnabled?"Prueba gratis · 1 día":"Plan"}</span></div><div style="font-size:25px;font-weight:700">${money(x.price)}<span class="muted" style="font-size:10px;font-weight:400"> / ${esc(planPeriodLabel(x))}</span></div><p class="muted" style="font-size:11px;min-height:32px">${esc(x.description||'')}</p><div class="plan-cap"><span style="color:var(--g);font-weight:700">Vigencia: ${esc(planDurLabel(x))}</span><span>${x.users||1} usuarios</span><span>${x.devices||1} dispositivos</span><span>${lim.reportsActive||1} reportes</span></div><div class="list" style="margin-top:10px">${tags.map(t=>`<div class="item"><div class="left"><b>${esc(t)}</b><small>Incluido</small></div><span class="badge active">✓</span></div>`).join('')||'<div class="muted" style="font-size:11px">Solo funciones básicas</div>'}</div><div class="actions" style="justify-content:flex-end;margin-top:10px"><button class="btn ghost small" onclick="duplicatePlan('${id}')">Duplicar</button><button class="btn alt small" onclick="editPlan('${id}')">Editar plan</button><button class="btn danger small" onclick="deletePlan('${id}')">Eliminar</button></div></div>`}).join(''):`<div class="card empty">No hay planes. Crea el primero.</div>`;
+}
+
+window.renderPlans=renderPlans;
+
+function renderActivity(){
+  const rows=Object.values(state.activity).sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,150);
+  $("activityRows").innerHTML=rows.length?rows.map(x=>`<tr><td>${fmtDateTime(x.at)}</td><td><b>${esc(x.event)}</b></td><td>${esc(x.key||"—")}</td><td>${esc(x.uid||"—")}</td><td>${esc(x.ip||"—")}</td><td>${esc(x.detail||"")}</td></tr>`).join(""):`<tr><td colspan="6" class="empty">Sin actividad.</td></tr>`;
+}
+window.renderActivity=renderActivity;
+window.clearActivity=()=>{toast("La limpieza de actividad debe hacerse desde una acción administrativa protegida en producción.")};
+
+async function logActivity(event,key,detail){
+  const x={event,key:key||null,detail:detail||"",uid:currentUser?.uid||null,at:now(),ip:null};
+  try{const r=push(ref(db,"activity"));await set(r,x);state.activity[r.key]=x;renderActivity()}catch(e){console.warn(e)}
+}
+window.copyText=async text=>{try{await navigator.clipboard.writeText(text);toast("Copiado al portapapeles.");}catch{toast("No se pudo copiar automáticamente.")}};
+
+window.exportLicenses=()=>{
+  const data=Object.entries(state.licenses).map(([id,x])=>({id,...x,customer:state.customers[x.customerId]?.name||"",plan:state.plans[x.planId]?.name||"",computedStatus:licenseStatus(x)[1]}));
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ram360-licencias.json";a.click();URL.revokeObjectURL(a.href);
+};
+
+window.saveSettings=async()=>{
+  const x={defaultDevices:Number($("defaultDevices").value)||2,warnDays:Number($("warnDays").value)||15,updatedAt:now()};
+  try{await update(ref(db,"settings"),x);state.settings={...state.settings,...x};renderDashboard();toast("Ajustes guardados.");}catch(e){toast("No se pudo guardar: "+e.message)}
+};
+
+document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
+
+const savedTheme=localStorage.getItem("ram360_admin_theme");if(savedTheme)document.documentElement.setAttribute("data-theme",savedTheme);
+$("licDuration").addEventListener("change",()=>$("previewKey").textContent=key());
+</script>
+</body>
+</html>
