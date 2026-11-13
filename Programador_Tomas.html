@@ -502,6 +502,7 @@
   .ruta-dest .row:last-child{ border-bottom:none; }
   .ruta-dest .row span{ color:var(--ink-soft); }
   .ruta-warn{ background:var(--gold-tint); color:#6B4A12; border-radius:8px; padding:9px 12px; font-size:10.5px; line-height:1.5; }
+  .ruta-dest select, #rutaUnifyName{ width:100%; border:1px solid var(--border); border-radius:8px; padding:6px 8px; font-size:11px; font-family:inherit; color:var(--ink); background:var(--surface); }
   .ruta-status{ font-size:10.5px; color:var(--ink-soft); margin-right:auto; align-self:center; }
   @media (max-width:560px){ .ruta-form{ grid-template-columns:1fr; } }
 </style>
@@ -931,8 +932,9 @@
     </div>
     <div class="modal-body">
       <div>
-        <label class="pd-title" style="display:block;font-size:10.5px;font-weight:600;color:var(--ink-soft);margin-bottom:8px;">Se generará un oficio por cada EPS</label>
+        <label class="pd-title" style="display:block;font-size:10.5px;font-weight:600;color:var(--ink-soft);margin-bottom:8px;">Destinatario(s) del oficio</label>
         <div class="ruta-dest" id="rutaDest"></div>
+        <div id="rutaUnifyBox" style="margin-top:10px;"></div>
       </div>
       <div id="rutaWarnBox"></div>
       <div class="ruta-form">
@@ -941,10 +943,12 @@
         <div class="full"><label for="rutaFAsunto">Asunto</label><textarea id="rutaFAsunto"></textarea></div>
         <div class="full"><label for="rutaFEntidad">Entidad que remite (texto después de «de la»)</label><textarea id="rutaFEntidad"></textarea></div>
         <div class="full"><label for="rutaFValoracion">Valoración nutricional reportada</label><input type="text" id="rutaFValoracion"></div>
+        <div><label for="rutaFCorreo">Correo de contacto de la asociación/operador *</label><input type="email" id="rutaFCorreo" placeholder="correo@ejemplo.com"></div>
+        <div><label for="rutaFTel">Teléfono de contacto *</label><input type="tel" id="rutaFTel" placeholder="Ej: 3001234567"></div>
         <div><label for="rutaFRep">Representante legal (nombre)</label><input type="text" id="rutaFRep" placeholder="Opcional"></div>
         <div><label for="rutaFCC">C.C. del representante</label><input type="text" id="rutaFCC" placeholder="Opcional"></div>
       </div>
-      <div class="hint">Las columnas DIRECCIÓN y TELÉFONO quedan en blanco porque el reporte no las trae. La edad en meses se calcula a la fecha de la valoración.</div>
+      <div class="hint">El correo y el teléfono de contacto se escriben en el oficio para que la EPS responda. Las columnas DIRECCIÓN y TELÉFONO de la tabla quedan en blanco porque el reporte no las trae. La edad en meses se calcula a la fecha de la valoración.</div>
     </div>
     <div class="modal-actions">
       <span class="ruta-status" id="rutaStatus"></span>
@@ -3282,7 +3286,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     ciudad: 'Neiva',
     entidad: 'Asociación de usuarios del programa de hogares comunitarios del barrio José Eustasio Rivera',
     valoracion: 'Primera valoración nutricional',
-    rep: '', cc: ''
+    rep: '', cc: '', correo: '', telefono: ''
   };
   const rutaState = {
     f: { search:'', contratos:[], unidades:[], activo:'vinculado', estados:[], epsList:[], regimen:'' },
@@ -3305,12 +3309,73 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     c.forEach((cnt, v)=>{ if(cnt > n){ best = v; n = cnt; } });
     return best;
   }
+  /* --- Unificación de nombres de EPS (p. ej. "NUEVA EPS", "LA NUEVA EPS", "Nueva EPS S.A.") --- */
+  const EPS_STOP = new Set(['la','el','los','las','de','del','eps','epss','epsi','sa','sas','ess','ltda','cm']);
+  // EPS conocidas: si el nombre las contiene, todas sus variantes se tratan como la misma
+  const EPS_KNOWN = [[/\bnueva\b/,'nueva'],[/\bsanitas\b/,'sanitas'],[/\bfamisanar\b/,'famisanar'],[/\bcoosalud\b/,'coosalud'],[/\bemssanar\b/,'emssanar'],[/\bcompensar\b/,'compensar'],[/\basmet\b/,'asmet salud'],[/\bsuramericana\b|\bsura\b/,'sura'],[/\bsalud total\b/,'salud total'],[/\bmutual ser\b/,'mutual ser'],[/\bsavia\b/,'savia salud'],[/\bpijaos\b/,'pijaos salud'],[/\bcajacopi\b/,'cajacopi'],[/\bcapital salud\b/,'capital salud']];
+  const EPS_SYN = { 'asmet':'asmet salud', 'suramericana':'sura', 'eps sura':'sura', 'comfahuila':'comfamiliar huila', 'comfamiliar':'comfamiliar huila', 'pijaos':'pijaos salud', 'savia':'savia salud', 'mutualser':'mutual ser' };
+  function rutaEpsClean(v){
+    const s = normalize(v).replace(/[.,;:()\/\-_]+/g,' ').replace(/\b(entidad|empresa) promotora de salud\b/g,' ').replace(/\s+/g,' ').trim();
+    for(const [re,kn] of EPS_KNOWN){ if(re.test(s)) return kn; }
+    const k = s.split(' ').filter(x => x.length > 1 && !EPS_STOP.has(x)).join(' ');
+    return EPS_SYN[k] || k || s;
+  }
+  function rutaLev(a, b){
+    const m = a.length, n = b.length;
+    let prev = Array.from({length:n+1}, (_,j)=>j);
+    for(let i=1;i<=m;i++){
+      const cur = [i];
+      for(let j=1;j<=n;j++) cur[j] = Math.min(prev[j]+1, cur[j-1]+1, prev[j-1] + (a[i-1]===b[j-1]?0:1));
+      prev = cur;
+    }
+    return prev[n];
+  }
+  let rutaEpsCache = { rows:null, keyOf:new Map(), disp:new Map() };
+  function rutaBuildEps(){
+    if(rutaEpsCache.rows === state.rows) return rutaEpsCache;
+    const cnt = new Map(), raws = new Map();
+    state.rows.forEach(r=>{
+      const n = normalize(r.eps);
+      if(!n) return;
+      const c = rutaEpsClean(r.eps);
+      cnt.set(c, (cnt.get(c)||0) + 1);
+      if(!raws.has(c)) raws.set(c, []);
+      raws.get(c).push(String(r.eps).trim());
+    });
+    // une también errores de digitación de una letra (nombres de 4+ letras)
+    const reps = [], canon = new Map();
+    [...cnt.entries()].sort((a,b)=>b[1]-a[1]).forEach(([k])=>{
+      const rep = reps.find(x => Math.min(x.length,k.length) >= 4 && Math.abs(x.length-k.length) <= 1 && rutaLev(x,k) <= 1);
+      if(rep) canon.set(k, rep); else { reps.push(k); canon.set(k, k); }
+    });
+    const keyOf = new Map(), byCanon = new Map();
+    state.rows.forEach(r=>{
+      const n = normalize(r.eps);
+      if(!n) return;
+      const k = canon.get(rutaEpsClean(r.eps));
+      keyOf.set(n, k);
+      if(!byCanon.has(k)) byCanon.set(k, []);
+      byCanon.get(k).push(String(r.eps).trim());
+    });
+    const disp = new Map();
+    byCanon.forEach((vals,k)=> disp.set(k, rutaMostCommon(vals)));
+    rutaEpsCache = { rows: state.rows, keyOf, disp };
+    return rutaEpsCache;
+  }
+  function rutaEpsKey(v){
+    const n = normalize(v);
+    if(!n) return '';
+    return rutaBuildEps().keyOf.get(n) || rutaEpsClean(v);
+  }
+  const rutaEpsDisp = k => rutaBuildEps().disp.get(k) || '';
+
   // Mapa clave -> nombre a mostrar (la grafía más frecuente en el reporte)
   function rutaLabels(rows, field){
     const by = new Map();
-    rows.forEach(r=>{ const k = rutaKey(r[field]); if(k){ if(!by.has(k)) by.set(k, []); by.get(k).push(r[field]); } });
+    const kf = field === 'eps' ? rutaEpsKey : rutaKey;
+    rows.forEach(r=>{ const k = kf(r[field]); if(k){ if(!by.has(k)) by.set(k, []); by.get(k).push(r[field]); } });
     const out = new Map();
-    by.forEach((vals, k)=> out.set(k, rutaMostCommon(vals)));
+    by.forEach((vals, k)=> out.set(k, (field === 'eps' && rutaEpsDisp(k)) || rutaMostCommon(vals)));
     return out;
   }
 
@@ -3324,7 +3389,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
       if(f.activo === 'desvinculado' && esVinculado(r)) return false;
       if(f.estados.length && !f.estados.includes(r.estado)) return false;
       if(ignore !== 'eps' && f.epsList.length){
-        const k = rutaKey(r.eps);
+        const k = rutaEpsKey(r.eps);
         if(!f.epsList.includes(k === '' ? SIN_VALOR : k)) return false;
       }
       if(f.regimen){
@@ -3338,7 +3403,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
 
   function rutaIssues(r){
     const out = [];
-    if(!rutaKey(r.eps)) out.push({ t:'Sin EPS', c:'bad' });
+    if(!rutaEpsKey(r.eps)) out.push({ t:'Sin EPS', c:'bad' });
     if(!rutaKey(r.regimen)) out.push({ t:'Sin régimen', c:'warn' });
     if(!esVinculado(r)) out.push({ t:'Desvinculado', c:'bad' });
     if(!r.tipoDocumento) out.push({ t:'Sin tipo de documento', c:'warn' });
@@ -3401,7 +3466,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     const epsMap = rutaLabels(base, 'eps');
     const regMap = rutaLabels(base, 'regimen');
     const epsOpts = [...epsMap.entries()].sort((a,b)=>a[1].localeCompare(b[1])).map(([k,l])=>({v:k,l}));
-    if(base.some(r=>!rutaKey(r.eps))) epsOpts.push({ v:SIN_VALOR, l:'Sin EPS' });
+    if(base.some(r=>!rutaEpsKey(r.eps))) epsOpts.push({ v:SIN_VALOR, l:'Sin EPS' });
     rutaEpsNombres = new Map(epsOpts.map(o=>[o.v, o.l]));
     f.epsList = f.epsList.filter(k => rutaEpsNombres.has(k));
 
@@ -3425,7 +3490,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
 
   // Participantes que entran al oficio: filtrados, con EPS y no desmarcados.
   function rutaSelected(){
-    return rutaFiltered().filter(r => rutaKey(r.eps) && !rutaState.excluded.has(r.numeroDocumento));
+    return rutaFiltered().filter(r => rutaEpsKey(r.eps) && !rutaState.excluded.has(r.numeroDocumento));
   }
 
   function renderRuta(){
@@ -3458,9 +3523,9 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
       ((!cols.eps || !cols.regimen) ? ' — el reporte cargado no trae alguna de estas columnas; los participantes saldrán sin ese dato.' : '');
 
     const rows = rutaFiltered();
-    const sinEps = rows.filter(r=>!rutaKey(r.eps)).length;
+    const sinEps = rows.filter(r=>!rutaEpsKey(r.eps)).length;
     const conObs = rows.filter(r=>rutaIssues(r).length > 0).length;
-    const epsDistintas = new Set(rows.map(r=>rutaKey(r.eps)).filter(Boolean)).size;
+    const epsDistintas = new Set(rows.map(r=>rutaEpsKey(r.eps)).filter(Boolean)).size;
     cardsWrap.innerHTML = `
       <div class="card primary"><div class="num">${rows.length}</div><div class="lbl">Participantes (con filtros)</div></div>
       <div class="card"><div class="num">${rows.length - conObs}</div><div class="lbl">Sin observaciones</div></div>
@@ -3472,7 +3537,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     const baseEps = rutaFiltered('eps');
     const labels = rutaLabels(baseEps, 'eps');
     const counts = new Map(); let sinCount = 0;
-    baseEps.forEach(r=>{ const k = rutaKey(r.eps); if(!k) sinCount++; else counts.set(k, (counts.get(k)||0) + 1); });
+    baseEps.forEach(r=>{ const k = rutaEpsKey(r.eps); if(!k) sinCount++; else counts.set(k, (counts.get(k)||0) + 1); });
     const f = rutaState.f;
     chipsWrap.innerHTML = `<span class="lbl">EPS:</span>` +
       [...counts.entries()].sort((a,b)=> b[1]-a[1]).map(([k,n])=>
@@ -3481,9 +3546,9 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
       (!counts.size && !sinCount ? '<span class="hint">Sin resultados con los filtros actuales.</span>' : '');
 
     // Barra de acción
-    const elegibles = rows.filter(r=>rutaKey(r.eps));
+    const elegibles = rows.filter(r=>rutaEpsKey(r.eps));
     const incl = rutaSelected();
-    const nEps = new Set(incl.map(r=>rutaKey(r.eps))).size;
+    const nEps = new Set(incl.map(r=>rutaEpsKey(r.eps))).size;
     document.getElementById('rutaBarInfo').innerHTML =
       `Incluidos en el oficio: <b>${incl.length}</b> de <b>${rows.length}</b> · ${nEps === 1 ? '<b>1</b> EPS (un oficio)' : `<b>${nEps}</b> EPS (un oficio por EPS)`}`;
     document.getElementById('btnRutaOficio').disabled = incl.length === 0;
@@ -3507,7 +3572,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
       <tbody>
         ${pageRows.map(r=>{
           const iss = rutaIssues(r);
-          const tieneEps = !!rutaKey(r.eps);
+          const tieneEps = !!rutaEpsKey(r.eps);
           const checked = tieneEps && !rutaState.excluded.has(r.numeroDocumento);
           return `<tr>
             <td class="chk"><input type="checkbox" class="ruta-chk" data-doc="${escapeHtml(r.numeroDocumento)}" ${checked?'checked':''} ${tieneEps?'':'disabled'} title="${tieneEps?'Incluir en el oficio':'Sin EPS: no se puede incluir'}"></td>
@@ -3594,7 +3659,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
   });
   document.getElementById('rutaWrap').addEventListener('change', e=>{
     if(e.target.id === 'rutaChkAll'){
-      rutaFiltered().filter(r=>rutaKey(r.eps)).forEach(r=>{
+      rutaFiltered().filter(r=>rutaEpsKey(r.eps)).forEach(r=>{
         if(e.target.checked) rutaState.excluded.delete(r.numeroDocumento); else rutaState.excluded.add(r.numeroDocumento);
       });
       rutaRenderBody();
@@ -3641,6 +3706,14 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     newPre[7] = rebuild(preParas[7],
       run('Por lo anterior Para su conocimiento y fines pertinente, remitimos la relación de niños y niñas de nuestra modalidad HCB Comunitario de la ' + d.entidad + ', de la ' + d.valoracion + ' realizadas por el Nutricionista Contratado', false) +
       run('. Este seguimiento permite que se ejecuten acciones de alerta y reporte de casos prioritarias de atención, como aquellos identificados con Riesgo de Desnutrición aguda que requieran la actuación, de acuerdo a la resolución 5406 de 2015 del MSPS y casos de malnutrición por exceso o en riesgo que puedan representar un patrón epidemiológico de morbilidad y mortalidad de una población.', false));
+    const txtOf = p => p.replace(/<[^>]+>/g, '');
+    const cIdx = preParas.findIndex(p => /s[ií]rvase informarnos/i.test(txtOf(p)));
+    if(cIdx >= 0 && (d.correo || d.telefono)){
+      const partes = [];
+      if(d.correo) partes.push('al correo electrónico ' + d.correo);
+      if(d.telefono) partes.push('al teléfono ' + d.telefono);
+      newPre[cIdx] = rebuild(preParas[cIdx], run('Agradezco la atención brindada y sírvase informarnos lo actuado ' + partes.join(' o ') + '.', false));
+    }
     let k = 0;
     pre = pre.replace(paraRe, m => { const out = newPre[k] !== undefined ? newPre[k] : m; k++; return out; });
 
@@ -3692,6 +3765,11 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
       if(i === 6 && d.repCC){
         return `<w:p>${pPrOf(m)}<w:r>${rprA(true)}<w:t xml:space="preserve">C.C. </w:t></w:r><w:r>${rprA(false)}<w:t xml:space="preserve">${oficioXmlEsc(d.repCC)}</w:t></w:r></w:p>`;
       }
+      if(/Representante Legal/i.test(txtOf(m)) && (d.correo || d.telefono)){
+        const rp = `<w:rPr><w:rFonts w:ascii="Arial" w:eastAsia="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr>`;
+        const line = t => `<w:p>${pPrOf(m)}<w:r>${rp}<w:t xml:space="preserve">${oficioXmlEsc(t)}</w:t></w:r></w:p>`;
+        return m + (d.correo ? line('Correo: ' + d.correo) : '') + (d.telefono ? line('Teléfono: ' + d.telefono) : '');
+      }
       return m;
     });
 
@@ -3714,8 +3792,8 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
 
   function rutaGroups(rows){
     const by = new Map();
-    rows.forEach(r=>{ const k = rutaKey(r.eps); if(!by.has(k)) by.set(k, []); by.get(k).push(r); });
-    return [...by.entries()].map(([k, rs])=>({ key:k, label: rutaMostCommon(rs.map(r=>r.eps)), rows: rs }))
+    rows.forEach(r=>{ const k = rutaEpsKey(r.eps); if(!by.has(k)) by.set(k, []); by.get(k).push(r); });
+    return [...by.entries()].map(([k, rs])=>({ key:k, label: rutaEpsDisp(k) || rutaMostCommon(rs.map(r=>r.eps)), variants: (()=>{ const c = new Map(); rs.forEach(r=>{ const v = String(r.eps).trim(); c.set(v,(c.get(v)||0)+1); }); return [...c.entries()].sort((a,b)=>b[1]-a[1]).map(x=>x[0]); })(), rows: rs }))
       .sort((a,b)=> a.label.localeCompare(b.label));
   }
   function rutaRegimenLinea(rows){
@@ -3751,21 +3829,42 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
     document.getElementById('rutaFValoracion').value = c.valoracion;
     document.getElementById('rutaFRep').value = c.rep;
     document.getElementById('rutaFCC').value = c.cc;
+    document.getElementById('rutaFCorreo').value = c.correo;
+    document.getElementById('rutaFTel').value = c.telefono;
     rutaState.asuntoAuto = rutaAsuntoDefault(sel);
     document.getElementById('rutaFAsunto').value = rutaState.asuntoAuto;
-    document.getElementById('rutaDest').innerHTML = groups.map(g=>
-      `<div class="row"><b>${escapeHtml(g.label)}</b><span>${g.rows.length} participante${g.rows.length===1?'':'s'} · ${escapeHtml(rutaRegimenLinea(g.rows))}</span></div>`).join('');
+    rutaState.openGroups = groups;
+    document.getElementById('rutaDest').innerHTML = groups.map((g,i)=>{
+      const sel = g.variants.includes(g.label) ? g.label : g.variants[0];
+      const nombre = g.variants.length > 1
+        ? `<select class="ruta-name" data-i="${i}">${g.variants.map(v=>`<option value="${escapeHtml(v)}" ${v===sel?'selected':''}>${escapeHtml(v)}</option>`).join('')}</select><div class="hint" style="margin:3px 0 0;">Esta EPS viene escrita de ${g.variants.length} formas: elige el nombre a usar</div>`
+        : `<b>${escapeHtml(g.label)}</b>`;
+      return `<div class="row"><div style="flex:1;min-width:0;">${nombre}</div><span>${g.rows.length} participante${g.rows.length===1?'':'s'} · ${escapeHtml(rutaRegimenLinea(g.rows))}</span></div>`;
+    }).join('');
+    const unifyBox = document.getElementById('rutaUnifyBox');
+    if(groups.length > 1){
+      const cnt = new Map();
+      groups.forEach(g=> g.rows.forEach(r=>{ const v = String(r.eps).trim(); cnt.set(v,(cnt.get(v)||0)+1); }));
+      const todos = [...cnt.entries()].sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+      unifyBox.innerHTML = `<label style="display:flex;gap:8px;align-items:flex-start;font-size:11px;cursor:pointer;"><input type="checkbox" id="rutaUnify" style="margin-top:2px;"><span>Unificar las <b>${groups.length}</b> EPS seleccionadas en <b>un solo oficio</b> (son la misma EPS con el nombre escrito distinto)</span></label>
+        <div id="rutaUnifyNameWrap" style="display:none;margin-top:8px;"><label for="rutaUnifyName" style="display:block;font-size:10.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;">Nombre de la EPS a usar en el oficio</label><select id="rutaUnifyName">${todos.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('')}</select></div>`;
+    }else unifyBox.innerHTML = '';
 
     const warns = [];
     const desv = sel.filter(r=>!esVinculado(r)).length;
     if(desv) warns.push(`Hay <b>${desv}</b> participante${desv===1?'':'s'} desvinculado${desv===1?'':'s'} incluido${desv===1?'':'s'}: el oficio dice que están vinculados a la institución.`);
-    const sinEps = rutaFiltered().filter(r=>!rutaKey(r.eps)).length;
+    const sinEps = rutaFiltered().filter(r=>!rutaEpsKey(r.eps)).length;
     if(sinEps) warns.push(`<b>${sinEps}</b> participante${sinEps===1?'':'s'} sin EPS no se incluye${sinEps===1?'':'n'} en ningún oficio.`);
     document.getElementById('rutaWarnBox').innerHTML = warns.length ? `<div class="ruta-warn">${warns.join('<br>')}</div>` : '';
     document.getElementById('rutaStatus').textContent = '';
     document.getElementById('rutaGenerateBtn').disabled = false;
-    document.getElementById('rutaGenerateBtn').textContent = groups.length > 1 ? `Generar ${groups.length} oficios (.zip)` : 'Generar .docx';
+    rutaGenLabel();
     document.getElementById('rutaModalOverlay').classList.add('open');
+  }
+  function rutaGenLabel(){
+    const n = (rutaState.openGroups || []).length;
+    const u = document.getElementById('rutaUnify');
+    document.getElementById('rutaGenerateBtn').textContent = (n > 1 && !(u && u.checked)) ? `Generar ${n} oficios (.zip)` : 'Generar .docx';
   }
   function rutaCloseOficio(){ document.getElementById('rutaModalOverlay').classList.remove('open'); }
 
@@ -3790,11 +3889,21 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
         entidad: document.getElementById('rutaFEntidad').value.trim() || RUTA_DEFAULTS.entidad,
         valoracion: document.getElementById('rutaFValoracion').value.trim() || RUTA_DEFAULTS.valoracion,
         rep: document.getElementById('rutaFRep').value.trim(),
-        cc: document.getElementById('rutaFCC').value.trim()
+        cc: document.getElementById('rutaFCC').value.trim(),
+        correo: document.getElementById('rutaFCorreo').value.trim(),
+        telefono: document.getElementById('rutaFTel').value.trim()
       };
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cfg.correo)) throw new Error('Escribe un correo de contacto válido.');
+      if(cfg.telefono.replace(/\D/g,'').length < 7) throw new Error('Escribe un teléfono de contacto válido (mínimo 7 dígitos).');
       const asuntoInput = document.getElementById('rutaFAsunto').value.trim();
-      const groups = rutaGroups(rutaSelected());
+      let groups = rutaGroups(rutaSelected());
       if(!groups.length) throw new Error('No hay participantes con EPS para incluir.');
+      document.querySelectorAll('#rutaDest .ruta-name').forEach(s=>{ if(groups[+s.dataset.i]) groups[+s.dataset.i].label = s.value; });
+      const unify = document.getElementById('rutaUnify');
+      if(unify && unify.checked && groups.length > 1){
+        const rowsAll = [].concat(...groups.map(g=>g.rows)).sort((a,b)=> a.nombreCompleto.localeCompare(b.nombreCompleto));
+        groups = [{ key:'unificada', label: document.getElementById('rutaUnifyName').value, variants:[], rows: rowsAll }];
+      }
       btn.disabled = true;
       status.textContent = 'Generando…';
 
@@ -3815,7 +3924,7 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
           ciudad: cfg.ciudad, dia: +m[3], mes: RUTA_MESES[+m[2]-1], anio: +m[1],
           eps: g.label.toUpperCase(), regimenLinea: rutaRegimenLinea(g.rows),
           asunto, entidad: cfg.entidad, valoracion: cfg.valoracion,
-          repNombre: cfg.rep, repCC: cfg.cc, filas
+          repNombre: cfg.rep, repCC: cfg.cc, correo: cfg.correo, telefono: cfg.telefono, filas
         });
         files.push({ name: `Oficio_${rutaSlug(g.label)}_${fechaStr}.docx`, bytes });
       }
@@ -3840,6 +3949,12 @@ window.zanTrack = function(type, data){ (window.__zq = window.__zq || []).push({
   document.getElementById('rutaCancelBtn').addEventListener('click', rutaCloseOficio);
   document.getElementById('rutaModalOverlay').addEventListener('click', e=>{ if(e.target.id === 'rutaModalOverlay') rutaCloseOficio(); });
   document.getElementById('rutaGenerateBtn').addEventListener('click', rutaGenerate);
+  document.getElementById('rutaUnifyBox').addEventListener('change', e=>{
+    if(e.target.id !== 'rutaUnify') return;
+    document.getElementById('rutaUnifyNameWrap').style.display = e.target.checked ? '' : 'none';
+    document.querySelectorAll('#rutaDest .ruta-name').forEach(s=>{ s.disabled = e.target.checked; });
+    rutaGenLabel();
+  });
 
   /* ---------------------------------------------------------
      SIDEBAR COLAPSABLE
