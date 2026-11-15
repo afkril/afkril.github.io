@@ -383,10 +383,10 @@
 
   <!-- Panel lateral: detalle de un punto de la matriz -->
   <div class="drawer-bg" id="cellDrawerBg"></div>
-  <aside class="drawer" id="cellDrawer" role="dialog" aria-modal="true" aria-labelledby="cdTitle" aria-hidden="true" style="width:min(500px,100vw);">
+  <aside class="drawer" id="cellDrawer" role="dialog" aria-modal="true" aria-labelledby="cdTitle" aria-hidden="true" style="width:min(760px,100vw);">
     <div class="drawer-head">
       <span class="dh-icon" id="cdIcon"></span>
-      <h2 id="cdTitle"></h2>
+      <div class="dh-main"><h2 id="cdTitle"></h2><div class="dh-sub" id="cdSub"></div></div>
       <span class="fc-badge" id="cdBadge"></span>
       <button class="drawer-close" id="cdClose" type="button" aria-label="Cerrar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -409,10 +409,14 @@
   </div>
 
   <div class="modal-bg" id="userModalBg">
-    <div class="modal">
-      <button class="modal-close" id="closeModal">&times;</button>
-      <h2 id="modalTitle"></h2>
-      <div id="modalBody"></div>
+    <div class="modal tm-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="tm-head">
+        <span class="tm-head-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>
+        <div><h2 id="modalTitle"></h2><p>Organiza, edita y configura los documentos del mes</p></div>
+        <button class="tm-close" id="closeModal" type="button" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="tm-body" id="modalBody"></div>
+      <div class="tm-foot" id="tmFoot"></div>
     </div>
   </div>
 
@@ -428,9 +432,9 @@
   </div>
   <!-- Ficha de unidad -->
   <div class="drawer-bg" id="unitDrawerBg"></div>
-  <aside class="drawer" id="unitDrawer" role="dialog" aria-modal="true" aria-hidden="true" style="width:min(640px,100vw);">
+  <aside class="drawer" id="unitDrawer" role="dialog" aria-modal="true" aria-hidden="true" style="width:min(760px,100vw);">
     <div class="drawer-head">
-      <h2 id="udTitle">Ficha de la unidad</h2>
+      <span class="dh-icon" id="udIcon"></span><div class="dh-main"><h2 id="udTitle">Ficha de la unidad</h2><div class="dh-sub" id="udSub">Ficha de la unidad</div></div>
       <button class="drawer-close" id="udClose" type="button" aria-label="Cerrar">&times;</button>
     </div>
     <div class="drawer-body" id="udBody"></div>
@@ -642,7 +646,7 @@
       archivo_pendiente: 'Archivo devuelto a revisión', no_aplica_marcado: 'No aplica marcado', no_aplica_quitado: 'No aplica quitado',
       mes_creado: 'Mes creado', mes_duplicado: 'Mes duplicado', mes_cerrado: 'Mes cerrado', mes_reabierto: 'Mes reabierto',
       mes_fechas: 'Fecha límite del mes', mes_visible: 'Mes visible', mes_oculto: 'Mes oculto', mes_eliminado: 'Mes a la papelera',
-      mes_restaurado: 'Mes restaurado', tema_creado: 'Tema creado', tema_editado: 'Tema editado', tema_eliminado: 'Tema a la papelera',
+      mes_restaurado: 'Mes restaurado', tema_creado: 'Tema creado', tema_editado: 'Tema editado', tema_eliminado: 'Tema a la papelera', tema_reordenado: 'Temas reordenados',
       tema_restaurado: 'Tema restaurado', purga_definitiva: 'Borrado definitivo', contrato_creado: 'Contrato creado',
       contrato_editado: 'Contrato editado', contrato_eliminado: 'Contrato eliminado', unidad_contrato: 'Contrato de unidad cambiado',
       unidad_registrada: 'Unidad registrada', recordatorio: 'Recordatorio enviado', login_admin: 'Inicio de sesión (admin)',
@@ -839,7 +843,7 @@
       });
       document.getElementById('userSearch').addEventListener('input', renderUsers);
       document.getElementById('closeModal').addEventListener('click', function () {
-        document.getElementById('userModalBg').classList.remove('open');
+        if (topicsRequestClose) topicsRequestClose(); else document.getElementById('userModalBg').classList.remove('open');
       });
       document.getElementById('dlgClose').addEventListener('click', function () { closeDlg(null); });
 
@@ -1111,126 +1115,372 @@
       return { list: list };
     }
 
+    // ---- Gestionar temas (modal) ----
+    const TM_SV = function (d, s, sw) { return '<svg width="' + (s || 18) + '" height="' + (s || 18) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>'; };
+    const TM_ICO = {
+      grip: '<svg width="16" height="22" viewBox="0 0 16 22" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.7"/><circle cx="12" cy="4" r="1.7"/><circle cx="4" cy="11" r="1.7"/><circle cx="12" cy="11" r="1.7"/><circle cx="4" cy="18" r="1.7"/><circle cx="12" cy="18" r="1.7"/></svg>',
+      pen: TM_SV('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>', 15),
+      edit: TM_SV('<path d="M11 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-6"/><path d="M18.4 2.6a2 2 0 0 1 3 3L12 15l-4 1 1-4z"/>', 19),
+      copy: TM_SV('<rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>', 19),
+      trash: TM_SV('<path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7"/><path d="M10 11v6M14 11v6"/>', 19),
+      star: TM_SV('<polygon points="12 2.5 14.9 8.8 21.8 9.5 16.6 14.1 18.1 20.9 12 17.4 5.9 20.9 7.4 14.1 2.2 9.5 9.1 8.8"/>', 13),
+      ban: TM_SV('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>', 13),
+      file: TM_SV('<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/>', 13),
+      ok: TM_SV('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>', 13),
+      brief: TM_SV('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>', 13),
+      clock: TM_SV('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 13),
+      search: TM_SV('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>', 19),
+      filter: TM_SV('<path d="M3 5h18l-7 8v6l-4 2v-8z"/>', 18),
+      plus: TM_SV('<path d="M12 5v14M5 12h14"/>', 18, 2.4),
+      cal: TM_SV('<rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M16 3v4M8 3v4M3 10h18"/>', 26, 1.9),
+      doc: TM_SV('<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>', 22, 1.8),
+      save: TM_SV('<path d="M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/>', 18),
+      folder: TM_SV('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>', 26, 1.8)
+    };
+    let topicsRequestClose = null;   // la usa el botón «×» para pedir confirmación si hay un orden sin guardar
+
     async function openTopicsModal(month) {
       let topics = await gsRun('apiAdminGetMonthTopics', token, month.id);
-      document.getElementById('modalTitle').textContent = 'Temas de ' + month.nombre;
+      let serverIds = topics.map(function (t) { return t.id; });
+      let editingId = null, q = '', filt = 'todos', dirty = false;
+
+      const bg = document.getElementById('userModalBg');
       const body = document.getElementById('modalBody');
+      const foot = document.getElementById('tmFoot');
+      document.getElementById('modalTitle').innerHTML = 'Gestionar temas · <span class="tm-month">' + escapeHtml(month.nombre) + '</span>';
+
       body.innerHTML =
-        '<div id="topicsListModal" style="margin-bottom:16px;"></div>' +
-        '<div class="field"><label>Agregar temas nuevos (uno por línea)</label><textarea id="newTopicsText" rows="3" placeholder="Tema nuevo 1&#10;Tema nuevo 2"></textarea></div>' +
-        '<button class="btn btn-primary btn-sm" id="btnAddTopics">Agregar temas</button>';
+        '<div class="tm-tools">' +
+          '<label class="tm-search">' + TM_ICO.search + '<input type="text" id="tmSearch" placeholder="Buscar tema..." autocomplete="off" aria-label="Buscar tema"></label>' +
+          '<div class="tm-filter"><span class="tm-fico">' + TM_ICO.filter + '</span><select id="tmFilter" aria-label="Filtrar temas">' +
+            '<option value="todos">Todos los temas</option><option value="obligatorio">Obligatorios</option><option value="opcional">Opcionales</option>' +
+            '<option value="fecha">Con fecha límite</option><option value="formatos">Con formatos restringidos</option><option value="contrato">Solo para algunos contratos</option></select></div>' +
+          '<button class="tm-new" id="tmNew" type="button">' + TM_ICO.plus + 'Nuevo tema</button>' +
+        '</div>' +
+        '<div class="tm-add" id="tmAdd"><label for="tmAddText">Nuevos temas <span class="muted" style="font-weight:500;">(uno por línea)</span></label>' +
+          '<textarea id="tmAddText" rows="3" placeholder="Tema nuevo 1&#10;Tema nuevo 2"></textarea>' +
+          '<div class="tm-add-row"><span class="muted">Se crean como obligatorios, con cualquier formato y para todos los contratos. Luego puedes editarlos.</span>' +
+            '<button class="btn btn-secondary btn-sm" id="tmAddCancel" type="button">Cancelar</button><button class="btn btn-primary btn-sm" id="tmAddOk" type="button">Agregar</button></div></div>' +
+        '<div class="tm-list" id="tmList"></div>';
+      foot.innerHTML =
+        '<div class="tm-count">' + TM_ICO.doc + '<span id="tmCount"></span></div><span class="tm-dirty" id="tmDirty" style="display:none;">Orden sin guardar</span>' +
+        '<div class="tm-foot-btns"><button class="btn btn-secondary" id="tmCancel" type="button">Cancelar</button>' +
+          '<button class="btn btn-primary" id="tmSave" type="button">' + TM_ICO.save + 'Guardar cambios</button></div>';
+
+      const list = document.getElementById('tmList');
+      const modalEl = bg.querySelector('.modal');
       const contratoName = function (id) { const c = contratos.find(function (x) { return x.id === id; }); return c ? c.nombre : 'contrato eliminado'; };
+      const norm = function (s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+      const byId = function (id) { return topics.find(function (t) { return t.id === id; }); };
 
-      function afterChange() {
-        invalidateAll();
-        loadMonthsData().catch(function () {});
+      function afterChange() { invalidateAll(); loadMonthsData().catch(function () {}); }
+
+      let noteTimer = null;
+      function note(msg, isErr) {
+        const old = modalEl.querySelector('.tm-toast'); if (old) old.remove();
+        const el = document.createElement('div'); el.className = 'tm-toast' + (isErr ? ' err' : ''); el.setAttribute('role', 'status'); el.textContent = msg;
+        modalEl.appendChild(el); clearTimeout(noteTimer); noteTimer = setTimeout(function () { el.remove(); }, isErr ? 6000 : 2600);
+      }
+      // Texto sobre lo ocurrido en Drive tras renombrar un tema
+      function driveMsg(r) {
+        const d = r && r.drive; if (!d) return '';
+        const n = (d.renombradas || 0) + (d.fusionadas || 0);
+        let m = n ? ' · ' + n + (n === 1 ? ' carpeta de Drive actualizada' : ' carpetas de Drive actualizadas') : '';
+        if (d.errores) m += ' · ' + d.errores + ' no se pudo(ieron) renombrar';
+        if (d.parcial) m += ' · el proceso quedó incompleto: vuelve a guardar el nombre para continuar';
+        return m;
+      }
+      const nfail = function (e) { note(e && e.message ? e.message : String(e), true); };
+
+      function computeDirty() {
+        const have = {}; topics.forEach(function (t) { have[t.id] = true; });
+        const base = serverIds.filter(function (id) { return have[id]; });
+        return base.join('|') !== topics.map(function (t) { return t.id; }).join('|');
+      }
+      function updateFoot() {
+        dirty = computeDirty();
+        const n = topics.length, f = topics.filter(matches).length;
+        document.getElementById('tmCount').textContent = (f !== n ? f + ' de ' : '') + n + (n === 1 ? ' tema configurado' : ' temas configurados');
+        document.getElementById('tmDirty').style.display = dirty ? '' : 'none';
+        document.getElementById('tmSave').title = dirty ? 'Guarda el nuevo orden' : 'Cerrar';
+      }
+      function canSort() { return !q && filt === 'todos' && !editingId; }
+
+      function matches(t) {
+        if (q && norm(t.nombre).indexOf(q) === -1) return false;
+        switch (filt) {
+          case 'obligatorio': return t.obligatorio;
+          case 'opcional': return !t.obligatorio;
+          case 'fecha': return !!t.fechaLimite;
+          case 'formatos': return t.extensiones.length > 0;
+          case 'contrato': return t.contratoIds.length > 0;
+        }
+        return true;
       }
 
-      function topicSummary(t) {
-        const bits = [];
-        bits.push('<span class="tag ' + (t.obligatorio ? 'azul' : 'gris') + '">' + (t.obligatorio ? 'Obligatorio' : 'Opcional') + '</span>');
-        if (t.fechaLimite) bits.push('<span class="tag azul">Límite ' + fmtDay(t.fechaLimite) + '</span>');
-        if (t.extensiones.length) bits.push('<span class="tag gris">Solo ' + t.extensiones.map(function (e) { return e.toUpperCase(); }).join(', ') + '</span>');
-        bits.push(t.contratoIds.length ? '<span class="tag gris">Contratos: ' + escapeHtml(t.contratoIds.map(contratoName).join(', ')) + '</span>' : '<span class="tag gris">Todos los contratos</span>');
-        return bits.join(' ');
+      function chipsHtml(t) {
+        const c = [];
+        c.push(t.obligatorio ? '<span class="tm-chip req">' + TM_ICO.star + 'Obligatorio</span>' : '<span class="tm-chip opt">' + TM_ICO.ban + 'Opcional</span>');
+        const ex = t.extensiones.map(function (e) { return e.toUpperCase(); });
+        c.push('<span class="tm-chip fmt" title="' + (ex.length ? 'Solo se aceptan: ' + escapeHtml(ex.join(', ')) : 'Se acepta cualquier formato') + '">' + TM_ICO.file +
+          (ex.length ? escapeHtml(ex.slice(0, 3).join(' · ')) + (ex.length > 3 ? ' +' + (ex.length - 3) : '') : 'Cualquier formato') + '</span>');
+        if (t.contratoIds.length) {
+          const names = t.contratoIds.map(contratoName);
+          c.push('<span class="tm-chip ctr" title="' + escapeHtml(names.join(', ')) + '">' + TM_ICO.brief + (names.length === 1 ? escapeHtml(names[0]) : names.length + ' contratos') + '</span>');
+        } else c.push('<span class="tm-chip all">' + TM_ICO.ok + 'Todos los contratos</span>');
+        if (t.fechaLimite) c.push('<span class="tm-chip due">' + TM_ICO.clock + 'Límite ' + fmtDay(t.fechaLimite) + '</span>');
+        return c.join('');
       }
 
-      function renderTopicsList() {
-        const listWrap = document.getElementById('topicsListModal');
-        if (!topics.length) { listWrap.innerHTML = '<p class="empty-hint">Este mes aún no tiene temas.</p>'; return; }
-        listWrap.innerHTML = topics.map(function (t) {
-          return '<div class="manage-row" style="padding:9px 2px;">' +
-            '<div class="mr-info"><span>' + escapeHtml(t.nombre) + '</span><div class="mr-sub">' + topicSummary(t) + '</div></div>' +
-            '<div class="mr-actions">' +
-              '<button class="btn btn-ghost btn-sm" data-edittopic="' + t.id + '">Editar</button>' +
-              '<button class="btn btn-ghost btn-sm" style="color:var(--rojo);" data-deltopic="' + t.id + '">Eliminar</button>' +
+      function editHtml(t, i) {
+        return '<div class="tm-edit">' +
+          '<div class="tm-edit-title"><span class="tm-num">' + (i + 1) + '.</span> Editar tema</div>' +
+          '<div class="field"><label>Nombre del tema</label><input type="text" class="te-nombre" value="' + escapeHtml(t.nombre) + '" maxlength="120"></div>' +
+          '<div class="row2">' +
+            '<div class="field"><label>Se exige</label><select class="te-obl"><option value="1"' + (t.obligatorio ? ' selected' : '') + '>Obligatorio (cuenta para el avance)</option><option value="0"' + (!t.obligatorio ? ' selected' : '') + '>Opcional (no cuenta)</option></select></div>' +
+            '<div class="field"><label>Fecha límite propia</label><input type="date" class="te-fecha" value="' + (t.fechaLimite || '') + '"></div>' +
+          '</div>' +
+          '<div class="field"><label>Tipos de archivo permitidos</label><div class="te-ext">' + extEditorHtml(t.extensiones) + '</div></div>' +
+          '<div class="field"><label>Contratos a los que se exige <span class="muted">(ninguno marcado = todos)</span></label><div class="chk-list te-contratos">' +
+            (contratos.length ? contratos.map(function (c) { return '<label><input type="checkbox" value="' + c.id + '"' + (t.contratoIds.indexOf(c.id) !== -1 ? ' checked' : '') + '> ' + escapeHtml(c.nombre) + '</label>'; }).join('') : '<span class="muted">No hay contratos creados.</span>') + '</div></div>' +
+          '<div class="alert alert-error te-err" style="display:none;"></div>' +
+          '<div class="tm-edit-btns"><button class="btn btn-secondary btn-sm" type="button" data-act="cancel-edit">Cancelar</button><button class="btn btn-primary btn-sm" type="button" data-act="save-edit">Guardar tema</button></div>' +
+        '</div>';
+      }
+
+      function render(keepScroll) {
+        const top = list.scrollTop;
+        list.classList.toggle('no-sort', !canSort());
+        if (!topics.length) {
+          list.innerHTML = '<div class="tm-empty"><div class="tm-empty-ico">' + TM_ICO.folder + '</div><b>Este mes aún no tiene temas.</b><br>Usa «Nuevo tema» para agregar el primero.</div>';
+          updateFoot(); return;
+        }
+        const shown = topics.map(function (t, i) { return { t: t, i: i }; }).filter(function (x) { return x.t.id === editingId || matches(x.t); });
+        if (!shown.length) {
+          list.innerHTML = '<div class="tm-empty"><div class="tm-empty-ico">' + TM_ICO.search + '</div><b>Ningún tema coincide.</b><br>Prueba con otra búsqueda o cambia el filtro.</div>';
+          updateFoot(); return;
+        }
+        list.innerHTML = shown.map(function (x) {
+          const t = x.t;
+          if (t.id === editingId) return '<div class="tm-row editing" data-id="' + t.id + '">' + editHtml(t, x.i) + '</div>';
+          return '<div class="tm-row" data-id="' + t.id + '">' +
+            '<button type="button" class="tm-handle" aria-label="Arrastrar para reordenar «' + escapeHtml(t.nombre) + '»" title="' + (canSort() ? 'Arrastra para reordenar (o usa ↑ ↓)' : 'Quita la búsqueda y el filtro para reordenar') + '">' + TM_ICO.grip + '</button>' +
+            '<span class="tm-num">' + (x.i + 1) + '.</span>' +
+            '<div class="tm-main"><div class="tm-name"><span class="nm" title="' + escapeHtml(t.nombre) + '">' + escapeHtml(t.nombre) + '</span>' +
+              '<button type="button" class="tm-pen" data-act="rename" title="Renombrar (también renombra las carpetas en Drive)">' + TM_ICO.pen + '</button></div>' +
+              '<div class="tm-chips">' + chipsHtml(t) + '</div></div>' +
+            '<div class="tm-act">' +
+              '<button type="button" class="tm-ib" data-act="edit" title="Editar reglas del tema" aria-label="Editar">' + TM_ICO.edit + '</button>' +
+              '<button type="button" class="tm-ib" data-act="dup" title="Duplicar tema" aria-label="Duplicar">' + TM_ICO.copy + '</button>' +
+              '<button type="button" class="tm-ib del" data-act="del" title="Eliminar tema" aria-label="Eliminar">' + TM_ICO.trash + '</button>' +
             '</div></div>';
         }).join('');
-        listWrap.querySelectorAll('[data-edittopic]').forEach(function (btn) {
-          btn.addEventListener('click', function () { editTopic(topics.find(function (x) { return x.id === btn.dataset.edittopic; })); });
-        });
-        listWrap.querySelectorAll('[data-deltopic]').forEach(function (btn) {
-          btn.addEventListener('click', async function () {
-            const t = topics.find(function (x) { return x.id === btn.dataset.deltopic; });
-            if (!await askConfirm('Eliminar «' + escapeHtml(t.nombre) + '»', 'El tema y los archivos que las unidades cargaron en él pasan a la <b>Papelera</b>; puedes restaurarlos desde ahí.', 'Enviar a la papelera', true)) return;
-            const pos = topics.findIndex(function (x) { return x.id === t.id; });
-            const redraw = function () { if (document.getElementById('topicsListModal')) renderTopicsList(); };
-            deleteWithUndo({
-              title: 'Tema eliminado',
-              detail: t.nombre,
-              call: ['apiAdminDeleteTopic', token, t.id],
-              onHide: function () {
-                topics = topics.filter(function (x) { return x.id !== t.id; });
-                redraw();
-              },
-              onUndo: function () {
-                if (topics.some(function (x) { return x.id === t.id; })) return;
-                topics.splice(Math.min(pos, topics.length), 0, t);
-                redraw();
-              },
-              onCommitted: afterChange,
-              onError: fail
-            });
-          });
+        const er = list.querySelector('.tm-row.editing .te-ext'); if (er) extEditorBind(er);
+        if (keepScroll) list.scrollTop = top;
+        updateFoot();
+      }
+
+      // Mezcla la lista del servidor con el orden local (por si hay un reorden sin guardar).
+      function merge(fresh, anchorId, newIds) {
+        newIds = newIds || [];
+        serverIds = fresh.map(function (t) { return t.id; });
+        const map = {}; fresh.forEach(function (t) { map[t.id] = t; });
+        let order = topics.map(function (t) { return t.id; }).filter(function (id) { return map[id]; });
+        const fresh2 = serverIds.filter(function (id) { return order.indexOf(id) === -1; });
+        if (anchorId && order.indexOf(anchorId) !== -1) {
+          order.splice.apply(order, [order.indexOf(anchorId) + 1, 0].concat(fresh2));
+        } else order = order.concat(fresh2);
+        topics = order.map(function (id) { return map[id]; });
+      }
+      function flash(ids) {
+        ids = [].concat(ids || []);
+        ids.forEach(function (id, k) {
+          const el = list.querySelector('.tm-row[data-id="' + id + '"]');
+          if (!el) return;
+          if (k === 0) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          el.classList.add('flash');
         });
       }
 
-      function editTopic(t) {
-        const listWrap = document.getElementById('topicsListModal');
-        listWrap.innerHTML =
-          '<div class="topic-edit">' +
-            '<div class="field"><label>Nombre del tema</label><input type="text" id="teNombre" value="' + escapeHtml(t.nombre) + '"></div>' +
-            '<div class="row2">' +
-              '<div class="field"><label>Se exige</label><select id="teObl"><option value="1"' + (t.obligatorio ? ' selected' : '') + '>Obligatorio (cuenta para el avance)</option><option value="0"' + (!t.obligatorio ? ' selected' : '') + '>Opcional (no cuenta)</option></select></div>' +
-              '<div class="field"><label>Fecha límite propia</label><input type="date" id="teFecha" value="' + (t.fechaLimite || '') + '"></div>' +
-            '</div>' +
-            '<div class="field"><label>Tipos de archivo permitidos</label><div id="teExt">' + extEditorHtml(t.extensiones) + '</div></div>' +
-            '<div class="field" style="margin-bottom:6px;"><label>Contratos a los que se exige <span class="muted">(ninguno marcado = todos)</span></label><div class="chk-list" id="teContratos">' +
-              (contratos.length ? contratos.map(function (c) { return '<label><input type="checkbox" value="' + c.id + '"' + (t.contratoIds.indexOf(c.id) !== -1 ? ' checked' : '') + '> ' + escapeHtml(c.nombre) + '</label>'; }).join('') : '<span class="muted">No hay contratos creados.</span>') + '</div></div>' +
-            '<div id="teErr" class="alert alert-error" style="display:none;"></div>' +
-            '<div style="display:flex;gap:8px;justify-content:flex-end;"><button class="btn btn-secondary btn-sm" id="teCancel" type="button">Cancelar</button><button class="btn btn-primary btn-sm" id="teSave" type="button">Guardar tema</button></div>' +
-          '</div>';
-        extEditorBind(document.getElementById('teExt'));
-        document.getElementById('teCancel').addEventListener('click', renderTopicsList);
-        document.getElementById('teSave').addEventListener('click', function () {
-          const btn = this;
-          withBusyBtn(btn, async function () {
-            const er0 = document.getElementById('teErr'); er0.style.display = 'none';
-            const ec = extEditorCollect(document.getElementById('teExt'));
-            if (ec.error) { er0.textContent = ec.error; er0.style.display = 'block'; return; }
-            const exts = ec.list;
-            const ctr = Array.prototype.map.call(document.querySelectorAll('#teContratos input:checked'), function (i) { return i.value; });
-            const f = {
-              nombre: document.getElementById('teNombre').value.trim(),
-              obligatorio: document.getElementById('teObl').value === '1',
-              fechaLimite: document.getElementById('teFecha').value,
-              extensiones: exts, contratoIds: ctr
-            };
-            try {
-              await gsRun('apiAdminUpdateTopic', token, t.id, f, perfilActual);
-              topics = await gsRun('apiAdminGetMonthTopics', token, month.id);
-              renderTopicsList(); afterChange();
-            } catch (e) { const er = document.getElementById('teErr'); er.textContent = e.message; er.style.display = 'block'; }
-          });
-        });
+      // ---- Acciones por fila ----
+      function startRename(row) {
+        const t = byId(row.dataset.id); if (!t) return;
+        const nm = row.querySelector('.tm-name');
+        nm.innerHTML = '<input type="text" class="tm-rename" maxlength="120" aria-label="Nombre del tema">';
+        const inp = nm.querySelector('input'); inp.value = t.nombre; inp.focus(); inp.select();
+        let done = false;
+        async function finish(save) {
+          if (done) return; done = true;
+          const v = inp.value.trim();
+          if (!save || !v || v === t.nombre) { render(true); return; }
+          inp.disabled = true;
+          try { const r = await gsRun('apiAdminUpdateTopic', token, t.id, { nombre: v }, perfilActual); t.nombre = v; afterChange(); note('Nombre actualizado' + driveMsg(r) + '.'); }
+          catch (e) { nfail(e); }
+          render(true);
+        }
+        inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); } });
+        inp.addEventListener('blur', function () { finish(true); });
       }
-      renderTopicsList();
 
-      document.getElementById('btnAddTopics').addEventListener('click', function () {
-        const btn = this;
-        const nuevos = document.getElementById('newTopicsText').value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
-        if (!nuevos.length) return;
-        withBusyBtn(btn, async function () {
+      async function saveEdit(row, btn) {
+        const t = byId(row.dataset.id); if (!t) return;
+        const er = row.querySelector('.te-err'); er.style.display = 'none';
+        const ec = extEditorCollect(row.querySelector('.te-ext'));
+        if (ec.error) { er.textContent = ec.error; er.style.display = 'block'; return; }
+        const nombre = row.querySelector('.te-nombre').value.trim();
+        if (!nombre) { er.textContent = 'El nombre del tema es obligatorio.'; er.style.display = 'block'; return; }
+        const f = {
+          nombre: nombre,
+          obligatorio: row.querySelector('.te-obl').value === '1',
+          fechaLimite: row.querySelector('.te-fecha').value,
+          extensiones: ec.list,
+          contratoIds: Array.prototype.map.call(row.querySelectorAll('.te-contratos input:checked'), function (i) { return i.value; })
+        };
+        await withBusyBtn(btn, async function () {
           try {
+            const r = await gsRun('apiAdminUpdateTopic', token, t.id, f, perfilActual);
+            merge(await gsRun('apiAdminGetMonthTopics', token, month.id));
+            editingId = null; render(true); flash(t.id); afterChange(); note('Tema guardado' + driveMsg(r) + '.');
+          } catch (e) { er.textContent = e.message; er.style.display = 'block'; }
+        });
+      }
+
+      async function duplicate(row, btn) {
+        const t = byId(row.dataset.id); if (!t) return;
+        btn.disabled = true;
+        try {
+          const r = await gsRun('apiAdminDuplicateTopic', token, t.id);
+          merge(await gsRun('apiAdminGetMonthTopics', token, month.id), t.id);
+          render(true); flash(r.id); afterChange(); note('Tema duplicado: «' + r.nombre + '».');
+        } catch (e) { nfail(e); btn.disabled = false; }
+      }
+
+      async function remove(row) {
+        const t = byId(row.dataset.id); if (!t) return;
+        if (!await askConfirm('Eliminar «' + escapeHtml(t.nombre) + '»', 'El tema y los archivos que las unidades cargaron en él pasan a la <b>Papelera</b>; puedes restaurarlos desde ahí.', 'Enviar a la papelera', true)) return;
+        const pos = topics.findIndex(function (x) { return x.id === t.id; });
+        const redraw = function () { if (document.getElementById('tmList') === list) render(true); };
+        deleteWithUndo({
+          title: 'Tema eliminado', detail: t.nombre,
+          call: ['apiAdminDeleteTopic', token, t.id],
+          onHide: function () { topics = topics.filter(function (x) { return x.id !== t.id; }); redraw(); },
+          onUndo: function () { if (topics.some(function (x) { return x.id === t.id; })) return; topics.splice(Math.min(pos, topics.length), 0, t); redraw(); },
+          onCommitted: afterChange,
+          onError: fail
+        });
+      }
+
+      list.addEventListener('click', function (e) {
+        const b = e.target.closest('[data-act]'); if (!b) return;
+        const row = b.closest('.tm-row'); if (!row) return;
+        switch (b.dataset.act) {
+          case 'rename': startRename(row); break;
+          case 'edit': editingId = row.dataset.id; render(true); { const r = list.querySelector('.tm-row.editing'); if (r) { r.scrollIntoView({ block: 'nearest' }); const i = r.querySelector('.te-nombre'); if (i) i.focus(); } } break;
+          case 'cancel-edit': editingId = null; render(true); break;
+          case 'save-edit': saveEdit(row, b); break;
+          case 'dup': duplicate(row, b); break;
+          case 'del': remove(row); break;
+        }
+      });
+
+      // ---- Reordenar arrastrando (ratón y táctil) o con ↑ ↓ en el asa ----
+      function afterReorder() {
+        const ids = Array.prototype.map.call(list.querySelectorAll('.tm-row'), function (r) { return r.dataset.id; });
+        topics = ids.map(byId).filter(Boolean);
+        Array.prototype.forEach.call(list.querySelectorAll('.tm-row .tm-num'), function (n, i) { n.textContent = (i + 1) + '.'; });
+        updateFoot();
+      }
+      list.addEventListener('pointerdown', function (e) {
+        const h = e.target.closest('.tm-handle'); if (!h || e.button > 0) return;
+        if (!canSort()) { note('Quita la búsqueda y el filtro para poder reordenar.', true); return; }
+        const row = h.closest('.tm-row'); e.preventDefault();
+        row.classList.add('dragging'); list.classList.add('is-sorting');
+        let y = e.clientY, raf = 0;
+        function place() {
+          const others = Array.prototype.slice.call(list.querySelectorAll('.tm-row:not(.dragging)'));
+          let before = null;
+          for (let i = 0; i < others.length; i++) { const b = others[i].getBoundingClientRect(); if (y < b.top + b.height / 2) { before = others[i]; break; } }
+          if (before) { if (row.nextElementSibling !== before) list.insertBefore(row, before); }
+          else if (list.lastElementChild !== row) list.appendChild(row);
+        }
+        function tick() {
+          const r = list.getBoundingClientRect();
+          if (y < r.top + 36) list.scrollTop -= 14; else if (y > r.bottom - 36) list.scrollTop += 14;
+          place(); raf = requestAnimationFrame(tick);
+        }
+        function move(ev) { y = ev.clientY; }
+        function up() {
+          cancelAnimationFrame(raf);
+          document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up);
+          row.classList.remove('dragging'); list.classList.remove('is-sorting'); afterReorder();
+        }
+        document.addEventListener('pointermove', move); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
+        raf = requestAnimationFrame(tick);
+      });
+      list.addEventListener('keydown', function (e) {
+        const h = e.target.closest('.tm-handle'); if (!h || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+        e.preventDefault(); if (!canSort()) return;
+        const row = h.closest('.tm-row');
+        if (e.key === 'ArrowUp' && row.previousElementSibling) list.insertBefore(row, row.previousElementSibling);
+        else if (e.key === 'ArrowDown' && row.nextElementSibling) list.insertBefore(row.nextElementSibling, row);
+        else return;
+        afterReorder(); h.focus(); row.scrollIntoView({ block: 'nearest' });
+      });
+
+      // ---- Búsqueda, filtro y nuevo tema ----
+      document.getElementById('tmSearch').addEventListener('input', function () { q = norm(this.value.trim()); if (editingId && q) editingId = null; render(); });
+      document.getElementById('tmFilter').addEventListener('change', function () { filt = this.value; render(); });
+      const addBox = document.getElementById('tmAdd'), addText = document.getElementById('tmAddText'), newBtn = document.getElementById('tmNew');
+      function toggleAdd(open) {
+        addBox.classList.toggle('open', open); newBtn.classList.toggle('open', open);
+        newBtn.innerHTML = open ? TM_ICO.plus + 'Cerrar' : TM_ICO.plus + 'Nuevo tema';
+        if (open) addText.focus();
+      }
+      newBtn.addEventListener('click', function () { toggleAdd(!addBox.classList.contains('open')); });
+      document.getElementById('tmAddCancel').addEventListener('click', function () { addText.value = ''; toggleAdd(false); });
+      async function addTopics() {
+        const nuevos = addText.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+        if (!nuevos.length) { addText.focus(); return; }
+        const btn = document.getElementById('tmAddOk');
+        await withBusyBtn(btn, async function () {
+          try {
+            const before = topics.map(function (t) { return t.id; });
             await gsRun('apiAdminCreateTopics', token, month.id, nuevos);
-            document.getElementById('newTopicsText').value = '';
-            topics = await gsRun('apiAdminGetMonthTopics', token, month.id);
-            renderTopicsList(); afterChange();
-          } catch (e) { fail(e); }
+            merge(await gsRun('apiAdminGetMonthTopics', token, month.id));
+            addText.value = ''; toggleAdd(false);
+            q = ''; filt = 'todos'; document.getElementById('tmSearch').value = ''; document.getElementById('tmFilter').value = 'todos';
+            render();
+            const added = topics.map(function (t) { return t.id; }).filter(function (id) { return before.indexOf(id) === -1; });
+            list.scrollTop = list.scrollHeight; flash(added.slice(-1)); added.forEach(function (id) { const el = list.querySelector('.tm-row[data-id="' + id + '"]'); if (el) el.classList.add('flash'); });
+            afterChange(); note(added.length === 1 ? 'Tema agregado.' : added.length + ' temas agregados.');
+          } catch (e) { nfail(e); }
+        });
+      }
+      document.getElementById('tmAddOk').addEventListener('click', addTopics);
+      addText.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); addTopics(); } });
+
+      // ---- Pie: cancelar / guardar ----
+      function hide() { bg.classList.remove('open'); topicsRequestClose = null; }
+      topicsRequestClose = async function () {
+        if (dirty && !await askConfirm('Salir sin guardar', 'Cambiaste el orden de los temas y aún no lo has guardado. ¿Quieres descartarlo?', 'Descartar cambios', true)) return;
+        hide();
+      };
+      document.getElementById('tmCancel').addEventListener('click', function () { topicsRequestClose(); });
+      document.getElementById('tmSave').addEventListener('click', function () {
+        const btn = this;
+        withBusyBtn(btn, async function () {
+          if (dirty) {
+            try {
+              await gsRun('apiAdminReorderTopics', token, month.id, topics.map(function (t) { return t.id; }));
+              serverIds = topics.map(function (t) { return t.id; }); updateFoot(); afterChange();
+            } catch (e) { nfail(e); return; }
+          }
+          hide();
         });
       });
 
-      document.getElementById('userModalBg').classList.add('open');
+      render();
+      bg.classList.add('open');
     }
 
 
@@ -1709,6 +1959,18 @@
     }
 
     // ---- Detalle de una casilla de la matriz (panel lateral con revisión) ----
+
+    // ---- Estilo unificado de paneles (medalla = avance de la unidad; íconos del panel de usuario) ----
+    const MEDAL_STEPS = [[20, 'bronce'], [40, 'plata'], [60, 'oro'], [80, 'platino'], [100, 'diamante']];
+    function medalFileFor(pct) { let f = ''; MEDAL_STEPS.forEach(function (m) { if (pct >= m[0]) f = m[1]; }); return f; }
+    function medalImg(pct, extra) { const f = medalFileFor(pct || 0); return '<img class="ic-medal' + (f ? '' : ' locked') + '" src="assets/medals/' + (f || 'bronce') + '.png" alt="Medalla" title="' + (f ? 'Medalla de avance: ' + f : 'Aún sin medalla') + '">'; }
+    function isv(d, s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; }
+    const IC_CAL = '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>';
+    const IC_SHIELD = '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>';
+    const IC_BUILD = '<path d="M4 21V5l8-2v18M12 8h8v13M4 21h16M8 8v.01M8 12v.01M8 16v.01M16 12v.01M16 16v.01"/>';
+    const IC_DOC = '<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>';
+    const IC_USER = '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>';
+    function icCell(ic, k, vHtml) { return '<div class="ic-cell">' + isv(ic, 22) + '<div><span>' + k + '</span><b>' + vHtml + '</b></div></div>'; }
     let cdCurrent = null;
     let cdKey = '', cdOpen = null, cdSecOpen = true, cdFlash = '';   // plegado de «Archivos cargados» y mensaje de la última acción
     const CHEV_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
@@ -1733,8 +1995,9 @@
       dr.style.setProperty('--fc', col[0]);
       dr.style.setProperty('--fc-bg', col[1]);
       const iconEl = document.getElementById('cdIcon');
-      iconEl.innerHTML = folderSvg(46, cell.vencido && cell.estado === 'vacio' ? 'vencido' : cell.estado, n);
+      iconEl.innerHTML = folderSvg(84, cell.vencido && cell.estado === 'vacio' ? 'vencido' : cell.estado, n);
       document.getElementById('cdTitle').textContent = topic.nombre;
+      document.getElementById('cdSub').innerHTML = 'Unidad: <b>' + escapeHtml(row.nombreUnidad) + '</b> &nbsp;•&nbsp; Mes: <b>' + escapeHtml(currentStatus.month.nombre) + '</b>';
       document.getElementById('cdBadge').innerHTML = '<i class="dot"></i>' + e.label + (cell.vencido ? ' · vencido' : '');
 
       const bTitle = {
@@ -1754,14 +2017,19 @@
       let html = (flash ? '<div class="dr-flash">' + escapeHtml(flash) + '</div>' : '') +
         '<div class="dr-banner ' + (cell.estado === 'vacio' ? (cell.vencido ? 'vencido' : 'vacio') : (cell.estado === 'excluido' ? 'noaplica' : cell.estado)) + '">' +
           '<div><strong>' + escapeHtml(bTitle) + '</strong>' + escapeHtml(bSub.join(' ')) + '</div></div>' +
-        '<div><div class="dr-title">Información</div><div class="dr-info">' +
-          '<div style="grid-column:1/-1;"><div class="k">Unidad de servicio</div><div class="v"><a href="#" class="link-btn" id="cdUnitLink">' + escapeHtml(row.nombreUnidad) + ' · abrir ficha</a></div></div>' +
-          '<div><div class="k">Código UDS</div><div class="v">' + (row.codigoPlano ? escapeHtml(row.codigoPlano) : 'No disponible') + '</div></div>' +
-          '<div><div class="k">Cédula</div><div class="v">' + escapeHtml(row.cedula) + '</div></div>' +
-          '<div><div class="k">Contrato</div><div class="v">' + escapeHtml(row.contratoNombre) + '</div></div>' +
-          '<div><div class="k">Mes</div><div class="v">' + escapeHtml(currentStatus.month.nombre) + '</div></div>' +
-          '<div><div class="k">Último cargue en el tema</div><div class="v">' + (ultima ? formatDate(ultima) : '—') + '</div></div>' +
-        '</div></div>';
+        '<div class="dr-card dr-infocard">' + medalImg(row.pct) +
+          '<div class="ic-main"><div class="ic-top"><div><div class="ic-title">Información del tema</div><div class="ic-sub"><a href="#" class="link-btn" id="cdUnitLink">' + escapeHtml(row.nombreUnidad) + ' · abrir ficha</a></div></div>' +
+            '<div class="ic-pills">' +
+              '<div class="ic-pill">' + isv(IC_CAL, 28) + '<div><span>Fecha límite</span><b>' + (cell.fechaLimite ? fmtDay(cell.fechaLimite) : 'Sin fecha') + '</b></div></div>' +
+              '<div class="ic-pill">' + isv(IC_SHIELD, 28) + '<div><span>Estado</span><b>' + (cell.obligatorio ? 'Obligatorio' : 'Opcional') + '</b></div></div>' +
+            '</div></div>' +
+            '<div class="ic-row">' +
+              icCell(IC_BUILD, 'Código UDS', row.codigoPlano ? escapeHtml(row.codigoPlano) : 'No disponible') +
+              icCell(IC_USER, 'Cédula', escapeHtml(row.cedula)) +
+              icCell(IC_DOC, 'Contrato', escapeHtml(row.contratoNombre)) +
+              icCell(IC_CAL, 'Mes', escapeHtml(currentStatus.month.nombre)) +
+              icCell(IC_CAL, 'Último cargue', ultima ? formatDate(ultima) : '—') +
+            '</div></div></div>';
 
       const fmts = topic.extensiones || [];
       html += '<div><div class="dr-title">Formatos de esta carpeta</div><div class="dr-fmt">' +
@@ -2007,16 +2275,21 @@
     function renderUnitDrawer() {
       const d = unitSheetData, u = d.unit;
       document.getElementById('udTitle').textContent = u.nombreUnidad;
+      document.getElementById('udIcon').innerHTML = isv(IC_BUILD, 40);
+      document.getElementById('udSub').innerHTML = 'Ficha de la unidad' + (u.nombreCompleto ? ' &nbsp;•&nbsp; <b>' + escapeHtml(u.nombreCompleto) + '</b>' : '');
+      const curM = d.meses.filter(function (m) { return m.id === curMonth; })[0], uPct = curM ? curM.resumen.pct : 0;
       const opts = '<option value="">Sin contrato</option>' + contratos.map(function (c) { return '<option value="' + c.id + '"' + (c.id === u.contratoId ? ' selected' : '') + '>' + escapeHtml(c.nombre) + '</option>'; }).join('');
       let html =
         '<div class="sheet-head"><span class="avatar" style="width:46px;height:46px;font-size:16px;">' + getInitials(u.nombreUnidad) + '</span>' +
           '<div style="min-width:0;"><div style="font-weight:700;font-size:15px;">' + escapeHtml(u.nombreUnidad) + '</div>' + (u.nombreCompleto ? '<div style="font-size:13px;">' + escapeHtml(u.nombreCompleto) + '</div>' : '') + '<div class="muted" style="font-size:12.5px;">CC ' + escapeHtml(u.cedula) + (u.codigoPlano ? ' · Cód. ' + escapeHtml(u.codigoPlano) : '') + '</div></div></div>' +
-        '<div class="dr-info" style="margin-bottom:12px;">' +
-          '<div><div class="k">Contrato</div><div class="v"><select class="select-inline" id="udContrato">' + opts + '</select></div></div>' +
-          '<div><div class="k">Registrada</div><div class="v">' + formatDate(u.createdAt) + '</div></div>' +
-          '<div><div class="k">Último cargue</div><div class="v">' + (u.ultimoCargue ? formatDate(u.ultimoCargue) : 'Sin cargues') + '</div></div>' +
-          '<div><div class="k">Archivos en total</div><div class="v">' + u.totalArchivos + '</div></div>' +
-        '</div>' +
+        '<div class="dr-card dr-infocard">' + medalImg(uPct) +
+          '<div class="ic-main"><div class="ic-top"><div><div class="ic-title">Información de la unidad</div><div class="ic-sub">Avance de ' + escapeHtml(monthNameOf(curMonth)) + ': ' + uPct + '%</div></div></div>' +
+          '<div class="ic-row">' +
+            '<div class="ic-cell">' + isv(IC_DOC, 22) + '<div><span>Contrato</span><b><select class="select-inline" id="udContrato">' + opts + '</select></b></div></div>' +
+            icCell(IC_CAL, 'Registrada', formatDate(u.createdAt)) +
+            icCell(IC_CAL, 'Último cargue', u.ultimoCargue ? formatDate(u.ultimoCargue) : 'Sin cargues') +
+            icCell(IC_DOC, 'Archivos en total', String(u.totalArchivos)) +
+          '</div></div></div>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">' +
           '<button class="btn btn-primary btn-sm" id="udViewAs" type="button">👁 Ver como unidad</button>' +
           '<button class="btn btn-secondary btn-sm" id="udRemind" type="button">Enviar recordatorio (' + escapeHtml(monthNameOf(curMonth)) + ')</button>' +

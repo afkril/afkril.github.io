@@ -718,8 +718,52 @@ function apiAdminChangeCredentials(token, nuevoUsuario, nuevaPassword) {
 // ---------------------------------------------------------------------
 // DRIVE - CARPETAS: RootFolder / Mes / Cedula - NombreUnidad / Tema
 // ---------------------------------------------------------------------
+function folderName_(name) {
+  return String(name).trim().replace(/[\\/:*?"<>|]/g, '-');
+}
+
+// Renombra en Drive las carpetas de un tema (una por unidad) cuando el tema cambia de nombre.
+// Parte de los archivos ya cargados: su carpeta contenedora es la carpeta del tema de esa unidad.
+// - Si la carpeta aún se llama como el nombre viejo, se renombra.
+// - Si ya existe otra con el nombre nuevo (alguien subió un archivo después del cambio), se
+//   mueve el contenido a esa y la vieja se envía a la papelera de Drive.
+// - Si alguien la renombró o movió a mano, no se toca.
+// Se corta a los 4 minutos para no pasar el límite de Apps Script; `parcial` lo indica.
+function renameTopicFolders_(topicId, oldName, newName) {
+  const out = { renombradas: 0, fusionadas: 0, errores: 0, parcial: false };
+  const oldF = folderName_(oldName), newF = folderName_(newName);
+  if (!oldF || oldF === newF) return out;
+  const t0 = Date.now(), seen = {};
+  const ups = rowsAll_(SHEET_NAMES.UPLOADS).filter(function (u) { return u.topicId === topicId && u.driveFileId; });
+  for (let i = 0; i < ups.length; i++) {
+    if (Date.now() - t0 > 240000) { out.parcial = true; break; }
+    try {
+      const ps = DriveApp.getFileById(ups[i].driveFileId).getParents();
+      if (!ps.hasNext()) continue;
+      const folder = ps.next(), fid = folder.getId();
+      if (seen[fid]) continue;
+      seen[fid] = true;
+      if (folder.getName() !== oldF) continue;
+      const up = folder.getParents();
+      const unitFolder = up.hasNext() ? up.next() : null;
+      const ex = unitFolder ? unitFolder.getFoldersByName(newF) : null;
+      if (ex && ex.hasNext()) {
+        const target = ex.next();
+        const fi = folder.getFiles(); while (fi.hasNext()) fi.next().moveTo(target);
+        const fo = folder.getFolders(); while (fo.hasNext()) fo.next().moveTo(target);
+        folder.setTrashed(true);
+        out.fusionadas++;
+      } else {
+        folder.setName(newF);
+        out.renombradas++;
+      }
+    } catch (e) { out.errores++; }
+  }
+  return out;
+}
+
 function getOrCreateSubfolder_(parentFolder, name) {
-  name = String(name).trim().replace(/[\\/:*?"<>|]/g, '-');
+  name = folderName_(name);
   const it = parentFolder.getFoldersByName(name);
   if (it.hasNext()) return it.next();
   return parentFolder.createFolder(name);
@@ -1646,7 +1690,8 @@ function apiAdminCreateTopics(token, monthId, temas) {
 // tipos de archivo permitidos y contratos a los que se les exige.
 function apiAdminUpdateTopic(token, topicId, f, perfil) {
   const session = requireAdminSession_(token);
-  return withLock_(function () {
+  let renameFrom = null, renameTo = null, monthIdOf = '';
+  const res = withLock_(function () {
     f = f || {};
     const sheet = getSheet_(SHEET_NAMES.TEMAS);
     const topic = rows_(SHEET_NAMES.TEMAS).find(function (t) { return t.id === topicId; });
@@ -1656,6 +1701,7 @@ function apiAdminUpdateTopic(token, topicId, f, perfil) {
       const n = String(f.nombre || '').trim();
       if (!n) throw new Error('El nombre del tema es obligatorio.');
       fields.nombre = n;
+      if (n !== topic.nombre) { renameFrom = topic.nombre; renameTo = n; monthIdOf = topic.monthId; }
     }
     if (f.obligatorio !== undefined) fields.obligatorio = !!f.obligatorio;
     if (f.fechaLimite !== undefined) fields.fechaLimite = cleanDate_(f.fechaLimite, 'límite del tema');
@@ -1685,7 +1731,18 @@ function apiAdminUpdateTopic(token, topicId, f, perfil) {
     audit_('admin', reviewerLabel_(session, perfil), 'tema_editado', 'Editó el tema "' + topic.nombre + '" (' + cambios + ')' + extra, topic.monthId, '');
     return { ok: true };
   });
+  // Drive se toca fuera del candado para no bloquear las cargas de las unidades.
+  if (renameFrom !== null) {
+    const d = renameTopicFolders_(topicId, renameFrom, renameTo);
+    res.drive = d;
+    audit_('admin', reviewerLabel_(session, perfil), 'tema_editado',
+      'Renombró el tema \"' + renameFrom + '\" → \"' + renameTo + '\" · Carpetas en Drive: ' + d.renombradas + ' renombradas, ' + d.fusionadas + ' fusionadas' +
+      (d.errores ? ', ' + d.errores + ' con error' : '') + (d.parcial ? ' (proceso parcial)' : ''), monthIdOf, '');
+  }
+  return res;
 }
+
+
 
 function apiAdminRenameTopic(token, topicId, nuevoNombre) {
   return apiAdminUpdateTopic(token, topicId, { nombre: nuevoNombre });
@@ -1705,6 +1762,65 @@ function apiAdminDeleteTopic(token, topicId) {
     updateRow_(getSheet_(SHEET_NAMES.TEMAS), topic.__row, mark);
     audit_('admin', adminActor_(session), 'tema_eliminado', 'Envió a la papelera el tema "' + topic.nombre + '" (' + Object.keys(upd).length + ' archivos)', topic.monthId, '');
     return { ok: true };
+  });
+}
+
+// Guarda el orden de los temas de un mes. `orderedIds` es la lista de ids en el orden deseado;
+// los temas que no vengan en la lista quedan al final conservando su orden.
+function apiAdminReorderTopics(token, monthId, orderedIds) {
+  const session = requireAdminSession_(token);
+  if (!Array.isArray(orderedIds) || !orderedIds.length) throw new Error('No se recibió el nuevo orden.');
+  return withLock_(function () {
+    MEMO_.tables = {};
+    const month = rows_(SHEET_NAMES.MESES).find(function (m) { return m.id === monthId; });
+    if (!month) throw new Error('Mes no encontrado.');
+    const current = rows_(SHEET_NAMES.TEMAS).filter(function (t) { return t.monthId === monthId; })
+      .sort(function (a, b) { return (Number(a.orden) || 0) - (Number(b.orden) || 0); });
+    const byId = {}; current.forEach(function (t) { byId[t.id] = t; });
+    const seen = {}, finalList = [];
+    orderedIds.forEach(function (id) { if (byId[id] && !seen[id]) { seen[id] = true; finalList.push(byId[id]); } });
+    current.forEach(function (t) { if (!seen[t.id]) finalList.push(t); });
+    const upd = {};
+    finalList.forEach(function (t, i) { if (Number(t.orden) !== i) upd[t.__row] = { orden: i }; });
+    const changed = Object.keys(upd).length;
+    if (changed) bulkUpdateRows_(getSheet_(SHEET_NAMES.TEMAS), upd);
+    if (changed) audit_('admin', adminActor_(session), 'tema_reordenado', 'Cambió el orden de los temas de "' + month.nombre + '"', monthId, '');
+    return { ok: true, changed: changed };
+  });
+}
+
+// Copia un tema (con sus reglas) justo debajo del original. No copia archivos cargados.
+function apiAdminDuplicateTopic(token, topicId) {
+  const session = requireAdminSession_(token);
+  return withLock_(function () {
+    MEMO_.tables = {};
+    const topic = rows_(SHEET_NAMES.TEMAS).find(function (t) { return t.id === topicId; });
+    if (!topic) throw new Error('Tema no encontrado.');
+    const siblings = rows_(SHEET_NAMES.TEMAS).filter(function (t) { return t.monthId === topic.monthId; })
+      .sort(function (a, b) { return (Number(a.orden) || 0) - (Number(b.orden) || 0); });
+    const names = siblings.map(function (t) { return String(t.nombre).toLowerCase(); });
+    let nombre = String(topic.nombre) + ' (copia)', n = 2;
+    while (names.indexOf(nombre.toLowerCase()) !== -1) { nombre = String(topic.nombre) + ' (copia ' + n + ')'; n++; }
+    const copy = {
+      id: Utilities.getUuid(), monthId: topic.monthId, nombre: nombre, orden: siblings.length,
+      obligatorio: bool_(topic.obligatorio, true),
+      fechaLimite: normDate_(topic.fechaLimite) || '',
+      extensiones: topic.extensiones || '',
+      contratoIds: topic.contratoIds || ''
+    };
+    appendRow_(getSheet_(SHEET_NAMES.TEMAS), copy);
+    // Reubicar: la copia queda justo después del original.
+    MEMO_.tables = {};
+    const fresh = rows_(SHEET_NAMES.TEMAS).filter(function (t) { return t.monthId === topic.monthId; })
+      .sort(function (a, b) { return (Number(a.orden) || 0) - (Number(b.orden) || 0); });
+    const ids = fresh.map(function (t) { return t.id; }).filter(function (id) { return id !== copy.id; });
+    ids.splice(ids.indexOf(topic.id) + 1, 0, copy.id);
+    const byId = {}; fresh.forEach(function (t) { byId[t.id] = t; });
+    const upd = {};
+    ids.forEach(function (id, i) { if (byId[id] && Number(byId[id].orden) !== i) upd[byId[id].__row] = { orden: i }; });
+    bulkUpdateRows_(getSheet_(SHEET_NAMES.TEMAS), upd);
+    audit_('admin', adminActor_(session), 'tema_creado', 'Duplicó el tema "' + topic.nombre + '" → "' + nombre + '"', topic.monthId, '');
+    return { ok: true, id: copy.id, nombre: nombre };
   });
 }
 

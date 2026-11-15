@@ -168,10 +168,10 @@
   <aside class="drawer" id="detailDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" aria-hidden="true">
     <div class="drawer-head">
       <span class="dh-icon" id="drawerIcon"></span>
-      <h2 id="drawerTitle"></h2>
+      <div class="dh-main"><h2 id="drawerTitle"></h2><div class="dh-sub" id="drawerSub"></div></div>
       <span class="fc-badge" id="drawerBadge"></span>
       <button class="drawer-close" id="drawerClose" type="button" aria-label="Cerrar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
     <div id="drawerAlert" class="alert"></div>
@@ -356,7 +356,9 @@
       return null;
     }
     let prevTier;
+    let lastProgPct = 0, lastProgTotal = 0;
     function renderMedals(r) {
+      lastProgPct = r.pct; lastProgTotal = r.total;
       const t = r.total ? tierOf(r.pct) : -1;
       const m = MEDALS[t];
       const hero = document.getElementById('pmHero');
@@ -870,37 +872,62 @@
     }
 
     // ---------- Acciones compartidas (tarjeta y panel) ----------
-    function uploadFor(t, file, zone) {
+    // Carga uno o varios archivos al tema. Se validan todos primero y se suben uno por uno
+    // (el servidor nombra cada archivo según los ya cargados, por eso no van en paralelo).
+    const MAX_FILES_BATCH = 20;
+    let uploadingNow = false;
+    function uploadManyFor(t, files, zone) {
       if (isReadonly()) { reportError('Este mes no admite cargas en este momento.'); return; }
-      if (file.size > MAX_FILE_MB * 1024 * 1024) {
-        reportError('El archivo supera el límite de ' + MAX_FILE_MB + ' MB.');
-        return;
-      }
-      const ext = (file.name.split('.').pop() || '').toLowerCase();
-      const restricted = t.extensiones && t.extensiones.length;
-      if (file.name.indexOf('.') === -1) { reportError('El archivo debe tener una extensión (por ejemplo .pdf, .docx).'); const inp1 = zone.querySelector('input[type=file]'); if (inp1) inp1.value = ''; return; }
-      if (restricted && t.extensiones.indexOf(ext) === -1) {
-        reportError('En este tema solo se permiten archivos ' + extsText(t) + '.');
-        const inp0 = zone.querySelector('input[type=file]'); if (inp0) inp0.value = '';
-        return;
-      }
       const inp = zone.querySelector('input[type=file]');
       if (inp) inp.value = '';
-      const toast = safeShowToast(file.name);
+      if (uploadingNow) { reportError('Espera a que termine la carga en curso para adjuntar más archivos.'); return; }
+      const restricted = t.extensiones && t.extensiones.length;
+      const ok = [], bad = [];
+      files.forEach(function (file) {
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (file.size > MAX_FILE_MB * 1024 * 1024) bad.push(file.name + ': supera el límite de ' + MAX_FILE_MB + ' MB');
+        else if (file.name.indexOf('.') === -1) bad.push(file.name + ': no tiene extensión (por ejemplo .pdf, .docx)');
+        else if (restricted && t.extensiones.indexOf(ext) === -1) bad.push(file.name + ': en este tema solo se permiten archivos ' + extsText(t));
+        else ok.push(file);
+      });
+      if (ok.length > MAX_FILES_BATCH) {
+        bad.push('Se omitieron ' + (ok.length - MAX_FILES_BATCH) + ' archivo(s): el máximo es ' + MAX_FILES_BATCH + ' por carga');
+        ok.length = MAX_FILES_BATCH;
+      }
+      if (bad.length) reportError(bad.length === 1 ? bad[0] + '.' : 'No se cargaron ' + bad.length + ' archivo(s): ' + bad.join(' · ') + '.');
+      if (!ok.length) return;
+
+      uploadingNow = true;
       zone.style.pointerEvents = 'none';
+      zone.classList.add('is-uploading');
       (async function () {
-        try {
-          const fileObj = await readFileAsBase64(file);
-          await gsRun('apiUploadFile', token, currentMonthId, t.id, fileObj);
-          toast.success('Se cargó: quedó en revisión.');
-          zone.style.pointerEvents = '';
-          await refreshTopics();
-        } catch (err) {
-          toast.error(err.message);
-          zone.style.pointerEvents = '';
+        let done = 0, failed = 0;
+        for (let i = 0; i < ok.length; i++) {
+          const file = ok[i];
+          const toast = safeShowToast(ok.length > 1 ? '(' + (i + 1) + '/' + ok.length + ') ' + file.name : file.name);
+          try {
+            const fileObj = await readFileAsBase64(file);
+            await gsRun('apiUploadFile', token, currentMonthId, t.id, fileObj);
+            toast.success('Se cargó: quedó en revisión.');
+            done++;
+          } catch (err) {
+            toast.error(err.message);
+            failed++;
+          }
         }
+        uploadingNow = false;
+        zone.style.pointerEvents = '';
+        zone.classList.remove('is-uploading');
+        if (ok.length > 1) {
+          const sum = safeShowToast('Carga múltiple');
+          if (failed) sum.error('Se cargaron ' + done + ' de ' + ok.length + ' archivos. Revisa los que fallaron e inténtalo de nuevo.');
+          else sum.success('Se cargaron los ' + done + ' archivos.');
+        }
+        try { await refreshTopics(); } catch (e) { reportError(e.message); }
       })();
     }
+    // Compatibilidad con llamadas de un solo archivo
+    function uploadFor(t, file, zone) { uploadManyFor(t, [file], zone); }
 
     // Botón "No aplica este mes" / "Marcar que sí aplica". Devuelve null si no corresponde mostrarlo.
     function buildNoAplicaBtn(t, asButton) {
@@ -943,12 +970,12 @@
         '<div class="fc-extra">' +
           '<div class="files-list"></div>' +
           ((t.noAplica || ro) ? '' :
-            '<div class="attach-label">' + CLIP_SVG + 'Adjuntar documento</div>' +
+            '<div class="attach-label">' + CLIP_SVG + 'Adjuntar documentos</div>' +
             '<div class="dropzone dz-attach">' +
-              '<input type="file" accept="' + acceptFor(t) + '">' +
+              '<input type="file" multiple accept="' + acceptFor(t) + '">' +
               '<div class="dz-icon">' + UP_ICON_LG + '</div>' +
-              '<div class="dz-text"><strong>Haz clic aquí</strong> o arrastra tu archivo</div>' +
-              '<span class="dz-btn">Seleccionar archivo</span>' +
+              '<div class="dz-text"><strong>Haz clic aquí</strong> o arrastra uno o varios archivos</div>' +
+              '<span class="dz-btn">Seleccionar archivos</span>' +
               '<div class="dz-limits">' + extsText(t) + '</div>' +
             '</div>') +
           '<div class="noaplica-row"></div>' +
@@ -979,7 +1006,7 @@
       t.files.forEach(function (f) { filesList.appendChild(buildFileItem(f)); });
 
       const zone = card.querySelector('.dropzone');
-      if (zone) enableDropzone(zone, function (file) { uploadFor(t, file, zone); });
+      if (zone) enableMultiDropzone(zone, function (files) { uploadManyFor(t, files, zone); });
 
       return card;
     }
@@ -1000,10 +1027,10 @@
           (f.estado === 'rechazado' && f.observacion ? '<div class="file-obs"><strong>Motivo:</strong> ' + escapeHtml(f.observacion) + '</div>' : '') +
         '</div>' +
         '<div class="file-actions">' +
-          (ro ? '' : '<button data-rename title="Renombrar">' + IC('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>', 14) + '</button>') +
-          '<button data-view title="Ver">' + IC('<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>') + '</button>' +
-          '<button data-download title="Descargar">' + IC('<path d="M12 3v13M7 11l5 5 5-5"/><path d="M4 19h16"/>') + '</button>' +
-          (ro ? '' : '<button data-del title="Eliminar">' + IC('<path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7"/>') + '</button>') +
+          (ro ? '' : '<button data-rename title="Renombrar">' + IC('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>', 14) + '<span class="fa-l">Renombrar</span></button>') +
+          '<button data-view title="Ver">' + IC('<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>') + '<span class="fa-l">Visualizar</span></button>' +
+          '<button data-download title="Descargar">' + IC('<path d="M12 3v13M7 11l5 5 5-5"/><path d="M4 19h16"/>') + '<span class="fa-l">Descargar</span></button>' +
+          (ro ? '' : '<button data-del title="Eliminar">' + IC('<path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7"/>') + '<span class="fa-l">Eliminar</span></button>') +
         '</div>';
 
       item.querySelector('[data-view]').addEventListener('click', async function (e) {
@@ -1026,6 +1053,7 @@
       return item;
     }
 
+    const drFold = {};
     function renderPanel() {
       if (!openTopicId) return;
       const t = lastTopics.find(function (x) { return x.id === openTopicId; });
@@ -1041,9 +1069,11 @@
       head.style.setProperty('--fc', col[0]);
       head.style.setProperty('--fc-bg', col[1]);
       const iconEl = document.getElementById('drawerIcon');
-      iconEl.innerHTML = folderSvg(44, ck, n);
+      iconEl.innerHTML = folderSvg(84, ck, n);
       iconEl.style.color = col[0];
       document.getElementById('drawerTitle').textContent = t.nombre;
+      const unidad = document.getElementById('unitName').textContent;
+      document.getElementById('drawerSub').innerHTML = 'Unidad: <b>' + escapeHtml(unidad) + '</b> &nbsp;•&nbsp; Mes: <b>' + escapeHtml(mesTxt) + '</b>';
       document.getElementById('drawerBadge').innerHTML = '<i class="dot"></i>' + badgeLabel(t);
 
       const bannerTitle = {
@@ -1060,68 +1090,88 @@
 
       const body = document.getElementById('drawerBody');
       body.innerHTML = '';
+      const sv = function (d, s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+      const pane = function (k) { const d = document.createElement('div'); d.className = 'dr-pane'; body.appendChild(d); return d; };
 
+      // ---- Detalles ----
+      const pd = pane('detalles');
       const banner = document.createElement('div');
       banner.className = 'dr-banner ' + (ck === 'vencido' ? 'vencido' : t.estado);
-      banner.innerHTML =
-        '<span class="db-icon">' + bannerIcon + '</span>' +
-        '<div><strong>' + escapeHtml(bannerTitle) + '</strong>' + escapeHtml(bannerSub) + '</div>';
-      body.appendChild(banner);
-
+      banner.innerHTML = '<span class="db-icon">' + bannerIcon + '</span><div><strong>' + escapeHtml(bannerTitle) + '</strong>' + escapeHtml(bannerSub) + '</div>';
+      pd.appendChild(banner);
+      const mTier = lastProgTotal ? tierOf(lastProgPct) : -1;   // la medalla es la del avance del usuario en el mes
+      const medal = MEDALS[mTier >= 0 ? mTier : 0].file, medalLocked = mTier < 0;
+      const cell = function (ic, k, v) { return '<div class="ic-cell">' + sv(ic, 24) + '<div><span>' + k + '</span><b>' + escapeHtml(v) + '</b></div></div>'; };
       const info = document.createElement('div');
+      info.className = 'dr-card dr-infocard';
       info.innerHTML =
-        '<div class="dr-title">' + INFO_SVG + 'Información del tema</div>' +
-        '<div class="dr-info">' +
-          '<div><div class="k">Tema</div><div class="v">' + escapeHtml(t.nombre) + '</div></div>' +
-          '<div><div class="k">Mes</div><div class="v">' + escapeHtml(mesTxt) + '</div></div>' +
-          '<div><div class="k">Estado</div><div class="v">' + badgeLabel(t) + '</div></div>' +
-          '<div><div class="k">Archivos cargados</div><div class="v">' + n + '</div></div>' +
-          '<div><div class="k">Fecha límite</div><div class="v">' + (t.fechaLimite ? fmtDay(t.fechaLimite) : 'Sin fecha') + '</div></div>' +
-          '<div><div class="k">Se exige</div><div class="v">' + (t.obligatorio ? 'Obligatorio' : 'Opcional') + '</div></div>' +
-        '</div>';
-      body.appendChild(info);
+        '<img class="ic-medal' + (medalLocked ? ' locked' : '') + '" src="assets/medals/' + medal + '.png" alt="Medalla del avance" title="Medalla de tu avance del mes">' +
+        '<div class="ic-main"><div class="ic-top"><div><div class="ic-title">Información del tema</div><div class="ic-sub">Datos principales del tema seleccionado</div></div>' +
+          '<div class="ic-pills">' +
+            '<div class="ic-pill">' + sv('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', 30) + '<div><span>Fecha límite</span><b>' + (t.fechaLimite ? fmtDay(t.fechaLimite) : 'Sin fecha') + '</b></div></div>' +
+            '<div class="ic-pill">' + sv('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>', 30) + '<div><span>Estado</span><b>' + (t.obligatorio ? 'Obligatorio' : 'Opcional') + '</b></div></div>' +
+          '</div></div>' +
+          '<div class="ic-row">' +
+            cell('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', 'Mes', mesTxt) +
+            cell('<path d="M4 21V5l8-2v18M12 8h8v13M4 21h16M8 8v.01M8 12v.01M8 16v.01M16 12v.01M16 16v.01"/>', 'Unidad', unidad) +
+            cell('<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>', 'Archivos cargados', String(n)) +
+          '</div></div>';
+      pd.appendChild(info);
 
-      // Cargar archivo (no se muestra si el tema es "No aplica" o el mes no admite cambios)
+      // ---- Adjuntar ----
+      const pa = pane('adjuntar');
       if (!t.noAplica && !isReadonly()) {
         const up = document.createElement('div');
-        up.className = 'dr-upload';
+        up.className = 'dr-card dr-upload2 dropzone dz-large dz-attach';
         up.innerHTML =
-          '<div class="dr-upload-head">' +
-            '<span class="du-badge">' + CLIP_SVG.replace(/width="14" height="14"/, 'width="18" height="18"') + '</span>' +
-            '<div><div class="du-title">Adjuntar documentos</div>' +
-            '<div class="du-sub">Aquí se cargan los archivos de este tema</div></div>' +
-          '</div>' +
-          '<div class="dropzone dz-large dz-attach">' +
-            '<input type="file" accept="' + acceptFor(t) + '">' +
-            '<div class="dz-main"><span class="dz-icon">' + UPLOAD_SVG + '</span>' +
-              '<div><strong>Arrastra un archivo aquí</strong><span>o selecciónalo desde tu equipo</span></div></div>' +
-            '<span class="btn btn-primary btn-sm">' + UP_SMALL_SVG + ' Adjuntar archivo</span>' +
-          '</div>' +
-          '<div class="dr-note">Formatos permitidos: ' + extsText(t) + ' · Tamaño máximo: ' + MAX_FILE_MB + ' MB · El archivo se nombra automáticamente.</div>';
-        body.appendChild(up);
-        const zone = up.querySelector('.dropzone');
-        enableDropzone(zone, function (file) { uploadFor(t, file, zone); });
+          '<input type="file" multiple accept="' + acceptFor(t) + '" title="Adjuntar archivos">' +
+          '<div class="dz-art"><svg viewBox="0 0 220 170" width="170" height="131"><defs><linearGradient id="cl1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e4e0ff"/><stop offset="1" stop-color="#b9b2f5"/></linearGradient><linearGradient id="cl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a8bff"/><stop offset="1" stop-color="#1747d6"/></linearGradient></defs>' +
+          '<path d="M40 130a26 26 0 0 1 4-51 38 38 0 0 1 72-12 30 30 0 0 1 52 22 24 24 0 0 1-4 41z" fill="url(#cl1)"/>' +
+          '<path d="M62 150a30 30 0 0 1 3-58 42 42 0 0 1 80-8 32 32 0 0 1 12 66z" fill="url(#cl2)"/><path d="M110 132V98M95 112l15-16 15 16" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<rect x="52" y="34" width="26" height="30" rx="5" fill="#ef4444" transform="rotate(-12 65 49)"/><rect x="100" y="18" width="26" height="30" rx="5" fill="#22a65e"/><rect x="146" y="38" width="26" height="30" rx="5" fill="#5b8cff" transform="rotate(12 159 53)"/></svg></div>' +
+          '<div class="dz-txt"><div class="du-title">Adjuntar documentos</div><div class="du-sub">Arrastra uno o varios archivos a cualquier parte de este recuadro o haz clic para seleccionarlos (puedes marcar varios a la vez)</div>' +
+          '<div class="dz-row"><span class="btn btn-primary btn-sm">' + UP_SMALL_SVG + ' Adjuntar archivos</span>' +
+          '<span class="dz-meta">' + sv('<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>', 18) + extsText(t) + ' • Máx. ' + MAX_FILE_MB + ' MB</span></div>' +
+          '<div class="dr-note">Los archivos se nombran automáticamente.</div></div>';
+        pa.appendChild(up);
+        enableMultiDropzone(up, function (files) { uploadManyFor(t, files, up); });
+      } else {
+        pa.innerHTML = '<div class="dr-empty">' + (t.noAplica ? 'Este tema está marcado como «No aplica»: no se pueden adjuntar archivos.' : 'Este mes no admite cambios: no se pueden adjuntar archivos.') + '</div>';
       }
-
       const naBtn = buildNoAplicaBtn(t, true);
-      if (naBtn) {
-        const row = document.createElement('div');
-        row.className = 'dr-actions';
-        row.appendChild(naBtn);
-        body.appendChild(row);
-      }
+      if (naBtn) { const row = document.createElement('div'); row.className = 'dr-actions'; row.appendChild(naBtn); pa.appendChild(row); }
 
-      const filesWrap = document.createElement('div');
-      filesWrap.innerHTML = '<div class="dr-title">' + FOLDER_SMALL_SVG + 'Archivos cargados</div>';
+      // ---- Documentos ----
+      const pf = pane('documentos');
+      const filesCard = document.createElement('div');
+      filesCard.className = 'dr-card dr-docs';
+      filesCard.innerHTML = '<div class="dr-docs-title">' + FOLDER_SMALL_SVG + 'Documentos cargados (' + n + ')' + (n > 1 ? '<button type="button" class="btn btn-ghost btn-sm fold-all" style="margin-left:auto;"></button>' : '') + '</div>';
       const list = document.createElement('div');
       list.className = 'dr-files';
+      const CHEV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+      const isOpen = function (f) { return (f.id in drFold) ? drFold[f.id] : n <= 1; };   // con varios archivos se ven plegados
+      const foldBtn = filesCard.querySelector('.fold-all');
+      const foldLabel = function () { if (foldBtn) foldBtn.textContent = t.files.every(isOpen) ? 'Plegar todo' : 'Desplegar todo'; };
       if (n) {
-        t.files.forEach(function (f) { list.appendChild(buildFileItem(f)); });
-      } else {
-        list.innerHTML = '<div class="dr-empty">No hay archivos cargados en este tema.</div>';
+        t.files.forEach(function (f) {
+          const it = buildFileItem(f);
+          it.classList.add('foldable'); it.classList.toggle('fold-closed', !isOpen(f));
+          const cv = document.createElement('button'); cv.type = 'button'; cv.className = 'fi-chev'; cv.title = 'Plegar / desplegar'; cv.innerHTML = CHEV;
+          it.insertBefore(cv, it.firstChild);
+          it.addEventListener('click', function (e) {
+            if (e.target.closest('.file-actions, .fi-name-edit, input') ) return;
+            drFold[f.id] = it.classList.contains('fold-closed'); it.classList.toggle('fold-closed', !drFold[f.id]); foldLabel();
+          });
+          list.appendChild(it);
+        });
+        if (foldBtn) { foldLabel(); foldBtn.addEventListener('click', function () {
+          const open = !t.files.every(isOpen);
+          t.files.forEach(function (f) { drFold[f.id] = open; });
+          list.querySelectorAll('.foldable').forEach(function (el) { el.classList.toggle('fold-closed', !open); }); foldLabel(); }); }
       }
-      filesWrap.appendChild(list);
-      body.appendChild(filesWrap);
+      else { list.innerHTML = '<div class="dr-empty">No hay archivos cargados en este tema.</div>'; }
+      filesCard.appendChild(list);
+      pf.appendChild(filesCard);
     }
 
     // ---------- Manual, ayuda y recorrido guiado ----------

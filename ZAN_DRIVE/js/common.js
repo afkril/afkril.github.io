@@ -326,6 +326,25 @@ function enableDropzone(zoneEl, onFile) {
   });
 }
 
+// Igual que enableDropzone, pero entrega TODOS los archivos elegidos o soltados (arreglo).
+// El <input type="file"> de la zona debe tener el atributo `multiple`.
+function enableMultiDropzone(zoneEl, onFiles) {
+  const input = zoneEl.querySelector('input[type=file]');
+  if (input) input.multiple = true;
+  function deliver(list) {
+    const files = Array.prototype.slice.call(list || []);   // copia: el input se vacía después
+    if (files.length) onFiles(files);
+  }
+  if (input) input.addEventListener('change', function () { deliver(input.files); });
+  ['dragenter', 'dragover'].forEach(function (evt) {
+    zoneEl.addEventListener(evt, function (e) { e.preventDefault(); zoneEl.classList.add('dragover'); });
+  });
+  ['dragleave', 'drop'].forEach(function (evt) {
+    zoneEl.addEventListener(evt, function (e) { e.preventDefault(); zoneEl.classList.remove('dragover'); });
+  });
+  zoneEl.addEventListener('drop', function (e) { deliver(e.dataTransfer && e.dataTransfer.files); });
+}
+
 // ---- Navegación entre páginas (sitio estático) ----
 const PAGE_FILES = { 'login': 'index.html', 'register': 'register.html', 'dashboard': 'dashboard.html', 'admin-login': 'admin-login.html', 'admin': 'admin.html' };
 function pageUrl(name, query) { return PAGE_FILES[name] + (query ? '?' + query : ''); }
