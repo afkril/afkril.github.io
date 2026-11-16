@@ -55,6 +55,7 @@ const SeguimientoModule = (() => {
 
     let _plantillas = null;
     let _idModalActual = null;
+    let _enviandoRespuesta = false; // evita envíos duplicados mientras hay uno en curso
 
     // ── Plantillas: carga/guardado por asociación ───────────────
     async function _cargarPlantillas() {
@@ -271,6 +272,7 @@ const SeguimientoModule = (() => {
     }
 
     function cerrarRespuestaRapida() {
+        if (_enviandoRespuesta) return; // no se puede cerrar mientras se envía
         const ov = document.getElementById('quickReplyOverlay');
         if (ov) ov.style.display = 'none';
         // Solo quita el bloqueo de scroll si no hay otro modal (el de detalle) abierto
@@ -518,8 +520,42 @@ const SeguimientoModule = (() => {
         return `Buen día,\n\nDatos generales de la novedad:\n${_bloqueDatosGenerales(novelty)}\n\n${cuerpoFinal}\n\nCordialmente,\nÁrea Administrativa`;
     }
 
+    // ── Estado visual de "enviando": bloquea el formulario y muestra loading ──
+    function _setEnviandoUI(on) {
+        const ov = document.getElementById('quickReplyOverlay');
+        const btn = ov && ov.querySelector('.qr-btn-send');
+        const cancel = ov && ov.querySelector('.qr-btn-cancel');
+
+        if (btn) {
+            btn.disabled = on;
+            btn.innerHTML = on
+                ? '<span class="spinner" style="width:16px;height:16px;border-width:2px;vertical-align:-3px;margin-right:6px"></span> Enviando mensaje…'
+                : '<i class=ic-mail></i> Enviar respuesta';
+        }
+        if (cancel) cancel.disabled = on;
+
+        // Bloquea los campos solo mientras dura el envío (sin tocar los que ya estaban deshabilitados)
+        if (ov) ov.querySelectorAll('input, textarea, select').forEach(el => {
+            if (on && !el.disabled) { el.disabled = true; el.dataset.qrLock = '1'; }
+            else if (!on && el.dataset.qrLock) { el.disabled = false; delete el.dataset.qrLock; }
+        });
+
+        let st = document.getElementById('qrEnviandoEstado');
+        if (on && !st && btn && btn.parentNode) {
+            st = document.createElement('div');
+            st.id = 'qrEnviandoEstado';
+            st.setAttribute('role', 'status');
+            st.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:flex-end;margin:0 0 8px;font-size:.85rem;opacity:.85';
+            st.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;border-color:rgba(37,99,235,.3);border-top-color:#2563eb"></span> Enviando el mensaje, por favor espere…';
+            btn.parentNode.parentNode.insertBefore(st, btn.parentNode);
+        } else if (!on && st) {
+            st.remove();
+        }
+    }
+
     // ── Envío (Google Apps Script existente + registro en Firebase) ──
     async function enviarRespuesta() {
+        if (_enviandoRespuesta) return; // ya hay un envío en curso: ignora clics repetidos
         const id = _idModalActual;
         if (!id) return;
 
@@ -531,8 +567,9 @@ const SeguimientoModule = (() => {
         if (!to) { showToast('Falta el correo de destino', 'error'); return; }
         if (!mensaje) { showToast('El mensaje no puede estar vacío', 'error'); return; }
 
-        const btn = document.querySelector('.qr-btn-send');
-        if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+        // Se marca ANTES de cualquier await: los clics siguientes ya no entran
+        _enviandoRespuesta = true;
+        _setEnviandoUI(true);
 
         const perfil = AsociacionesModule.getPerfilActivo();
         const googleUrl = perfil?.google_url;
@@ -567,6 +604,7 @@ const SeguimientoModule = (() => {
             });
 
             showToast('Respuesta enviada', 'success');
+            _enviandoRespuesta = false; // el envío terminó: ahora sí se puede cerrar
             cerrarRespuestaRapida();
             if (typeof loadNoveltiesTable === 'function') loadNoveltiesTable();
 
@@ -579,7 +617,8 @@ const SeguimientoModule = (() => {
             console.error(e);
             showToast('Error al enviar: ' + e.message, 'error');
         } finally {
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class=ic-mail></i> Enviar respuesta'; }
+            _enviandoRespuesta = false;
+            _setEnviandoUI(false);
         }
     }
 
