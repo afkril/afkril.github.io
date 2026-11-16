@@ -641,7 +641,7 @@
     const ARCH_ESTADO = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'Por revisar'], rechazado: ['naranja', 'Rechazado'] };
     const ACCION_LABEL = {
       archivo_subido: 'Archivo cargado', archivo_renombrado: 'Archivo renombrado', archivo_eliminado: 'Archivo a la papelera',
-      archivo_eliminado_admin: 'Archivo eliminado (administración)', archivo_reemplazado: 'Archivo reemplazado', notificacion_unidad: 'Aviso enviado a la unidad',
+      archivo_eliminado_admin: 'Archivo eliminado (administración)', archivo_reemplazado: 'Archivo reemplazado', archivo_girado: 'Archivo girado (orientación)', notificacion_unidad: 'Aviso enviado a la unidad',
       archivo_restaurado: 'Archivo restaurado', archivo_aprobado: 'Archivo aprobado', archivo_rechazado: 'Archivo rechazado',
       archivo_pendiente: 'Archivo devuelto a revisión', no_aplica_marcado: 'No aplica marcado', no_aplica_quitado: 'No aplica quitado',
       mes_creado: 'Mes creado', mes_duplicado: 'Mes duplicado', mes_cerrado: 'Mes cerrado', mes_reabierto: 'Mes reabierto',
@@ -1637,9 +1637,16 @@
       document.getElementById('revBulkCount').textContent = n + (n === 1 ? ' archivo seleccionado' : ' archivos seleccionados');
     }
 
+    // Opciones del visor: el administrador puede girar PDF/imágenes y guardar el giro en el archivo
+    function viewerOpts(id) {
+      return {
+        saveRotation: function (res) { return gsRun('apiAdminRotateFile', token, id, res, perfilActual); },
+        onSaved: function () { try { if (curMonth && currentStatus) loadStatusKeepDrawer().catch(function () {}); } catch (e) {} }
+      };
+    }
     async function fileAction(btn, id, mode) {
       await withBusyBtn(btn, async function () {
-        try { triggerDownload(await gsRun('apiAdminDownloadFile', token, id), mode); } catch (e) { fail(e); }
+        try { triggerDownload(await gsRun('apiAdminDownloadFile', token, id), mode, mode === 'view' ? viewerOpts(id) : undefined); } catch (e) { fail(e); }
       });
     }
 
@@ -3189,7 +3196,7 @@
         c.addEventListener('change', function () { if (c.checked) logSel[c.dataset.logsel] = true; else delete logSel[c.dataset.logsel]; renderLog(); });
       });
       tbody.querySelectorAll('[data-logview]').forEach(function (btn) {
-        btn.addEventListener('click', async function () { triggerDownload(await gsRun('apiAdminDownloadFile', token, btn.dataset.logview), 'view'); });
+        btn.addEventListener('click', async function () { triggerDownload(await gsRun('apiAdminDownloadFile', token, btn.dataset.logview), 'view', viewerOpts(btn.dataset.logview)); });
       });
       tbody.querySelectorAll('[data-logdownload]').forEach(function (btn) {
         btn.addEventListener('click', async function () { triggerDownload(await gsRun('apiAdminDownloadFile', token, btn.dataset.logdownload), 'download'); });

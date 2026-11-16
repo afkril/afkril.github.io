@@ -1325,3 +1325,20 @@ body.dash-page{--ui-scale:.8;}
   .tm-foot-btns{width:100%;}
   .tm-foot-btns .btn{flex:1;justify-content:center;}
 }
+
+
+/* Carpeta: insignia de estado + días restantes en la misma línea */
+.fc-status{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;}
+.fc-days{font-size:11.5px;font-weight:700;color:var(--fc);}
+.folder-card.vacio .fc-days{color:#6f7c95;font-weight:600;}
+
+/* Visor: rotación de PDF e imágenes */
+.fv-rot{display:inline-flex;align-items:center;gap:6px;padding-right:8px;margin-right:2px;border-right:1px solid var(--gris-borde);}
+.fv-rot .btn svg{display:block;}
+.fv-rot-note{font-size:12px;font-weight:700;color:#a56a00;background:#fff6d9;border-radius:20px;padding:3px 10px;white-space:nowrap;}
+@media (max-width:640px){
+  .fv-head{flex-wrap:wrap;}
+  .fv-name{flex-basis:100%;}
+  .fv-actions{flex-wrap:wrap;}
+  .fv-rot{border-right:0;padding-right:0;}
+}

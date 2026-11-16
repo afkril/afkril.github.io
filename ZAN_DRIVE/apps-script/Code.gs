@@ -32,7 +32,7 @@ const CACHE_MAX_CHUNKS = 40;
 const AUTO_NOMBRE_ARCHIVOS = true;         // nombra los archivos como unidad_tema_fecha
 const AVISOS_KEEP = 10;                    // notificaciones que se conservan por unidad (leídas + sin leer)
 const TRASH_DAYS = 30;                     // días en papelera antes de purgar (purgarPapelera)
-const SCHEMA_VERSION = '6';                // sube este número si agregas columnas nuevas
+const SCHEMA_VERSION = '7';                // sube este número si agregas columnas nuevas
 // Formatos: se acepta CUALQUIER extensión (letras/números, hasta 10 caracteres). Cada tema puede restringirlos con su lista «extensiones».
 function cleanExt_(e) {
   e = String(e || '').toLowerCase().replace(/^\./, '').trim();
@@ -56,7 +56,7 @@ const SCHEMAS = {
   Meses: ['id', 'nombre', 'activo', 'createdAt', 'fechaLimite', 'cerrado', 'cerradoAt', 'cerradoPor'].concat(DEL_COLS),
   Temas: ['id', 'monthId', 'nombre', 'orden', 'obligatorio', 'fechaLimite', 'extensiones', 'contratoIds'].concat(DEL_COLS),
   Uploads: ['id', 'userId', 'topicId', 'monthId', 'driveFileId', 'originalName', 'mimeType', 'size', 'uploadedAt',
-    'nombreCargado', 'estado', 'observacion', 'revisadoPor', 'revisadoAt', 'tardio', 'ocultoHistorial', 'reemplazadoAt', 'reemplazadoPor'].concat(DEL_COLS),
+    'nombreCargado', 'estado', 'observacion', 'revisadoPor', 'revisadoAt', 'tardio', 'ocultoHistorial', 'reemplazadoAt', 'reemplazadoPor', 'giradoAt', 'giradoPor'].concat(DEL_COLS),
   Contratos: ['id', 'nombre', 'activo', 'createdAt'],
   NoAplica: ['id', 'userId', 'topicId', 'monthId', 'marcadoAt', 'marcadoPor'],
   Auditoria: ['id', 'fecha', 'actorTipo', 'actor', 'accion', 'detalle', 'monthId', 'userId'],
@@ -1177,6 +1177,75 @@ function apiDeleteFile(token, uploadId) {
       up.originalName + ' · ' + (topic ? topic.nombre : '') + ' (' + (month ? month.nombre : '') + ') → papelera', up.monthId, session.userId);
     return { ok: true };
   });
+}
+
+// ---------------------------------------------------------------------
+// GIRAR PDF / IMÁGENES (el navegador entrega el archivo ya girado; aquí solo se guarda)
+// Conserva nombre, tema y estado de revisión. La versión anterior queda en la papelera de Drive.
+// ---------------------------------------------------------------------
+const ROTATE_EXTS = { pdf: 1, jpg: 1, jpeg: 1, png: 1, webp: 1 };
+function rotateUpload_(up, fileObj, byLabel, actorTipo, resetApproved) {
+  if (!fileObj || !fileObj.base64Data) throw new Error('No se recibió el archivo girado.');
+  if (Math.floor(fileObj.base64Data.length * 0.75) > MAX_FILE_BYTES) {
+    throw new Error('El archivo supera el límite de ' + (MAX_FILE_BYTES / (1024 * 1024)) + ' MB permitido.');
+  }
+  const name = String(up.originalName);
+  const ext = cleanExt_(name.indexOf('.') === -1 ? '' : name.split('.').pop());
+  if (!ROTATE_EXTS[ext]) throw new Error('Solo se puede girar y guardar PDF e imágenes (JPG, PNG, WEBP).');
+  const bytes = Utilities.base64Decode(fileObj.base64Data);
+  // Validación mínima: debe seguir siendo el mismo tipo de archivo
+  const b = bytes.map(function (x) { return x & 255; });
+  const isPdf = b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46;
+  const isPng = b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47;
+  const isJpg = b[0] === 0xFF && b[1] === 0xD8;
+  const isWebp = b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46;
+  const ok = ext === 'pdf' ? isPdf : (ext === 'png' ? isPng : (ext === 'webp' ? isWebp : isJpg));
+  if (!ok) throw new Error('El archivo girado no tiene el formato esperado (.' + ext + '). Inténtalo de nuevo.');
+
+  const user = rows_(SHEET_NAMES.USUARIOS).find(function (u) { return u.id === up.userId; });
+  const topic = rowsAll_(SHEET_NAMES.TEMAS).find(function (t) { return t.id === up.topicId; });
+  const month = rowsAll_(SHEET_NAMES.MESES).find(function (m) { return m.id === up.monthId; });
+  if (!user || !topic || !month) throw new Error('No se encontró la unidad, el tema o el mes de este archivo.');
+
+  const mimeOut = ext === 'pdf' ? 'application/pdf' : (ext === 'png' ? 'image/png' : (ext === 'webp' ? 'image/webp' : 'image/jpeg'));
+  const blob = Utilities.newBlob(bytes, mimeOut, name);
+  const folder = getUserTopicFolder_(month.nombre, user.cedula, user.nombreUnidad, topic.nombre);
+  const driveFile = folder.createFile(blob);
+
+  return withLock_(function () {
+    MEMO_.tables = {};
+    const cur = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === up.id; });
+    if (!cur || truthy_(cur.eliminado)) { try { driveFile.setTrashed(true); } catch (e) {} throw new Error('El archivo fue eliminado mientras se guardaba el giro.'); }
+    const at = nowIso_();
+    const fields = { driveFileId: driveFile.getId(), mimeType: mimeOut, size: bytes.length, giradoAt: at, giradoPor: byLabel };
+    // Si la unidad modifica un archivo ya aprobado, vuelve a revisión
+    const reRevision = resetApproved && cur.estado === 'aprobado';
+    if (reRevision) { fields.estado = 'pendiente'; fields.observacion = ''; fields.revisadoPor = ''; fields.revisadoAt = ''; }
+    updateRow_(getSheet_(SHEET_NAMES.UPLOADS), cur.__row, fields);
+    try { DriveApp.getFileById(cur.driveFileId).setTrashed(true); } catch (e) {}
+    audit_(actorTipo, byLabel, 'archivo_girado',
+      name + ' · ' + user.nombreUnidad + ' · ' + topic.nombre + ' (' + month.nombre + ')' + (reRevision ? ' · vuelve a revisión' : ''), cur.monthId, cur.userId);
+    return { ok: true, file: fileInfo_(Object.assign({}, cur, fields)) };
+  });
+}
+
+// Unidad: gira y guarda su propio archivo (mes abierto y no en modo «ver como»)
+function apiRotateFile(token, uploadId, fileObj) {
+  const session = requireUserSession_(token, true);
+  const up = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === uploadId; });
+  if (!up || up.userId !== session.userId) throw new Error('Archivo no encontrado.');
+  const month = rows_(SHEET_NAMES.MESES).find(function (m) { return m.id === up.monthId; });
+  if (month) assertMonthOpen_(month);
+  const user = rows_(SHEET_NAMES.USUARIOS).find(function (u) { return u.id === session.userId; });
+  return rotateUpload_(up, fileObj, user ? user.nombreUnidad : 'unidad', 'unidad', true);
+}
+
+// Administración: gira y guarda cualquier archivo; el estado de revisión se conserva
+function apiAdminRotateFile(token, uploadId, fileObj, perfil) {
+  const session = requireAdminSession_(token);
+  const up = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === uploadId; });
+  if (!up) throw new Error('Archivo no encontrado.');
+  return rotateUpload_(up, fileObj, reviewerLabel_(session, perfil), 'admin', false);
 }
 
 // Renombra un archivo ya cargado, conservando SIEMPRE la extensión original.

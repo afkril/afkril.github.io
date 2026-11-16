@@ -1,8 +1,20 @@
 :root{--blue:#1456d6;--blue2:#2d7cf6;--navy:#0f2a5e;--muted:#5b6b8c;--line:#d6e2f5;--bg:#eaf3ff;--red:#b42318;--redbg:#fdecea;--green:#127a43;--greenbg:#e6f6ec}
 *{box-sizing:border-box;margin:0}
 html,body{min-height:100%}
-body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--navy);background:var(--bg) url(../assets/bg.jpg) left bottom/cover no-repeat fixed;min-height:100vh;display:flex;align-items:center;justify-content:flex-end;padding:24px clamp(16px,8vw,130px);position:relative;overflow-x:hidden}
-body::before{content:"";position:fixed;left:0;bottom:0;width:58vw;height:34vh;background:linear-gradient(to top,rgba(15,42,94,.62),rgba(15,42,94,0));pointer-events:none}
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: var(--navy);
+  background: var(--bg) url(../assets/bg.jpg) center center / contain no-repeat fixed;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 24px clamp(16px, 8vw, 130px);
+  position: relative;
+  overflow-x: hidden;
+}
+
+
 .brand{position:fixed;top:28px;left:clamp(16px,5vw,64px);display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px;line-height:1.05;animation:fade .8s both}
 .brand svg{width:46px;height:46px}
 .hero{position:fixed;left:clamp(16px,5vw,64px);bottom:5vh;color:#fff;max-width:min(460px,44vw);text-shadow:0 2px 14px rgba(8,30,80,.45);animation:fade .9s .15s both}

@@ -44,7 +44,7 @@ function readFileAsBase64(file) {
 }
 
 // Dispara la descarga de un archivo recibido como { fileName, mimeType, base64Data }
-function triggerDownload(fileResult, mode) {
+function triggerDownload(fileResult, mode, opts) {
   const byteChars = atob(fileResult.base64Data);
   const byteNumbers = new Array(byteChars.length);
   for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
@@ -53,7 +53,7 @@ function triggerDownload(fileResult, mode) {
   if (mode === 'view') {
     // Vista previa dentro de la página (PDF, imágenes, Word, Excel, CSV, texto)
     URL.revokeObjectURL(url);
-    openFileViewer(fileResult);
+    openFileViewer(fileResult, opts);
     return;
   } else {
     const a = document.createElement('a');
@@ -467,7 +467,8 @@ const FV_LIBS = {
   docxpreview: 'https://cdnjs.cloudflare.com/ajax/libs/docx-preview/0.3.3/docx-preview.min.js',
   mammoth: 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js',
   exceljs: 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js',
-  xlsx: 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+  xlsx: 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+  pdflib: 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js'
 };
 const fvLoaded_ = {};
 function fvLoadLib_(key, globalName) {
@@ -488,6 +489,14 @@ function fvBytes_(fileResult) {
   return arr;
 }
 
+function fvToBase64_(bytes) {
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+
+const FV_ROT_L = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v6h6"/><path d="M3.5 14a9 9 0 1 0 2.1-9.4L3 10"/></svg>';
+const FV_ROT_R = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4v6h-6"/><path d="M20.5 14a9 9 0 1 1-2.1-9.4L21 10"/></svg>';
 let fvState_ = null;
 function closeFileViewer() {
   if (!fvState_) return;
@@ -497,7 +506,8 @@ function closeFileViewer() {
   fvState_ = null;
 }
 
-function openFileViewer(fileResult) {
+function openFileViewer(fileResult, opts) {
+  opts = opts || {};
   closeFileViewer();
   const name = fileResult.fileName || 'archivo';
   const ext = name.split('.').pop().toLowerCase();
@@ -507,7 +517,13 @@ function openFileViewer(fileResult) {
   root.innerHTML =
     '<div class="fv-panel" role="dialog" aria-modal="true" aria-label="Vista previa del archivo">' +
       '<div class="fv-head"><span class="fv-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + '</span>' +
-        '<span class="fv-actions"><button type="button" class="btn btn-secondary btn-sm" data-fv="tab" style="display:none;">Abrir en pestaña</button>' +
+        '<span class="fv-actions">' +
+        '<span class="fv-rot" style="display:none;"><span class="fv-rot-note" data-fv="rotnote" style="display:none;"></span>' +
+          '<button type="button" class="btn btn-secondary btn-sm" data-fv="rl" title="Girar a la izquierda (90°)" aria-label="Girar a la izquierda">' + FV_ROT_L + '</button>' +
+          '<button type="button" class="btn btn-secondary btn-sm" data-fv="rr" title="Girar a la derecha (90°)" aria-label="Girar a la derecha">' + FV_ROT_R + '</button>' +
+          (opts.saveRotation ? '<button type="button" class="btn btn-primary btn-sm" data-fv="rsave" style="display:none;">Guardar giro</button>' : '') +
+        '</span>' +
+        '<button type="button" class="btn btn-secondary btn-sm" data-fv="tab" style="display:none;">Abrir en pestaña</button>' +
         (fileResult.driveUrl ? '<button type="button" class="btn btn-primary btn-sm" data-fv="drive" title="Abre el archivo original en Google Drive">Abrir en Drive</button>' : '') +
         '<button type="button" class="btn btn-secondary btn-sm" data-fv="dl">Descargar</button>' +
         '<button type="button" class="fv-x" data-fv="x" aria-label="Cerrar">&times;</button></span></div>' +
@@ -521,7 +537,7 @@ function openFileViewer(fileResult) {
   document.addEventListener('keydown', state.onKey, true);
   root.addEventListener('click', function (e) { if (e.target === root) closeFileViewer(); });
   root.querySelector('[data-fv="x"]').addEventListener('click', closeFileViewer);
-  root.querySelector('[data-fv="dl"]').addEventListener('click', function () { triggerDownload(fileResult, 'download'); });
+  root.querySelector('[data-fv="dl"]').addEventListener('click', function () { triggerDownload(rotCur.result || fileResult, 'download'); });
   const driveBtn = root.querySelector('[data-fv="drive"]');
   if (driveBtn) driveBtn.addEventListener('click', function () { window.open(fileResult.driveUrl, '_blank', 'noopener'); });
 
@@ -533,10 +549,73 @@ function openFileViewer(fileResult) {
     const b = body.querySelector('[data-fv="dl2"]');
     if (b) b.addEventListener('click', function () { triggerDownload(fileResult, 'download'); });
   }
+  let tabUrl = '';
   function enableTab(url) {
+    tabUrl = url;
     const t = root.querySelector('[data-fv="tab"]');
     t.style.display = '';
-    t.addEventListener('click', function () { window.open(url, '_blank'); });
+    t.addEventListener('click', function () { window.open(tabUrl, '_blank'); });
+  }
+
+  // ---- Giro de PDF e imágenes (se puede guardar en el archivo) ----
+  // rotCur.result = archivo ya girado (listo para descargar o guardar); rot = giro acumulado sin guardar (0/90/180/270)
+  const rotCur = { rot: 0, result: null, busy: false };
+  const rotBox = root.querySelector('.fv-rot'), rotNote = root.querySelector('[data-fv="rotnote"]'), rotSave = root.querySelector('[data-fv="rsave"]');
+  function rotNoteSet(text, kind) {
+    rotNote.style.display = text ? '' : 'none';
+    rotNote.textContent = text || '';
+    rotNote.style.color = kind === 'err' ? '#c2540a' : (kind === 'ok' ? '#1e9e5a' : '');
+    rotNote.style.background = kind === 'err' ? '#ffe9d6' : (kind === 'ok' ? '#e9f9ef' : '');
+  }
+  function rotSetup(applyRot, baseBytesRef) {
+    // applyRot(deg) -> Promise<{ bytes, url }>: genera el archivo girado `deg` grados respecto al guardado
+    rotBox.style.display = '';
+    async function turn(delta) {
+      if (rotCur.busy) return;
+      rotCur.busy = true;
+      rotBox.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+      try {
+        const next = (rotCur.rot + delta + 360) % 360;
+        const out = await applyRot(next);
+        if (fvState_ !== state) return;
+        rotCur.rot = next;
+        urls.push(out.url);
+        const mimeOut = out.mime || mime;
+        rotCur.result = next === 0 ? null : { fileName: fileResult.fileName, mimeType: mimeOut, base64Data: fvToBase64_(out.bytes), driveUrl: fileResult.driveUrl };
+        out.show(out.url);
+        tabUrl = out.url;
+        rotNoteSet(next ? 'Giro sin guardar' : '', '');
+        if (rotSave) rotSave.style.display = next ? '' : 'none';
+      } catch (e) {
+        rotNoteSet('No se pudo girar este archivo', 'err');
+      } finally {
+        rotCur.busy = false;
+        rotBox.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+      }
+    }
+    root.querySelector('[data-fv="rl"]').addEventListener('click', function () { turn(-90); });
+    root.querySelector('[data-fv="rr"]').addEventListener('click', function () { turn(90); });
+    if (rotSave) rotSave.addEventListener('click', async function () {
+      if (rotCur.busy || !rotCur.result) return;
+      rotCur.busy = true; rotSave.disabled = true; rotSave.textContent = 'Guardando…';
+      rotBox.querySelectorAll('[data-fv="rl"],[data-fv="rr"]').forEach(function (b) { b.disabled = true; });
+      try {
+        await opts.saveRotation(rotCur.result);
+        // El archivo girado pasa a ser el actual: el siguiente giro parte de él
+        fileResult.base64Data = rotCur.result.base64Data;
+        fileResult.mimeType = rotCur.result.mimeType;
+        baseBytesRef.set(fvBytes_(fileResult));
+        rotCur.rot = 0; rotCur.result = null;
+        rotSave.style.display = 'none';
+        rotNoteSet('Giro guardado', 'ok');
+        if (typeof opts.onSaved === 'function') { try { opts.onSaved(); } catch (e2) {} }
+      } catch (err) {
+        rotNoteSet((err && err.message) ? err.message : 'No se pudo guardar el giro', 'err');
+      } finally {
+        rotCur.busy = false; rotSave.disabled = false; rotSave.textContent = 'Guardar giro';
+        rotBox.querySelectorAll('[data-fv="rl"],[data-fv="rr"]').forEach(function (b) { b.disabled = false; });
+      }
+    });
   }
 
   (async function render() {
@@ -546,9 +625,43 @@ function openFileViewer(fileResult) {
       if (ext === 'pdf' || mime === 'application/pdf') {
         const u = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })); urls.push(u);
         body.innerHTML = '<iframe class="fv-frame" src="' + u + '" title="' + escapeHtml(name) + '"></iframe>'; enableTab(u);
+        // Giro real de las páginas con pdf-lib (sin perder calidad); el visor se vuelve a cargar con el PDF girado
+        let pdfBase = bytes;
+        rotSetup(async function (deg) {
+          await fvLoadLib_('pdflib', 'PDFLib');
+          const L = window.PDFLib;
+          const doc = await L.PDFDocument.load(pdfBase.slice(0), { ignoreEncryption: true, updateMetadata: false });
+          doc.getPages().forEach(function (pg) { pg.setRotation(L.degrees(((pg.getRotation().angle + deg) % 360 + 360) % 360)); });
+          const out = await doc.save();
+          const url = URL.createObjectURL(new Blob([out], { type: 'application/pdf' }));
+          return { bytes: out, url: url, mime: 'application/pdf', show: function (uu) { const fr = body.querySelector('.fv-frame'); if (fr) fr.src = uu; } };
+        }, { set: function (b) { pdfBase = b; } });
       } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) !== -1) {
         const u = URL.createObjectURL(new Blob([bytes], { type: mime })); urls.push(u);
         body.innerHTML = '<div class="fv-img"><img src="' + u + '" alt="' + escapeHtml(name) + '"></div>'; enableTab(u);
+        // Giro con canvas: se genera de nuevo la imagen en el mismo formato (los GIF se dejan sin girar para no perder la animación)
+        if (ext !== 'gif') {
+          let imgBytes = bytes, bmp = null;
+          rotSetup(async function (deg) {
+            if (!bmp) {
+              bmp = await new Promise(function (res, rej) {
+                const im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { rej(new Error('img')); };
+                im.src = URL.createObjectURL(new Blob([imgBytes], { type: mime })); urls.push(im.src);
+              });
+            }
+            const swap = deg === 90 || deg === 270;
+            const cv = document.createElement('canvas');
+            cv.width = swap ? bmp.naturalHeight : bmp.naturalWidth; cv.height = swap ? bmp.naturalWidth : bmp.naturalHeight;
+            const cx = cv.getContext('2d');
+            cx.translate(cv.width / 2, cv.height / 2); cx.rotate(deg * Math.PI / 180);
+            cx.drawImage(bmp, -bmp.naturalWidth / 2, -bmp.naturalHeight / 2);
+            const outMime = (ext === 'png' || mime === 'image/png') ? 'image/png' : (ext === 'webp' ? 'image/webp' : 'image/jpeg');
+            const blob = await new Promise(function (res) { cv.toBlob(res, outMime, 0.95); });
+            if (!blob) throw new Error('canvas');
+            const out = new Uint8Array(await blob.arrayBuffer());
+            return { bytes: out, url: URL.createObjectURL(blob), mime: outMime, show: function (uu) { const im = body.querySelector('.fv-img img'); if (im) im.src = uu; } };
+          }, { set: function (b) { imgBytes = b; bmp = null; } });
+        }
       } else if (ext === 'docx') {
         if (big) return fallback('El documento es muy pesado para la vista previa.');
         let done = false;

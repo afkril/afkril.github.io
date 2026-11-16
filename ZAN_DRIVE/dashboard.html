@@ -467,6 +467,18 @@
       if (lim) return 'Te falta cargar «' + t.nombre + '» antes del ' + lim + cuando + '.';
       return 'Te falta cargar «' + t.nombre + '».';
     }
+    // «(quedan 12 días)» para la tarjeta: solo temas obligatorios, vacíos y aún dentro del plazo
+    function cardDaysText(t) {
+      if (t.estado !== 'vacio' || !t.obligatorio || t.vencido || !t.fechaLimite) return '';
+      const d = t.diasRestantes;
+      if (d === null || d === undefined || d < 0) return '';
+      return d === 0 ? '(vence hoy)' : (d === 1 ? '(queda 1 día)' : '(quedan ' + d + ' días)');
+    }
+    // En la carpeta no repetimos el mensaje largo cuando solo dice «te falta cargar» (ya lo dice la insignia «Vacío»)
+    function cardHintText(t) {
+      if (t.estado === 'vacio' && t.obligatorio && !t.vencido) return '';
+      return topicMessage(t);
+    }
     function stateTag(f) {
       const m = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'En revisión'], rechazado: ['naranja', 'Rechazado'] }[f.estado] || ['gris', f.estado];
       return '<span class="tag ' + m[0] + '">' + m[1] + '</span>' + (f.tardio ? ' <span class="tag gris" title="Se cargó después de la fecha límite">Fuera de plazo</span>' : '');
@@ -964,9 +976,10 @@
           '<div class="fc-title" title="' + escapeHtml(t.nombre) + '">' + escapeHtml(t.nombre) + '</div>' +
           '<button class="fc-toggle" type="button" title="Plegar/desplegar" data-collapse>' + CHEV_DOWN_SVG + '</button>' +
         '</div>' +
-        '<span class="fc-badge"><i class="dot"></i>' + badgeLabel(t) + '</span>' +
+        '<div class="fc-status"><span class="fc-badge"><i class="dot"></i>' + badgeLabel(t) + '</span>' +
+          (cardDaysText(t) ? '<span class="fc-days">' + cardDaysText(t) + '</span>' : '') + '</div>' +
         (t.obligatorio ? '' : '<span class="fc-opt">OPCIONAL</span>') +
-        '<div class="fc-hint">' + escapeHtml(topicMessage(t)) + '</div>' +
+        (cardHintText(t) ? '<div class="fc-hint">' + escapeHtml(cardHintText(t)) + '</div>' : '') +
         '<div class="fc-extra">' +
           '<div class="files-list"></div>' +
           ((t.noAplica || ro) ? '' :
@@ -1035,7 +1048,12 @@
 
       item.querySelector('[data-view]').addEventListener('click', async function (e) {
         const btn = e.currentTarget; btn.disabled = true;
-        try { triggerDownload(await gsRun('apiDownloadFile', token, f.id), 'view'); }
+        try {
+          triggerDownload(await gsRun('apiDownloadFile', token, f.id), 'view', isReadonly() ? null : {
+            saveRotation: function (res) { return gsRun('apiRotateFile', token, f.id, res); },
+            onSaved: function () { refreshTopics(); }
+          });
+        }
         catch (err) { reportError(err.message); }
         btn.disabled = false;
       });
