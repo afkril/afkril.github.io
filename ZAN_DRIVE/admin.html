@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=1.2">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body class="admin-page">
@@ -264,6 +264,7 @@
         <div class="flex-between" style="margin-bottom:14px;">
           <h2 style="margin:0;">Usuarios registrados</h2>
           <button class="btn btn-primary btn-sm" id="btnAddUser" type="button">＋ Agregar usuario</button>
+          <select id="userContrato" title="Filtrar por contrato" style="padding:8px 10px;border:1px solid var(--gris-borde);border-radius:9px;max-width:230px;background:#fff;font:inherit;"><option value="">Todos los contratos</option></select>
           <div class="search-input" style="max-width:260px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
             <input type="text" id="userSearch" placeholder="Buscar por cédula, nombre o unidad..." style="padding:8px 10px;border:1px solid var(--gris-borde);border-radius:9px;">
@@ -451,8 +452,9 @@
   </div>
   <div id="printArea"></div>
 
-  <script src="js/config.js"></script>
-  <script src="js/common.js"></script>
+  <script src="js/version.js?v=1.2"></script>
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/common.js?v=1.2"></script>
   <script>
     const alertEl = document.getElementById('alert');
     let token = localStorage.getItem('adminToken');
@@ -842,6 +844,7 @@
         document.getElementById(id).addEventListener(id === 'statusSearch' ? 'input' : 'change', renderMatrix);
       });
       document.getElementById('userSearch').addEventListener('input', renderUsers);
+      document.getElementById('userContrato').addEventListener('change', renderUsers);
       document.getElementById('closeModal').addEventListener('click', function () {
         if (topicsRequestClose) topicsRequestClose(); else document.getElementById('userModalBg').classList.remove('open');
       });
@@ -2529,10 +2532,26 @@
       renderUsers();
     }
 
+    // Llena el filtro de contratos (conserva la selección y muestra cuántas unidades tiene cada contrato)
+    function fillUserContratoFilter() {
+      const sel = document.getElementById('userContrato'); if (!sel) return;
+      const prev = sel.value;
+      const n = function (id) { return allUsers.filter(function (u) { return (u.contratoId || '') === id; }).length; };
+      sel.innerHTML = '<option value="">Todos los contratos (' + allUsers.length + ')</option>' +
+        '<option value="__none">Sin contrato (' + n('') + ')</option>' +
+        contratos.map(function (c) { return '<option value="' + c.id + '">' + escapeHtml(c.nombre) + ' (' + n(c.id) + ')</option>'; }).join('');
+      sel.value = Array.prototype.some.call(sel.options, function (o) { return o.value === prev; }) ? prev : '';
+    }
+
     function renderUsers() {
+      fillUserContratoFilter();
       const q = document.getElementById('userSearch').value.toLowerCase().trim();
+      const fc = document.getElementById('userContrato').value;
       const tbody = document.getElementById('usersTbody');
-      const filtered = allUsers.filter(function (u) { return !q || String(u.cedula).indexOf(q) !== -1 || norm(u.nombreUnidad).indexOf(norm(q)) !== -1 || norm(u.nombreCompleto).indexOf(norm(q)) !== -1; });
+      const filtered = allUsers.filter(function (u) {
+        if (fc === '__none' ? !!u.contratoId : (fc && u.contratoId !== fc)) return false;
+        return !q || String(u.cedula).indexOf(q) !== -1 || norm(u.nombreUnidad).indexOf(norm(q)) !== -1 || norm(u.nombreCompleto).indexOf(norm(q)) !== -1;
+      });
       tbody.innerHTML = filtered.map(function (u) {
         const codigoCell = u.codigoPlano ? '<span class="mono-code">' + escapeHtml(u.codigoPlano) + '</span>' : '<span class="muted">No disponible</span>';
         const opciones = '<option value="">Sin contrato</option>' + contratos.map(function (c) {

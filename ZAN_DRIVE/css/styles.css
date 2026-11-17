@@ -433,8 +433,9 @@ body.sb-collapsed .sidebar{width:0;padding-left:0;padding-right:0;border-right-w
 .mx-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--texto-suave);margin:0 0 10px;align-items:center;}
 .mx-legend span{display:inline-flex;align-items:center;gap:6px;}
 .mx-actions{display:flex;gap:8px;flex-wrap:wrap;}
-/* Contenedor con scroll: solo se desplazan los puntos, las dos primeras columnas y el encabezado quedan fijos */
-.mx-wrap{overflow:auto;max-height:calc(var(--vh,100vh) - 300px);min-height:300px;border:1px solid var(--gris-borde);border-radius:12px;background:#fff;}
+/* Scroll lateral: las dos primeras columnas (unidad y avance) quedan fijas al desplazarse a los lados */
+/* Sin límite de alto: la página se desplaza normal hacia abajo; solo hay scroll lateral dentro del recuadro */
+.mx-wrap{overflow-x:auto;overflow-y:hidden;border:1px solid var(--gris-borde);border-radius:12px;background:#fff;}
 .mx-table{border-collapse:separate;border-spacing:0;font-size:12px;width:max-content;}
 .mx-table th,.mx-table td{border-bottom:1px solid #edf0f6;border-right:1px solid #edf0f6;padding:0;text-align:center;box-sizing:border-box;}
 .mx-table thead th{position:sticky;top:0;background:#f7f9fd;z-index:6;}
@@ -1342,3 +1343,6 @@ body.dash-page{--ui-scale:.8;}
   .fv-actions{flex-wrap:wrap;}
   .fv-rot{border-right:0;padding-right:0;}
 }
+
+.pr-dl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:11px;padding-top:11px;border-top:1px dashed var(--gris-borde,#d6e2f5)}
+.pr-dl-note{font-size:12px;color:var(--texto-suave,#5b6b8c);line-height:1.35;flex:1;min-width:180px}

@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=1.2">
 </head>
 <body class="dash-page">
   <div class="ui-zoom" id="uiRoot">
@@ -98,6 +98,7 @@
             <div class="progress-track-v2"><div class="progress-fill-v2" id="progressFill"></div><div class="progress-fill-v2 rev" id="progressRev"></div><i class="pt" style="left:20%"></i><i class="pt" style="left:40%"></i><i class="pt" style="left:60%"></i><i class="pt" style="left:80%"></i></div>
             <div class="pr-next" id="progressNext"></div>
             <div class="progress-label" id="progressLabel"></div>
+            <div class="pr-dl" id="pkgWrap" style="display:none;"><button class="btn btn-primary btn-sm" id="btnPkg" type="button">⬇ Descargar carpeta del mes (ZIP)</button><span class="pr-dl-note">Disponible porque llevas 85 % o más validado. Incluye solo los documentos aprobados, organizados por tema.</span></div>
           </div>
         </div>
       </div>
@@ -179,8 +180,9 @@
   </aside>
   </div><!-- /uiRoot -->
 
-  <script src="js/config.js"></script>
-  <script src="js/common.js"></script>
+  <script src="js/version.js?v=1.2"></script>
+  <script src="js/config.js?v=1.2"></script>
+  <script src="js/common.js?v=1.2"></script>
     <!-- Detalle de una notificación -->
   <div class="modal-bg" id="notifDetailBg" style="z-index:300;">
     <div class="modal notif-detail" role="dialog" aria-modal="true" aria-labelledby="ndTitle">
@@ -439,6 +441,7 @@
     const BACK_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>';
     let lastData = null;
     let viewAs = false;
+    let unitInfo = null;
     function isReadonly() { return viewAs || !!(lastData && lastData.month && lastData.month.cerrado); }
     function topicEstado(t) { return t.estado || (t.noAplica ? 'noaplica' : (t.vacio ? 'vacio' : 'aprobado')); }
     function isVenc(t) { return !!t.vencido && (t.estado === 'vacio' || t.estado === 'rechazado'); }
@@ -808,12 +811,14 @@
         fillEl.style.width = r.pct + '%';
         fillEl.className = 'progress-fill-v2' + (r.pct >= 100 ? ' complete' : '');
         renderMedals(r);
+        updatePkgButton(r);
         const revEl = document.getElementById('progressRev');
         const revPct = r.total ? Math.min(100 - r.pct, Math.round(r.pendientes / r.total * 100)) : 0;
         revEl.style.left = r.pct + '%'; revEl.style.width = revPct + '%';
       } else {
         kpis.style.display = 'none';
         document.getElementById('dashProgressCol').style.display = 'none';
+        updatePkgButton(null);
       }
 
       kpis.classList.toggle('has-filter', !!kpiFilter);
@@ -1228,6 +1233,110 @@
       if (openTopicId) showAlert(drawerAlertEl, msg);
     }
 
+
+    // ---------- Descarga de la carpeta del mes (solo con avance >= PKG_MIN_PCT) ----------
+    const PKG_MIN_PCT = 85;
+    let pkgBusy = false;
+
+    function updatePkgButton(r) {
+      const w = document.getElementById('pkgWrap'); if (!w) return;
+      w.style.display = (r && r.total && r.pct >= PKG_MIN_PCT) ? 'flex' : 'none';
+    }
+    function pkgSafe(str, max) {
+      let out = String(str || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '-').replace(/\s+/g, ' ').trim().replace(/[. ]+$/, '');
+      return (out || 'sin_nombre').slice(0, max || 80);
+    }
+    function pkgUnique(used, name) {
+      const key = name.toLowerCase();
+      if (!used[key]) { used[key] = 1; return name; }
+      const dot = name.lastIndexOf('.'), base = dot > 0 ? name.slice(0, dot) : name, ext = dot > 0 ? name.slice(dot) : '';
+      let k = used[key] + 1, c = base + ' (' + k + ')' + ext;
+      while (used[c.toLowerCase()]) c = base + ' (' + (++k) + ')' + ext;
+      used[key] = k; used[c.toLowerCase()] = 1; return c;
+    }
+    function loadJsZip() {
+      if (typeof JSZip !== 'undefined') return Promise.resolve();
+      return new Promise(function (resolve, reject) {
+        const sc = document.createElement('script');
+        sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        sc.onload = resolve;
+        sc.onerror = function () { reject(new Error('No se pudo cargar la librería de compresión. Revisa tu conexión e intenta de nuevo.')); };
+        document.head.appendChild(sc);
+      });
+    }
+    function b64ToBytes(b64) {
+      const bin = atob(b64), out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+
+    async function downloadMonthPackage() {
+      if (pkgBusy || !lastData) return;
+      const r = computeResumen(lastData.topics);
+      if (!r.total || r.pct < PKG_MIN_PCT) { reportError('La descarga se habilita cuando el mes tiene ' + PKG_MIN_PCT + ' % o más validado.'); return; }
+      const btn = document.getElementById('btnPkg'), label = btn.textContent;
+      pkgBusy = true; btn.disabled = true;
+      try {
+        btn.textContent = 'Preparando…';
+        await loadJsZip();
+        const monthName = lastData.month.nombre;
+        const unit = (unitInfo && unitInfo.nombreUnidad) || 'Unidad';
+        const rootName = pkgSafe(monthName + ' - ' + unit, 100);
+        const zip = new JSZip(), root = zip.folder(rootName);
+
+        const tasks = [], usedTopics = {}, resumenLines = [];
+        lastData.topics.slice().sort(function (a, b) { return (a.orden || 0) - (b.orden || 0); }).forEach(function (t) {
+          const ok = t.files.filter(function (f) { return f.estado === 'aprobado'; });
+          const estadoTxt = t.noAplica ? 'No aplica' : ok.length ? 'Validado (' + ok.length + ' archivo' + (ok.length > 1 ? 's' : '') + ')'
+            : t.estado === 'pendiente' ? 'En revisión (no incluido)' : t.estado === 'rechazado' ? 'Rechazado (no incluido)' : 'Sin cargar';
+          resumenLines.push('- ' + t.nombre + ': ' + estadoTxt + (t.obligatorio ? '' : ' [opcional]'));
+          if (!ok.length) return;
+          const folder = root.folder(pkgUnique(usedTopics, pkgSafe(t.nombre, 80)));
+          const usedFiles = {};
+          ok.forEach(function (f) { tasks.push({ folder: folder, f: f, name: pkgUnique(usedFiles, pkgSafe(f.originalName, 120)) }); });
+        });
+        if (!tasks.length) throw new Error('No hay documentos aprobados para descargar en este mes.');
+
+        let done = 0; const errors = [];
+        const next = function () { return tasks.shift(); };
+        const total = tasks.length;
+        async function worker() {
+          for (let t = next(); t; t = next()) {
+            try {
+              const res = await gsRun('apiDownloadFile', token, t.f.id);
+              t.folder.file(t.name, b64ToBytes(res.base64Data));
+            } catch (e) { errors.push(t.name + ' — ' + e.message); }
+            done++; btn.textContent = 'Preparando ' + done + '/' + total + '…';
+          }
+        }
+        await Promise.all([worker(), worker(), worker()]);
+        if (errors.length === total) throw new Error('No se pudo descargar ningún archivo. Intenta de nuevo.');
+
+        const when = new Date().toLocaleString('es-CO');
+        root.file('RESUMEN.txt',
+          'JER_DRIVE — Copia de documentación\r\n' +
+          'Unidad: ' + unit + (unitInfo ? ' (CC ' + unitInfo.cedula + ')' : '') + '\r\n' +
+          'Mes: ' + monthName + '\r\n' +
+          'Generado: ' + when + '\r\n' +
+          'Avance validado: ' + r.resueltos + ' de ' + r.total + ' temas exigibles (' + r.pct + ' %)\r\n' +
+          'Solo se incluyen los documentos aprobados.\r\n\r\nTEMAS\r\n' + resumenLines.join('\r\n') + '\r\n' +
+          (errors.length ? '\r\nNO SE PUDIERON DESCARGAR (' + errors.length + '):\r\n' + errors.map(function (e) { return '  - ' + e; }).join('\r\n') + '\r\n' : ''));
+
+        btn.textContent = 'Comprimiendo…';
+        const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = rootName + '.zip';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000);
+        if (errors.length) reportError('Se descargó la carpeta, pero ' + errors.length + ' archivo(s) fallaron. Mira RESUMEN.txt dentro del ZIP.');
+      } catch (err) {
+        reportError(err.message);
+      } finally {
+        pkgBusy = false; btn.disabled = false; btn.textContent = label;
+      }
+    }
+    document.getElementById('btnPkg').addEventListener('click', downloadMonthPackage);
+
     (async function init() {
       try {
         const me = await gsRun('apiMe', token);
@@ -1239,6 +1348,7 @@
         document.getElementById('unitName').textContent = me.user.nombreUnidad;
         document.getElementById('userAvatar').textContent = getInitials(me.user.nombreUnidad);
         viewAs = !!me.viewAs;
+        unitInfo = me.user;
         tourKey = 'gd_tour_' + me.user.id;
         if (viewAs) {
           const bar = document.getElementById('viewAsBar');
