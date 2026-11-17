@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=1.0">
+</head>
+<body class="dash-page">
+  <div class="ui-zoom" id="uiRoot">
+  <div class="viewas-bar" id="viewAsBar" style="display:none;"></div>
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg>
+      </div>
+      Gestor de Documentos
+    </div>
+    <div class="userinfo">
+      <label class="ui-size" title="Tamaño de la interfaz">Tamaño
+        <select id="uiSizeSelect">
+          <option value="0.6">60%</option>
+          <option value="0.67">67%</option>
+          <option value="0.8" selected>80%</option>
+          <option value="0.9">90%</option>
+          <option value="1">100%</option>
+        </select>
+      </label>
+      <div class="notif-wrap" id="notifWrap">
+        <button class="btn btn-secondary btn-sm notif-btn" id="btnNotif" type="button" aria-haspopup="true" aria-expanded="false" title="Notificaciones">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="notif-badge" id="notifBadge" hidden>0</span>
+        </button>
+        <div class="notif-menu" id="notifMenu" role="menu" hidden>
+          <div class="nm-head"><div class="nm-title" id="nmTitle">Notificaciones</div><button class="btn btn-ghost btn-sm" id="nmReadAll" type="button">Marcar todas como leídas</button></div>
+          <div class="nm-list" id="nmList"></div>
+          <div class="nm-warn" id="nmFallback" hidden>Historial no disponible: falta publicar la nueva versión del Code.gs.</div>
+          <div class="nm-foot"><button class="btn btn-secondary btn-sm" id="nmToggle" type="button"></button><span class="muted nm-note">Se guardan las últimas 10</span></div>
+        </div>
+      </div>
+      <div class="user-chip">
+        <span class="avatar" id="userAvatar"></span>
+        <span id="nombreUsuario"></span>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="btnHelp" type="button" title="Repetir el recorrido guiado"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17v.1"/></svg> Ayuda</button>
+      <button class="btn btn-secondary btn-sm" id="btnManual" type="button" title="Manual corto en PDF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg> Manual</button>
+      <button class="btn btn-secondary btn-sm" id="btnLogout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </div>
+
+  <div class="container-dash">
+    <div id="alert" class="alert"></div>
+    <div id="avisos" class="avisos"></div>
+    <div id="monthBanner"></div>
+
+    <!-- Encabezado combinado: izquierda unidad, mes y buscador · derecha avance del mes -->
+    <div class="card dash-head">
+      <div class="dh-left">
+        <div class="dash-unit">
+          <span class="du-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg></span>
+          <div style="min-width:0;">
+            <div class="du-label">Unidad de servicio</div>
+            <div class="du-name" id="unitName"></div>
+          </div>
+        </div>
+        <div class="dash-tools" id="dashTools">
+          <div class="field dt-month">
+            <label for="monthSelect">Mes</label>
+            <select id="monthSelect"></select>
+          </div>
+          <div class="field search-input dt-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="search" id="searchInput" placeholder="Buscar tema…" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      <div class="dh-right" id="dashProgressCol" style="display:none;">
+        <div id="progressWrap" class="progress-card-v2 pr-split">
+          <!-- Columna izquierda (30%): medallas -->
+          <div class="pr-medals" id="prMedals" aria-label="Medallas del mes">
+            <div class="pm-hero" id="pmHero"></div>
+            <div class="pm-row" id="pmRow"></div>
+          </div>
+          <!-- Columna derecha (70%): progreso, notas y mensajes -->
+          <div class="pr-main">
+            <div class="progress-card-head">
+              <div>
+                <div class="progress-title">Avance del mes</div>
+                <div class="progress-motiv" id="progressMotiv"></div>
+              </div>
+              <div class="progress-pct" id="progressPct"></div>
+            </div>
+            <div class="progress-track-v2"><div class="progress-fill-v2" id="progressFill"></div><div class="progress-fill-v2 rev" id="progressRev"></div><i class="pt" style="left:20%"></i><i class="pt" style="left:40%"></i><i class="pt" style="left:60%"></i><i class="pt" style="left:80%"></i></div>
+            <div class="pr-next" id="progressNext"></div>
+            <div class="progress-label" id="progressLabel"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen colorido -->
+    <div class="dash-kpis five" id="dashKpis" style="display:none;">
+      <div class="kpi-c azul" data-filter="all" role="button" tabindex="0" aria-pressed="false" title="Mostrar todos los temas">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg></span>
+        <div><div class="kc-num" id="kpiTotal">0</div><div class="kc-lbl">Temas exigibles</div></div>
+      </div>
+      <div class="kpi-c verde" data-filter="aprobado" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas aprobados">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg></span>
+        <div><div class="kc-num" id="kpiAprobados">0</div><div class="kc-lbl">Aprobados</div></div>
+      </div>
+      <div class="kpi-c amarillo" data-filter="pendiente" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas en revisión">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+        <div><div class="kc-num" id="kpiRevision">0</div><div class="kc-lbl">En revisión</div></div>
+      </div>
+      <div class="kpi-c naranja" data-filter="rechazado" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas por corregir">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></span>
+        <div><div class="kc-num" id="kpiRechazados">0</div><div class="kc-lbl">Por corregir</div></div>
+      </div>
+      <div class="kpi-c rojo" data-filter="vacio" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas por cargar">
+        <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16.2v.1"/></svg></span>
+        <div><div class="kc-num" id="kpiVacios">0</div><div class="kc-lbl">Por cargar</div></div>
+      </div>
+
+    </div>
+
+    <!-- Carpetas -->
+    <div class="section-head">
+      <span class="sh-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z"/></svg></span>
+      <div>
+        <h1>Carpetas / Temas</h1>
+        <p class="subtitle">Selecciona una carpeta para ver sus detalles y cargar documentos. Solo tú ves estos archivos. Tamaño máximo por archivo: <span id="maxSize"></span> MB.</p>
+      </div>
+    </div>
+
+    <div class="folders-toolbar" id="foldersToolbar" style="display:none;">
+      <div class="ft-left">
+        <span class="muted" id="foldersCount"></span>
+        <button class="filter-chip" id="clearFilter" type="button" style="display:none;" title="Quitar el filtro"></button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" id="btnToggleCollapseAll" type="button">Desplegar todos</button>
+        <label class="switch-toggle">
+          <input type="checkbox" id="hideCompletedToggle">
+          <span class="switch-track"></span>
+          Ocultar temas completados
+        </label>
+      </div>
+    </div>
+
+    <div class="mx-legend" id="dashLegend" style="display:none;margin-bottom:12px;">
+      <span><i class="mx-dot verde"></i> Aprobado</span>
+      <span><i class="mx-dot amarillo"></i> En revisión</span>
+      <span><i class="mx-dot naranja"></i> Rechazado: corrige y vuelve a subir</span>
+      <span><i class="mx-dot rojo"></i> Vacío</span>
+      <span><i class="mx-dot gris"></i> No aplica</span>
+    </div>
+    <div id="foldersGrid" class="folders-grid"></div>
+    <div id="emptyHint" class="empty-hint" style="display:none;">Aún no hay meses creados por el administrador.</div>
+  </div>
+
+  <!-- Panel lateral: ver detalles -->
+  <div class="drawer-bg" id="drawerBg"></div>
+  <aside class="drawer" id="detailDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" aria-hidden="true">
+    <div class="drawer-head">
+      <span class="dh-icon" id="drawerIcon"></span>
+      <div class="dh-main"><h2 id="drawerTitle"></h2><div class="dh-sub" id="drawerSub"></div></div>
+      <span class="fc-badge" id="drawerBadge"></span>
+      <button class="drawer-close" id="drawerClose" type="button" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="drawerAlert" class="alert"></div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+  </div><!-- /uiRoot -->
+
+  <script src="js/version.js?v=1.0"></script>
+  <script src="js/config.js?v=1.0"></script>
+  <script src="js/common.js?v=1.0"></script>
+    <!-- Detalle de una notificación -->
+  <div class="modal-bg" id="notifDetailBg" style="z-index:300;">
+    <div class="modal notif-detail" role="dialog" aria-modal="true" aria-labelledby="ndTitle">
+      <button class="modal-close" id="notifDetailClose" type="button" aria-label="Cerrar">&times;</button>
+      <div id="notifDetailBody"></div>
+    </div>
+  </div>
+
+<script>
+    const alertEl = document.getElementById('alert');
+    const drawerAlertEl = document.getElementById('drawerAlert');
+    const ACCEPT_EXT = '';   // vacío = cualquier formato (cada tema puede limitarlo)
+    const VIEW_TOKEN = new URLSearchParams(location.search).get('vt') || '';
+    let token = VIEW_TOKEN || localStorage.getItem('userToken');
+    let currentMonthId = null;
+    let lastTopics = [];
+    let introNext = false; // true en la primera carga de un mes: las carpetas "aparecen" una a una
+    let openTopicId = null;
+    let searchTerm = '';
+    // Por defecto las tarjetas se ven compactas (plegadas); "Desplegar todos" muestra
+    // archivos, zona de carga y "No aplica" dentro de cada tarjeta.
+    let allCollapsed = localStorage.getItem('gd_allCollapsed') !== 'false';
+    document.getElementById('maxSize').textContent = MAX_FILE_MB;
+
+    // ---------- Tamaño de la interfaz (mismo sistema que el panel admin) ----------
+    let uiScale = 0.8, uiScalePref = 0.8;
+    function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+    function lsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
+    // En pantallas angostas (celular) no se reduce.
+    function applyUiScale(v) {
+      uiScale = window.innerWidth > 900 ? v : 1;
+      document.body.style.setProperty('--ui-scale', String(uiScale));
+    }
+    (function initUiScale() {
+      const sizeSel = document.getElementById('uiSizeSelect');
+      const saved = parseFloat(lsGet('gd_uiscale_dash'));
+      if (saved >= 0.5 && saved <= 1.2) { uiScalePref = saved; sizeSel.value = String(saved); }
+      applyUiScale(uiScalePref);
+      sizeSel.addEventListener('change', function () {
+        uiScalePref = parseFloat(sizeSel.value) || 0.8;
+        lsSet('gd_uiscale_dash', String(uiScalePref));
+        applyUiScale(uiScalePref);
+      });
+      window.addEventListener('resize', function () { applyUiScale(uiScalePref); });
+    })();
+
+    if (!token) { goTo('login'); }
+
+    // ---------- Iconos ----------
+    // Paleta por estado: [fondo-arriba, fondo-abajo, frente-arriba, frente-abajo, acento]
+    const FOLDER_PAL = {
+      vacio:     ['#f77f83', '#d9343a', '#ffa3a5', '#ec4a50', '#e0393e'],
+      vencido:   ['#d4474b', '#8f1519', '#e56a6d', '#b82226', '#a61b1f'],
+      pendiente: ['#ffd466', '#e29a0c', '#ffe595', '#f7b928', '#c98200'],
+      aprobado:  ['#5fd896', '#16854a', '#8defb9', '#2fc474', '#1e9e5a'],
+      rechazado: ['#ffb066', '#d9690f', '#ffc78f', '#f58a2e', '#c2540a'],
+      noaplica:  ['#c3ccdd', '#8190ab', '#dde3ef', '#a9b5cb', '#6f7c95'],
+      azul:      ['#6fa8ff', '#1f56d9', '#9cc3ff', '#3b82f6', '#1456d6']
+    };
+    const FILE_PAL = {
+      pdf: ['#ff7a7e', '#d42f35'], doc: ['#6fa8ff', '#1f56d9'], xls: ['#4fd491', '#14864a'],
+      img: ['#b794ff', '#6d3fd6'], zip: ['#ffcf5c', '#d98c0a'], otro: ['#a9b5cb', '#6f7c95']
+    };
+    // Degradados compartidos (un solo bloque oculto; las carpetas los referencian por id)
+    (function injectSprite() {
+      const g = function (id, a, b) {
+        return '<linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + a + '"/><stop offset="1" stop-color="' + b + '"/></linearGradient>';
+      };
+      let d = '';
+      Object.keys(FOLDER_PAL).forEach(function (k) {
+        const c = FOLDER_PAL[k];
+        d += g('fgB-' + k, c[0], c[1]) + g('fgF-' + k, c[2], c[3]) + g('fgE-' + k, c[2], c[4]);
+      });
+      Object.keys(FILE_PAL).forEach(function (k) { d += g('ffK-' + k, FILE_PAL[k][0], FILE_PAL[k][1]); });
+      document.body.insertAdjacentHTML('afterbegin', '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>' + d + '</defs></svg>');
+    })();
+
+    // Carpeta con volumen: fondo, hojas asomando (según n archivos), frente con brillo e
+    // insignia de estado. key = estado (vacio, pendiente, aprobado...). plain = sin insignia.
+    function folderSvg(size, key, n, plain) {
+      const k = FOLDER_PAL[key] ? key : 'noaplica';
+      n = n || 0;
+      const sheet = function (cls, x, y, r) {
+        return '<g class="fg-p ' + cls + '" style="--r:' + r + 'deg">' +
+          '<rect x="' + x + '" y="' + y + '" width="26" height="22" rx="2.4" fill="#fff" stroke="rgba(15,27,61,.12)" stroke-width=".6"/>' +
+          '<rect x="' + (x + 4) + '" y="' + (y + 4.5) + '" width="13" height="1.7" rx=".85" fill="#c3d2ee"/>' +
+          '<rect x="' + (x + 4) + '" y="' + (y + 8) + '" width="18" height="1.7" rx=".85" fill="#dbe4f5"/></g>';
+      };
+      let papers = '';
+      if (n >= 2) papers += sheet('fg-p1', 10, 7, -6);
+      if (n >= 1) papers += sheet('fg-p2', 12, 8, 4);
+      if (n >= 3) papers += sheet('fg-p3', 11, 9, -1);
+      const W = { fill: 'none', stroke: '#fff', 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+      const wa = Object.keys(W).map(function (a) { return a + '="' + W[a] + '"'; }).join(' ');
+      const glyph = {
+        aprobado:  '<path ' + wa + ' d="M33.6 37.4l2.7 2.7 5-5.6"/>',
+        pendiente: '<path ' + wa + ' stroke-width="2" d="M37.5 37l2.6 1.5"/><path class="fg-hand" ' + wa + ' stroke-width="2" d="M37.5 37v-4.6"/>',
+        rechazado: '<path ' + wa + ' stroke-width="2.2" d="M41 40a4 4 0 00-4-4h-3.6M35.4 33.8l-2.2 2.2 2.2 2.2"/>',
+        vacio:     '<g class="fg-bob"><path ' + wa + ' stroke-width="2.2" d="M37.5 41.2v-8.2M34 36.6l3.5-3.6 3.5 3.6"/></g>',
+        vencido:   '<path ' + wa + ' d="M37.5 32.6v5.2M37.5 41.2v.1"/>',
+        noaplica:  '<path ' + wa + ' d="M34 37h7"/>'
+      }[k] || '';
+      const emblem = (plain || !glyph) ? '' :
+        '<g class="fg-emb"><circle cx="37.5" cy="37" r="8.6" fill="url(#fgE-' + k + ')" stroke="#fff" stroke-width="2"/>' + glyph + '</g>';
+      return '<svg class="fg fg-' + k + '" width="' + size + '" height="' + size + '" viewBox="0 0 48 48" aria-hidden="true">' +
+        '<path d="M4 11a4 4 0 014-4h9.2a4 4 0 012.9 1.25l2.6 2.75H40a4 4 0 014 4v22a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="url(#fgB-' + k + ')"/>' +
+        papers +
+        '<g class="fg-front"><path d="M4 20a4 4 0 014-4h32a4 4 0 014 4v17a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="url(#fgF-' + k + ')"/>' +
+        '<path d="M4 20a4 4 0 014-4h32a4 4 0 014 4v1.4H4z" fill="#fff" opacity=".3"/>' +
+        '<path d="M8 41.3h32" stroke="#000" stroke-opacity=".08" stroke-width=".8"/></g>' +
+        emblem + '</svg>';
+    }
+
+    // Icono de archivo con etiqueta de tipo (PDF, DOC, XLS...) y color propio
+    function fileKind(name) {
+      const ext = String(name || '').split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) !== -1) return ['img', 'IMG'];
+      if (ext === 'pdf') return ['pdf', 'PDF'];
+      if (['zip', 'rar', '7z'].indexOf(ext) !== -1) return ['zip', 'ZIP'];
+      if (['doc', 'docx'].indexOf(ext) !== -1) return ['doc', 'DOC'];
+      if (['xls', 'xlsx'].indexOf(ext) !== -1) return ['xls', 'XLS'];
+      return ['otro', ext.slice(0, 4).toUpperCase() || 'FILE'];
+    }
+    function fileBadgeSvg(name) {
+      const kd = fileKind(name);
+      return '<svg class="fbadge" width="28" height="35" viewBox="0 0 32 40" aria-hidden="true">' +
+        '<path d="M6 1h14l10 10v25a3 3 0 01-3 3H6a3 3 0 01-3-3V4a3 3 0 013-3z" fill="url(#ffK-' + kd[0] + ')"/>' +
+        '<path d="M20 1l10 10h-7a3 3 0 01-3-3z" fill="#fff" opacity=".4"/>' +
+        '<text x="16" y="30" text-anchor="middle" font-family="Plus Jakarta Sans,system-ui,sans-serif" font-weight="800" font-size="' + (kd[1].length > 3 ? 7.5 : 9) + '" fill="#fff">' + escapeHtml(kd[1]) + '</text></svg>';
+    }
+
+    // Cuenta animada de un número (desde el valor que ya tenía hasta el nuevo)
+    function countTo(el, to, suffix) {
+      suffix = suffix || '';
+      const from = el._v === undefined ? 0 : el._v;
+      el._v = to;
+      const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (from === to || still) { el.textContent = to + suffix; return; }
+      const t0 = performance.now(), dur = 650;
+      cancelAnimationFrame(el._raf);
+      (function step(now) {
+        const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(from + (to - from) * e) + suffix;
+        if (p < 1) el._raf = requestAnimationFrame(step);
+      })(t0);
+    }
+
+    // ---------- Medallas: 5 calidades, una por cada 20% de avance (la mejor solo al 100%) ----------
+    const MEDALS = [
+      { pct: 20,  name: 'Bronce', file: 'bronce',   c: ['#f6c9a3', '#c27a38', '#7d4519'], rib: '#d6584f' },
+      { pct: 40,  name: 'Plata', file: 'plata',    c: ['#fbfcfe', '#bcc5d4', '#7c879c'], rib: '#4b7bd8' },
+      { pct: 60,  name: 'Oro', file: 'oro',      c: ['#fff3b0', '#f4b41f', '#b27300'], rib: '#d6584f' },
+      { pct: 80,  name: 'Platino', file: 'platino',  c: ['#effaff', '#8fd0ee', '#3f8bb8'], rib: '#2f6fd0' },
+      { pct: 100, name: 'Diamante', file: 'diamante', c: ['#eafcff', '#5fd4ff', '#7a5cff'], rib: '#7a5cff', gem: true }
+    ];
+    // Medallas: imágenes PNG con fondo transparente (assets/medals/). El brillo que las cruza
+    // se dibuja con una máscara de la propia imagen, así respeta su silueta.
+    function medalSvg(i, size, cls) {
+      const m = MEDALS[i], src = 'assets/medals/' + m.file + '.png';
+      return '<span class="md md-img ' + (cls || '') + '" style="width:' + size + 'px;height:' + Math.round(size * 1.28) + 'px;--mi:url(' + src + ')">' +
+        '<img src="' + src + '" alt="Medalla de ' + m.name + '" draggable="false"></span>';
+    }
+    function tierOf(pct) {
+      let t = -1;
+      MEDALS.forEach(function (m, i) { if (pct >= m.pct) t = i; });
+      return t;
+    }
+    // Cuántos temas aprobados más hacen falta para llegar a cierto %
+    function remainingFor(r, thr) {
+      for (let k = 1; k <= r.total - r.resueltos; k++) {
+        if (Math.round((r.resueltos + k) / r.total * 100) >= thr) return k;
+      }
+      return null;
+    }
+    let prevTier;
+    let lastProgPct = 0, lastProgTotal = 0;
+    function renderMedals(r) {
+      lastProgPct = r.pct; lastProgTotal = r.total;
+      const t = r.total ? tierOf(r.pct) : -1;
+      const m = MEDALS[t];
+      const hero = document.getElementById('pmHero');
+      const grew = prevTier !== undefined && t > prevTier;
+      prevTier = t;
+      hero.innerHTML =
+        medalSvg(t >= 0 ? t : 0, 76, t < 0 ? 'md-locked' : 'md-live' + (grew ? ' md-pop' : '')) +
+        '<div class="pm-name">' + (m ? 'Medalla de ' + m.name : 'Aún sin medalla') + '</div>' +
+        '<div class="pm-sub">' + (m ? (t === MEDALS.length - 1 ? '¡Nivel máximo!' : 'Nivel ' + (t + 1) + ' de ' + MEDALS.length) : 'Llega al 20% y gana la de Bronce') + '</div>';
+      hero.classList.toggle('is-top', t === MEDALS.length - 1);
+      document.getElementById('pmRow').innerHTML = MEDALS.map(function (md, i) {
+        const on = i <= t;
+        return '<div class="pm-mini ' + (on ? 'on' : 'off') + (i === t ? ' cur' : '') + '" title="' + md.name + ' · ' + md.pct + '%' + (on ? ' (lograda)' : '') + '">' +
+          medalSvg(i, 28, on ? '' : 'md-locked') + '<span>' + md.pct + '%</span></div>';
+      }).join('');
+
+      // Siguiente meta
+      const nx = document.getElementById('progressNext');
+      if (!r.total) { nx.innerHTML = ''; return; }
+      if (t === MEDALS.length - 1) {
+        nx.innerHTML = '<span class="pn-ico">' + medalSvg(t, 22, '') + '</span><span><strong>¡Medalla máxima conseguida!</strong> Todos los temas exigibles de este mes están resueltos.</span>';
+      } else {
+        const ni = t + 1, k = remainingFor(r, MEDALS[ni].pct);
+        nx.innerHTML = '<span class="pn-ico">' + medalSvg(ni, 22, 'md-locked-soft') + '</span><span>Siguiente: <strong>medalla de ' + MEDALS[ni].name + '</strong>' +
+          (k ? ' · te ' + (k === 1 ? 'falta ' : 'faltan ') + k + (k === 1 ? ' tema aprobado.' : ' temas aprobados.') : '.') + '</span>';
+      }
+    }
+
+    // ---------- Resumen calculado en el navegador (mismas reglas que el servidor) ----------
+    // Así los números, las medallas y los filtros siempre coinciden con las carpetas visibles.
+    function computeResumen(topics) {
+      const ex = topics.filter(function (t) { return t.obligatorio; });
+      const cnt = function (st) { return ex.filter(function (t) { return t.estado === st; }).length; };
+      const resueltos = ex.filter(function (t) { return t.estado === 'noaplica' || t.files.some(function (f) { return f.estado === 'aprobado'; }); }).length;
+      return {
+        total: ex.length, resueltos: resueltos,
+        aprobados: cnt('aprobado'), pendientes: cnt('pendiente'), rechazados: cnt('rechazado'), vacios: cnt('vacio'),
+        noAplica: cnt('noaplica'), vencidos: ex.filter(function (t) { return t.vencido; }).length,
+        pct: ex.length ? Math.round(resueltos / ex.length * 100) : 0
+      };
+    }
+
+    // ---------- Filtros desde las fichas de resumen ----------
+    const FILTER_LABEL = { aprobado: 'Aprobados', pendiente: 'En revisión', rechazado: 'Por corregir', vacio: 'Por cargar' };
+    let kpiFilter = null;
+    function setKpiFilter(f) {
+      kpiFilter = (f === 'all' || f === kpiFilter) ? null : f;
+      renderFolders();
+    }
+
+    const DOC_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/></svg>';
+    const CHEV_DOWN_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+    const CHEV_RIGHT_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+    const UPLOAD_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
+    const BANNER_ICON = {
+      vacio: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16.2v.1"/></svg>',
+      completo: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>',
+      noaplica: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>'
+    };
+    const INFO_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>';
+    const UP_SMALL_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
+    const CLIP_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5l-8.5 8.5a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8"/></svg>';
+    const UP_ICON_LG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>';
+    const FOLDER_SMALL_SVG = folderSvg(20, 'azul', 0, true);
+    // Iconos fijos de la cabecera: misma carpeta con volumen, en azul de marca
+    document.querySelector('.topbar .brand-icon').innerHTML = folderSvg(32, 'azul', 2, true);
+    document.querySelector('.du-icon').innerHTML = folderSvg(46, 'azul', 3, true);
+    document.querySelector('.sh-icon').innerHTML = folderSvg(40, 'azul', 2, true);
+
+    function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+
+    const ESTADO_LABEL = { vacio: 'Vacío', pendiente: 'En revisión', aprobado: 'Aprobado', rechazado: 'Rechazado', noaplica: 'No aplica' };
+    const ESTADO_COLORS = {
+      vacio: ['#e0393e', '#fdeceb'], vencido: ['#a61b1f', '#fdeceb'], pendiente: ['#a56a00', '#fff6d9'],
+      aprobado: ['#1e9e5a', '#e9f9ef'], rechazado: ['#c2540a', '#ffe9d6'], noaplica: ['#6f7c95', '#eef1f6']
+    };
+    const CLOCK_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+    const BACK_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>';
+    let lastData = null;
+    let viewAs = false;
+    function isReadonly() { return viewAs || !!(lastData && lastData.month && lastData.month.cerrado); }
+    function topicEstado(t) { return t.estado || (t.noAplica ? 'noaplica' : (t.vacio ? 'vacio' : 'aprobado')); }
+    function isVenc(t) { return !!t.vencido && (t.estado === 'vacio' || t.estado === 'rechazado'); }
+    function colorKey(t) { return isVenc(t) && t.estado === 'vacio' ? 'vencido' : t.estado; }
+    function badgeLabel(t) {
+      if (isVenc(t)) return t.estado === 'vacio' ? 'Vencido' : 'Rechazado · vencido';
+      return ESTADO_LABEL[t.estado];
+    }
+    function acceptFor(t) { return t.extensiones && t.extensiones.length ? t.extensiones.map(function (e) { return '.' + e; }).join(',') : ''; }
+    function extsText(t) { return t.extensiones && t.extensiones.length ? t.extensiones.map(function (e) { return e.toUpperCase(); }).join(', ') : 'cualquier formato'; }
+
+    // Mensaje claro según el estado, la fecha límite y si el tema es obligatorio
+    function topicMessage(t) {
+      const lim = t.fechaLimite ? fmtDay(t.fechaLimite) : '';
+      const d = t.diasRestantes;
+      const cuando = d === null || d === undefined ? '' : (d < 0 ? '' : (d === 0 ? ' (vence hoy)' : (d === 1 ? ' (queda 1 día)' : ' (quedan ' + d + ' días)')));
+      if (t.estado === 'noaplica') return t.noAplicaPorAdmin ? 'El administrador marcó este tema como "No aplica".' : 'Marcaste este tema como "No aplica" este mes.';
+      if (t.estado === 'aprobado') return 'Aprobado por el administrador.';
+      if (t.estado === 'pendiente') return 'Tu archivo está en revisión.';
+      if (t.estado === 'rechazado') {
+        return 'Rechazado' + (t.observacion ? ': ' + t.observacion + (/[.!?]$/.test(t.observacion) ? '' : '.') : '.') + ' Corrígelo y vuelve a subirlo' +
+          (t.vencido ? ' (ya venció el ' + lim + ')' : (lim ? ' antes del ' + lim : '')) + '.';
+      }
+      if (!t.obligatorio) return 'Tema opcional: cárgalo solo si corresponde' + (lim ? ' (límite ' + lim + ')' : '') + '.';
+      if (t.vencido) return 'Venció el ' + lim + '. Cárgalo lo antes posible.';
+      if (lim) return 'Te falta cargar «' + t.nombre + '» antes del ' + lim + cuando + '.';
+      return 'Te falta cargar «' + t.nombre + '».';
+    }
+    // «(quedan 12 días)» para la tarjeta: solo temas obligatorios, vacíos y aún dentro del plazo
+    function cardDaysText(t) {
+      if (t.estado !== 'vacio' || !t.obligatorio || t.vencido || !t.fechaLimite) return '';
+      const d = t.diasRestantes;
+      if (d === null || d === undefined || d < 0) return '';
+      return d === 0 ? '(vence hoy)' : (d === 1 ? '(queda 1 día)' : '(quedan ' + d + ' días)');
+    }
+    // En la carpeta no repetimos el mensaje largo cuando solo dice «te falta cargar» (ya lo dice la insignia «Vacío»)
+    function cardHintText(t) {
+      if (t.estado === 'vacio' && t.obligatorio && !t.vencido) return '';
+      return topicMessage(t);
+    }
+    function stateTag(f) {
+      const m = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'En revisión'], rechazado: ['naranja', 'Rechazado'] }[f.estado] || ['gris', f.estado];
+      return '<span class="tag ' + m[0] + '">' + m[1] + '</span>' + (f.tardio ? ' <span class="tag gris" title="Se cargó después de la fecha límite">Fuera de plazo</span>' : '');
+    }
+
+
+    // ---------------- BANDEJA DE NOTIFICACIONES ----------------
+    const NF_SVG = function (d) { return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+    const NF_TIPOS = {
+      recordatorio: { label: 'Recordatorio', icon: NF_SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>'), obsLabel: 'Nota del administrador' },
+      rechazo: { label: 'Archivo rechazado', icon: NF_SVG('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>'), obsLabel: 'Motivo del rechazo' },
+      eliminacion: { label: 'Archivo eliminado', icon: NF_SVG('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>'), obsLabel: 'Motivo de la eliminación' },
+      aprobado: { label: 'Archivo aprobado', icon: NF_SVG('<path d="M5 12.5l4.5 4.5L19 7.5"/>'), obsLabel: 'Observación' },
+      reemplazo: { label: 'Archivo ajustado', icon: NF_SVG('<path d="M17 3l4 4-4 4"/><path d="M3 11V9a2 2 0 012-2h16"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a2 2 0 01-2 2H3"/>'), obsLabel: 'Ajuste realizado' }
+    };
+    let notif = { nuevas: [], anteriores: [] }, notifView = 'nuevas', notifFallback = false;
+    // Reconstruye notificaciones desde los avisos sin leer del mes (solo si el Code.gs publicado es anterior a esta versión)
+    function nfFromTopics() {
+      const list = (lastData && lastData.avisos) || [];
+      return { max: 10, anteriores: [], nuevas: list.map(function (a) {
+        const m = a.mensaje || '', g = function (re) { const x = m.match(re); return x ? x[1] : ''; };
+        return { id: a.id, tipo: a.tipo || 'recordatorio', mensaje: m, creadoAt: a.creadoAt, leidoAt: '',
+          perfil: g(/^([^"]+?) (?:eliminó|ajustó) tu archivo/) || 'Administración',
+          observacion: g(/(?:Motivo|Ajuste realizado): (.+?)(?:\.? (?:Corrígelo|Si hace falta|El archivo quedó)|\.?$)/),
+          archivo: g(/archivo "([^"]+)"/), tema: g(/tema "([^"]+)"/), mesNombre: g(/tema "[^"]+" \(([^)]+)\)/) };
+      }) };
+    }
+    // Perfiles de revisión (mismos íconos y colores que en el modo administración)
+    const NF_PERFILES = [
+      { nombre: 'Pedagoga', tono: 'azul', ico: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/>' },
+      { nombre: 'Psicóloga', tono: 'morado', ico: '<path d="M12 21s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.5-7 10-7 10z"/>' },
+      { nombre: 'Nutricionista', tono: 'verde', ico: '<path d="M12 7c-2-2-7-1.5-7 4 0 5 3 9 5 9 1 0 1.2-.5 2-.5s1 .5 2 .5c2 0 5-4 5-9 0-5.5-5-6-7-4z"/><path d="M12 7c0-2 1-3.5 3-4"/>' },
+      { nombre: 'Administrativo', tono: 'naranja', ico: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18"/>' }
+    ];
+    function nfPerfilIcon(nombre, size) {
+      const k = String(nombre || '').toLowerCase();
+      const p = NF_PERFILES.filter(function (x) { return k.indexOf(x.nombre.toLowerCase()) === 0; })[0] || NF_PERFILES[3];   // «Administración» u otro → Administrativo
+      return '<span class="perfil-ico pf-' + p.tono + '" style="--pi:' + size + 'px"><svg width="' + Math.round(size * 0.5) + '" height="' + Math.round(size * 0.5) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + p.ico + '</svg></span>';
+    }
+    const ND_IC = {
+      file: '<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/>',
+      tag: '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/>',
+      cal: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+      clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+      warn: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.01"/>',
+      doc: '<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+      check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+    };
+    function ndSvg(d, s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; }
+    function nfTipo(t) { return NF_TIPOS[t] ? t : 'recordatorio'; }
+
+    async function loadNotifications() {
+      try { notif = await gsRun('apiGetNotifications', token); notifFallback = false; }
+      catch (e) { notif = nfFromTopics(); notifFallback = true; }   // backend anterior: usa los avisos que ya llegan con los temas
+      renderNotifBadge();
+      if (!document.getElementById('notifMenu').hidden) renderNotifMenu();
+    }
+    function renderNotifBadge() {
+      const n = notif.nuevas.length, b = document.getElementById('notifBadge');
+      b.hidden = !n; b.textContent = n > 9 ? '9+' : String(n);
+      document.getElementById('btnNotif').classList.toggle('has-new', n > 0);
+      document.getElementById('btnNotif').title = n ? n + (n === 1 ? ' notificación nueva' : ' notificaciones nuevas') : 'Notificaciones';
+    }
+    function nfSnippet(n) {
+      if (n.archivo) return n.archivo + (n.tema ? ' · ' + n.tema : '');
+      return n.mensaje.length > 90 ? n.mensaje.slice(0, 90) + '…' : n.mensaje;
+    }
+    function renderNotifMenu() {
+      const list = notifView === 'nuevas' ? notif.nuevas : notif.anteriores;
+      document.getElementById('nmTitle').textContent = notifView === 'nuevas' ? 'Notificaciones' : 'Notificaciones anteriores';
+      document.getElementById('nmReadAll').style.display = notifView === 'nuevas' && notif.nuevas.length && !viewAs ? '' : 'none';
+      const tg = document.getElementById('nmToggle');
+      tg.textContent = notifView === 'nuevas' ? 'Notificaciones anteriores (' + notif.anteriores.length + ')' : '← Volver a las nuevas';
+      document.getElementById('nmFallback').hidden = !notifFallback;
+      document.getElementById('nmList').innerHTML = list.length ? list.map(function (n) {
+        const t = nfTipo(n.tipo);
+        return '<button type="button" class="nf-item tipo-' + t + (n.leidoAt ? '' : ' unread') + '" data-nid="' + n.id + '">' +
+          '<span class="nf-ico">' + NF_TIPOS[t].icon + '</span>' +
+          '<span class="nf-main"><span class="nf-top"><b>' + NF_TIPOS[t].label + '</b><span class="nf-time">' + escapeHtml(formatDate(n.creadoAt)) + '</span></span>' +
+          '<span class="nf-sub">' + escapeHtml(nfSnippet(n)) + '</span>' +
+          '<span class="nf-by">Por <b>' + escapeHtml(n.perfil) + '</b></span></span>' +
+          (n.leidoAt ? '' : '<i class="nf-dot"></i>') + '</button>';
+      }).join('') : '<div class="nf-empty">' + (notifView === 'nuevas' ? 'No tienes notificaciones nuevas.' : 'Todavía no hay notificaciones anteriores.') + '</div>';
+      document.querySelectorAll('#nmList [data-nid]').forEach(function (b) { b.addEventListener('click', function () { openNotif(b.dataset.nid); }); });
+    }
+    function toggleNotifMenu(force) {
+      const menu = document.getElementById('notifMenu');
+      const open = force === undefined ? menu.hidden : force;
+      menu.hidden = !open;
+      document.getElementById('btnNotif').setAttribute('aria-expanded', String(open));
+      if (open) { notifView = 'nuevas'; renderNotifMenu(); loadNotifications(); }
+    }
+
+    function openNotif(id) {
+      const all = notif.nuevas.concat(notif.anteriores);
+      const n = all.filter(function (x) { return x.id === id; })[0];
+      if (!n) return;
+      const t = nfTipo(n.tipo), T = NF_TIPOS[t];
+      const dt = new Date(n.creadoAt);
+      const fechaHora = isNaN(dt) ? '' : dt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '.') + ' ' + dt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+      const fechaTit = isNaN(dt) ? '' : dt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) + ' • ' + dt.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+      const rows = [['Archivo', n.archivo, 'file'], ['Tema', n.tema, 'tag'], ['Mes', n.mesNombre, 'cal'], ['Fecha y hora', fechaHora, 'clock']].filter(function (r) { return r[1]; });
+      document.getElementById('notifDetailBody').innerHTML =
+        '<div class="tipo-' + t + '">' +
+        '<div class="nd-head"><span class="nd-ico">' + T.icon + '</span><div><div class="nd-cat">' + T.label + '</div><div class="nd-date" id="ndTitle">' + escapeHtml(fechaTit) + '</div></div></div>' +
+        '<div class="nd-body">' +
+          '<div class="nd-by">' + nfPerfilIcon(n.perfil, 44) + '<div><div class="nd-by-k">Realizado por el perfil</div><div class="nd-by-v">' + escapeHtml(n.perfil) + '</div></div></div>' +
+          (rows.length ? '<div class="nd-info">' + rows.map(function (r) { return '<div class="nd-cell">' + ndSvg(ND_IC[r[2]], 18) + '<div style="min-width:0;"><div class="k">' + r[0] + '</div><div class="v">' + escapeHtml(r[1]) + '</div></div></div>'; }).join('') + '</div>' : '') +
+          (n.observacion ? '<div class="nd-obs">' + ndSvg(ND_IC.warn, 20) + '<div style="min-width:0;"><div class="nd-obs-k">' + T.obsLabel + '</div><div class="nd-obs-v">' + escapeHtml(n.observacion) + '</div></div></div>' : '') +
+          '<div class="nd-full">' + ndSvg(ND_IC.doc, 20) + '<div style="min-width:0;"><div class="k">Mensaje completo</div>' + escapeHtml(n.mensaje) + '</div></div>' +
+          '<div class="nd-foot"><button class="nd-ok" id="ndOk" type="button">' + ndSvg(ND_IC.check, 18) + 'Entendido</button></div>' +
+        '</div></div>';
+      document.getElementById('notifDetailBg').classList.add('open');
+      document.getElementById('ndOk').addEventListener('click', closeNotifDetail);
+      document.getElementById('ndOk').focus();
+      // Al verla, pasa de «nuevas» a «anteriores» (en la vista «ver como unidad» no se modifica nada)
+      if (!n.leidoAt && !viewAs) {
+        n.leidoAt = new Date().toISOString();
+        notif.nuevas = notif.nuevas.filter(function (x) { return x.id !== id; });
+        notif.anteriores.unshift(n);
+        renderNotifBadge(); renderNotifMenu();
+        const banner = document.querySelector('#avisos [data-aviso-id="' + id + '"]'); if (banner) banner.remove();
+        gsRun('apiMarkAvisoLeido', token, id).catch(function () { loadNotifications(); });
+      }
+    }
+    function closeNotifDetail() { document.getElementById('notifDetailBg').classList.remove('open'); }
+
+    document.getElementById('btnNotif').addEventListener('click', function (ev) { ev.stopPropagation(); toggleNotifMenu(); });
+    document.getElementById('notifMenu').addEventListener('click', function (ev) { ev.stopPropagation(); });
+    document.addEventListener('click', function (ev) { if (ev.target.closest && ev.target.closest('#notifDetailBg')) return; toggleNotifMenu(false); });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Escape') return;
+      if (document.getElementById('notifDetailBg').classList.contains('open')) closeNotifDetail(); else toggleNotifMenu(false);
+    });
+    document.getElementById('notifDetailClose').addEventListener('click', closeNotifDetail);
+    document.getElementById('notifDetailBg').addEventListener('click', function (ev) { if (ev.target === this) closeNotifDetail(); });
+    document.getElementById('nmToggle').addEventListener('click', function () { notifView = notifView === 'nuevas' ? 'anteriores' : 'nuevas'; renderNotifMenu(); });
+    document.getElementById('nmReadAll').addEventListener('click', async function () {
+      const btn = this;
+      await withBusyBtn(btn, async function () {
+        try {
+          await gsRun('apiMarkAllAvisosLeidos', token);
+          document.querySelectorAll('#avisos [data-aviso-id]').forEach(function (e) { e.remove(); });
+          await loadNotifications();
+        } catch (e) { reportError(e.message); }
+      });
+    });
+
+    function renderAvisos(avisos) {
+      const wrap = document.getElementById('avisos');
+      wrap.innerHTML = '';
+      (avisos || []).forEach(function (a) {
+        const el = document.createElement('div');
+        el.className = 'aviso ' + (a.tipo === 'rechazo' ? 'rechazo' : (a.tipo === 'eliminacion' ? 'eliminacion' : (a.tipo === 'reemplazo' ? 'info' : '')));
+        el.dataset.avisoId = a.id;
+        el.innerHTML = '<span class="av-ico">' + (a.tipo === 'rechazo' || a.tipo === 'eliminacion' ? BACK_SVG : BANNER_ICON.vacio) + '</span>' +
+          '<div class="av-body">' + escapeHtml(a.mensaje) + '</div>' +
+          (viewAs ? '' : '<button class="btn btn-secondary btn-sm" type="button">Entendido</button>');
+        const btn = el.querySelector('button');
+        if (btn) btn.addEventListener('click', async function () {
+          btn.disabled = true;
+          try { await gsRun('apiMarkAvisoLeido', token, a.id); el.remove(); loadNotifications(); } catch (e) { reportError(e.message); btn.disabled = false; }
+        });
+        wrap.appendChild(el);
+      });
+    }
+
+    function renderMonthBanner() {
+      const el = document.getElementById('monthBanner');
+      const m = lastData && lastData.month;
+      if (!m) { el.innerHTML = ''; return; }
+      if (m.cerrado) {
+        el.innerHTML = '<div class="month-banner">' + BANNER_ICON.noaplica + '<div><strong>Este mes está cerrado.</strong> Ya no se pueden cargar ni borrar archivos. Si te falta algo, pídele al administrador que lo reabra.</div></div>';
+      } else if (m.fechaLimite) {
+        el.innerHTML = '<div class="month-banner">' + CLOCK_SVG + '<div>Fecha límite del mes: <strong>' + fmtDay(m.fechaLimite) + '</strong>. Algunos temas pueden tener su propia fecha.</div></div>';
+      } else { el.innerHTML = ''; }
+    }
+
+    async function loadMonths() {
+      const months = await gsRun('apiGetMonths', token);
+      const sel = document.getElementById('monthSelect');
+      sel.innerHTML = '';
+      if (!months.length) {
+        document.getElementById('emptyHint').style.display = 'block';
+        document.getElementById('dashTools').style.display = 'none';
+        return;
+      }
+      months.forEach(function (m) {
+        const opt = document.createElement('option');
+        opt.value = m.id; opt.textContent = m.nombre + (m.cerrado ? ' (cerrado)' : '');
+        sel.appendChild(opt);
+      });
+      sel.addEventListener('change', function () { loadTopics(sel.value); });
+      currentMonthId = months[0].id;
+      sel.value = currentMonthId;
+      await loadTopics(currentMonthId);
+    }
+
+    // silent = true: refresca los datos sin vaciar la pantalla (después de cargar, renombrar,
+    // eliminar o marcar "No aplica"), así el panel de detalles no parpadea.
+    async function loadTopics(monthId, silent) {
+      currentMonthId = monthId;
+      const sel = document.getElementById('monthSelect');
+      if (!silent) {
+        introNext = true;
+        kpiFilter = null;
+        closeDrawer();
+        hideAlert(alertEl);
+        document.getElementById('foldersToolbar').style.display = 'none';
+        document.getElementById('dashKpis').style.display = 'none';
+        document.getElementById('dashProgressCol').style.display = 'none';
+        document.getElementById('dashLegend').style.display = 'none';
+        document.getElementById('foldersGrid').innerHTML =
+          '<div class="topics-loading"><span class="spinner"></span>Cargando la información de este mes…</div>';
+        sel.disabled = true;
+      }
+      try {
+        lastData = await gsRun('apiGetTopics', token, monthId);
+        lastTopics = lastData.topics;
+        applyPendingDeletes();
+      } catch (e) {
+        reportError(e.message);
+        if (!silent) { lastData = null; lastTopics = []; }
+      }
+      if (!silent) sel.disabled = false;
+      if (currentMonthId !== monthId) return; // el usuario ya cambió de mes mientras cargaba
+      document.getElementById('avisos').innerHTML = '';   // los avisos viven en la bandeja (campana)
+      loadNotifications();
+      renderMonthBanner();
+      renderFolders();
+      maybeStartTour();
+    }
+
+    function refreshTopics() { return loadTopics(currentMonthId, true); }
+
+    // ---------- Eliminar con "Deshacer" (10 s) ----------
+    // El archivo se oculta al instante; solo va a la papelera si pasan los 10 s sin deshacer.
+    const pendingDel = new Set();
+
+    function recalcEstado(t) {
+      if (t.estado === 'noaplica' || t.estado === 'excluido') return;
+      const fs = t.files;
+      if (!fs.length) t.estado = 'vacio';
+      else if (fs.some(function (x) { return x.estado === 'pendiente'; })) t.estado = 'pendiente';
+      else if (fs.some(function (x) { return x.estado === 'aprobado'; })) t.estado = 'aprobado';
+      else t.estado = 'rechazado';
+    }
+    // Si los datos se recargan durante los 10 s (p. ej. al subir otro archivo), el servidor aún
+    // devuelve el archivo; aquí se vuelve a ocultar.
+    function applyPendingDeletes() {
+      if (!pendingDel.size) return;
+      lastTopics.forEach(function (t) {
+        const n = t.files.length;
+        t.files = t.files.filter(function (x) { return !pendingDel.has(x.id); });
+        if (t.files.length !== n) recalcEstado(t);
+      });
+    }
+    function rerenderFiles() { renderFolders(); renderPanel(); }
+
+    function deleteFileWithUndo(f) {
+      const owner = lastTopics.find(function (t) { return t.files.some(function (x) { return x.id === f.id; }); });
+      if (!owner) return;
+      const topicId = owner.id, monthId = currentMonthId;
+      const pos = owner.files.findIndex(function (x) { return x.id === f.id; });
+      deleteWithUndo({
+        title: 'Archivo eliminado',
+        detail: f.originalName,
+        call: ['apiDeleteFile', token, f.id],
+        onHide: function () {
+          pendingDel.add(f.id);
+          owner.files.splice(pos, 1);
+          recalcEstado(owner);
+          rerenderFiles();
+        },
+        onUndo: function () {
+          pendingDel.delete(f.id);
+          if (currentMonthId !== monthId) return;
+          const t = lastTopics.find(function (x) { return x.id === topicId; });
+          if (!t || t.files.some(function (x) { return x.id === f.id; })) return;
+          t.files.splice(Math.min(pos, t.files.length), 0, f);
+          recalcEstado(t);
+          rerenderFiles();
+        },
+        onCommitted: function () {
+          pendingDel.delete(f.id);
+          if (currentMonthId === monthId) refreshTopics();
+        },
+        onError: function (err) {
+          pendingDel.delete(f.id);
+          reportError(err.message);
+          if (currentMonthId === monthId) refreshTopics();
+        }
+      });
+    }
+
+    function motivText(r) {
+      if (r.total && r.resueltos >= r.total) return '¡Todos los temas de este mes están aprobados! 🎉';
+      if (r.vencidos) return 'Tienes ' + r.vencidos + (r.vencidos === 1 ? ' tema vencido' : ' temas vencidos') + ': cárgalos cuanto antes.';
+      if (r.rechazados) return 'Tienes ' + r.rechazados + (r.rechazados === 1 ? ' tema por corregir' : ' temas por corregir') + '. Lee la observación y vuelve a subirlos.';
+      if (r.pct >= 80) return '¡Ya casi! Un último esfuerzo 💪';
+      if (r.pct >= 50) return 'Vas más de la mitad, ¡sigue así!';
+      if (r.pct >= 20) return 'Buen comienzo, continúa cargando tus documentos.';
+      return '¡Empecemos a cargar tus documentos!';
+    }
+
+    function renderFolders() {
+      const topics = lastTopics;
+      const total = topics.length;
+      const r = computeResumen(topics);
+
+      const kpis = document.getElementById('dashKpis');
+      if (total) {
+        kpis.style.display = 'grid';
+        document.getElementById('dashProgressCol').style.display = 'flex';
+        countTo(document.getElementById('kpiTotal'), r.total);
+        countTo(document.getElementById('kpiAprobados'), r.aprobados);
+        countTo(document.getElementById('kpiRevision'), r.pendientes);
+        countTo(document.getElementById('kpiRechazados'), r.rechazados);
+        countTo(document.getElementById('kpiVacios'), r.vacios);
+        document.getElementById('progressLabel').textContent = r.resueltos + ' de ' + r.total + ' temas exigibles aprobados' +
+          (r.noAplica ? ' o sin aplicar' : '') + (r.pendientes ? ' · ' + r.pendientes + ' en revisión' : '') + '. Los temas opcionales no cuentan.';
+        document.getElementById('progressMotiv').textContent = motivText(r);
+        const pctEl = document.getElementById('progressPct');
+        countTo(pctEl, r.pct, '%');
+        pctEl.className = 'progress-pct' + (r.pct >= 100 ? ' complete' : '');
+        const fillEl = document.getElementById('progressFill');
+        fillEl.style.width = r.pct + '%';
+        fillEl.className = 'progress-fill-v2' + (r.pct >= 100 ? ' complete' : '');
+        renderMedals(r);
+        const revEl = document.getElementById('progressRev');
+        const revPct = r.total ? Math.min(100 - r.pct, Math.round(r.pendientes / r.total * 100)) : 0;
+        revEl.style.left = r.pct + '%'; revEl.style.width = revPct + '%';
+      } else {
+        kpis.style.display = 'none';
+        document.getElementById('dashProgressCol').style.display = 'none';
+      }
+
+      kpis.classList.toggle('has-filter', !!kpiFilter);
+      kpis.querySelectorAll('.kpi-c[data-filter]').forEach(function (el) {
+        const on = el.dataset.filter === kpiFilter;
+        el.classList.toggle('active', on);
+        el.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+      const chip = document.getElementById('clearFilter');
+      chip.style.display = kpiFilter ? '' : 'none';
+      if (kpiFilter) chip.textContent = 'Filtro: ' + FILTER_LABEL[kpiFilter] + '  ✕';
+      document.getElementById('foldersToolbar').style.display = total ? 'flex' : 'none';
+      document.getElementById('dashLegend').style.display = total ? 'flex' : 'none';
+
+      const grid = document.getElementById('foldersGrid');
+      grid.innerHTML = '';
+
+      if (!total) {
+        grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;">El administrador aún no ha creado los temas de este mes' + (lastData ? ' para tu contrato' : '') + '.</div>';
+        document.getElementById('foldersCount').textContent = '';
+        renderPanel();
+        return;
+      }
+
+      const hideCompleted = document.getElementById('hideCompletedToggle').checked;
+      let visibleTopics = hideCompleted ? topics.filter(function (t) { return t.estado === 'vacio' || t.estado === 'rechazado'; }) : topics;
+      const q = norm(searchTerm).trim();
+      if (q) visibleTopics = visibleTopics.filter(function (t) { return norm(t.nombre).indexOf(q) !== -1; });
+      if (kpiFilter) visibleTopics = visibleTopics.filter(function (t) { return t.obligatorio && t.estado === kpiFilter; });
+
+      document.getElementById('foldersCount').textContent = 'Mostrando ' + visibleTopics.length + ' de ' + total + ' temas';
+
+      if (!visibleTopics.length) {
+        const msg = q
+          ? 'No se encontraron temas que coincidan con "' + escapeHtml(searchTerm.trim()) + '".'
+          : kpiFilter
+            ? 'No hay temas «' + FILTER_LABEL[kpiFilter] + '» con la vista actual. <button class="link-btn" type="button" data-clear>Ver todos los temas</button>'
+            : '¡No tienes temas por cargar ni corregir! 🎉 Puedes desactivar "Ocultar temas completados" para verlos todos.';
+        grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1;">' + msg + '</div>';
+        const clr = grid.querySelector('[data-clear]'); if (clr) clr.addEventListener('click', function () { setKpiFilter('all'); });
+        renderPanel();
+        return;
+      }
+
+      const intro = introNext; introNext = false;
+      visibleTopics.forEach(function (t, i) {
+        // Si un tema falla al construirse no se cae la pantalla completa:
+        // se muestra una tarjeta de error solo para ese tema y se sigue con los demás.
+        try {
+          const cardEl = buildFolderCard(t);
+          if (intro) {
+            const ic = cardEl.querySelector('.fc-icon');
+            ic.classList.add('intro'); ic.style.setProperty('--d', Math.min(i, 20) * 40 + 'ms');
+          }
+          grid.appendChild(cardEl);
+        } catch (e) {
+          console.error('No se pudo construir el tema "' + t.nombre + '":', e);
+          const errCard = document.createElement('div');
+          errCard.className = 'folder-card vacio';
+          errCard.innerHTML =
+            '<div class="fc-title">' + escapeHtml(t.nombre) + '</div>' +
+            '<div class="empty-hint" style="padding:0;font-size:12px;">No se pudo mostrar este tema. Recarga la página; si sigue fallando, avísale al administrador.</div>';
+          grid.appendChild(errCard);
+        }
+      });
+
+      renderPanel();
+    }
+
+    // ---------- Acciones compartidas (tarjeta y panel) ----------
+    // Carga uno o varios archivos al tema. Se validan todos primero y se suben uno por uno
+    // (el servidor nombra cada archivo según los ya cargados, por eso no van en paralelo).
+    const MAX_FILES_BATCH = 20;
+    let uploadingNow = false;
+    function uploadManyFor(t, files, zone) {
+      if (isReadonly()) { reportError('Este mes no admite cargas en este momento.'); return; }
+      const inp = zone.querySelector('input[type=file]');
+      if (inp) inp.value = '';
+      if (uploadingNow) { reportError('Espera a que termine la carga en curso para adjuntar más archivos.'); return; }
+      const restricted = t.extensiones && t.extensiones.length;
+      const ok = [], bad = [];
+      files.forEach(function (file) {
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (file.size > MAX_FILE_MB * 1024 * 1024) bad.push(file.name + ': supera el límite de ' + MAX_FILE_MB + ' MB');
+        else if (file.name.indexOf('.') === -1) bad.push(file.name + ': no tiene extensión (por ejemplo .pdf, .docx)');
+        else if (restricted && t.extensiones.indexOf(ext) === -1) bad.push(file.name + ': en este tema solo se permiten archivos ' + extsText(t));
+        else ok.push(file);
+      });
+      if (ok.length > MAX_FILES_BATCH) {
+        bad.push('Se omitieron ' + (ok.length - MAX_FILES_BATCH) + ' archivo(s): el máximo es ' + MAX_FILES_BATCH + ' por carga');
+        ok.length = MAX_FILES_BATCH;
+      }
+      if (bad.length) reportError(bad.length === 1 ? bad[0] + '.' : 'No se cargaron ' + bad.length + ' archivo(s): ' + bad.join(' · ') + '.');
+      if (!ok.length) return;
+
+      uploadingNow = true;
+      zone.style.pointerEvents = 'none';
+      zone.classList.add('is-uploading');
+      (async function () {
+        let done = 0, failed = 0;
+        for (let i = 0; i < ok.length; i++) {
+          const file = ok[i];
+          const toast = safeShowToast(ok.length > 1 ? '(' + (i + 1) + '/' + ok.length + ') ' + file.name : file.name);
+          try {
+            const fileObj = await readFileAsBase64(file);
+            await gsRun('apiUploadFile', token, currentMonthId, t.id, fileObj);
+            toast.success('Se cargó: quedó en revisión.');
+            done++;
+          } catch (err) {
+            toast.error(err.message);
+            failed++;
+          }
+        }
+        uploadingNow = false;
+        zone.style.pointerEvents = '';
+        zone.classList.remove('is-uploading');
+        if (ok.length > 1) {
+          const sum = safeShowToast('Carga múltiple');
+          if (failed) sum.error('Se cargaron ' + done + ' de ' + ok.length + ' archivos. Revisa los que fallaron e inténtalo de nuevo.');
+          else sum.success('Se cargaron los ' + done + ' archivos.');
+        }
+        try { await refreshTopics(); } catch (e) { reportError(e.message); }
+      })();
+    }
+    // Compatibilidad con llamadas de un solo archivo
+    function uploadFor(t, file, zone) { uploadManyFor(t, [file], zone); }
+
+    // Botón "No aplica este mes" / "Marcar que sí aplica". Devuelve null si no corresponde mostrarlo.
+    function buildNoAplicaBtn(t, asButton) {
+      if (isReadonly() || t.noAplicaPorAdmin) return null;
+      if (t.estado !== 'noaplica' && t.estado !== 'vacio') return null;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = asButton ? 'btn btn-secondary btn-sm' : 'link-btn';
+      btn.textContent = t.noAplica ? 'Marcar que sí aplica' : 'No aplica este mes';
+      btn.addEventListener('click', async function (e) {
+        e.stopPropagation();
+        btn.disabled = true;
+        try {
+          await gsRun('apiSetNoAplica', token, currentMonthId, t.id, !t.noAplica);
+          await refreshTopics();
+        } catch (err) {
+          reportError(err.message);
+          btn.disabled = false;
+        }
+      });
+      return btn;
+    }
+
+    // ---------- Tarjeta de carpeta ----------
+    function buildFolderCard(t) {
+      const card = document.createElement('div');
+      const n = t.files.length;
+      const ro = isReadonly();
+      card.className = 'folder-card ' + t.estado + (isVenc(t) ? ' vencido' : '') + (t.obligatorio ? '' : ' opcional') + (allCollapsed ? ' collapsed' : '') + (openTopicId === t.id ? ' selected' : '');
+      card.dataset.id = t.id;
+      card.innerHTML =
+        '<div class="fc-top">' +
+          '<span class="fc-icon">' + folderSvg(56, colorKey(t), n) + '</span>' +
+          '<div class="fc-title" title="' + escapeHtml(t.nombre) + '">' + escapeHtml(t.nombre) + '</div>' +
+          '<button class="fc-toggle" type="button" title="Plegar/desplegar" data-collapse>' + CHEV_DOWN_SVG + '</button>' +
+        '</div>' +
+        '<div class="fc-status"><span class="fc-badge"><i class="dot"></i>' + badgeLabel(t) + '</span>' +
+          (cardDaysText(t) ? '<span class="fc-days">' + cardDaysText(t) + '</span>' : '') + '</div>' +
+        (t.obligatorio ? '' : '<span class="fc-opt">OPCIONAL</span>') +
+        (cardHintText(t) ? '<div class="fc-hint">' + escapeHtml(cardHintText(t)) + '</div>' : '') +
+        '<div class="fc-extra">' +
+          '<div class="files-list"></div>' +
+          ((t.noAplica || ro) ? '' :
+            '<div class="attach-label">' + CLIP_SVG + 'Adjuntar documentos</div>' +
+            '<div class="dropzone dz-attach">' +
+              '<input type="file" multiple accept="' + acceptFor(t) + '">' +
+              '<div class="dz-icon">' + UP_ICON_LG + '</div>' +
+              '<div class="dz-text"><strong>Haz clic aquí</strong> o arrastra uno o varios archivos</div>' +
+              '<span class="dz-btn">Seleccionar archivos</span>' +
+              '<div class="dz-limits">' + extsText(t) + '</div>' +
+            '</div>') +
+          '<div class="noaplica-row"></div>' +
+        '</div>' +
+        '<div class="fc-foot">' +
+          '<span class="fc-count">' + DOC_SVG + n + (n === 1 ? ' archivo' : ' archivos') + '</span>' +
+          '<button class="fc-detail" type="button" data-detail>Detalles ' + CHEV_RIGHT_SVG + '</button>' +
+        '</div>';
+
+      card.querySelector('[data-collapse]').addEventListener('click', function (e) {
+        e.stopPropagation();
+        card.classList.toggle('collapsed');
+      });
+      card.querySelector('[data-detail]').addEventListener('click', function (e) {
+        e.stopPropagation();
+        openDrawer(t.id);
+      });
+      // Clic en cualquier parte "neutra" de la tarjeta abre el panel de detalles
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('button, input, .dropzone, .file-item-v2, a')) return;
+        openDrawer(t.id);
+      });
+
+      const naBtn = buildNoAplicaBtn(t, false);
+      if (naBtn) card.querySelector('.noaplica-row').appendChild(naBtn);
+
+      const filesList = card.querySelector('.files-list');
+      t.files.forEach(function (f) { filesList.appendChild(buildFileItem(f)); });
+
+      const zone = card.querySelector('.dropzone');
+      if (zone) enableMultiDropzone(zone, function (files) { uploadManyFor(t, files, zone); });
+
+      return card;
+    }
+
+    // ---------- Archivo (usado en tarjeta y en panel) ----------
+    function buildFileItem(f) {
+      const item = document.createElement('div');
+      item.className = 'file-item-v2';
+      const parts = splitFileName(f.originalName);
+      const ro = isReadonly();
+      const IC = function (d, s) { return '<svg width="' + (s || 15) + '" height="' + (s || 15) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+      item.innerHTML =
+        '<span class="ftype-icon">' + fileBadgeSvg(f.originalName) + '</span>' +
+        '<div class="fi-info">' +
+          '<span class="fi-name" title="' + escapeHtml(f.originalName) + '">' + escapeHtml(f.originalName) + '</span>' +
+          '<span class="fi-meta">' + formatBytes(f.size) + ' · ' + formatDate(f.uploadedAt) + '</span>' +
+          '<span class="fi-state">' + stateTag(f) + '</span>' +
+          (f.estado === 'rechazado' && f.observacion ? '<div class="file-obs"><strong>Motivo:</strong> ' + escapeHtml(f.observacion) + '</div>' : '') +
+        '</div>' +
+        '<div class="file-actions">' +
+          (ro ? '' : '<button data-rename title="Renombrar">' + IC('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>', 14) + '<span class="fa-l">Renombrar</span></button>') +
+          '<button data-view title="Ver">' + IC('<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>') + '<span class="fa-l">Visualizar</span></button>' +
+          '<button data-download title="Descargar">' + IC('<path d="M12 3v13M7 11l5 5 5-5"/><path d="M4 19h16"/>') + '<span class="fa-l">Descargar</span></button>' +
+          (ro ? '' : '<button data-del title="Eliminar">' + IC('<path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m2 0-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7"/>') + '<span class="fa-l">Eliminar</span></button>') +
+        '</div>';
+
+      item.querySelector('[data-view]').addEventListener('click', async function (e) {
+        const btn = e.currentTarget; btn.disabled = true;
+        try {
+          triggerDownload(await gsRun('apiDownloadFile', token, f.id), 'view', isReadonly() ? null : {
+            saveRotation: function (res) { return gsRun('apiRotateFile', token, f.id, res); },
+            onSaved: function () { refreshTopics(); }
+          });
+        }
+        catch (err) { reportError(err.message); }
+        btn.disabled = false;
+      });
+      item.querySelector('[data-download]').addEventListener('click', async function (e) {
+        const btn = e.currentTarget; btn.disabled = true;
+        try { triggerDownload(await gsRun('apiDownloadFile', token, f.id), 'download'); }
+        catch (err) { reportError(err.message); }
+        btn.disabled = false;
+      });
+      const del = item.querySelector('[data-del]');
+      if (del) del.addEventListener('click', function () { deleteFileWithUndo(f); });
+      const ren = item.querySelector('[data-rename]');
+      if (ren) ren.addEventListener('click', function () { startRename(item, f, parts); });
+
+      return item;
+    }
+
+    const drFold = {};
+    function renderPanel() {
+      if (!openTopicId) return;
+      const t = lastTopics.find(function (x) { return x.id === openTopicId; });
+      if (!t) { closeDrawer(); return; }
+
+      const ck = colorKey(t);
+      const n = t.files.length;
+      const sel = document.getElementById('monthSelect');
+      const mesTxt = sel.selectedOptions && sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : '';
+      const col = ESTADO_COLORS[ck];
+
+      const head = document.getElementById('detailDrawer');
+      head.style.setProperty('--fc', col[0]);
+      head.style.setProperty('--fc-bg', col[1]);
+      const iconEl = document.getElementById('drawerIcon');
+      iconEl.innerHTML = folderSvg(84, ck, n);
+      iconEl.style.color = col[0];
+      document.getElementById('drawerTitle').textContent = t.nombre;
+      const unidad = document.getElementById('unitName').textContent;
+      document.getElementById('drawerSub').innerHTML = 'Unidad: <b>' + escapeHtml(unidad) + '</b> &nbsp;•&nbsp; Mes: <b>' + escapeHtml(mesTxt) + '</b>';
+      document.getElementById('drawerBadge').innerHTML = '<i class="dot"></i>' + badgeLabel(t);
+
+      const bannerTitle = {
+        vacio: isVenc(t) ? 'Este tema está vencido.' : 'Este tema aún no tiene archivos.',
+        pendiente: 'Tu archivo está en revisión.',
+        aprobado: 'Tema aprobado.',
+        rechazado: 'Hay un archivo rechazado.',
+        noaplica: 'Marcado como "No aplica" este mes.'
+      }[t.estado];
+      const bannerSub = t.estado === 'aprobado' ? n + (n === 1 ? ' archivo cargado' : ' archivos cargados') + ' en este tema.'
+        : (t.estado === 'pendiente' ? 'El administrador lo revisará y verás aquí si fue aprobado o si debes corregirlo.'
+        : topicMessage(t));
+      const bannerIcon = { vacio: BANNER_ICON.vacio, pendiente: CLOCK_SVG, aprobado: BANNER_ICON.completo, rechazado: BACK_SVG, noaplica: BANNER_ICON.noaplica }[t.estado];
+
+      const body = document.getElementById('drawerBody');
+      body.innerHTML = '';
+      const sv = function (d, s) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+      const pane = function (k) { const d = document.createElement('div'); d.className = 'dr-pane'; body.appendChild(d); return d; };
+
+      // ---- Detalles ----
+      const pd = pane('detalles');
+      const banner = document.createElement('div');
+      banner.className = 'dr-banner ' + (ck === 'vencido' ? 'vencido' : t.estado);
+      banner.innerHTML = '<span class="db-icon">' + bannerIcon + '</span><div><strong>' + escapeHtml(bannerTitle) + '</strong>' + escapeHtml(bannerSub) + '</div>';
+      pd.appendChild(banner);
+      const mTier = lastProgTotal ? tierOf(lastProgPct) : -1;   // la medalla es la del avance del usuario en el mes
+      const medal = MEDALS[mTier >= 0 ? mTier : 0].file, medalLocked = mTier < 0;
+      const cell = function (ic, k, v) { return '<div class="ic-cell">' + sv(ic, 24) + '<div><span>' + k + '</span><b>' + escapeHtml(v) + '</b></div></div>'; };
+      const info = document.createElement('div');
+      info.className = 'dr-card dr-infocard';
+      info.innerHTML =
+        '<img class="ic-medal' + (medalLocked ? ' locked' : '') + '" src="assets/medals/' + medal + '.png" alt="Medalla del avance" title="Medalla de tu avance del mes">' +
+        '<div class="ic-main"><div class="ic-top"><div><div class="ic-title">Información del tema</div><div class="ic-sub">Datos principales del tema seleccionado</div></div>' +
+          '<div class="ic-pills">' +
+            '<div class="ic-pill">' + sv('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', 30) + '<div><span>Fecha límite</span><b>' + (t.fechaLimite ? fmtDay(t.fechaLimite) : 'Sin fecha') + '</b></div></div>' +
+            '<div class="ic-pill">' + sv('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>', 30) + '<div><span>Estado</span><b>' + (t.obligatorio ? 'Obligatorio' : 'Opcional') + '</b></div></div>' +
+          '</div></div>' +
+          '<div class="ic-row">' +
+            cell('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', 'Mes', mesTxt) +
+            cell('<path d="M4 21V5l8-2v18M12 8h8v13M4 21h16M8 8v.01M8 12v.01M8 16v.01M16 12v.01M16 16v.01"/>', 'Unidad', unidad) +
+            cell('<path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>', 'Archivos cargados', String(n)) +
+          '</div></div>';
+      pd.appendChild(info);
+
+      // ---- Adjuntar ----
+      const pa = pane('adjuntar');
+      if (!t.noAplica && !isReadonly()) {
+        const up = document.createElement('div');
+        up.className = 'dr-card dr-upload2 dropzone dz-large dz-attach';
+        up.innerHTML =
+          '<input type="file" multiple accept="' + acceptFor(t) + '" title="Adjuntar archivos">' +
+          '<div class="dz-art"><svg viewBox="0 0 220 170" width="170" height="131"><defs><linearGradient id="cl1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e4e0ff"/><stop offset="1" stop-color="#b9b2f5"/></linearGradient><linearGradient id="cl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a8bff"/><stop offset="1" stop-color="#1747d6"/></linearGradient></defs>' +
+          '<path d="M40 130a26 26 0 0 1 4-51 38 38 0 0 1 72-12 30 30 0 0 1 52 22 24 24 0 0 1-4 41z" fill="url(#cl1)"/>' +
+          '<path d="M62 150a30 30 0 0 1 3-58 42 42 0 0 1 80-8 32 32 0 0 1 12 66z" fill="url(#cl2)"/><path d="M110 132V98M95 112l15-16 15 16" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '<rect x="52" y="34" width="26" height="30" rx="5" fill="#ef4444" transform="rotate(-12 65 49)"/><rect x="100" y="18" width="26" height="30" rx="5" fill="#22a65e"/><rect x="146" y="38" width="26" height="30" rx="5" fill="#5b8cff" transform="rotate(12 159 53)"/></svg></div>' +
+          '<div class="dz-txt"><div class="du-title">Adjuntar documentos</div><div class="du-sub">Arrastra uno o varios archivos a cualquier parte de este recuadro o haz clic para seleccionarlos (puedes marcar varios a la vez)</div>' +
+          '<div class="dz-row"><span class="btn btn-primary btn-sm">' + UP_SMALL_SVG + ' Adjuntar archivos</span>' +
+          '<span class="dz-meta">' + sv('<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>', 18) + extsText(t) + ' • Máx. ' + MAX_FILE_MB + ' MB</span></div>' +
+          '<div class="dr-note">Los archivos se nombran automáticamente.</div></div>';
+        pa.appendChild(up);
+        enableMultiDropzone(up, function (files) { uploadManyFor(t, files, up); });
+      } else {
+        pa.innerHTML = '<div class="dr-empty">' + (t.noAplica ? 'Este tema está marcado como «No aplica»: no se pueden adjuntar archivos.' : 'Este mes no admite cambios: no se pueden adjuntar archivos.') + '</div>';
+      }
+      const naBtn = buildNoAplicaBtn(t, true);
+      if (naBtn) { const row = document.createElement('div'); row.className = 'dr-actions'; row.appendChild(naBtn); pa.appendChild(row); }
+
+      // ---- Documentos ----
+      const pf = pane('documentos');
+      const filesCard = document.createElement('div');
+      filesCard.className = 'dr-card dr-docs';
+      filesCard.innerHTML = '<div class="dr-docs-title">' + FOLDER_SMALL_SVG + 'Documentos cargados (' + n + ')' + (n > 1 ? '<button type="button" class="btn btn-ghost btn-sm fold-all" style="margin-left:auto;"></button>' : '') + '</div>';
+      const list = document.createElement('div');
+      list.className = 'dr-files';
+      const CHEV = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+      const isOpen = function (f) { return (f.id in drFold) ? drFold[f.id] : n <= 1; };   // con varios archivos se ven plegados
+      const foldBtn = filesCard.querySelector('.fold-all');
+      const foldLabel = function () { if (foldBtn) foldBtn.textContent = t.files.every(isOpen) ? 'Plegar todo' : 'Desplegar todo'; };
+      if (n) {
+        t.files.forEach(function (f) {
+          const it = buildFileItem(f);
+          it.classList.add('foldable'); it.classList.toggle('fold-closed', !isOpen(f));
+          const cv = document.createElement('button'); cv.type = 'button'; cv.className = 'fi-chev'; cv.title = 'Plegar / desplegar'; cv.innerHTML = CHEV;
+          it.insertBefore(cv, it.firstChild);
+          it.addEventListener('click', function (e) {
+            if (e.target.closest('.file-actions, .fi-name-edit, input') ) return;
+            drFold[f.id] = it.classList.contains('fold-closed'); it.classList.toggle('fold-closed', !drFold[f.id]); foldLabel();
+          });
+          list.appendChild(it);
+        });
+        if (foldBtn) { foldLabel(); foldBtn.addEventListener('click', function () {
+          const open = !t.files.every(isOpen);
+          t.files.forEach(function (f) { drFold[f.id] = open; });
+          list.querySelectorAll('.foldable').forEach(function (el) { el.classList.toggle('fold-closed', !open); }); foldLabel(); }); }
+      }
+      else { list.innerHTML = '<div class="dr-empty">No hay archivos cargados en este tema.</div>'; }
+      filesCard.appendChild(list);
+      pf.appendChild(filesCard);
+    }
+
+    // ---------- Manual, ayuda y recorrido guiado ----------
+    async function openManual(btn) {
+      await withBusyBtn(btn, async function () {
+        try { triggerDownload(await gsRun('apiGetManualPdf', token), 'view'); }
+        catch (e) { reportError(e.message); }
+      });
+    }
+
+    let tourKey = null;
+    function tourSteps() {
+      return [
+        { sel: '#monthSelect', title: 'Elige el mes', text: 'Aquí cambias de mes. Cada mes tiene sus propios temas y fechas límite.' },
+        { sel: '#progressWrap', title: 'Tu avance', text: 'Muestra cuántos temas exigibles ya fueron aprobados. La parte amarilla es lo que está en revisión. Cada 20% de avance te da una medalla; la mejor llega al 100%.' },
+        { sel: '#dashKpis', title: 'Filtra con un clic', text: 'Pulsa Aprobados, En revisión, Por corregir o Por cargar para ver solo esos temas. Pulsa Temas exigibles para volver a ver todos.' },
+        { sel: '#dashLegend', title: 'Los colores', text: 'Verde: aprobado. Amarillo: en revisión. Naranja: rechazado, debes corregirlo. Rojo: aún vacío. Gris: no aplica.' },
+        { sel: '#foldersGrid .folder-card', title: 'Cada carpeta es un tema', text: 'Te dice qué falta y hasta cuándo. Arrastra un archivo sobre la carpeta para cargarlo.' },
+        { sel: '#foldersGrid .folder-card .fc-detail', title: 'Detalles', text: 'Abre el panel del tema: ahí ves tus archivos, el motivo si fueron rechazados y puedes cargar uno nuevo.' },
+        { sel: '#btnManual', title: 'Manual', text: 'Descarga un manual corto en PDF cuando lo necesites. Puedes repetir este recorrido con el botón Ayuda.' }
+      ];
+    }
+    function maybeStartTour() {
+      if (viewAs || !tourKey) return;
+      let done = false;
+      try { done = localStorage.getItem(tourKey) === '1'; } catch (e) {}
+      if (done || !lastTopics.length) return;
+      try { localStorage.setItem(tourKey, '1'); } catch (e) {}
+      setTimeout(function () { startTour(tourSteps()); }, 400);
+    }
+
+
+    // Muestra un error en la página y, si el panel de detalles está abierto, también dentro del panel.
+    function reportError(msg) {
+      showAlert(alertEl, msg);
+      if (openTopicId) showAlert(drawerAlertEl, msg);
+    }
+
+    (async function init() {
+      try {
+        const me = await gsRun('apiMe', token);
+        if (!me.authenticated) {
+          if (VIEW_TOKEN) { document.body.innerHTML = '<div style="padding:60px 20px;text-align:center;font-family:sans-serif;">Esta vista temporal expiró. Ciérrala y ábrela de nuevo desde el panel de administrador.</div>'; return; }
+          goTo('login'); return;
+        }
+        document.getElementById('nombreUsuario').textContent = me.user.nombreUnidad + ' · CC ' + me.user.cedula;
+        document.getElementById('unitName').textContent = me.user.nombreUnidad;
+        document.getElementById('userAvatar').textContent = getInitials(me.user.nombreUnidad);
+        viewAs = !!me.viewAs;
+        tourKey = 'gd_tour_' + me.user.id;
+        if (viewAs) {
+          const bar = document.getElementById('viewAsBar');
+          bar.style.display = 'block';
+          bar.innerHTML = 'Estás viendo el panel como <b>' + escapeHtml(me.user.nombreUnidad) + '</b> (solo lectura) por ' + escapeHtml(me.viewAsBy || 'el administrador') + ' · <button class="btn btn-ghost-light btn-sm" id="btnCloseView" type="button">Cerrar esta vista</button>';
+          document.getElementById('btnLogout').style.display = 'none';
+          document.getElementById('btnCloseView').addEventListener('click', function () {
+            try { window.close(); } catch (e) {}
+            goTo('admin');
+          });
+        }
+      } catch (e) {
+        goTo('login'); return;
+      }
+
+      document.getElementById('btnLogout').addEventListener('click', async function () {
+        try { await gsRun('apiLogout', token); } catch (e) {}
+        localStorage.removeItem('userToken');
+        goTo('login');
+      });
+
+      document.getElementById('btnManual').addEventListener('click', function () { openManual(this); });
+      document.getElementById('btnHelp').addEventListener('click', function () { startTour(tourSteps()); });
+
+      const hideToggle = document.getElementById('hideCompletedToggle');
+      hideToggle.checked = localStorage.getItem('gd_hideCompleted') === 'true';
+      hideToggle.addEventListener('change', function () {
+        localStorage.setItem('gd_hideCompleted', hideToggle.checked ? 'true' : 'false');
+        renderFolders();
+      });
+
+      const collapseBtn = document.getElementById('btnToggleCollapseAll');
+      collapseBtn.textContent = allCollapsed ? 'Desplegar todos' : 'Plegar todos';
+      collapseBtn.addEventListener('click', function () {
+        allCollapsed = !allCollapsed;
+        localStorage.setItem('gd_allCollapsed', allCollapsed ? 'true' : 'false');
+        this.textContent = allCollapsed ? 'Desplegar todos' : 'Plegar todos';
+        document.querySelectorAll('.folder-card').forEach(function (c) {
+          c.classList.toggle('collapsed', allCollapsed);
+        });
+      });
+
+      document.getElementById('searchInput').addEventListener('input', function () {
+        searchTerm = this.value;
+        renderFolders();
+      });
+
+      document.querySelectorAll('.kpi-c[data-filter]').forEach(function (el) {
+        el.addEventListener('click', function () { setKpiFilter(el.dataset.filter); });
+        el.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setKpiFilter(el.dataset.filter); }
+        });
+      });
+      document.getElementById('clearFilter').addEventListener('click', function () { setKpiFilter('all'); });
+
+      document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+      document.getElementById('drawerBg').addEventListener('click', closeDrawer);
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape' || !openTopicId) return;
+        // Escape dentro del campo de renombrar solo cancela el renombrado
+        if (e.target && e.target.classList && e.target.classList.contains('rename-input')) return;
+        closeDrawer();
+      });
+
+      await loadMonths();
+    })();
+
+
+
+
+
+
+    // Respaldo por si ClientCommon.html no define showUploadToast.
+    function safeShowToast(fileName) {
+      if (typeof showUploadToast === 'function') {
+        try { return showUploadToast(fileName); } catch (e) { console.error(e); }
+      }
+      return {
+        success: function () {},
+        error: function (msg) { reportError(msg || 'No se pudo subir el archivo.'); }
+      };
+    }
+
+
+
+
+
+    // Edición del nombre en línea: la extensión queda fija y no es editable.
+    function startRename(item, f, parts) {
+      const infoEl = item.querySelector('.fi-info');
+      infoEl.innerHTML =
+        '<span class="fi-name-edit">' +
+          '<input type="text" class="rename-input" value="' + escapeHtml(parts.base) + '">' +
+          '<span class="ext-suffix">' + escapeHtml(parts.ext) + '</span>' +
+        '</span>';
+      const input = infoEl.querySelector('.rename-input');
+      input.focus();
+      input.select();
+
+      let done = false;
+      async function commit() {
+        if (done) return;
+        done = true;
+        const nuevo = input.value.trim();
+        if (!nuevo || nuevo === parts.base) { renderFolders(); return; }
+        try {
+          await gsRun('apiRenameFile', token, f.id, nuevo);
+          await refreshTopics();
+        } catch (err) {
+          reportError(err.message);
+          renderFolders();
+        }
+      }
+      function cancel() {
+        if (done) return;
+        done = true;
+        renderFolders();
+      }
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); commit(); }
+        if (e.key === 'Escape') { e.preventDefault(); cancel(); }
+      });
+      input.addEventListener('blur', function () { commit(); });
+    }
+
+    // ---------- Panel lateral "Ver detalles" ----------
+    function openDrawer(topicId) {
+      openTopicId = topicId;
+      hideAlert(drawerAlertEl);
+      renderPanel();
+      document.getElementById('drawerBg').classList.add('open');
+      const dr = document.getElementById('detailDrawer');
+      dr.classList.add('open');
+      dr.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      markSelectedCard();
+      document.getElementById('drawerClose').focus();
+    }
+
+    function closeDrawer() {
+      openTopicId = null;
+      document.getElementById('drawerBg').classList.remove('open');
+      const dr = document.getElementById('detailDrawer');
+      dr.classList.remove('open');
+      dr.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      markSelectedCard();
+    }
+
+    function markSelectedCard() {
+      document.querySelectorAll('.folder-card').forEach(function (c) {
+        c.classList.toggle('selected', !!openTopicId && c.dataset.id === openTopicId);
+      });
+    }
+
+  </script>
+</body>
+</html>
