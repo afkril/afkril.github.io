@@ -1346,3 +1346,104 @@ body.dash-page{--ui-scale:.8;}
 
 .pr-dl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:11px;padding-top:11px;border-top:1px dashed var(--gris-borde,#d6e2f5)}
 .pr-dl-note{font-size:12px;color:var(--texto-suave,#5b6b8c);line-height:1.35;flex:1;min-width:180px}
+
+
+/* =====================================================================
+   MÓVIL — paneles laterales (drawers) que se ajustan a la pantalla
+   Se deja al final del archivo para ganar la cascada a las reglas de escritorio.
+   ===================================================================== */
+@media (max-width:900px){
+  /* Sin zoom en móvil: el zoom (.67 admin / .8 usuario) hacía que los paneles fijos
+     quedaran más angostos que la pantalla y con el contenido cortado. */
+  body.admin-page{--ui-scale:1!important;--vh:100vh;zoom:1!important;}
+  .ui-zoom{zoom:1!important;}
+
+  /* El panel ocupa todo el ancho (el ancho en línea del admin necesita !important) */
+  .drawer,
+  .dash-page .drawer,
+  .admin-page #cellDrawer,
+  .admin-page #unitDrawer{width:100%!important;max-width:100%;border-radius:0!important;}
+
+  /* Escala interior 100 % */
+  .dash-page .drawer-head,.dash-page .drawer-body,
+  .admin-page :is(#cellDrawer,#unitDrawer) .drawer-head,
+  .admin-page :is(#cellDrawer,#unitDrawer) .drawer-body{zoom:1!important;}
+
+  .drawer-body{overflow-x:hidden;min-width:0;}
+  .drawer-body > *{min-width:0;max-width:100%;}
+  .drawer-body img,.drawer-body video{max-width:100%;height:auto;}
+  .drawer-body table{display:block;max-width:100%;overflow-x:auto;}
+
+  /* Cabecera: icono · título · cerrar en la primera línea; la insignia de estado baja si no cabe */
+  .drawer-head,
+  .dash-page .drawer-head,
+  .admin-page :is(#cellDrawer,#unitDrawer) .drawer-head{flex-wrap:wrap;gap:10px 12px;padding:16px 14px 32px;}
+  .drawer-head .dh-icon{order:0;}
+  .drawer-head .dh-main{order:1;flex:1 1 140px;min-width:0;}
+  .drawer-head .drawer-close{order:2;margin-left:auto;}
+  .drawer-head .fc-badge{order:3;flex:0 0 auto;}
+  .dash-page .drawer-head h2,
+  .admin-page :is(#cellDrawer,#unitDrawer) .drawer-head h2{font-size:16px;overflow-wrap:anywhere;}
+  .dash-page .drawer-head .dh-sub,
+  .admin-page :is(#cellDrawer,#unitDrawer) .drawer-head .dh-sub{font-size:13px;overflow-wrap:anywhere;}
+
+  .dash-page .drawer-body,
+  .admin-page :is(#cellDrawer,#unitDrawer) .drawer-body{padding:14px 12px 40px;gap:14px;}
+  #drawerAlert{margin:12px 12px 0;}
+
+  /* Tarjeta «Información del tema / de la unidad» */
+  .dash-page .dr-infocard,
+  .admin-page :is(#cellDrawer,#unitDrawer) .dr-infocard{flex-direction:column;align-items:stretch;gap:12px;padding:16px 14px;}
+  .dash-page .ic-medal,
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-medal{align-self:center;width:84px;height:84px;}
+  .dash-page .ic-top,
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-top{flex-direction:column;align-items:flex-start;gap:8px;}
+  .dash-page .ic-pills,
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-pills{width:100%;box-sizing:border-box;flex-wrap:wrap;gap:10px 16px;}
+  .dash-page .ic-pill,
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-pill{flex:1 1 130px;min-width:0;}
+  .dash-page .ic-pill + .ic-pill,
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-pill + .ic-pill{border-left:none;padding-left:0;}
+  .dash-page .ic-pill b,
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-pill b{font-size:15px;overflow-wrap:anywhere;}
+
+  /* Datos en 2 columnas (casilla: 3×2 y ficha: 4×1 no caben en un teléfono) */
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 0;flex-direction:initial;}
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row .ic-cell{width:auto;min-width:0;align-items:flex-start;padding:0 8px!important;border-top:none!important;border-left:none!important;}
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row .ic-cell:nth-child(odd){padding-left:0!important;}
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row .ic-cell:nth-child(even){padding-left:12px!important;border-left:1.5px solid #e1defa!important;}
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row .ic-cell b{font-size:13px;overflow-wrap:anywhere;}
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row .ic-cell .select-inline{max-width:100%;width:100%;}
+
+  /* Zona de carga y documentos (usuario) */
+  .dash-page .dr-upload2{flex-direction:column;align-items:stretch;padding:16px 14px;min-height:0;}
+  .dash-page .dr-upload2 .dz-art{align-self:center;}
+  .dash-page .dr-upload2 .du-title{font-size:18px;}
+  .dash-page .dr-upload2 .dz-row{flex-direction:column;align-items:stretch;gap:10px;}
+  .dash-page .dr-upload2 .dz-row .btn{text-align:center;justify-content:center;}
+  .dash-page .dr-upload2 .dz-meta{border-left:none;padding-left:0;}
+  .dash-page .dr-docs{padding:12px;}
+  .dash-page .dr-docs .fi-info{flex:1 1 0;min-width:0;}
+  .dash-page .drawer .file-actions,
+  .dr-file-actions{flex-wrap:wrap;gap:8px;}
+  .dash-page .drawer .file-actions button{padding:8px 12px;}
+  .dr-file-actions .btn{flex:1 1 auto;justify-content:center;}
+
+  /* Ventanas modales (Gestionar temas, etc.) casi a pantalla completa */
+  .modal-bg{padding:10px;}
+  .modal{max-height:calc(100dvh - 20px);}
+  .modal.tm-modal{max-height:calc(100dvh - 20px);border-radius:16px;}
+  .tm-row{padding:12px;}
+  .tm-name .nm{white-space:normal;overflow-wrap:anywhere;}
+}
+
+@media (max-width:480px){
+  /* Teléfonos angostos: datos en una sola columna */
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row{grid-template-columns:minmax(0,1fr);gap:10px 0;}
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row .ic-cell,
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row .ic-cell:nth-child(odd),
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row .ic-cell:nth-child(even){padding:0!important;border-left:none!important;}
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-row .ic-cell + .ic-cell{border-top:1px dashed #d6d0f3!important;padding-top:10px!important;}
+  .dash-page .ic-pill,
+  .admin-page :is(#cellDrawer,#unitDrawer) .ic-pill{flex:1 1 100%;}
+}

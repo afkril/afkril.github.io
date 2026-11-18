@@ -3,6 +3,7 @@
 Backend: Google Apps Script (Code.gs con doPost). Frontend: esta carpeta.
 
 ## Historial de versiones
+- **v1.3** (2026-11-18): Móvil: los paneles laterales (tema, casilla y ficha de UDS) se ajustan al ancho de la pantalla sin quedar cortados; sin zoom de interfaz en pantallas de 900 px o menos, datos en 1-2 columnas y modales casi a pantalla completa. Solo css/styles.css; no toca Code.gs.
 - **v1.2** (2026-11-17): Matriz de estado (admin): sin límite de alto, la página se desplaza hacia abajo normal; solo queda el scroll lateral con las columnas de unidad y avance fijas.
 - **v1.1** (2026-11-17): Filtro por contrato en Usuarios registrados; botón de descarga ZIP de la carpeta del mes en el panel de la unidad (con 85 % o más validado, solo documentos aprobados, por tema). No toca Code.gs.
 - **v1.0** (2026-11-17): primera versión con número. Rótulo «JER_DRIVE 2026 v1.0» visible en todas las páginas (`js/version.js`); opción «Recordar usuario en este equipo» en el ingreso de unidades; versionado de css/js con `?v=` para evitar caché. No toca `Code.gs`.
