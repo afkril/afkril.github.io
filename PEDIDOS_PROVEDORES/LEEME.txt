@@ -1,0 +1,21 @@
+PedidosProvedores v8
+
+Cambios de esta versión:
+- Diseño visual inspirado en RAM360: tonos turquesa/verde agua, fondos claros, tarjetas redondeadas y botones tipo píldora.
+- Se conserva la matriz horizontal de productos y se elimina la hoja secundaria "Filtro productos" del Excel.
+- La exportación vuelve al formato matricial: productos en columnas, cupos en filas y ficha del pedido en la parte superior.
+- El número de contrato del directorio guardado se incluye en la ficha del Excel.
+- Las particiones generan columnas independientes en la matriz (Producto 1, Producto 2 y hasta Producto 3).
+- En cada columna dividida, el único gramaje editable directamente es el de 13 cupos. Los demás cupos se calculan proporcionalmente desde ese valor.
+- El total de cada columna dividida se calcula según el gramaje por cupo y las UDS asignadas.
+- El botón "Eliminar todas las particiones" restaura los productos originales.
+- En Excel, los totales de producto usan SUMPRODUCT con UDS y gramajes de la matriz; modificar UDS actualiza los totales.
+
+Ejecución:
+- Abrir index.html desde un servidor web local o GitHub Pages.
+- demo-data.json debe permanecer junto a index.html.
+- La exportación Excel requiere conexión a internet para cargar ExcelJS desde CDN.
+- La conexión real depende de Firebase Auth y reglas de Realtime Database.
+
+Validación realizada: sintaxis JavaScript comprobada con Node.js e integridad del ZIP.
+No se ha realizado prueba end-to-end con Firebase ni apertura automatizada en Microsoft Excel.

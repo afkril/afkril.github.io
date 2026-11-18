@@ -1,0 +1,40 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "regionales": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "originales": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "modificaciones": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "operadoresEliminados": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "user_dirs": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "user_proveedores": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "pedidosMercado": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    }
+  }
+}
