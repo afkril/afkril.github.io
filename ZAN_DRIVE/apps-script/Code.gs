@@ -545,7 +545,7 @@ function doPost(e) {
     const req = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     const fn = String(req.fn || '');
     if (!/^api[A-Za-z0-9]+$/.test(fn) || typeof globalThis[fn] !== 'function') {
-      throw new Error('Función no permitida.');
+      throw new Error('Función no permitida: ' + fn + (fn ? ' (si es nueva, falta crear «Nueva versión» de la implementación).' : '.'));
     }
     const args = Array.isArray(req.args) ? req.args : [];
     const result = globalThis[fn].apply(null, args);
@@ -802,9 +802,11 @@ function fileInfo_(u) {
     revisadoAt: u.revisadoAt || '',
     tardio: truthy_(u.tardio),
     reemplazadoAt: u.reemplazadoAt || '',
-    reemplazadoPor: u.reemplazadoPor || ''
+    reemplazadoPor: u.reemplazadoPor || '',
+    driveFileId: u.driveFileId || ''   // solo se usa en administración; se quita en lo que ve la unidad (dropDrive_)
   };
 }
+function dropDrive_(f) { const o = Object.assign({}, f); delete o.driveFileId; return o; }
 
 // Contexto de un mes: temas, archivos y marcas "no aplica", ya agrupados.
 function buildMonthCtx_(month, allTopics, allUploads, allNa) {
@@ -931,7 +933,7 @@ function apiGetTopics(token, monthId) {
       id: t.id,
       nombre: t.nombre,
       orden: t.orden,
-      files: c.files,
+      files: c.files.map(dropDrive_),
       estado: c.estado,
       noAplica: c.noAplica,
       noAplicaPorAdmin: c.noAplica && c.marcadoPor === 'admin',
@@ -1148,7 +1150,7 @@ function apiUploadFile(token, monthId, topicId, fileObj) {
     audit_('unidad', user.nombreUnidad, 'archivo_subido',
       finalName + ' · ' + topic.nombre + ' (' + month.nombre + ')' + (record.tardio ? ' · fuera de plazo' : ''), month.id, user.id);
 
-    return { ok: true, file: fileInfo_(record) };
+    return { ok: true, file: dropDrive_(fileInfo_(record)) };
   });
 }
 
@@ -1955,6 +1957,14 @@ function apiAdminGetStatus(token, monthId) {
   };
 }
 
+// Solo administración: datos mínimos para abrir/descargar un archivo directo desde Drive (sin pasar los bytes por Apps Script).
+function apiAdminFileMeta(token, uploadId) {
+  requireAdminSession_(token);
+  const up = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === uploadId; });
+  if (!up || !up.driveFileId) throw new Error('Archivo no encontrado.');
+  return { driveFileId: up.driveFileId, fileName: up.originalName, size: Number(up.size) || 0, mimeType: up.mimeType || '' };
+}
+
 function apiAdminDownloadFile(token, uploadId) {
   requireAdminSession_(token);
   const up = rows_(SHEET_NAMES.UPLOADS).find(function (u) { return u.id === uploadId; });
@@ -1999,7 +2009,7 @@ function scanFolderTree_(folder, prefix, registered, out, depth) {
     const f = files.next();
     if (registered[f.getId()]) continue;
     let size = 0; try { size = f.getSize(); } catch (e) {}
-    out.files.push({ id: f.getId(), path: prefix + f.getName(), size: size, mimeType: f.getMimeType() });
+    out.files.push({ id: f.getId(), folderId: folder.getId(), path: prefix + f.getName(), size: size, mimeType: f.getMimeType() });
   }
   const subs = folder.getFolders();
   while (subs.hasNext()) {
@@ -2030,6 +2040,66 @@ function apiAdminScanDriveExtras(token, monthId, userIds) {
     out.found = true; out.folderName = uf.getName();
     scanFolderTree_(uf, '', registered, out, 0);
     return out;
+  });
+}
+
+
+// Registro de archivos externos detectados: valida la ubicación y los permisos antes de
+// incorporarlos al historial oficial, sin mover ni duplicar el archivo en Drive.
+function folderIsWithin_(folder, ancestorId) {
+  let level = [folder], guard = 0;
+  while (level.length && guard++ < 12) {
+    const next = [];
+    for (let i = 0; i < level.length; i++) {
+      if (level[i].getId() === ancestorId) return true;
+      const parents = level[i].getParents();
+      while (parents.hasNext()) next.push(parents.next());
+    }
+    level = next;
+  }
+  return false;
+}
+
+function apiAdminRegisterDriveExtra(token, monthId, userId, topicId, fileId) {
+  const session = requireAdminSession_(token);
+  return withLock_(function () {
+    MEMO_.tables = {};
+    const month = rows_(SHEET_NAMES.MESES).find(function (m) { return m.id === monthId; });
+    const user = rows_(SHEET_NAMES.USUARIOS).find(function (u) { return u.id === userId; });
+    const topic = rows_(SHEET_NAMES.TEMAS).find(function (t) { return t.id === topicId && t.monthId === monthId; });
+    if (!month || !user || !topic) throw new Error('Mes, unidad o tema inválido.');
+    assertMonthOpen_(month);
+    const contractIds = csv_(topic.contratoIds);
+    if (contractIds.length && (!user.contratoId || contractIds.indexOf(user.contratoId) === -1)) throw new Error('El tema no corresponde al contrato de esta unidad.');
+    if (rowsAll_(SHEET_NAMES.UPLOADS).some(function (u) { return u.driveFileId === fileId; })) throw new Error('Este archivo ya está registrado.');
+    const rootId = PropertiesService.getScriptProperties().getProperty('ROOT_FOLDER_ID');
+    const root = DriveApp.getFolderById(rootId);
+    const monthFolder = findMonthFolder_(root, month.nombre);
+    const unitFolder = monthFolder && findUnitFolder_(monthFolder, user.cedula, user.nombreUnidad);
+    if (!unitFolder) throw new Error('No se encontró la carpeta de esta unidad en Drive.');
+    const topicFolderName = folderName_(topic.nombre);
+    let topicFolder = null, topicFolders = unitFolder.getFolders();
+    while (topicFolders.hasNext()) { const f = topicFolders.next(); if (f.getName().toLowerCase() === topicFolderName.toLowerCase()) { topicFolder = f; break; } }
+    if (!topicFolder) throw new Error('No se encontró la carpeta del tema «' + topic.nombre + '».');
+    const file = DriveApp.getFileById(fileId);
+    if (!isUnderRoot_(file, rootId)) throw new Error('El archivo no pertenece a la carpeta raíz de JER_DRIVE.');
+    const parents = file.getParents(); let inTopic = false;
+    while (parents.hasNext()) { if (folderIsWithin_(parents.next(), topicFolder.getId())) { inTopic = true; break; } }
+    if (!inTopic) throw new Error('El archivo no está dentro de la carpeta del tema seleccionado.');
+    const mime = file.getMimeType(), name = file.getName(), size = file.getSize(), at = nowIso_();
+    const deadline = normDate_(topic.fechaLimite) || normDate_(month.fechaLimite);
+    const record = { id: Utilities.getUuid(), userId: user.id, topicId: topic.id, monthId: month.id,
+      driveFileId: file.getId(), originalName: name, mimeType: mime, size: size, uploadedAt: at,
+      nombreCargado: name, estado: 'pendiente', observacion: '', revisadoPor: '', revisadoAt: '',
+      tardio: !!deadline && todayStr_() > deadline };
+    appendRow_(getSheet_(SHEET_NAMES.UPLOADS), record);
+    try {
+      const naSheet = getSheet_(SHEET_NAMES.NOAPLICA);
+      const na = readSheetObjects_(naSheet).find(function (n) { return n.userId === user.id && n.topicId === topic.id && n.monthId === month.id; });
+      if (na) deleteRow_(naSheet, na.__row);
+    } catch (e) {}
+    audit_('admin', adminActor_(session), 'archivo_drive_registrado', name + ' · ' + user.nombreUnidad + ' · ' + topic.nombre + ' (' + month.nombre + ') · registro desde Drive', month.id, user.id);
+    return { ok: true, file: dropDrive_(fileInfo_(record)), userId: user.id, topicId: topic.id, topicName: topic.nombre };
   });
 }
 
@@ -2309,7 +2379,7 @@ function apiAdminGetReviewQueue(token, monthId, contratoId, estado) {
     rows: list.map(function (u) {
       const usr = users[u.userId], tp = topics[u.topicId];
       return {
-        id: u.id, userId: u.userId, uploadedAt: u.uploadedAt, originalName: u.originalName, size: u.size,
+        id: u.id, userId: u.userId, uploadedAt: u.uploadedAt, originalName: u.originalName, size: u.size, driveFileId: u.driveFileId || '',
         nombreUnidad: usr.nombreUnidad, responsable: fullName_(usr), cedula: usr.cedula, contratoNombre: contratoNombre_(usr, cMap),
         mesNombre: months[u.monthId].nombre, temaNombre: tp.nombre, tardio: truthy_(u.tardio),
         estado: u.estado || 'pendiente', observacion: u.observacion || '', revisadoPor: u.revisadoPor || '', revisadoAt: u.revisadoAt || ''

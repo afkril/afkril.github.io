@@ -3,6 +3,9 @@
 Backend: Google Apps Script (Code.gs con doPost). Frontend: esta carpeta.
 
 ## Historial de versiones
+- **v1.7.1** (2026-11-21): Administración: si la implementación de Apps Script es anterior y no tiene apiAdminFileMeta, ya no queda una pestaña en blanco: avisa y usa la ruta anterior. El error «Función no permitida» ahora indica qué función se pidió.
+- **v1.7** (2026-11-21): Administración: «Ver» y «Descargar» abren el archivo directo en Drive (pestaña nueva), sin llamadas a Apps Script ni vista previa propia; el id de Drive llega ya en la lista (solo a administración, se quita en lo que recibe la unidad). Las unidades conservan su vista previa. Para volver al visor propio en archivos pequeños: ADMIN_DRIVE_MIN en admin.html. Toca Code.gs: pega y crea Nueva versión.
+- **v1.6** (2026-11-21): Administración: los archivos de 5 MB o más se visualizan y descargan directo desde Drive (visor de Drive, sin pasar los bytes por Apps Script); las unidades conservan su vista previa. Decodificación más liviana al ver/descargar y la aprobación ya no espera la recarga de la pestaña. Toca Code.gs (apiAdminFileMeta): pega el Code.gs y crea Nueva versión; si aún no se despliega, el panel sigue funcionando con la ruta anterior.
 - **v1.3** (2026-11-18): Móvil: los paneles laterales (tema, casilla y ficha de UDS) se ajustan al ancho de la pantalla sin quedar cortados; sin zoom de interfaz en pantallas de 900 px o menos, datos en 1-2 columnas y modales casi a pantalla completa. Solo css/styles.css; no toca Code.gs.
 - **v1.2** (2026-11-17): Matriz de estado (admin): sin límite de alto, la página se desplaza hacia abajo normal; solo queda el scroll lateral con las columnas de unidad y avance fijas.
 - **v1.1** (2026-11-17): Filtro por contrato en Usuarios registrados; botón de descarga ZIP de la carpeta del mes en el panel de la unidad (con 85 % o más validado, solo documentos aprobados, por tema). No toca Code.gs.
@@ -84,3 +87,8 @@ Pega el Code.gs nuevo, ejecuta `setup()` una vez (o abre la app: el esquema pasa
 
 ## v3.5 — diagnóstico de la sincronización con Drive
 El ZIP incluye `SINCRONIZACION_DRIVE.txt`: por cada unidad indica si encontró su carpeta en Drive (y cómo se llama) y cuántos archivos/subcarpetas nuevos incluyó. El aviso final del panel resume «Drive: X de Y carpetas de unidad encontradas». La búsqueda del mes y de la unidad ahora usa el mismo saneado de nombres con que se crean las carpetas.
+
+
+## Loading visual ZAN DRIVE (v1.5)
+
+Se integró un overlay global de sincronización con avatar para operaciones ejecutadas mediante `withBusyBtn()`. El loader muestra tres etapas visuales (validando, sincronizando y finalizando), mensajes por tipo de acción, bloqueo visual, cierre automático al terminar y estado de error. El arte está en `assets/zan-sync-avatar.png`; los estilos en `css/styles.css`; la lógica reutilizable en `js/common.js`. Las cargas de contenido que usan `withLoading()` conservan su indicador local.

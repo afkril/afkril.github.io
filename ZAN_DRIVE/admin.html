@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=1.3">
+  <link rel="stylesheet" href="css/styles.css?v=1.3.3">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body class="admin-page">
@@ -182,6 +182,7 @@
         <div class="flex-between" style="margin-bottom:18px;">
           <div class="muted" id="reportSummary"></div>
           <div style="display:flex;gap:8px;">
+            <button class="btn btn-secondary btn-sm" id="btnDriveSync" type="button">📂 Detectar archivos externos</button>
             <button class="btn btn-primary btn-sm" id="btnZip" type="button">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>
               Descargar paquete completo (ZIP)
@@ -452,9 +453,9 @@
   </div>
   <div id="printArea"></div>
 
-  <script src="js/version.js?v=1.3"></script>
-  <script src="js/config.js?v=1.3"></script>
-  <script src="js/common.js?v=1.3"></script>
+  <script src="js/version.js?v=1.3.3"></script>
+  <script src="js/config.js?v=1.3.3"></script>
+  <script src="js/common.js?v=1.3.3"></script>
   <script>
     const alertEl = document.getElementById('alert');
     let token = localStorage.getItem('adminToken');
@@ -1613,8 +1614,8 @@
               (r.observacion ? '<div class="obs-text"><b>Motivo:</b> ' + escapeHtml(r.observacion) + '</div>' : '') + '</td>' +
             (showBy ? '<td>' + (r.revisadoPor ? '<div class="mn-title" style="font-weight:600;">' + escapeHtml(r.revisadoPor) + '</div><div class="muted" style="font-size:11.5px;">' + (r.revisadoAt ? formatDate(r.revisadoAt) : '') + '</div><div class="muted" style="font-size:11.5px;">' + escapeHtml(r.contratoNombre) + '</div>' : '<span class="muted">—</span>') + '</td>' : '') +
             '<td><div class="file-actions" style="justify-content:flex-end;gap:6px;">' +
-              '<button class="btn btn-secondary btn-sm" data-rview="' + r.id + '" title="Ver">' + EYE_SVG + '</button>' +
-              '<button class="btn btn-secondary btn-sm" data-rdl="' + r.id + '" title="Descargar">' + DL_SVG + '</button>' +
+              '<button class="btn btn-secondary btn-sm" data-rview="' + r.id + '" data-drive="' + (r.driveFileId || '') + '" data-size="' + (r.size || '') + '" title="Ver">' + EYE_SVG + '</button>' +
+              '<button class="btn btn-secondary btn-sm" data-rdl="' + r.id + '" data-drive="' + (r.driveFileId || '') + '" data-size="' + (r.size || '') + '" title="Descargar">' + DL_SVG + '</button>' +
               (r.estado !== 'aprobado' ? '<button class="btn btn-primary btn-sm" data-rok="' + r.id + '">' + OK_SVG + ' Aprobar</button>' : '') +
               (r.estado !== 'rechazado' ? '<button class="btn btn-danger btn-sm" data-rno="' + r.id + '">' + NO_SVG + ' Rechazar</button>' : '') +
             '</div></td></tr>';
@@ -1647,7 +1648,31 @@
         onSaved: function () { try { if (curMonth && currentStatus) loadStatusKeepDrawer().catch(function () {}); } catch (e) {} }
       };
     }
+    // Administración: «Ver» y «Descargar» abren el archivo directo en Drive (pestaña nueva, sin pasar los bytes por Apps Script).
+    // Las unidades conservan su vista previa propia (sus carpetas no son públicas).
+    // ADMIN_DRIVE_MIN: tamaño desde el que se usa Drive. 0 = siempre; p. ej. 5 * 1024 * 1024 deja el visor propio (con giro de PDF/imágenes) para los pequeños.
+    const ADMIN_DRIVE_MIN = 0;
+    function driveLink_(fid, mode) {
+      return mode === 'download'
+        ? 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(fid)
+        : 'https://drive.google.com/file/d/' + encodeURIComponent(fid) + '/view';
+    }
     async function fileAction(btn, id, mode) {
+      const sz = parseFloat(btn && btn.dataset ? btn.dataset.size : '');
+      const fid = btn && btn.dataset ? (btn.dataset.drive || '') : '';
+      if (!(sz < ADMIN_DRIVE_MIN)) {
+        if (fid) { window.open(driveLink_(fid, mode), '_blank', 'noopener'); return; }   // instantáneo: el id ya está en pantalla
+        // Sin id en pantalla: abre la pestaña ya (para que el navegador no la bloquee) y le pone la dirección al llegar
+        const w = window.open('', '_blank');
+        let meta = null;
+        try { meta = await gsRun('apiAdminFileMeta', token, id); } catch (e) { meta = null; }
+        if (meta && meta.driveFileId) {
+          if (w) { w.opener = null; w.location.href = driveLink_(meta.driveFileId, mode); } else { window.open(driveLink_(meta.driveFileId, mode), '_blank', 'noopener'); }
+          return;
+        }
+        if (w) w.close();
+        toast('La implementación de Apps Script aún es una versión anterior (falta «Nueva versión»). Se usa la ruta lenta mientras tanto.');
+      }
       await withBusyBtn(btn, async function () {
         try { triggerDownload(await gsRun('apiAdminDownloadFile', token, id), mode, mode === 'view' ? viewerOpts(id) : undefined); } catch (e) { fail(e); }
       });
@@ -1664,7 +1689,7 @@
         try {
           await gsRun('apiAdminReviewFile', token, id, estado, obs, perfilActual);
           toast(estado === 'aprobado' ? 'Archivo aprobado.' : 'Archivo rechazado: la unidad verá el motivo.');
-          if (after) { await after(); markDirtyExceptCurrent(); refreshBadges(); } else { await invalidateAll(); }
+          if (after) { await after(); markDirtyExceptCurrent(); refreshBadges(); } else { invalidateAll().catch(function () {}); }
         } catch (e) { fail(e); }
       });
     }
@@ -1674,7 +1699,7 @@
       if (!ids.length) return;
       if (!await askConfirm('Aprobar ' + ids.length + (ids.length === 1 ? ' archivo' : ' archivos'), 'Los archivos seleccionados quedarán como aprobados.', 'Aprobar')) return;
       await withBusyBtn(document.getElementById('btnBulkApprove'), async function () {
-        try { await gsRun('apiAdminBulkReview', token, ids, 'aprobado', '', perfilActual); toast(ids.length + ' archivo(s) aprobado(s).'); await invalidateAll(); } catch (e) { fail(e); }
+        try { await gsRun('apiAdminBulkReview', token, ids, 'aprobado', '', perfilActual); toast(ids.length + ' archivo(s) aprobado(s).'); invalidateAll().catch(function () {}); } catch (e) { fail(e); }
       });
     }
 
@@ -2078,8 +2103,8 @@
               (f.observacion ? '<div class="full"><div class="k">Motivo del rechazo</div><div class="v" style="color:#9a3a0a;">' + escapeHtml(f.observacion) + '</div></div>' : '') +
             '</div>' +
             '<div class="dr-file-actions">' +
-              '<button class="btn btn-secondary btn-sm" data-view="' + f.id + '">' + EYE_SVG + ' Ver</button>' +
-              '<button class="btn btn-secondary btn-sm" data-download="' + f.id + '">' + DL_SVG + ' Descargar</button>' +
+              '<button class="btn btn-secondary btn-sm" data-view="' + f.id + '" data-drive="' + (f.driveFileId || '') + '" data-size="' + (f.size || '') + '">' + EYE_SVG + ' Ver</button>' +
+              '<button class="btn btn-secondary btn-sm" data-download="' + f.id + '" data-drive="' + (f.driveFileId || '') + '" data-size="' + (f.size || '') + '">' + DL_SVG + ' Descargar</button>' +
               '<button class="btn btn-secondary btn-sm" data-replace="' + f.id + '" title="Subir una versión ajustada con el mismo nombre">' + SWAP_SVG + ' Reemplazar</button>' +
               (f.estado !== 'aprobado' ? '<button class="btn btn-primary btn-sm" data-ok="' + f.id + '">' + OK_SVG + ' Aprobar</button>' : '') +
               (f.estado !== 'rechazado' ? '<button class="btn btn-danger btn-sm" data-no="' + f.id + '">' + NO_SVG + ' Rechazar</button>' : '') +
@@ -2329,7 +2354,7 @@
               t.files.map(function (f) {
                 return '<div class="sheet-file"><span class="ftype-icon">' + fileTypeIcon(f.originalName) + '</span><span style="min-width:0;word-break:break-all;">' + escapeHtml(f.originalName) + '</span>' + arTag(f.estado) +
                   '<span class="muted" style="font-size:11px;">' + formatDate(f.uploadedAt) + '</span>' +
-                  '<button class="btn btn-ghost btn-sm" data-sfview="' + f.id + '" title="Ver">' + EYE_SVG + '</button></div>';
+                  '<button class="btn btn-ghost btn-sm" data-sfview="' + f.id + '" data-drive="' + (f.driveFileId || '') + '" data-size="' + (f.size || '') + '" title="Ver">' + EYE_SVG + '</button></div>';
               }).join('') + '</div>';
           }).join('') +
         '</div></div>';
@@ -3301,6 +3326,36 @@
         document.getElementById('cfgPassword').value = '';
       } catch (err) { showAlert(cfgAlert, err.message); }
     }
-  </script>
+  
+    // --- Sincronización/registro de archivos agregados directamente en Drive (v1.3.3) ---
+    let driveExtrasState = { scanned: false, items: [], monthId: '' };
+    function driveExtrasModal_() {
+      let m = document.getElementById('driveExtrasModal'); if (m) return m;
+      m = document.createElement('div'); m.id = 'driveExtrasModal';
+      m.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(9,18,38,.58);display:none;align-items:center;justify-content:center;padding:18px;';
+      m.innerHTML = '<div style="width:min(1100px,96vw);max-height:90vh;overflow:auto;background:var(--card,#fff);color:var(--text,#172033);border-radius:18px;padding:20px;box-shadow:0 25px 80px #0004"><div style="display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap"><div><h2 style="margin:0">📂 Archivos externos detectados</h2><p style="margin:6px 0 0;color:var(--muted,#64748b)">Archivos añadidos directamente en Drive y aún no registrados en JER_DRIVE.</p></div><button class="btn btn-secondary btn-sm" id="driveExtrasClose">Cerrar</button></div><div id="driveExtrasStatus" style="margin:14px 0;padding:12px;border-radius:12px;background:var(--surface,#f4f7fb)"></div><div id="driveExtrasList"></div></div>';
+      document.body.appendChild(m); m.querySelector('#driveExtrasClose').onclick=()=>m.style.display='none'; m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';}); return m;
+    }
+    function normDriveTopic_(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();}
+    async function scanDriveExtrasUi_(){
+      if(!currentReport){alert('Primero carga el reporte del mes.');return;}
+      const modal=driveExtrasModal_(); modal.style.display='flex';
+      const status=modal.querySelector('#driveExtrasStatus'), list=modal.querySelector('#driveExtrasList');
+      status.innerHTML='<b>Escaneando carpetas…</b> Se consultan las unidades del reporte por lotes.';list.innerHTML='';
+      try{
+        const state={cancel:false}; const rows=currentReport.rows||[];
+        const scanned=await scanDriveExtras(rows,currentReport.month.id,state);
+        const items=[]; rows.forEach(r=>{const u=scanned[r.userId];(u&&u.files||[]).forEach(f=>items.push({userId:r.userId,unit:r.nombreUnidad,cedula:r.cedula,folder:u.folderName,path:f.path,file:f,monthId:currentReport.month.id}));});
+        driveExtrasState={scanned:true,items:items,monthId:currentReport.month.id};
+        status.innerHTML='<b>Escaneo terminado:</b> '+items.length+' archivo(s) externo(s) detectado(s) en '+rows.length+' unidad(es). '+(items.length?'Selecciona el tema correcto y registra los archivos que correspondan.':'No se encontraron archivos sin registrar.');
+        if(!items.length){list.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted,#64748b)">✨ Todo sincronizado. No hay archivos externos pendientes.</div>';return;}
+        const topics=currentReport.topics||[];
+        list.innerHTML=items.map((it,i)=>{const first=(it.path||'').split('/')[0];const guess=topics.find(t=>normDriveTopic_(t.nombre)===normDriveTopic_(first));const options=topics.map(t=>'<option value="'+escapeHtml(t.id)+'" '+(guess&&guess.id===t.id?'selected':'')+'>'+escapeHtml(t.nombre)+'</option>').join('');
+          return '<div class="drive-extra-item" style="display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,220px) auto;gap:10px;align-items:center;border:1px solid var(--border,#e2e8f0);border-radius:12px;padding:12px;margin:10px 0"><div><b>'+escapeHtml(it.unit)+'</b><div style="font-size:12px;color:var(--muted,#64748b)">'+escapeHtml(it.path)+' · '+(it.file.size?Math.round(it.file.size/1024)+' KB':'tamaño n/d')+'</div><div style="font-size:12px;color:#b7791f">EXTERNO · NO REGISTRADO</div></div><select id="driveExtraTopic'+i+'" class="form-control">'+options+'</select><button class="btn btn-primary btn-sm" id="driveExtraRegister'+i+'">Registrar</button></div>';}).join('');
+        items.forEach((it,i)=>{const btn=modal.querySelector('#driveExtraRegister'+i);btn.onclick=async()=>{const topicId=modal.querySelector('#driveExtraTopic'+i).value;btn.disabled=true;btn.textContent='Registrando…';try{const res=await gsRun('apiAdminRegisterDriveExtra',token,it.monthId,it.userId,topicId,it.file.id);btn.textContent='✓ Registrado';btn.className='btn btn-success btn-sm';it.registered=true;status.innerHTML='<b>Registro exitoso.</b> '+escapeHtml(it.file.path)+' se incorporó al historial como pendiente de revisión.';}catch(e){btn.disabled=false;btn.textContent='Registrar';showAlert(alertEl,e.message||String(e));}};});
+      }catch(e){status.innerHTML='<span style="color:#b91c1c">No fue posible escanear: '+escapeHtml(e.message||String(e))+'</span>';list.innerHTML='';}
+    }
+    document.getElementById('btnDriveSync').addEventListener('click',scanDriveExtrasUi_);
+</script>
 </body>
 </html>

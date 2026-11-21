@@ -45,17 +45,16 @@ function readFileAsBase64(file) {
 
 // Dispara la descarga de un archivo recibido como { fileName, mimeType, base64Data }
 function triggerDownload(fileResult, mode, opts) {
-  const byteChars = atob(fileResult.base64Data);
-  const byteNumbers = new Array(byteChars.length);
-  for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
-  const blob = new Blob([new Uint8Array(byteNumbers)], { type: fileResult.mimeType || 'application/octet-stream' });
-  const url = URL.createObjectURL(blob);
   if (mode === 'view') {
-    // Vista previa dentro de la página (PDF, imágenes, Word, Excel, CSV, texto)
-    URL.revokeObjectURL(url);
+    // Vista previa dentro de la página (PDF, imágenes, Word, Excel, CSV, texto); el visor decodifica una sola vez
     openFileViewer(fileResult, opts);
     return;
-  } else {
+  }
+  const bin = atob(fileResult.base64Data), arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  const blob = new Blob([arr], { type: fileResult.mimeType || 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+  {
     const a = document.createElement('a');
     a.href = url;
     a.download = fileResult.fileName || 'archivo';
@@ -105,10 +104,43 @@ function gsRun(fnName) {
 }
 
 // Atenúa un contenedor y muestra un spinner mientras dura fn() (cambio de mes, filtros, etc.)
+// Loading discreto para consultas/cambios de sección (no bloquea ni oscurece la pantalla).
+var zanSectionLoadingCount_ = 0, zanSectionLoadingTimer_ = null, zanSectionLoadingNode_ = null;
+function zanEnsureSectionLoading_() {
+  if (zanSectionLoadingNode_) return zanSectionLoadingNode_;
+  var node = document.createElement('div');
+  node.className = 'zan-section-loading';
+  node.setAttribute('role', 'status');
+  node.setAttribute('aria-live', 'polite');
+  node.innerHTML = '<img src="assets/zan-sync-avatar.png" alt="" class="zan-section-avatar"><span class="zan-section-copy"><strong>Actualizando sección</strong><small>Sincronizando información…</small></span><span class="zan-section-sync" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 18 6l2 1M4 12l2 2a7 7 0 0 0 12.5-2"/></svg></span>';
+  document.body.appendChild(node);
+  zanSectionLoadingNode_ = node;
+  return node;
+}
+function zanSectionLoadingStart_() {
+  zanSectionLoadingCount_++;
+  if (zanSectionLoadingCount_ === 1) {
+    clearTimeout(zanSectionLoadingTimer_);
+    // Evita mostrarlo en consultas rápidas y cuando ya está activo el loading de procesos largos.
+    zanSectionLoadingTimer_ = setTimeout(function () {
+      if (zanSectionLoadingCount_ > 0 && !(zanLoadingOverlay_ && zanLoadingOverlay_.classList.contains('is-visible'))) {
+        zanEnsureSectionLoading_().classList.add('is-visible');
+      }
+    }, 320);
+  }
+}
+function zanSectionLoadingEnd_() {
+  zanSectionLoadingCount_ = Math.max(0, zanSectionLoadingCount_ - 1);
+  if (!zanSectionLoadingCount_) {
+    clearTimeout(zanSectionLoadingTimer_);
+    if (zanSectionLoadingNode_) zanSectionLoadingNode_.classList.remove('is-visible');
+  }
+}
 async function withLoading(el, fn) {
   if (el) el.classList.add('is-loading');
+  zanSectionLoadingStart_();
   try { return await fn(); }
-  finally { if (el) el.classList.remove('is-loading'); }
+  finally { zanSectionLoadingEnd_(); if (el) el.classList.remove('is-loading'); }
 }
 
 // Bloques "esqueleto" para la primera carga de una lista o tabla
@@ -118,11 +150,87 @@ function skeletonHtml(rows) {
   return h;
 }
 
-// Deshabilita un botón y le pone estado "ocupado" mientras corre fn()
+// Loading global ZAN DRIVE: avatar + sincronización por etapas para acciones que esperan Apps Script.
+var zanLoadingDepth_ = 0, zanLoadingTimer_ = null, zanLoadingStageTimer_ = null, zanLoadingOverlay_ = null, zanLoadingHadError_ = false;
+function zanEnsureLoading_() {
+  if (zanLoadingOverlay_) return zanLoadingOverlay_;
+  var wrap = document.createElement('div');
+  wrap.className = 'zan-sync-overlay';
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-modal', 'true');
+  wrap.setAttribute('aria-live', 'polite');
+  wrap.setAttribute('aria-label', 'Proceso en curso');
+  wrap.innerHTML = '<div class="zan-sync-card"><div class="zan-sync-art"><div class="zan-sync-pixels"></div><img class="zan-sync-avatar" src="assets/zan-sync-avatar.png" alt="Avatar ZAN sentado y sincronizando"></div><div class="zan-sync-content"><div class="zan-sync-kicker"><span class="dot"></span><span class="zan-sync-kicker-text">Conexión segura</span></div><h2 class="zan-sync-title">Sincronizando con Google...</h2><p class="zan-sync-message">Estamos procesando tu solicitud mientras se actualiza la información.</p><div class="zan-sync-steps"><div class="zan-sync-step is-active" data-zan-step="0"><span class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 6"/></svg></span><span class="step-label">Validando datos</span></div><div class="zan-sync-step" data-zan-step="1"><span class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 18 6l2 1M4 12l2 2a7 7 0 0 0 12.5-2"/></svg></span><span class="step-label">Sincronizando<br>con Google</span></div><div class="zan-sync-step" data-zan-step="2"><span class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4L19 6"/></svg></span><span class="step-label">Finalizando</span></div></div><div class="zan-sync-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span class="zan-sync-note-text">Por favor, no cierres esta ventana.</span></div></div></div>';
+  document.body.appendChild(wrap);
+  zanLoadingOverlay_ = wrap;
+  return wrap;
+}
+function zanSetLoadingStage_(stage) {
+  if (!zanLoadingOverlay_) return;
+  zanLoadingOverlay_.querySelectorAll('[data-zan-step]').forEach(function (el) {
+    var n = Number(el.getAttribute('data-zan-step'));
+    el.classList.toggle('is-active', n === stage);
+    el.classList.toggle('is-done', n < stage);
+  });
+}
+function zanShowLoading_(btn) {
+  var overlay = zanEnsureLoading_();
+  var label = btn && (btn.innerText || btn.textContent) ? (btn.innerText || btn.textContent).trim().replace(/\s+/g, ' ') : '';
+  var title = overlay.querySelector('.zan-sync-title');
+  var message = overlay.querySelector('.zan-sync-message');
+  var action = /aprobar/i.test(label) ? 'Aprobando y sincronizando...' : /rechaz/i.test(label) ? 'Registrando rechazo...' : /eliminar|borrar|vaciar/i.test(label) ? 'Aplicando cambios...' : /guardar|crear|actualizar|editar/i.test(label) ? 'Guardando información...' : /subir|cargar|reemplaz/i.test(label) ? 'Procesando archivo...' : /cerrar mes/i.test(label) ? 'Cerrando el mes...' : 'Sincronizando con Google...';
+  title.textContent = action;
+  message.textContent = 'Estamos procesando tu solicitud mientras se actualiza la información.';
+  overlay.classList.remove('is-error');
+  overlay.querySelector('.zan-sync-kicker-text').textContent = 'Conexión segura';
+  overlay.querySelector('.zan-sync-note-text').textContent = 'Por favor, no cierres esta ventana.';
+  zanSetLoadingStage_(0);
+  requestAnimationFrame(function () { overlay.classList.add('is-visible'); });
+  clearTimeout(zanLoadingStageTimer_);
+  zanLoadingStageTimer_ = setTimeout(function () { zanSetLoadingStage_(1); }, 650);
+}
+function zanHideLoading_(error) {
+  if (!zanLoadingOverlay_) return;
+  clearTimeout(zanLoadingStageTimer_);
+  if (error) {
+    zanLoadingOverlay_.classList.add('is-error');
+    zanLoadingOverlay_.querySelector('.zan-sync-kicker-text').textContent = 'No se pudo completar';
+    zanLoadingOverlay_.querySelector('.zan-sync-title').textContent = 'Hubo un inconveniente';
+    zanLoadingOverlay_.querySelector('.zan-sync-message').textContent = 'La operación no terminó. Revisa el mensaje del sistema e inténtalo nuevamente.';
+    zanLoadingOverlay_.querySelector('.zan-sync-note-text').textContent = 'No repitas la acción hasta verificar su estado.';
+    setTimeout(function () { zanLoadingOverlay_ && zanLoadingOverlay_.classList.remove('is-visible'); }, 1100);
+    return;
+  }
+  zanSetLoadingStage_(2);
+  zanLoadingOverlay_.querySelector('.zan-sync-title').textContent = '¡Proceso completado!';
+  zanLoadingOverlay_.querySelector('.zan-sync-message').textContent = 'La información se actualizó correctamente.';
+  zanLoadingOverlay_.querySelector('.zan-sync-kicker-text').textContent = 'Sincronización exitosa';
+  zanLoadingOverlay_.querySelector('.zan-sync-note-text').textContent = 'Todo listo. Puedes continuar.';
+  setTimeout(function () { zanLoadingOverlay_ && zanLoadingOverlay_.classList.remove('is-visible'); }, 320);
+}
+// Deshabilita el botón y activa el overlay mientras corre fn(). Evita loaders duplicados en llamadas anidadas.
 async function withBusyBtn(btn, fn) {
   if (btn) btn.classList.add('is-busy');
+  zanLoadingDepth_++;
+  if (zanLoadingDepth_ === 1) {
+    zanLoadingHadError_ = false;
+    clearTimeout(zanLoadingTimer_);
+    zanLoadingTimer_ = setTimeout(function () { zanShowLoading_(btn); }, 160);
+  }
   try { return await fn(); }
-  finally { if (btn) btn.classList.remove('is-busy'); }
+  catch (err) {
+    zanLoadingHadError_ = true;
+    if (zanLoadingOverlay_ && zanLoadingOverlay_.classList.contains('is-visible')) zanHideLoading_(err);
+    throw err;
+  }
+  finally {
+    if (btn) btn.classList.remove('is-busy');
+    zanLoadingDepth_ = Math.max(0, zanLoadingDepth_ - 1);
+    if (zanLoadingDepth_ === 0) {
+      clearTimeout(zanLoadingTimer_);
+      if (zanLoadingOverlay_ && zanLoadingOverlay_.classList.contains('is-visible') && !zanLoadingHadError_) zanHideLoading_(null);
+    }
+  }
 }
 
 // '2026-10-15' -> '15 oct 2026'
