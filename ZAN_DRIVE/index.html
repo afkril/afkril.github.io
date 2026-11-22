@@ -3,7 +3,7 @@
 <title>Gestor de Documentos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/login.css?v=1.3.3"></head><body>
+<link rel="stylesheet" href="css/login.css?v=1.3.9"></head><body>
 <svg width="0" height="0" style="position:absolute"><defs>
 <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
 <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
@@ -22,7 +22,12 @@
 <button class="tab" data-t="reg" type="button"><svg><use href="#i-plus"/></svg>Registrarse</button></div>
 <div id="alert" class="alert"></div>
 <section class="panel on" id="p-login"><h2>Inicia sesión en tu cuenta</h2><p class="sub">Accede a las carpetas de tu unidad.</p>
-<form id="loginForm"><div class="f"><label>Número de identificación</label><div class="w"><svg class="ic"><use href="#i-user"/></svg><input type="text" id="cedula" inputmode="numeric" autocomplete="username" placeholder="Ingresa tu número de identificación" required></div></div><div class="f"><label>Código de unidad</label><div class="w"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="codigoUnidad" placeholder="Código de unidad de servicio" autocomplete="current-password" required><button type="button" class="eye" data-eye="codigoUnidad" aria-label="Mostrar u ocultar"><svg class="ic"><use href="#i-eye"/></svg></button></div></div><label class="rem"><input type="checkbox" id="recordar"><span>Recordar usuario en este equipo</span></label><p class="rem-warn" id="remWarn">Se guardan tu identificación y tu código en este navegador. No lo uses en equipos compartidos.</p><button class="btn p" id="btnLogin" type="submit"><svg class="ic"><use href="#i-in"/></svg>Ingresar</button></form></section>
+<form id="loginForm"><div class="f"><label>Número de identificación</label><div class="w"><svg class="ic"><use href="#i-user"/></svg><input type="text" id="cedula" inputmode="numeric" autocomplete="username" placeholder="Ingresa tu número de identificación" required></div></div><div class="f"><label>Código de unidad</label><div class="w"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="codigoUnidad" placeholder="Código de unidad de servicio" autocomplete="current-password" required><button type="button" class="eye" data-eye="codigoUnidad" aria-label="Mostrar u ocultar"><svg class="ic"><use href="#i-eye"/></svg></button></div></div><label class="rem"><input type="checkbox" id="recordar"><span>Guardar esta cuenta en este equipo para entrar rápido</span></label><p class="rem-warn" id="remWarn">Se guardan tu identificación y tu código en este navegador. No lo uses en equipos compartidos.</p><button class="btn p" id="btnLogin" type="submit"><svg class="ic"><use href="#i-in"/></svg>Ingresar</button></form>
+<div class="saved" id="savedBox">
+<div class="saved-head"><span>Cuentas guardadas en este equipo</span><button type="button" class="saved-clear" id="savedClearAll" hidden>Borrar todas</button></div>
+<div id="savedList"></div>
+<p class="saved-note">Toca una cuenta para entrar directo a su perfil. Para guardar una, entra una vez con su cédula y código y marca “Guardar esta cuenta”. Solo en este equipo y navegador; no lo uses en equipos compartidos.</p>
+</div></section>
 <section class="panel" id="p-reg"><h2>Crea tu cuenta</h2><p class="sub">El código que crees será tu contraseña cada mes.</p>
 <form id="regForm"><div class="row2"><div class="f"><label>Nombres</label><div class="w"><svg class="ic"><use href="#i-user"/></svg><input type="text" id="nombres" autocomplete="given-name" placeholder="María Fernanda" required></div></div><div class="f"><label>Apellidos</label><div class="w"><svg class="ic"><use href="#i-user"/></svg><input type="text" id="apellidos" autocomplete="family-name" placeholder="Gómez Rojas" required></div></div></div><div class="f"><label>Número de identificación</label><div class="w"><svg class="ic"><use href="#i-id"/></svg><input type="text" id="rcedula" inputmode="numeric" placeholder="Tu número de identificación" required></div></div><div class="f"><label>Nombre de la unidad</label><div class="w"><svg class="ic"><use href="#i-bld"/></svg><input type="text" id="nombreUnidad" placeholder="Ej: Unidad Norte" required></div></div><div id="contratoField" style="display:none"><div class="f"><label>Contrato</label><div class="w"><svg class="ic"><use href="#i-doc"/></svg><select id="contratoId"></select></div></div></div><div class="row2"><div class="f"><label>Crea tu código</label><div class="w"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="rcodigo" placeholder="Código"  required><button type="button" class="eye" data-eye="rcodigo" aria-label="Mostrar u ocultar"><svg class="ic"><use href="#i-eye"/></svg></button></div></div><div class="f"><label>Repite el código</label><div class="w"><svg class="ic"><use href="#i-lock"/></svg><input type="password" id="rcodigo2" placeholder="Repite"  required><button type="button" class="eye" data-eye="rcodigo2" aria-label="Mostrar u ocultar"><svg class="ic"><use href="#i-eye"/></svg></button></div></div></div><button class="btn p" id="btnReg" type="submit"><svg class="ic"><use href="#i-plus"/></svg>Crear cuenta</button></form></section>
 <div class="or">o</div>
@@ -30,7 +35,7 @@
 <button class="help" id="help" type="button"><svg class="ic"><use href="#i-info"/></svg>¿Olvidaste tus datos?</button>
 <p class="note" id="note">Comunícate con el administrador para que revise o restablezca tu número de identificación y código de unidad.</p>
 </main>
-<script src="js/version.js?v=1.3.3"></script><script src="js/config.js?v=1.3.3"></script><script src="js/common.js?v=1.3.3"></script>
+<script src="js/version.js?v=1.3.9"></script><script src="js/config.js?v=1.3.9"></script><script src="js/common.js?v=1.3.9"></script>
 <script>
 const alertEl=document.getElementById('alert'),tabs=document.getElementById('tabs');
 function setTab(t){hideAlert(alertEl);tabs.dataset.t=t;
@@ -60,11 +65,73 @@ function remClear(){try{localStorage.removeItem(REM_KEY);}catch(e){}}
   document.getElementById('cedula').value=o.c;document.getElementById('codigoUnidad').value=o.k||'';
   remChk.checked=true;remWarn.style.display='block';})();
 remChk.onchange=function(){remWarn.style.display=remChk.checked?'block':'none';if(!remChk.checked)remClear();};
+// ---- Cuentas guardadas (v1.3.9): varias cuentas en este navegador ----
+// Igual que "Recordar usuario" (que ya guardaba cédula y código en este
+// navegador), pero con varias cuentas. Solo se guarda una cuenta después de
+// entrar con éxito y con la casilla marcada. Al tocarla se entra directo.
+const SAVED_KEY='gd_savedAccounts',SAVED_MAX=8;
+function savedLoad(){try{var a=JSON.parse(localStorage.getItem(SAVED_KEY)||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}}
+function savedSave(a){try{localStorage.setItem(SAVED_KEY,JSON.stringify(a));}catch(e){}}
+function savedInitials(a){var n=(a.name||a.unit||'').trim().split(/\s+/);return ((n[0]||'?')[0]||'?')+((n[1]||'')[0]||'');}
+function savedMaskCed(c){c=String(c||'');return c.length>4?'•••'+c.slice(-4):'•••';}
+function savedRender(){
+  var box=document.getElementById('savedList');if(!box)return;
+  var list=savedLoad();
+  document.getElementById('savedClearAll').hidden=!list.length;
+  if(!list.length){box.innerHTML='<p class="saved-empty">Aún no hay cuentas guardadas aquí.</p>';return;}
+  box.innerHTML=list.map(function(a,i){
+    return '<div class="saved-item" role="button" tabindex="0" data-i="'+i+'">'+
+      '<span class="saved-av">'+escapeHtml(savedInitials(a).toUpperCase())+'</span>'+
+      '<span class="saved-tx"><span class="saved-name">'+escapeHtml(a.name||a.unit||'Cuenta guardada')+'</span>'+
+      '<span class="saved-sub">'+escapeHtml(a.unit||'')+' · CC '+escapeHtml(savedMaskCed(a.c))+'</span></span>'+
+      '<button type="button" class="saved-del" data-del="'+i+'" aria-label="Quitar cuenta guardada" title="Quitar esta cuenta de este equipo">×</button></div>';
+  }).join('');
+}
+function savedUpsert(c,k,u){
+  var list=savedLoad(),now=Date.now(),ex=null;
+  list.forEach(function(a){if(String(a.c)===String(c))ex=a;});
+  if(ex){ex.k=k;ex.name=(u&&u.nombreCompleto)||ex.name;ex.unit=(u&&u.nombreUnidad)||ex.unit;ex.last=now;}
+  else{list.unshift({c:c,k:k,name:(u&&u.nombreCompleto)||'',unit:(u&&u.nombreUnidad)||'',last:now});}
+  list.sort(function(a,b){return (b.last||0)-(a.last||0);});
+  if(list.length>SAVED_MAX)list.length=SAVED_MAX;
+  savedSave(list);savedRender();
+}
+function savedRemove(i){
+  var list=savedLoad(),a=list[i];if(!a)return;
+  if(!confirm('¿Quitar "'+(a.name||a.unit||a.c)+'" de las cuentas guardadas en este equipo?'))return;
+  list.splice(i,1);savedSave(list);savedRender();
+  var o=remLoad();if(o&&String(o.c)===String(a.c)){remClear();remChk.checked=false;remWarn.style.display='none';}
+}
+function loginAsSaved(i,row){
+  var a=savedLoad()[i];if(!a||!a.k)return;
+  hideAlert(alertEl);if(row)row.classList.add('busy');
+  gsRun('apiLogin',a.c,a.k)
+  .then(function(r){savedUpsert(a.c,a.k,r.user);localStorage.setItem('userToken',r.token);goTo('dashboard');})
+  .catch(function(err){if(row)row.classList.remove('busy');showAlert(alertEl,err.message+' Si el código cambió, quita la cuenta guardada y vuelve a entrar con el código nuevo.');});
+}
+// La cuenta única de "Recordar usuario" (versiones anteriores) pasa a la lista.
+(function(){var o=remLoad();if(!o)return;var list=savedLoad();if(!list.some(function(a){return String(a.c)===String(o.c);}))savedUpsert(o.c,o.k||'',null);})();
+savedRender();
+document.getElementById('savedList').addEventListener('click',function(ev){
+  var del=ev.target.closest?ev.target.closest('[data-del]'):null;
+  if(del){ev.stopPropagation();savedRemove(parseInt(del.getAttribute('data-del'),10));return;}
+  var item=ev.target.closest?ev.target.closest('.saved-item'):null;
+  if(item)loginAsSaved(parseInt(item.getAttribute('data-i'),10),item);
+});
+document.getElementById('savedList').addEventListener('keydown',function(ev){
+  if(ev.key!=='Enter'&&ev.key!==' ')return;
+  var item=ev.target.closest?ev.target.closest('.saved-item'):null;
+  if(item&&ev.target===item){ev.preventDefault();loginAsSaved(parseInt(item.getAttribute('data-i'),10),item);}
+});
+document.getElementById('savedClearAll').addEventListener('click',function(){
+  if(!confirm('¿Borrar todas las cuentas guardadas en este equipo?'))return;
+  savedSave([]);savedRender();
+});
 document.getElementById('loginForm').onsubmit=function(e){e.preventDefault();hideAlert(alertEl);
   const b=document.getElementById('btnLogin'),ced=document.getElementById('cedula').value.trim(),cod=document.getElementById('codigoUnidad').value;
   busy(b,true,'Ingresando...');
   gsRun('apiLogin',ced,cod)
-  .then(r=>{if(remChk.checked)remSave(ced,cod);else remClear();localStorage.setItem('userToken',r.token);goTo('dashboard');})
+  .then(r=>{if(remChk.checked){remSave(ced,cod);savedUpsert(ced,cod,r.user);}else remClear();localStorage.setItem('userToken',r.token);goTo('dashboard');})
   .catch(err=>{if(remLoad())remClear(),remChk.checked=false,remWarn.style.display='none';showAlert(alertEl,err.message);busy(b,false);});};
 document.getElementById('regForm').onsubmit=function(e){e.preventDefault();hideAlert(alertEl);
   const v=i=>document.getElementById(i).value,b=document.getElementById('btnReg');

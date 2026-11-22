@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=1.3.3">
+  <link rel="stylesheet" href="css/styles.css?v=1.3.9">
 </head>
 <body class="dash-page">
   <div class="ui-zoom" id="uiRoot">
@@ -85,6 +85,7 @@
           <div class="pr-medals" id="prMedals" aria-label="Medallas del mes">
             <div class="pm-hero" id="pmHero"></div>
             <div class="pm-row" id="pmRow"></div>
+            <button class="link-btn pm-history" id="btnMedalHistory" type="button">Ver mis medallas</button>
           </div>
           <!-- Columna derecha (70%): progreso, notas y mensajes -->
           <div class="pr-main">
@@ -98,7 +99,7 @@
             <div class="progress-track-v2"><div class="progress-fill-v2" id="progressFill"></div><div class="progress-fill-v2 rev" id="progressRev"></div><i class="pt" style="left:20%"></i><i class="pt" style="left:40%"></i><i class="pt" style="left:60%"></i><i class="pt" style="left:80%"></i></div>
             <div class="pr-next" id="progressNext"></div>
             <div class="progress-label" id="progressLabel"></div>
-            <div class="pr-dl" id="pkgWrap" style="display:none;"><button class="btn btn-primary btn-sm" id="btnPkg" type="button">⬇ Descargar carpeta del mes (ZIP)</button><span class="pr-dl-note">Disponible porque llevas 85 % o más validado. Incluye solo los documentos aprobados, organizados por tema.</span></div>
+            <div class="pr-dl" id="pkgWrap" style="display:none;"><button class="btn btn-primary btn-sm" id="btnPkg" type="button">⬇ Descargar carpeta del mes (ZIP)</button><span class="pr-dl-note">Disponible porque llevas 80 % o más validado. Se desbloquea con la medalla de Platino. Incluye solo los documentos aprobados, organizados por tema.</span></div>
           </div>
         </div>
       </div>
@@ -118,7 +119,7 @@
         <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
         <div><div class="kc-num" id="kpiRevision">0</div><div class="kc-lbl">En revisión</div></div>
       </div>
-      <div class="kpi-c naranja" data-filter="rechazado" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas por corregir">
+      <div class="kpi-c indigo" data-filter="rechazado" role="button" tabindex="0" aria-pressed="false" title="Filtrar: temas por corregir">
         <span class="kc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg></span>
         <div><div class="kc-num" id="kpiRechazados">0</div><div class="kc-lbl">Por corregir</div></div>
       </div>
@@ -156,7 +157,7 @@
     <div class="mx-legend" id="dashLegend" style="display:none;margin-bottom:12px;">
       <span><i class="mx-dot verde"></i> Aprobado</span>
       <span><i class="mx-dot amarillo"></i> En revisión</span>
-      <span><i class="mx-dot naranja"></i> Rechazado: corrige y vuelve a subir</span>
+      <span><i class="mx-dot indigo"></i> Rechazado: corrige y vuelve a subir</span>
       <span><i class="mx-dot rojo"></i> Vacío</span>
       <span><i class="mx-dot gris"></i> No aplica</span>
     </div>
@@ -180,14 +181,32 @@
   </aside>
   </div><!-- /uiRoot -->
 
-  <script src="js/version.js?v=1.3.3"></script>
-  <script src="js/config.js?v=1.3.3"></script>
-  <script src="js/common.js?v=1.3.3"></script>
+  <script src="js/version.js?v=1.3.9"></script>
+  <script src="js/config.js?v=1.3.9"></script>
+  <script src="js/common.js?v=1.3.9"></script>
     <!-- Detalle de una notificación -->
   <div class="modal-bg" id="notifDetailBg" style="z-index:300;">
     <div class="modal notif-detail" role="dialog" aria-modal="true" aria-labelledby="ndTitle">
       <button class="modal-close" id="notifDetailClose" type="button" aria-label="Cerrar">&times;</button>
       <div id="notifDetailBody"></div>
+    </div>
+  </div>
+
+  <!-- Celebración al subir de medalla (v1.3.7) -->
+  <div class="modal-bg" id="medalCelebBg" style="z-index:320;">
+    <div class="modal medal-celeb" role="dialog" aria-modal="true" aria-labelledby="mcTitle">
+      <button class="modal-close" id="medalCelebClose" type="button" aria-label="Cerrar">&times;</button>
+      <div class="mc-confetti" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div id="medalCelebBody"></div>
+      <button class="btn btn-primary" id="medalCelebOk" type="button">¡Seguir!</button>
+    </div>
+  </div>
+
+  <!-- Detalle de una medalla / vitrina "Mis medallas" (v1.3.7) -->
+  <div class="modal-bg" id="medalDetailBg" style="z-index:320;">
+    <div class="modal medal-detail" role="dialog" aria-modal="true" aria-labelledby="mdTitle">
+      <button class="modal-close" id="medalDetailClose" type="button" aria-label="Cerrar">&times;</button>
+      <div id="medalDetailBody"></div>
     </div>
   </div>
 
@@ -238,7 +257,7 @@
       vencido:   ['#d4474b', '#8f1519', '#e56a6d', '#b82226', '#a61b1f'],
       pendiente: ['#ffd466', '#e29a0c', '#ffe595', '#f7b928', '#c98200'],
       aprobado:  ['#5fd896', '#16854a', '#8defb9', '#2fc474', '#1e9e5a'],
-      rechazado: ['#ffb066', '#d9690f', '#ffc78f', '#f58a2e', '#c2540a'],
+      rechazado: ['#818cf8', '#4338ca', '#a5b4fc', '#6366f1', '#4f46e5'],
       noaplica:  ['#c3ccdd', '#8190ab', '#dde3ef', '#a9b5cb', '#6f7c95'],
       azul:      ['#6fa8ff', '#1f56d9', '#9cc3ff', '#3b82f6', '#1456d6']
     };
@@ -275,6 +294,10 @@
       if (n >= 2) papers += sheet('fg-p1', 10, 7, -6);
       if (n >= 1) papers += sheet('fg-p2', 12, 8, 4);
       if (n >= 3) papers += sheet('fg-p3', 11, 9, -1);
+      // Hoja voladora (v1.3.5): en el hover gira y entra en la carpeta. Va detrás
+      // del frente, así que al terminar queda guardada dentro como las demás hojas.
+      // Se dibuja siempre, también en carpetas vacías: ahí es la hoja que falta.
+      const fly = sheet('fg-fly', 11, 6, 0);
       const W = { fill: 'none', stroke: '#fff', 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
       const wa = Object.keys(W).map(function (a) { return a + '="' + W[a] + '"'; }).join(' ');
       const glyph = {
@@ -289,7 +312,7 @@
         '<g class="fg-emb"><circle cx="37.5" cy="37" r="8.6" fill="url(#fgE-' + k + ')" stroke="#fff" stroke-width="2"/>' + glyph + '</g>';
       return '<svg class="fg fg-' + k + '" width="' + size + '" height="' + size + '" viewBox="0 0 48 48" aria-hidden="true">' +
         '<path d="M4 11a4 4 0 014-4h9.2a4 4 0 012.9 1.25l2.6 2.75H40a4 4 0 014 4v22a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="url(#fgB-' + k + ')"/>' +
-        papers +
+        papers + fly +
         '<g class="fg-front"><path d="M4 20a4 4 0 014-4h32a4 4 0 014 4v17a4 4 0 01-4 4H8a4 4 0 01-4-4z" fill="url(#fgF-' + k + ')"/>' +
         '<path d="M4 20a4 4 0 014-4h32a4 4 0 014 4v1.4H4z" fill="#fff" opacity=".3"/>' +
         '<path d="M8 41.3h32" stroke="#000" stroke-opacity=".08" stroke-width=".8"/></g>' +
@@ -359,13 +382,125 @@
     }
     let prevTier;
     let lastProgPct = 0, lastProgTotal = 0;
+    let lastMedalResumen = null;
+    // v1.3.7: el último nivel se guarda en este navegador (por unidad y mes), así la
+    // celebración sobrevive a la recarga. v1.3.8: además se guarda el último nivel
+    // celebrado (medalTierKey() + '_celeb'), para que el salto se vea al reentrar
+    // aunque haya ocurrido antes de entrar, y solo una vez por nivel.
+    function medalTierKey() {
+      var uid = (typeof unitInfo !== 'undefined' && unitInfo && unitInfo.id) ? unitInfo.id : 'u';
+      return 'gd_medal_tier_' + uid + '_' + (currentMonthId || '');
+    }
+    function medalHistoryKey() {
+      var uid = (typeof unitInfo !== 'undefined' && unitInfo && unitInfo.id) ? unitInfo.id : 'u';
+      return 'gd_medals_history_' + uid;
+    }
+    function medalHistory() {
+      try { var h = JSON.parse(lsGet(medalHistoryKey()) || '[]'); return Array.isArray(h) ? h : []; }
+      catch (e) { return []; }
+    }
+    function medalHistoryAdd(t, r) {
+      try {
+        var h = medalHistory();
+        h.push({ month: currentMonthId, tier: t, name: MEDALS[t].name, pct: r.pct, date: new Date().toISOString().slice(0, 10) });
+        if (h.length > 24) h = h.slice(-24);
+        lsSet(medalHistoryKey(), JSON.stringify(h));
+      } catch (e) {}
+    }
+    function closeMedalCeleb() { document.getElementById('medalCelebBg').classList.remove('open'); }
+    function closeMedalDetail() { document.getElementById('medalDetailBg').classList.remove('open'); }
+    // v1.3.8: la celebración es una transición visible, no solo la medalla nueva.
+    // A la izquierda sale la medalla anterior (se achica y se apaga) y a la derecha
+    // entra la nueva (con rebote). El avance se calcula por carpetas/temas aprobados,
+    // no por archivos subidos, y eso se dice explícito en el modal.
+    function showMedalCelebration(t, prevT, r) {
+      var prevName = prevT >= 0 ? MEDALS[prevT].name : 'sin medalla';
+      var prevPct = prevT >= 0 ? MEDALS[prevT].pct : 0;
+      var oldMedal = prevT >= 0 ? medalSvg(prevT, 62, 'md-live') : medalSvg(0, 62, 'md-locked');
+      var unlockedZip = prevT < 3 && t >= 3;
+      document.getElementById('medalCelebBody').innerHTML =
+        '<div class="mc-kicker" id="mcTitle">¡Subiste de medalla!</div>' +
+        '<div class="mc-swap">' +
+          '<div class="mc-old">' + oldMedal + '<div class="mc-swap-lbl">Antes · ' + prevName + '</div></div>' +
+          '<div class="mc-arrow" aria-hidden="true">\u2192</div>' +
+          '<div class="mc-new">' + medalSvg(t, 110, 'md-live md-pop') + '<div class="mc-swap-lbl">Ahora · ' + MEDALS[t].name + '</div></div>' +
+        '</div>' +
+        '<div class="mc-name">Medalla de ' + MEDALS[t].name + '</div>' +
+        '<div class="mc-bar"><i style="--from:' + prevPct + '%;--to:' + r.pct + '%"></i></div>' +
+        '<div class="mc-sub">Pasaste de ' + prevPct + ' % a ' + r.pct + ' % de avance este mes: llevas ' +
+        r.resueltos + ' de ' + r.total + ' temas aprobados' +
+        (t === MEDALS.length - 1 ? ' · ¡nivel máximo!' : ' · Nivel ' + (t + 1) + ' de ' + MEDALS.length) + '. ' +
+        'Se cuenta por carpetas aprobadas, no por archivos subidos.</div>' +
+        (unlockedZip ? '<div class="mc-unlock">Desbloqueaste la descarga ZIP de tu carpeta del mes (Platino · 80 %).</div>' : '');
+      document.getElementById('medalCelebBg').classList.add('open');
+    }
+    // Detalle de una medalla: qué es, cuándo se ganó y qué falta (o faltaba) para ella.
+    function showMedalDetail(i) {
+      var r = lastMedalResumen, t = r && r.total ? tierOf(r.pct) : -1;
+      var md = MEDALS[i], on = i <= t, cur = i === t;
+      var h = medalHistory().filter(function (x) { return x.tier === i && x.month === currentMonthId; });
+      var k = (!on && r) ? remainingFor(r, md.pct) : null;
+      var body = '<div class="md-detail-head">' + medalSvg(i, 64, on ? 'md-live' : 'md-locked') +
+        '<div><div class="md-detail-name" id="mdTitle">Medalla de ' + md.name + '</div>' +
+        '<div class="md-detail-sub">Se gana con ' + md.pct + ' % de avance del mes · Nivel ' + (i + 1) + ' de ' + MEDALS.length + '</div></div></div>';
+      if (on) {
+        body += '<p class="md-detail-text">' + (cur ? 'Esta es tu medalla actual. ' : 'Ya la ganaste este mes. ') +
+          (h.length ? 'La conseguiste el ' + h[h.length - 1].date + '. ' : '') +
+          (r ? 'Vas en ' + r.pct + ' % (' + r.resueltos + ' de ' + r.total + ' temas aprobados).' : '') + '</p>';
+      } else {
+        body += '<p class="md-detail-text">Todavía no la tienes. ' +
+          (r ? 'Vas en ' + r.pct + ' %: te ' + (k === 1 ? 'falta 1 tema aprobado' : 'faltan ' + k + ' temas aprobados') +
+          ' para llegar al ' + md.pct + ' %.' : 'Llega al ' + md.pct + ' % de avance para ganarla.') + '</p>';
+      }
+      if (t === MEDALS.length - 1 && i === t) body += '<p class="md-detail-text"><strong>¡Nivel máximo!</strong> Todos los temas exigibles de este mes están resueltos.</p>';
+      document.getElementById('medalDetailBody').innerHTML = body;
+      document.getElementById('medalDetailBg').classList.add('open');
+    }
+    function showMedalHistory() {
+      var h = medalHistory().slice().reverse();
+      var body = '<div class="md-detail-name" id="mdTitle">Mis medallas</div>' +
+        '<p class="md-detail-text">Las medallas que has subido en este equipo, sin importar el mes. Se guardan en tu navegador.</p>';
+      if (!h.length) {
+        body += '<p class="md-detail-text">Aún no hay subidas registradas aquí. Cuando subas de medalla, quedará guardada en esta lista.</p>';
+      } else {
+        body += '<div class="md-history">' + h.map(function (x) {
+          return '<div class="md-history-row">' + medalSvg(x.tier, 30, '') +
+            '<span><strong>Medalla de ' + x.name + '</strong> · ' + x.pct + ' %</span><span class="md-history-date">' + x.date + '</span></div>';
+        }).join('') + '</div>';
+      }
+      document.getElementById('medalDetailBody').innerHTML = body;
+      document.getElementById('medalDetailBg').classList.add('open');
+    }
     function renderMedals(r) {
-      lastProgPct = r.pct; lastProgTotal = r.total;
+      lastProgPct = r.pct; lastProgTotal = r.total; lastMedalResumen = r;
       const t = r.total ? tierOf(r.pct) : -1;
       const m = MEDALS[t];
       const hero = document.getElementById('pmHero');
       const grew = prevTier !== undefined && t > prevTier;
       prevTier = t;
+      // v1.3.8: se celebra una vez por nivel celebrado, no solo por nivel visto.
+      // En v1.3.7 la primera visita tras actualizar guardaba el nivel sin celebrar,
+      // así que si el administrador ya había aprobado carpetas y subiste antes de
+      // entrar, nunca veías la transición. Ahora, si nunca se celebró este nivel,
+      // se muestra al entrar (la anterior es el nivel anterior a la actual) y queda
+      // marcado como celebrado, así no se repite al recargar.
+      if (!viewAs && r.total && t >= 0) {
+        var celebKey = medalTierKey() + '_celeb';
+        var celebRaw = lsGet(celebKey);
+        var celeb = (celebRaw === null || celebRaw === '') ? null : parseInt(celebRaw, 10);
+        if (celeb === null || isNaN(celeb)) celeb = null;
+        if (celeb === null || t > celeb) {
+          var prevT = (celeb !== null) ? celeb : (t - 1);
+          var celebId = currentMonthId + ':' + t;
+          if (window._medalCelebShown !== celebId) {
+            window._medalCelebShown = celebId;
+            medalHistoryAdd(t, r);
+            lsSet(celebKey, String(t));
+            setTimeout(function () { showMedalCelebration(t, prevT, r); }, 450);
+          }
+        }
+        lsSet(medalTierKey(), String(t));
+      }
       hero.innerHTML =
         medalSvg(t >= 0 ? t : 0, 76, t < 0 ? 'md-locked' : 'md-live' + (grew ? ' md-pop' : '')) +
         '<div class="pm-name">' + (m ? 'Medalla de ' + m.name : 'Aún sin medalla') + '</div>' +
@@ -373,11 +508,12 @@
       hero.classList.toggle('is-top', t === MEDALS.length - 1);
       document.getElementById('pmRow').innerHTML = MEDALS.map(function (md, i) {
         const on = i <= t;
-        return '<div class="pm-mini ' + (on ? 'on' : 'off') + (i === t ? ' cur' : '') + '" title="' + md.name + ' · ' + md.pct + '%' + (on ? ' (lograda)' : '') + '">' +
+        return '<div class="pm-mini ' + (on ? 'on' : 'off') + (i === t ? ' cur' : '') + '" data-medal="' + i + '" role="button" tabindex="0" aria-label="Medalla de ' + md.name + ', ' + md.pct + '%"' +
+          ' title="' + md.name + ' · ' + md.pct + '%' + (on ? ' (lograda)' : '') + ' · Toca para ver el detalle">' +
           medalSvg(i, 28, on ? '' : 'md-locked') + '<span>' + md.pct + '%</span></div>';
       }).join('');
 
-      // Siguiente meta
+      // Siguiente meta: ahora también dice cuántos puntos % faltan, no solo temas.
       const nx = document.getElementById('progressNext');
       if (!r.total) { nx.innerHTML = ''; return; }
       if (t === MEDALS.length - 1) {
@@ -385,9 +521,32 @@
       } else {
         const ni = t + 1, k = remainingFor(r, MEDALS[ni].pct);
         nx.innerHTML = '<span class="pn-ico">' + medalSvg(ni, 22, 'md-locked-soft') + '</span><span>Siguiente: <strong>medalla de ' + MEDALS[ni].name + '</strong>' +
-          (k ? ' · te ' + (k === 1 ? 'falta ' : 'faltan ') + k + (k === 1 ? ' tema aprobado.' : ' temas aprobados.') : '.') + '</span>';
+          (k ? ' · te ' + (k === 1 ? 'falta ' : 'faltan ') + k + (k === 1 ? ' tema aprobado' : ' temas aprobados') + ' (' + (MEDALS[ni].pct - r.pct) + ' puntos más).' : '.') + '</span>';
       }
     }
+    // Mini medallas clicables + vitrina + modales (una sola vez; pmRow se reescribe en cada render).
+    (function bindMedalUI() {
+      var row = document.getElementById('pmRow');
+      if (row && !row._medalBound) {
+        row._medalBound = true;
+        row.addEventListener('click', function (ev) {
+          var el = ev.target && ev.target.closest ? ev.target.closest('[data-medal]') : null;
+          if (el) showMedalDetail(parseInt(el.getAttribute('data-medal'), 10));
+        });
+        row.addEventListener('keydown', function (ev) {
+          if (ev.key !== 'Enter' && ev.key !== ' ') return;
+          var el = ev.target && ev.target.closest ? ev.target.closest('[data-medal]') : null;
+          if (el) { ev.preventDefault(); showMedalDetail(parseInt(el.getAttribute('data-medal'), 10)); }
+        });
+      }
+      var histBtn = document.getElementById('btnMedalHistory');
+      if (histBtn) histBtn.addEventListener('click', showMedalHistory);
+      var cc = document.getElementById('medalCelebClose'); if (cc) cc.addEventListener('click', closeMedalCeleb);
+      var ok = document.getElementById('medalCelebOk'); if (ok) ok.addEventListener('click', closeMedalCeleb);
+      var cb = document.getElementById('medalCelebBg'); if (cb) cb.addEventListener('click', function (ev) { if (ev.target === this) closeMedalCeleb(); });
+      var dc = document.getElementById('medalDetailClose'); if (dc) dc.addEventListener('click', closeMedalDetail);
+      var db = document.getElementById('medalDetailBg'); if (db) db.addEventListener('click', function (ev) { if (ev.target === this) closeMedalDetail(); });
+    })();
 
     // ---------- Resumen calculado en el navegador (mismas reglas que el servidor) ----------
     // Así los números, las medallas y los filtros siempre coinciden con las carpetas visibles.
@@ -435,7 +594,7 @@
     const ESTADO_LABEL = { vacio: 'Vacío', pendiente: 'En revisión', aprobado: 'Aprobado', rechazado: 'Rechazado', noaplica: 'No aplica' };
     const ESTADO_COLORS = {
       vacio: ['#e0393e', '#fdeceb'], vencido: ['#a61b1f', '#fdeceb'], pendiente: ['#a56a00', '#fff6d9'],
-      aprobado: ['#1e9e5a', '#e9f9ef'], rechazado: ['#c2540a', '#ffe9d6'], noaplica: ['#6f7c95', '#eef1f6']
+      aprobado: ['#1e9e5a', '#e9f9ef'], rechazado: ['#4f46e5', '#e0e7ff'], noaplica: ['#6f7c95', '#eef1f6']
     };
     const CLOCK_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
     const BACK_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>';
@@ -483,7 +642,7 @@
       return topicMessage(t);
     }
     function stateTag(f) {
-      const m = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'En revisión'], rechazado: ['naranja', 'Rechazado'] }[f.estado] || ['gris', f.estado];
+      const m = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'En revisión'], rechazado: ['indigo', 'Rechazado'] }[f.estado] || ['gris', f.estado];
       return '<span class="tag ' + m[0] + '">' + m[1] + '</span>' + (f.tardio ? ' <span class="tag gris" title="Se cargó después de la fecha límite">Fuera de plazo</span>' : '');
     }
 
@@ -1211,7 +1370,7 @@
         { sel: '#monthSelect', title: 'Elige el mes', text: 'Aquí cambias de mes. Cada mes tiene sus propios temas y fechas límite.' },
         { sel: '#progressWrap', title: 'Tu avance', text: 'Muestra cuántos temas exigibles ya fueron aprobados. La parte amarilla es lo que está en revisión. Cada 20% de avance te da una medalla; la mejor llega al 100%.' },
         { sel: '#dashKpis', title: 'Filtra con un clic', text: 'Pulsa Aprobados, En revisión, Por corregir o Por cargar para ver solo esos temas. Pulsa Temas exigibles para volver a ver todos.' },
-        { sel: '#dashLegend', title: 'Los colores', text: 'Verde: aprobado. Amarillo: en revisión. Naranja: rechazado, debes corregirlo. Rojo: aún vacío. Gris: no aplica.' },
+        { sel: '#dashLegend', title: 'Los colores', text: 'Verde: aprobado. Amarillo: en revisión. Índigo: por corregir, debes corregirlo. Rojo: aún vacío. Gris: no aplica.' },
         { sel: '#foldersGrid .folder-card', title: 'Cada carpeta es un tema', text: 'Te dice qué falta y hasta cuándo. Arrastra un archivo sobre la carpeta para cargarlo.' },
         { sel: '#foldersGrid .folder-card .fc-detail', title: 'Detalles', text: 'Abre el panel del tema: ahí ves tus archivos, el motivo si fueron rechazados y puedes cargar uno nuevo.' },
         { sel: '#btnManual', title: 'Manual', text: 'Descarga un manual corto en PDF cuando lo necesites. Puedes repetir este recorrido con el botón Ayuda.' }
@@ -1235,7 +1394,7 @@
 
 
     // ---------- Descarga de la carpeta del mes (solo con avance >= PKG_MIN_PCT) ----------
-    const PKG_MIN_PCT = 85;
+    const PKG_MIN_PCT = 80;   // v1.3.8: se desbloquea con Platino (80%), antes era 85%
     let pkgBusy = false;
 
     function updatePkgButton(r) {

@@ -3228,7 +3228,7 @@ function manualUnidad_() {
       { t: '3. Qué significan los colores', tabla: [
         ['#e9f9ef', 'Verde · Aprobado', 'El administrador revisó y aceptó tu documento.'],
         ['#fff6d9', 'Amarillo · En revisión', 'Ya cargaste el archivo; falta que el administrador lo revise.'],
-        ['#ffe9d6', 'Naranja · Rechazado', 'El archivo tiene un problema. Lee la observación, corrígelo y <b>vuelve a subirlo</b>.'],
+        ['#e0e7ff', 'Índigo · Rechazado', 'El archivo tiene un problema. Lee la observación, corrígelo y <b>vuelve a subirlo</b>.'],
         ['#fdeceb', 'Rojo · Vacío', 'Aún no has cargado nada en este tema. Si aparece <b>vencido</b>, la fecha límite ya pasó: cárgalo cuanto antes.'],
         ['#eef1f6', 'Gris · No aplica', 'Este tema no corresponde a tu unidad este mes.']
       ] },
@@ -3256,7 +3256,7 @@ function manualAdmin_() {
       { t: '3. Matriz de estado', tabla: [
         ['#e9f9ef', 'Verde', 'Aprobado'],
         ['#fff6d9', 'Amarillo', 'Por revisar'],
-        ['#ffe9d6', 'Naranja', 'Rechazado (la unidad debe corregir)'],
+        ['#e0e7ff', 'Índigo', 'Rechazado (la unidad debe corregir)'],
         ['#fdeceb', 'Rojo', 'Vacío; con signo de exclamación si ya venció'],
         ['#eef1f6', 'Gris', 'No aplica']
       ] },

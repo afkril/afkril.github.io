@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=1.3.3">
+  <link rel="stylesheet" href="css/styles.css?v=1.3.9">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body class="admin-page">
@@ -140,7 +140,7 @@
         <div class="mx-legend">
           <span><i class="mx-dot verde"></i> Aprobado</span>
           <span><i class="mx-dot amarillo"></i> Por revisar</span>
-          <span><i class="mx-dot naranja"></i> Rechazado</span>
+          <span><i class="mx-dot indigo"></i> Rechazado</span>
           <span><i class="mx-dot rojo"></i> Vacío</span>
           <span><i class="mx-dot rojo venc"></i> Vencido</span>
           <span><i class="mx-dot gris"></i> No aplica</span>
@@ -375,7 +375,7 @@
       <h2 id="mxFullTitle">Matriz de estado</h2>
       <span class="muted" id="mxFullSummary"></span>
       <div class="mx-legend">
-        <span><i class="mx-dot verde"></i> Aprobado</span><span><i class="mx-dot amarillo"></i> Por revisar</span><span><i class="mx-dot naranja"></i> Rechazado</span>
+        <span><i class="mx-dot verde"></i> Aprobado</span><span><i class="mx-dot amarillo"></i> Por revisar</span><span><i class="mx-dot indigo"></i> Rechazado</span>
         <span><i class="mx-dot rojo"></i> Vacío</span><span><i class="mx-dot rojo venc"></i> Vencido</span><span><i class="mx-dot gris"></i> No aplica</span>
       </div>
       <button class="btn btn-secondary btn-sm" id="mxFullClose" type="button" style="margin-left:auto;">✕ Cerrar (Esc)</button>
@@ -453,9 +453,9 @@
   </div>
   <div id="printArea"></div>
 
-  <script src="js/version.js?v=1.3.3"></script>
-  <script src="js/config.js?v=1.3.3"></script>
-  <script src="js/common.js?v=1.3.3"></script>
+  <script src="js/version.js?v=1.3.9"></script>
+  <script src="js/config.js?v=1.3.9"></script>
+  <script src="js/common.js?v=1.3.9"></script>
   <script>
     const alertEl = document.getElementById('alert');
     let token = localStorage.getItem('adminToken');
@@ -476,7 +476,7 @@
       vencido:   ['#d4474b', '#8f1519', '#e56a6d', '#b82226', '#a61b1f'],
       pendiente: ['#ffd466', '#e29a0c', '#ffe595', '#f7b928', '#c98200'],
       aprobado:  ['#5fd896', '#16854a', '#8defb9', '#2fc474', '#1e9e5a'],
-      rechazado: ['#ffb066', '#d9690f', '#ffc78f', '#f58a2e', '#c2540a'],
+      rechazado: ['#818cf8', '#4338ca', '#a5b4fc', '#6366f1', '#4f46e5'],
       noaplica:  ['#c3ccdd', '#8190ab', '#dde3ef', '#a9b5cb', '#6f7c95'],
       azul:      ['#6fa8ff', '#1f56d9', '#9cc3ff', '#3b82f6', '#1456d6']
     };
@@ -636,12 +636,12 @@
     const ESTADO = {
       aprobado: { label: 'Aprobado', color: 'verde' },
       pendiente: { label: 'Por revisar', color: 'amarillo' },
-      rechazado: { label: 'Rechazado', color: 'naranja' },
+      rechazado: { label: 'Rechazado', color: 'indigo' },
       vacio: { label: 'Vacío', color: 'rojo' },
       noaplica: { label: 'No aplica', color: 'gris' },
       excluido: { label: 'No exigido a su contrato', color: 'excl' }
     };
-    const ARCH_ESTADO = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'Por revisar'], rechazado: ['naranja', 'Rechazado'] };
+    const ARCH_ESTADO = { aprobado: ['verde', 'Aprobado'], pendiente: ['amarillo', 'Por revisar'], rechazado: ['indigo', 'Rechazado'] };
     const ACCION_LABEL = {
       archivo_subido: 'Archivo cargado', archivo_renombrado: 'Archivo renombrado', archivo_eliminado: 'Archivo a la papelera',
       archivo_eliminado_admin: 'Archivo eliminado (administración)', archivo_reemplazado: 'Archivo reemplazado', archivo_girado: 'Archivo girado (orientación)', notificacion_unidad: 'Aviso enviado a la unidad',
@@ -1524,7 +1524,7 @@
         kpiCard('verde', K_ICON.ok, k.avance + '%', 'Cumplimiento global') +
         kpiCard('verde', K_ICON.ok, k.completas, 'Unidades completas') +
         kpiCard('amarillo', K_ICON.clock, k.archivosPorRevisar, 'Archivos por revisar') +
-        kpiCard('naranja', K_ICON.back, k.archivosRechazados, 'Archivos rechazados') +
+        kpiCard('indigo', K_ICON.back, k.archivosRechazados, 'Archivos rechazados') +
         kpiCard('rojo', K_ICON.alert, k.temasVencidos, 'Temas vencidos') +
       '</div><div class="home-grid">';
 
@@ -1589,7 +1589,7 @@
     function renderReview() {
       const d = reviewData, estado = document.getElementById('revEstadoSelect').value;
       document.getElementById('reviewCounts').innerHTML =
-        '<span class="tag amarillo">' + d.counts.pendiente + ' por revisar</span> <span class="tag naranja">' + d.counts.rechazado + ' rechazados</span> <span class="tag verde">' + d.counts.aprobado + ' aprobados</span>';
+        '<span class="tag amarillo">' + d.counts.pendiente + ' por revisar</span> <span class="tag indigo">' + d.counts.rechazado + ' rechazados</span> <span class="tag verde">' + d.counts.aprobado + ' aprobados</span>';
       const wrap = document.getElementById('reviewBody');
       // Perfil que revisó: solo se muestra en aprobados / rechazados
       const showBy = estado !== 'pendiente';
@@ -1777,7 +1777,7 @@
         kpiCard('verde', K_ICON.ok, pctC + '% <span style="font-size:13px;font-weight:600;color:var(--texto-suave);">(' + completos + ')</span>', 'Unidades completas') +
         kpiCard('rojo', K_ICON.alert, faltantes, 'Unidades con pendientes') +
         kpiCard('amarillo', K_ICON.clock, porRev, 'Archivos por revisar') +
-        kpiCard('naranja', K_ICON.back, rech, 'Archivos rechazados') +
+        kpiCard('indigo', K_ICON.back, rech, 'Archivos rechazados') +
         kpiCard('rojo', K_ICON.alert, venc, 'Casillas vencidas');
 
       const m = currentStatus.month;
@@ -2021,7 +2021,7 @@
       if (!cdOpen) { cdOpen = {}; cell.files.forEach(function (f) { cdOpen[f.id] = cell.files.length <= 2; }); }
       const flash = cdFlash; cdFlash = '';
       const e = ESTADO[cell.estado];
-      const colMap = { verde: ['#1e9e5a', '#e9f9ef'], amarillo: ['#a56a00', '#fff6d9'], naranja: ['#c2540a', '#ffe9d6'], rojo: ['#e0393e', '#fdeceb'], gris: ['#6f7c95', '#eef1f6'], excl: ['#6f7c95', '#eef1f6'] };
+      const colMap = { verde: ['#1e9e5a', '#e9f9ef'], amarillo: ['#a56a00', '#fff6d9'], indigo: ['#4f46e5', '#e0e7ff'], rojo: ['#e0393e', '#fdeceb'], gris: ['#6f7c95', '#eef1f6'], excl: ['#6f7c95', '#eef1f6'] };
       const col = colMap[cell.vencido && cell.estado === 'vacio' ? 'rojo' : e.color];
       const n = cell.files.length;
       const mclosed = currentStatus.month.cerrado;
@@ -2100,7 +2100,7 @@
               (f.nombreCargado && f.nombreCargado !== f.originalName ? '<div class="full"><div class="k">Nombre original</div><div class="v">' + escapeHtml(f.nombreCargado) + '</div></div>' : '') +
               (f.reemplazadoAt ? '<div class="full"><div class="k">Reemplazado por</div><div class="v">' + escapeHtml(f.reemplazadoPor) + ' · ' + formatDate(f.reemplazadoAt) + '</div></div>' : '') +
               (f.estado !== 'pendiente' && f.revisadoAt ? '<div class="full"><div class="k">Revisado por</div><div class="v">' + escapeHtml(f.revisadoPor) + ' · ' + formatDate(f.revisadoAt) + '</div></div>' : '') +
-              (f.observacion ? '<div class="full"><div class="k">Motivo del rechazo</div><div class="v" style="color:#9a3a0a;">' + escapeHtml(f.observacion) + '</div></div>' : '') +
+              (f.observacion ? '<div class="full"><div class="k">Motivo del rechazo</div><div class="v" style="color:#3730a3;">' + escapeHtml(f.observacion) + '</div></div>' : '') +
             '</div>' +
             '<div class="dr-file-actions">' +
               '<button class="btn btn-secondary btn-sm" data-view="' + f.id + '" data-drive="' + (f.driveFileId || '') + '" data-size="' + (f.size || '') + '">' + EYE_SVG + ' Ver</button>' +
@@ -2343,7 +2343,7 @@
           '<div class="sm-title">' + escapeHtml(m.nombre) + (m.cerrado ? ' 🔒' : '') + '</div>' +
           '<span class="pill ' + (r.completo ? 'pill-verde' : (r.vencidos ? 'pill-rojo' : 'pill-gris')) + '">' + r.resueltos + '/' + r.total + ' · ' + r.pct + '%</span>' +
           (r.pendientes ? '<span class="tag amarillo">' + r.pendientes + ' por revisar</span>' : '') +
-          (r.rechazados ? '<span class="tag naranja">' + r.rechazados + ' rechazados</span>' : '') +
+          (r.rechazados ? '<span class="tag indigo">' + r.rechazados + ' rechazados</span>' : '') +
         '</div><div class="sm-body">' +
           '<div class="muted" style="font-size:12px;margin-bottom:4px;">' + (m.fechaLimite ? 'Fecha límite: ' + fmtDay(m.fechaLimite) + ' · ' : '') + (m.ultimaFecha ? 'Último cargue: ' + formatDate(m.ultimaFecha) : 'Sin cargues este mes') + '</div>' +
           m.temas.filter(function (t) { return t.aplica; }).map(function (t) {
