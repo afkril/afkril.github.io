@@ -3,6 +3,7 @@
 Backend: Google Apps Script (Code.gs con doPost). Frontend: esta carpeta.
 
 ## Historial de versiones
+- **v1.4.0** (2026-11-22): Regla de estado: una carpeta solo pasa a Revisado (verde) cuando TODOS sus archivos están revisados y aprobados; un archivo rechazado pesa más que uno aprobado (también en avance y medallas). Matriz Excel: Rechazado en índigo #4F46E5, igual que en pantalla. Por revisar: nueva pestaña Rechazados corregidos con la observación enviada. Code.gs SÍ cambia (cellFor_ y cola de revisión) y hay que volver a desplegar el backend.
 - **v1.3.9** (2026-11-22): Login principal: apartado Cuentas guardadas en este equipo — varias cuentas con entrada rápida al tocarlas (se guardan tras entrar con éxito y con la casilla marcada), con eliminar por cuenta y borrar todas. Solo index.html y css/login.css; no toca Code.gs.
 - **v1.3.8** (2026-11-22): Medalla al reentrar: la celebración ahora es una transición visible vieja -> nueva en el modal (con % y temas aprobados, no archivos subidos) y se muestra una vez por nivel aunque el salto haya ocurrido antes de entrar. La descarga ZIP se desbloquea en 80% (Platino), antes 85%. Solo dashboard.html y css/styles.css; no toca Code.gs.
 - **v1.3.7** (2026-11-22): Medallas vivas: celebración al subir de nivel que se recuerda entre visitas, medalla principal con flotación y giro al pasar el cursor, mini medallas clicables con su detalle y vitrina Mis medallas guardada en el navegador. Solo dashboard y css; no toca Code.gs.

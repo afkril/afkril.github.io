@@ -781,7 +781,7 @@ function getUserTopicFolder_(monthNombre, cedula, nombreUnidad, temaNombre) {
 // MODELO DE ESTADO (lo comparten el panel de la unidad y el del administrador)
 // ---------------------------------------------------------------------
 // Estados de un tema para una unidad:
-//   aprobado  : tiene al menos un archivo aprobado y nada por revisar
+//   aprobado  : todos sus archivos están revisados y aprobados (nada pendiente ni por corregir)
 //   pendiente : hay archivos por revisar
 //   rechazado : solo tiene archivos rechazados
 //   vacio     : sin archivos
@@ -845,11 +845,13 @@ function cellFor_(ctx, user, topic) {
   if (!aplica) estado = 'excluido';
   else if (!files.length) estado = naRow ? 'noaplica' : 'vacio';
   else if (files.some(function (f) { return f.estado === 'pendiente'; })) estado = 'pendiente';
-  else if (files.some(function (f) { return f.estado === 'aprobado'; })) estado = 'aprobado';
-  else estado = 'rechazado';
+  // Un archivo rechazado pesa más que uno aprobado: el tema solo se marca
+  // aprobado (verde) cuando TODOS sus archivos están revisados y aprobados.
+  else if (files.some(function (f) { return f.estado === 'rechazado'; })) estado = 'rechazado';
+  else if (files.every(function (f) { return f.estado === 'aprobado'; })) estado = 'aprobado';
+  else estado = 'pendiente';
 
-  const hayAprobado = files.some(function (f) { return f.estado === 'aprobado'; });
-  const cumple = aplica && (estado === 'noaplica' || hayAprobado);
+  const cumple = aplica && (estado === 'noaplica' || estado === 'aprobado');
   const vencido = aplica && obligatorio && (estado === 'vacio' || estado === 'rechazado') && !!fechaLimite && todayStr_() > fechaLimite;
   const rechazo = files.slice().reverse().find(function (f) { return f.estado === 'rechazado' && f.observacion; });
 
@@ -2362,12 +2364,29 @@ function apiAdminGetReviewQueue(token, monthId, contratoId, estado) {
   if (monthId && monthId !== 'todos') ups = ups.filter(function (u) { return u.monthId === monthId; });
   if (contratoId !== 'todos') ups = ups.filter(function (u) { return (users[u.userId].contratoId || '') === contratoId; });
 
-  const counts = { pendiente: 0, rechazado: 0, aprobado: 0 };
+  const counts = { pendiente: 0, rechazado: 0, aprobado: 0, corregido: 0 };
   ups.forEach(function (u) { const e = u.estado || 'pendiente'; if (counts[e] !== undefined) counts[e]++; });
 
-  let list = ups.filter(function (u) { return (u.estado || 'pendiente') === estado; });
+  // «Rechazados corregidos»: archivos pendientes que corrigen un rechazo anterior
+  // en la misma unidad, tema y mes. Se guarda el rechazo más reciente de ese grupo
+  // para que el revisor vea la observación que se envió a corregir.
+  const rechazoPrevio = {};
+  ups.forEach(function (u) {
+    if ((u.estado || '') !== 'rechazado' || !String(u.observacion || '').trim()) return;
+    const k = u.userId + '::' + u.topicId + '::' + u.monthId;
+    const cur = rechazoPrevio[k];
+    if (!cur || String(u.revisadoAt || u.uploadedAt) >= String(cur.revisadoAt || cur.uploadedAt)) rechazoPrevio[k] = u;
+  });
+  const esCorregido = function (u) {
+    return (u.estado || 'pendiente') === 'pendiente' && !!rechazoPrevio[u.userId + '::' + u.topicId + '::' + u.monthId];
+  };
+  ups.forEach(function (u) { if (esCorregido(u)) counts.corregido++; });
+
+  let list;
+  if (estado === 'corregido') list = ups.filter(esCorregido);
+  else list = ups.filter(function (u) { return (u.estado || 'pendiente') === estado; });
   list.sort(function (a, b) {
-    if (estado === 'pendiente') return a.uploadedAt < b.uploadedAt ? -1 : 1;
+    if (estado === 'pendiente' || estado === 'corregido') return a.uploadedAt < b.uploadedAt ? -1 : 1;
     return String(b.revisadoAt || b.uploadedAt) < String(a.revisadoAt || a.uploadedAt) ? -1 : 1;
   });
   const total = list.length;
@@ -2378,11 +2397,14 @@ function apiAdminGetReviewQueue(token, monthId, contratoId, estado) {
     mostrados: list.length,
     rows: list.map(function (u) {
       const usr = users[u.userId], tp = topics[u.topicId];
+      const prev = rechazoPrevio[u.userId + '::' + u.topicId + '::' + u.monthId] || null;
       return {
         id: u.id, userId: u.userId, uploadedAt: u.uploadedAt, originalName: u.originalName, size: u.size, driveFileId: u.driveFileId || '',
         nombreUnidad: usr.nombreUnidad, responsable: fullName_(usr), cedula: usr.cedula, contratoNombre: contratoNombre_(usr, cMap),
         mesNombre: months[u.monthId].nombre, temaNombre: tp.nombre, tardio: truthy_(u.tardio),
-        estado: u.estado || 'pendiente', observacion: u.observacion || '', revisadoPor: u.revisadoPor || '', revisadoAt: u.revisadoAt || ''
+        estado: u.estado || 'pendiente', observacion: u.observacion || '', revisadoPor: u.revisadoPor || '', revisadoAt: u.revisadoAt || '',
+        obsCorregir: prev ? (prev.observacion || '') : '', rechazoPor: prev ? (prev.revisadoPor || '') : '',
+        rechazoAt: prev ? (prev.revisadoAt || '') : '', archivoRechazado: prev ? (prev.originalName || '') : ''
       };
     })
   };
@@ -3251,7 +3273,7 @@ function manualAdmin_() {
       { t: '2. Revisar archivos', li: [
         'En <b>Por revisar</b> verás los archivos recién cargados. <b>Aprueba</b> o <b>rechaza</b> cada uno; al rechazar debes escribir el motivo, que la unidad verá para corregir y volver a subir.',
         'También puedes revisar desde la <b>Matriz de estado</b>: haz clic en una casilla y revisa sus archivos.',
-        'Un tema cumple cuando tiene al menos un archivo aprobado (o fue marcado como No aplica).'
+        'Un tema cumple cuando todos sus archivos están aprobados (o fue marcado como No aplica).'
       ] },
       { t: '3. Matriz de estado', tabla: [
         ['#e9f9ef', 'Verde', 'Aprobado'],

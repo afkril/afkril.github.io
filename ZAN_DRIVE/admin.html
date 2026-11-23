@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=1.3.9">
+  <link rel="stylesheet" href="css/styles.css?v=1.4.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body class="admin-page">
@@ -85,12 +85,12 @@
       <div class="page-head">
         <div class="perfil-slot"></div>
         <h1 class="page-title">Revisión de archivos</h1>
-        <p class="subtitle">Aprueba o rechaza lo que cargan las unidades. Al rechazar escribes el motivo y la unidad lo ve para corregir y volver a subir.</p>
+        <p class="subtitle">Aprueba o rechaza lo que cargan las unidades. Al rechazar escribes el motivo y la unidad lo ve para corregir y volver a subir. En «Rechazados corregidos» verás esas correcciones con la observación que se envió.</p>
       </div>
       <div class="card" id="reviewWrap">
         <div class="filters-bar">
           <div class="field"><label>Mes</label><select id="revMonthSelect"></select></div><div class="field"><label>Contrato</label><select id="revContratoSelect"></select></div>
-          <div class="field"><label>Mostrar</label><select id="revEstadoSelect"><option value="pendiente">Por revisar</option><option value="rechazado">Rechazados</option><option value="aprobado">Aprobados</option></select></div>
+          <div class="field"><label>Mostrar</label><select id="revEstadoSelect"><option value="pendiente">Por revisar</option><option value="corregido">Rechazados corregidos</option><option value="rechazado">Rechazados</option><option value="aprobado">Aprobados</option></select></div>
           <div class="field" id="revPerfilField" style="display:none;"><label>Revisado por</label><select id="revPerfilSelect"><option value="todos">Todos los perfiles</option></select></div>
           <div class="field" id="reviewCounts" style="margin-left:auto;align-self:flex-end;"></div>
         </div>
@@ -453,9 +453,9 @@
   </div>
   <div id="printArea"></div>
 
-  <script src="js/version.js?v=1.3.9"></script>
-  <script src="js/config.js?v=1.3.9"></script>
-  <script src="js/common.js?v=1.3.9"></script>
+  <script src="js/version.js?v=1.4.0"></script>
+  <script src="js/config.js?v=1.4.0"></script>
+  <script src="js/common.js?v=1.4.0"></script>
   <script>
     const alertEl = document.getElementById('alert');
     let token = localStorage.getItem('adminToken');
@@ -1589,10 +1589,10 @@
     function renderReview() {
       const d = reviewData, estado = document.getElementById('revEstadoSelect').value;
       document.getElementById('reviewCounts').innerHTML =
-        '<span class="tag amarillo">' + d.counts.pendiente + ' por revisar</span> <span class="tag indigo">' + d.counts.rechazado + ' rechazados</span> <span class="tag verde">' + d.counts.aprobado + ' aprobados</span>';
+        '<span class="tag amarillo">' + d.counts.pendiente + ' por revisar</span> <span class="tag azul">' + (d.counts.corregido || 0) + ' corregidos</span> <span class="tag indigo">' + d.counts.rechazado + ' rechazados</span> <span class="tag verde">' + d.counts.aprobado + ' aprobados</span>';
       const wrap = document.getElementById('reviewBody');
       // Perfil que revisó: solo se muestra en aprobados / rechazados
-      const showBy = estado !== 'pendiente';
+      const showBy = estado === 'rechazado' || estado === 'aprobado';   // «corregido» son pendientes: quién rechazó va en la observación
       const pfSel = document.getElementById('revPerfilSelect');
       document.getElementById('revPerfilField').style.display = showBy ? '' : 'none';
       if (!pfSel.options[1]) { PERFILES.forEach(function (pf) { pfSel.add(new Option(pf.nombre, pf.id)); }); }
@@ -1600,7 +1600,7 @@
       const pfName = pfNow === 'todos' ? '' : perfilById(pfNow).nombre;
       const rowsView = pfName ? d.rows.filter(function (r) { return String(r.revisadoPor || '').indexOf(pfName) === 0; }) : d.rows;
       if (!rowsView.length) {
-        wrap.innerHTML = '<p class="empty-hint big">' + (estado === 'pendiente' ? '¡Todo revisado! No hay archivos por revisar. 🎉' : 'No hay archivos en este estado.') + '</p>';
+        wrap.innerHTML = '<p class="empty-hint big">' + (estado === 'pendiente' ? '¡Todo revisado! No hay archivos por revisar. 🎉' : (estado === 'corregido' ? 'No hay correcciones por revisar. Cuando una unidad vuelva a subir un archivo rechazado, aparecerá aquí con la observación que se le envió.' : 'No hay archivos en este estado.')) + '</p>';
         updateReviewBar();
         return;
       }
@@ -1611,7 +1611,10 @@
             '<td class="unit-link" data-unit="' + r.userId + '"><div class="mn-title" style="font-weight:600;">' + escapeHtml(r.nombreUnidad) + '</div><div class="muted" style="font-size:11.5px;">' + escapeHtml(r.contratoNombre) + '</div></td>' +
             '<td>' + escapeHtml(r.temaNombre) + '</td>' +
             '<td><div class="file-item" style="display:inline-flex;"><span class="ftype-icon">' + fileTypeIcon(r.originalName) + '</span><span class="name" title="' + escapeHtml(r.originalName) + '">' + escapeHtml(r.originalName) + '</span></div><div class="muted" style="font-size:11.5px;">' + formatBytes(r.size) + '</div>' +
-              (r.observacion ? '<div class="obs-text"><b>Motivo:</b> ' + escapeHtml(r.observacion) + '</div>' : '') + '</td>' +
+              (r.observacion ? '<div class="obs-text"><b>Motivo:</b> ' + escapeHtml(r.observacion) + '</div>' : '') +
+              (r.obsCorregir ? '<div class="obs-text"><b>Corregir (observación enviada):</b> ' + escapeHtml(r.obsCorregir) +
+                (r.archivoRechazado ? '<br><span class="muted">Archivo rechazado: ' + escapeHtml(r.archivoRechazado) + '</span>' : '') +
+                (r.rechazoPor ? '<br><span class="muted">Rechazado por ' + escapeHtml(r.rechazoPor) + (r.rechazoAt ? ' · ' + formatDate(r.rechazoAt) : '') + '</span>' : '') + '</div>' : '') + '</td>' +
             (showBy ? '<td>' + (r.revisadoPor ? '<div class="mn-title" style="font-weight:600;">' + escapeHtml(r.revisadoPor) + '</div><div class="muted" style="font-size:11.5px;">' + (r.revisadoAt ? formatDate(r.revisadoAt) : '') + '</div><div class="muted" style="font-size:11.5px;">' + escapeHtml(r.contratoNombre) + '</div>' : '<span class="muted">—</span>') + '</td>' : '') +
             '<td><div class="file-actions" style="justify-content:flex-end;gap:6px;">' +
               '<button class="btn btn-secondary btn-sm" data-rview="' + r.id + '" data-drive="' + (r.driveFileId || '') + '" data-size="' + (r.size || '') + '" title="Ver">' + EYE_SVG + '</button>' +
@@ -2692,7 +2695,7 @@
     async function buildMatrixXlsxBlob(rows, topics, monthName) {
       const HEAD = ['Unidad de servicio', 'Código UDS', 'Cédula', 'Contrato', 'Avance', 'Último cargue'];
       const nFixed = HEAD.length;
-      const S_HEAD = 1, S_HEAD_TOPIC = 2, S_TEXT = 3, S_VERDE = 4, S_ROJO = 5, S_GRIS = 6, S_AV_OK = 7, S_AV_PEND = 8, S_TITLE = 9, S_LEG = 10, S_AMAR = 11, S_NARA = 12, S_ROJOOSC = 13;
+      const S_HEAD = 1, S_HEAD_TOPIC = 2, S_TEXT = 3, S_VERDE = 4, S_ROJO = 5, S_GRIS = 6, S_AV_OK = 7, S_AV_PEND = 8, S_TITLE = 9, S_LEG = 10, S_AMAR = 11, S_INDIGO = 12, S_ROJOOSC = 13;
       const str = function (ref, style, text) {
         return '<c r="' + ref + '" s="' + style + '" t="inlineStr"><is><t xml:space="preserve">' + xlsxEsc(text) + '</t></is></c>';
       };
@@ -2700,7 +2703,7 @@
 
       const out = [];
       out.push('<row r="1" ht="24" customHeight="1">' + str('A1', S_TITLE, 'Matriz de estado global · ' + monthName) + '</row>');
-      out.push('<row r="2" ht="18" customHeight="1">' + str('A2', S_LEG, 'Leyenda:') + str('B2', S_VERDE, 'Aprobado') + str('C2', S_AMAR, 'Por revisar') + str('D2', S_NARA, 'Rechazado') + str('E2', S_ROJO, 'Vacío') + str('F2', S_ROJOOSC, 'Vencido') + str('G2', S_GRIS, 'No aplica') + '</row>');
+      out.push('<row r="2" ht="18" customHeight="1">' + str('A2', S_LEG, 'Leyenda:') + str('B2', S_VERDE, 'Aprobado') + str('C2', S_AMAR, 'Por revisar') + str('D2', S_INDIGO, 'Rechazado') + str('E2', S_ROJO, 'Vacío') + str('F2', S_ROJOOSC, 'Vencido') + str('G2', S_GRIS, 'No aplica') + '</row>');
 
       let h = '<row r="4" ht="170" customHeight="1">';
       HEAD.forEach(function (t, i) { h += str(xlsxColLetter(i) + '4', S_HEAD, t); });
@@ -2719,7 +2722,7 @@
         x += str('F' + rn, S_TEXT, r.ultimaFecha ? formatDate(r.ultimaFecha) : '');
         r.states.forEach(function (st, j) {
           const ref = xlsxColLetter(nFixed + j) + rn;
-          const sty = { aprobado: S_VERDE, pendiente: S_AMAR, rechazado: S_NARA, vacio: st.venc ? S_ROJOOSC : S_ROJO, noaplica: S_GRIS, excluido: S_GRIS }[st.estado] || S_ROJO;
+          const sty = { aprobado: S_VERDE, pendiente: S_AMAR, rechazado: S_INDIGO, vacio: st.venc ? S_ROJOOSC : S_ROJO, noaplica: S_GRIS, excluido: S_GRIS }[st.estado] || S_ROJO;
           if (st.n > 0) x += '<c r="' + ref + '" s="' + sty + '"><v>' + (Number(st.n) || 0) + '</v></c>';
           else x += blank(ref, sty);
         });
@@ -2758,7 +2761,7 @@
         '<styleSheet xmlns="' + NS + '">' +
         '<fonts count="5">' + font(false, 10, 'FF1C2230') + font(true, 10, 'FF1C2230') + font(true, 11, 'FFFFFFFF') + font(true, 13, 'FF0F1B3D') + font(false, 10, 'FF6B7280') + '</fonts>' +
         '<fills count="11"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>' +
-        fill('FFEEF2FA') + fill('FF1E9E5A') + fill('FFE0393E') + fill('FF9AA5B8') + fill('FFE9F9EF') + fill('FFFDECEB') + fill('FFF2B01E') + fill('FFF28C28') + fill('FFA61B1F') + '</fills>' +
+        fill('FFEEF2FA') + fill('FF1E9E5A') + fill('FFE0393E') + fill('FF9AA5B8') + fill('FFE9F9EF') + fill('FFFDECEB') + fill('FFF2B01E') + fill('FF4F46E5') + fill('FFA61B1F') + '</fills>' +
         '<borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border><border>' + side('FFFFFFFF') + '</border><border>' + side('FFE1E5EE') + '</border></borders>' +
         '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
         '<cellXfs count="14">' +

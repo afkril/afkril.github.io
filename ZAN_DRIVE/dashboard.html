@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=1.3.9">
+  <link rel="stylesheet" href="css/styles.css?v=1.4.0">
 </head>
 <body class="dash-page">
   <div class="ui-zoom" id="uiRoot">
@@ -181,9 +181,9 @@
   </aside>
   </div><!-- /uiRoot -->
 
-  <script src="js/version.js?v=1.3.9"></script>
-  <script src="js/config.js?v=1.3.9"></script>
-  <script src="js/common.js?v=1.3.9"></script>
+  <script src="js/version.js?v=1.4.0"></script>
+  <script src="js/config.js?v=1.4.0"></script>
+  <script src="js/common.js?v=1.4.0"></script>
     <!-- Detalle de una notificación -->
   <div class="modal-bg" id="notifDetailBg" style="z-index:300;">
     <div class="modal notif-detail" role="dialog" aria-modal="true" aria-labelledby="ndTitle">
@@ -553,7 +553,7 @@
     function computeResumen(topics) {
       const ex = topics.filter(function (t) { return t.obligatorio; });
       const cnt = function (st) { return ex.filter(function (t) { return t.estado === st; }).length; };
-      const resueltos = ex.filter(function (t) { return t.estado === 'noaplica' || t.files.some(function (f) { return f.estado === 'aprobado'; }); }).length;
+      const resueltos = ex.filter(function (t) { return t.estado === 'noaplica' || t.estado === 'aprobado'; }).length;
       return {
         total: ex.length, resueltos: resueltos,
         aprobados: cnt('aprobado'), pendientes: cnt('pendiente'), rechazados: cnt('rechazado'), vacios: cnt('vacio'),
@@ -885,8 +885,11 @@
       const fs = t.files;
       if (!fs.length) t.estado = 'vacio';
       else if (fs.some(function (x) { return x.estado === 'pendiente'; })) t.estado = 'pendiente';
-      else if (fs.some(function (x) { return x.estado === 'aprobado'; })) t.estado = 'aprobado';
-      else t.estado = 'rechazado';
+      // Un archivo rechazado pesa más que uno aprobado: solo verde cuando TODOS
+      // los archivos están revisados y aprobados.
+      else if (fs.some(function (x) { return x.estado === 'rechazado'; })) t.estado = 'rechazado';
+      else if (fs.every(function (x) { return x.estado === 'aprobado'; })) t.estado = 'aprobado';
+      else t.estado = 'pendiente';
     }
     // Si los datos se recargan durante los 10 s (p. ej. al subir otro archivo), el servidor aún
     // devuelve el archivo; aquí se vuelve a ocultar.
