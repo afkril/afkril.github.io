@@ -135,8 +135,10 @@ function ensureSchemaOnce_() {
   const props = PropertiesService.getScriptProperties();
   if (!props.getProperty('SHEET_ID')) return;
   if (props.getProperty('SCHEMA_VERSION') === SCHEMA_VERSION) return;
+  // v1.4.1: sin espera. Si otra ejecución ya está actualizando el esquema (o hay una
+  // subida con el candado tomado) esta petición sigue normal en vez de quedarse 20 s en cola.
   const lock = LockService.getScriptLock();
-  lock.waitLock(20000);
+  if (!lock.tryLock(0)) return;
   try {
     if (props.getProperty('SCHEMA_VERSION') === SCHEMA_VERSION) return;
     ensureSchema_(SpreadsheetApp.openById(props.getProperty('SHEET_ID')));

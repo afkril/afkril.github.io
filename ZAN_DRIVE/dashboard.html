@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=1.4.0">
+  <link rel="stylesheet" href="css/styles.css?v=1.4.2">
 </head>
 <body class="dash-page">
   <div class="ui-zoom" id="uiRoot">
@@ -181,9 +181,9 @@
   </aside>
   </div><!-- /uiRoot -->
 
-  <script src="js/version.js?v=1.4.0"></script>
-  <script src="js/config.js?v=1.4.0"></script>
-  <script src="js/common.js?v=1.4.0"></script>
+  <script src="js/version.js?v=1.4.2"></script>
+  <script src="js/config.js?v=1.4.2"></script>
+  <script src="js/common.js?v=1.4.2"></script>
     <!-- Detalle de una notificación -->
   <div class="modal-bg" id="notifDetailBg" style="z-index:300;">
     <div class="modal notif-detail" role="dialog" aria-modal="true" aria-labelledby="ndTitle">
@@ -1499,9 +1499,30 @@
     }
     document.getElementById('btnPkg').addEventListener('click', downloadMonthPackage);
 
-    (async function init() {
+    // v1.4.2: un fallo de red/servidor ya NO saca al usuario al login: se avisa y se ofrece Reintentar.
+    function showConnError(msg, retryFn) {
+      const g = document.getElementById('foldersGrid');
+      g.innerHTML = '<div class="empty-hint" style="display:block;text-align:center;">' +
+        '<p style="margin:0 0 12px;">' + escapeHtml(msg || 'No se pudo conectar con el servidor.') + '</p>' +
+        '<button type="button" class="btn btn-primary btn-sm" id="btnRetryConn">Reintentar</button></div>';
+      document.getElementById('btnRetryConn').addEventListener('click', function () {
+        g.innerHTML = '<div class="topics-loading"><span class="spinner"></span>Conectando con el servidor…</div>';
+        retryFn();
+      });
+    }
+
+    async function init() {
+      document.getElementById('foldersGrid').innerHTML =
+        '<div class="topics-loading"><span class="spinner"></span>Conectando con el servidor…</div>';
+      let me;
       try {
-        const me = await gsRun('apiMe', token);
+        me = await gsRun('apiMe', token);
+      } catch (e) {
+        // Error de red, tiempo agotado o servidor saturado: la sesión NO se pierde.
+        showConnError(e && e.message, init);
+        return;
+      }
+      try {
         if (!me.authenticated) {
           if (VIEW_TOKEN) { document.body.innerHTML = '<div style="padding:60px 20px;text-align:center;font-family:sans-serif;">Esta vista temporal expiró. Ciérrala y ábrela de nuevo desde el panel de administrador.</div>'; return; }
           goTo('login'); return;
@@ -1575,8 +1596,12 @@
         closeDrawer();
       });
 
-      await loadMonths();
-    })();
+      try { await loadMonths(); }
+      catch (e) { showConnError(e && e.message, async function () {
+        try { await loadMonths(); } catch (e2) { showConnError(e2 && e2.message, loadMonths); }
+      }); }
+    }
+    init();
 
 
 

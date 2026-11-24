@@ -79,17 +79,69 @@ function setBusy_(delta) {
 
 // Envuelve google.script.run en una Promesa para usar async/await.
 // Cada llamada enciende la barra de carga superior mientras espera la respuesta.
-function gsRun(fnName) {
-  const args = Array.prototype.slice.call(arguments, 1);
-  setBusy_(1);
+// v1.4.1: la llamada ya NO puede quedarse esperando para siempre.
+//  - Tiempo máximo por llamada (más largo para subir/bajar archivos).
+//  - Las consultas de solo lectura se reintentan una vez; las que escriben NO (evita duplicados).
+//  - Si Google devuelve una página HTML (cuota/límite) se explica en vez de un error críptico.
+var GS_TIMEOUT_MS = 30000;
+var GS_TIMEOUT_FILE_MS = 120000;
+var GS_FILE_FNS_ = /^(apiUploadFile|apiDownloadFile|apiRotateFile|apiGetManualPdf|apiAdminRotateFile|apiAdminDownloadFile|apiAdminReplaceFile|apiAdminDownloadDriveFile|apiAdminGetManualPdf)$/;
+var GS_READ_FNS_ = /^(apiGet|apiMe$|apiDownloadFile$|apiAdminGet|apiAdminList|apiAdminMe$|apiAdminFileMeta$|apiAdminDownloadFile$|apiAdminDownloadDriveFile$)/;
+
+function gsFetchOnce_(fnName, args, timeoutMs) {
+  var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, timeoutMs) : null;
   // text/plain evita el preflight CORS (Apps Script no responde OPTIONS)
   return fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ fn: fnName, args: args }),
-    redirect: 'follow'
+    redirect: 'follow',
+    signal: ctrl ? ctrl.signal : undefined
   })
-    .then(function (res) { return res.json(); })
+    .then(function (res) { return res.text(); })
+    .then(function (txt) {
+      if (timer) clearTimeout(timer);
+      var d;
+      try { d = JSON.parse(txt); }
+      catch (e) {
+        var err = new Error('Google devolvió una respuesta inesperada (el servidor puede estar saturado o haber superado su límite diario). Espera un momento y recarga la página.');
+        err._retry = true;
+        throw err;
+      }
+      return d;
+    })
+    .catch(function (err) {
+      if (timer) clearTimeout(timer);
+      if (err && err.name === 'AbortError') {
+        var e2 = new Error('El servidor tardó demasiado en responder. Revisa tu conexión y vuelve a intentarlo en unos segundos.');
+        e2._retry = true;
+        throw e2;
+      }
+      if (err instanceof TypeError) {
+        var e3 = new Error('No se pudo conectar con el servidor. Revisa tu conexión.');
+        e3._retry = true;
+        throw e3;
+      }
+      throw err;
+    });
+}
+
+function gsRun(fnName) {
+  const args = Array.prototype.slice.call(arguments, 1);
+  setBusy_(1);
+  var isFile = GS_FILE_FNS_.test(fnName);
+  var canRetry = GS_READ_FNS_.test(fnName);
+  var timeoutMs = isFile ? GS_TIMEOUT_FILE_MS : GS_TIMEOUT_MS;
+  return gsFetchOnce_(fnName, args, timeoutMs)
+    .catch(function (err) {
+      if (canRetry && err && err._retry) {
+        return new Promise(function (r) { setTimeout(r, 1200); }).then(function () {
+          return gsFetchOnce_(fnName, args, timeoutMs);
+        });
+      }
+      throw err;
+    })
     .then(function (d) {
       setBusy_(-1);
       if (!d.ok) throw new Error(d.error || 'Error del servidor.');
@@ -97,7 +149,6 @@ function gsRun(fnName) {
     })
     .catch(function (err) {
       if (busyCount_ > 0 && !(err && err._counted)) setBusy_(-1);
-      if (err instanceof TypeError) err = new Error('No se pudo conectar con el servidor. Revisa tu conexión.');
       err._counted = true;
       throw err;
     });

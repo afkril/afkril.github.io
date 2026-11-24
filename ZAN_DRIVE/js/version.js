@@ -2,8 +2,8 @@
 const APP_INFO = Object.freeze({
   name: 'JER_DRIVE',
   year: 2026,
-  version: '1.3.5',
-  build: '2026-11-22'
+  version: '1.4.2',
+  build: '2026-11-24'
 });
 const APP_LABEL = APP_INFO.name + ' ' + APP_INFO.year + ' v' + APP_INFO.version;
 
