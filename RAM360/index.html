@@ -114,6 +114,7 @@ select:focus,input:focus{outline:0;border-color:var(--g);box-shadow:0 0 0 4px rg
 .sw{display:inline-block;min-width:30px;text-align:center;border-radius:8px;padding:1px 6px;font-size:11px;border:1px solid var(--line)}
 td.ed{cursor:pointer}td.ed:hover{outline:2px solid var(--g2);outline-offset:-2px;border-radius:6px}
 .cm{background:var(--b);color:#fff;font-weight:600;font-size:10px}
+td.cov{outline:2px solid #f59e0b;outline-offset:-2px;cursor:pointer}
 #pop{position:fixed;z-index:50;width:190px;background:var(--card);color:var(--ink);border:0;border-radius:var(--r2);box-shadow:var(--sh2);padding:10px;display:flex;flex-direction:column;gap:5px}
 #pop.hide{display:none}#pop b{font-size:12px;margin-bottom:2px}
 #pop button{border:0;background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 10px;cursor:pointer;text-align:left;font:inherit;transition:background .15s}
@@ -731,7 +732,7 @@ const wkIdx=d=>Math.floor((d-1+(dow(1)+6)%7)/7);
 function calc(r){
  const sv=svc(r.code);let first=0,last=0;
  sv.forEach(d=>{if(r.marks[d]){if(!first)first=d;last=d}});
- const ov=S.ov[r.key]||{},o={att:0,abs:0,ret:0,na:0,cell:{},man:{},aw:{},awN:0,dv:{},iv:{}},K={},dv=!r.active&&r.desv?r.desv:0,ing=r.ing==null?0:r.ing;   // ing = día desde el cual ya estaba inscrito según Cuéntame (T): 1 = ingresó antes del mes · 99 = ingresa después · 0 = sin dato   // dv = día de la desvinculación exacta (reporte Cuéntame)
+ const ov=S.ov[r.key]||{},ox=(S.ox&&S.ox[r.key])||{},o={att:0,abs:0,ret:0,na:0,cell:{},man:{},aw:{},awN:0,dv:{},iv:{},xo:{}},K={},dv=!r.active&&r.desv?r.desv:0,ing=r.ing==null?0:r.ing;   // ing = día desde el cual ya estaba inscrito según Cuéntame (T): 1 = ingresó antes del mes · 99 = ingresa después · 0 = sin dato   // dv = día de la desvinculación exacta (reporte Cuéntame)
  sv.forEach(d=>{
   if(r.marks[d])K[d]='x';
   else if(!first){if(r.active)K[d]=(ing&&d<ing)?'n':'f';else if(dv&&d<=dv){if(r.vinc&&d<r.vinc)K[d]='n';else{K[d]='f';o.dv[d]=1}}else K[d]='r'}   // sin asistencia en el mes (con fecha exacta: falla hasta la desvinculación)
@@ -745,7 +746,8 @@ function calc(r){
   [[rD,'r']].forEach(([g,t])=>{if(g.length&&g.length<=AJ_SEM)g.forEach(d=>{K[d]='f';o.aw[d]=t})});   // cuenta como cupo (f) pero se muestra como N/A o R
  }
  sv.forEach(d=>{let k=K[d];
-  if(k!=='x'&&ov[d]){k=ov[d];o.man[d]=1;delete o.aw[d];delete o.dv[d];delete o.iv[d]}   // ajuste manual (solo f / r / n) tiene prioridad
+  if(k==='x'&&ox[d]){k=ox[d];o.man[d]=1;o.xo[d]=1}   // exceso de cobertura: el usuario cambió esta X (solo ese día) a falla / retiro / N/A
+  else if(k!=='x'&&ov[d]){k=ov[d];o.man[d]=1;delete o.aw[d];delete o.dv[d];delete o.iv[d]}   // ajuste manual (solo f / r / n) tiene prioridad
   else if(o.aw[d])o.awN++;
   o.cell[d]=k;o[{x:'att',f:'abs',r:'ret',n:'na'}[k]]++;
  });
@@ -754,17 +756,21 @@ function calc(r){
 }
 /* ajustes manuales */
 const okeyL=()=>'uds_ajustes_'+year()+'_'+S.month,okey=()=>okeyL()+(S.ck?'_'+S.ck:'');
-function loadOv(){try{S.ov=JSON.parse(localStorage.getItem(okey())??localStorage.getItem(okeyL())??'{}')}catch(e){S.ov={}}}
-function saveOv(){try{localStorage.setItem(okey(),JSON.stringify(S.ov))}catch(e){}}
+function loadOv(){try{S.ov=JSON.parse(localStorage.getItem(okey())??localStorage.getItem(okeyL())??'{}')}catch(e){S.ov={}}
+ try{S.ox=JSON.parse(localStorage.getItem(okey()+'_x')??localStorage.getItem(okeyL()+'_x')??'{}')}catch(e){S.ox={}}}
+function saveOv(){try{localStorage.setItem(okey(),JSON.stringify(S.ov));localStorage.setItem(okey()+'_x',JSON.stringify(S.ox||{}))}catch(e){}}
 function setOv(k){const r=S.rows[pc.i];const m=S.ov[r.key]??={};k?m[pc.d]=k:delete m[pc.d];if(!Object.keys(m).length)delete S.ov[r.key];
  saveOv();$('#pop').classList.add('hide');renderCons();renderDet();renderWk()}
-function resetOv(){const c=$('#udsSel').value;S.rows.filter(r=>r.code===c).forEach(r=>delete S.ov[r.key]);saveOv();renderCons();renderDet();renderWk()}
+function resetOv(){const c=$('#udsSel').value;S.rows.filter(r=>r.code===c).forEach(r=>{delete S.ov[r.key];if(S.ox)delete S.ox[r.key]});saveOv();refresh()}
 let pc=null;
 document.addEventListener('click',e=>{
  const pop=$('#pop');if(e.target.closest('#pop'))return;
  const td=e.target.closest('.ed');if(!td){pop.classList.add('hide');return}
  pc={i:+td.dataset.i,d:+td.dataset.d};const r=S.rows[pc.i],cur=(S.ov[r.key]||{})[pc.d];
  if(td.dataset.sim){pop.innerHTML=`<b>${esc(r.name)}<br>Día ${pc.d} — asistencia simulada</b><button onclick="simSkip(${pc.i},${pc.d},1)">Marcar inasistencia este día</button><button onclick="simKid(${pc.i},1)">Inasistencia todos los días simulados</button>`;pop.classList.remove('hide');const b=td.getBoundingClientRect();pop.style.left=Math.max(4,Math.min(b.left,innerWidth-190))+'px';pop.style.top=Math.max(4,Math.min(b.bottom+4,innerHeight-200))+'px';return}
+ if(td.dataset.cov||td.dataset.xo){const xo=!!td.dataset.xo,cx=((S.ox||{})[r.key]||{})[pc.d];
+  pop.innerHTML=`<b>${esc(r.name)}<br>Día ${pc.d} — ${xo?'asistencia ajustada':'exceso de cobertura (máx. '+COBMAX+')'}</b>`+[['f','Falla (-)'],['r','Retiro (R)'],['n','No aplica (N/A)']].map(([k,l])=>`<button class="${cx===k?'sel':''}" onclick="setOx('${k}')">${l}</button>`).join('')+(xo?`<button onclick="setOx('')">↺ Restaurar asistencia (X)</button>`:'')+`<button onclick="cvOpen('${esc(r.code)}',${pc.d})">Ver todos los asistentes del día</button>`;
+  pop.classList.remove('hide');const b=td.getBoundingClientRect();pop.style.left=Math.max(4,Math.min(b.left,innerWidth-190))+'px';pop.style.top=Math.max(4,Math.min(b.bottom+4,innerHeight-230))+'px';{const fb=pop.querySelector('button');fb&&fb.focus({preventScroll:true})}return}
  pop.innerHTML=`<b>${esc(r.name)}<br>Día ${pc.d} — validar como:</b>`+[['f','Falla (-)'],['r','Retiro (R)'],['n','No aplica (N/A)']].map(([k,l])=>`<button class="${cur===k?'sel':''}" onclick="setOv('${k}')">${l}</button>`).join('')+`<button onclick="setOv('')">↺ Automático</button>`+(S.simOn&&r.simOff&&r.simOff[pc.d]?`<button onclick="simSkip(${pc.i},${pc.d},0)">↺ Restaurar asistencia simulada</button>`:'')+(S.simOn&&SIM.noKid.has(r.code+'|'+r.doc)?`<button onclick="simKid(${pc.i},0)">↺ Restaurar a la participante</button>`:'');
  pop.classList.remove('hide');const b=td.getBoundingClientRect();
  pop.style.left=Math.max(4,Math.min(b.left,innerWidth-190))+'px';pop.style.top=Math.max(4,Math.min(b.bottom+4,innerHeight-200))+'px';{const fb=pop.querySelector('button');fb&&fb.focus({preventScroll:true})}
@@ -803,12 +809,13 @@ function kp(items){return items.map(([l,v])=>`<div class="kpi"><b>${v}</b><span>
 function renderCons(){
  const g={};S.rows.forEach(r=>(g[r.code]??=[]).push(r));
  const T=stats(S.rows);
- let h=`<div class="kpis">${kp([['Días de servicio',T.days],['Participantes activos',T.act],['Cupo máximo (activos × días)',T.cap],['Asistencias',T.att],['Inasistencias',T.abs],['Retirados',T.ina],['Cumplimiento',T.pct+'%'],['Errores de marcación',ERR.length]])}</div>
+ let h=`<div class="kpis">${kp([['Días de servicio',T.days],['Participantes activos',T.act],['Cupo máximo (activos × días)',T.cap],['Asistencias',T.att],['Inasistencias',T.abs],['Retirados',T.ina],['Cumplimiento',T.pct+'%'],['Errores de marcación',nErrT()]])}</div>
+ <div class="legend" style="margin:0 0 8px;align-items:center"><label style="display:inline-flex;gap:6px;align-items:center;font-weight:600;color:var(--ink)">Cobertura máxima por UDS y día <input type="number" id="cobMax" min="1" value="${COBMAX}" style="width:64px;padding:4px 8px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit" onchange="setCob(this.value)"></label><span>Se marca error cuando más participantes de los permitidos (activos o inactivos) tienen asistencia el mismo día.</span></div>
  <div class="card"><h3>Consolidado por UDS <button class=\"q\" onclick=\"tut(3)\">?</button></h3><div class="wrap"><table class="cons"><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th>Activos</th><th>Retirados</th><th>Días</th><th>Cupo máx.</th><th>Asistencias</th><th>Inasist.</th><th>Incl. de retirados</th><th>Cumpl.</th><th>Err. marc.</th><th>Control</th></tr></thead><tbody>`;
  Object.entries(g).forEach(([c,rs])=>{const s=stats(rs);
   h+=`<tr class="link" onclick="goDet('${esc(c)}')"><td>${esc(c)}</td><td class="un" title="${esc(rs[0].uds)}">${esc(rs[0].uds)}</td><td class="n">${s.act}</td><td class="n">${s.ina}</td><td class="n">${s.days}</td><td class="n">${s.cap}</td><td class="n"><b>${s.att}</b></td><td class="n">${s.abs}</td><td class="n">${s.attR}</td>
-  <td class="cp"><div class="bar"><div style="width:${s.pct}%"></div></div><span>${s.pct}%</span></td><td class="n">${(()=>{const n=ERR.filter(e=>e.code===c).length;return n?`<span class="chk bad">${n}</span>`:'0'})()}</td><td class="n">${s.ok?'✔':'⚠'}</td></tr>`});
- h+=`</tbody><tfoot><tr><td colspan="2">TOTAL</td><td class="n">${T.act}</td><td class="n">${T.ina}</td><td class="n">${T.days}</td><td class="n">${T.cap}</td><td class="n">${T.att}</td><td class="n">${T.abs}</td><td class="n">${T.attR}</td><td class="n">${T.pct}%</td><td class="n">${ERR.length}</td><td class="n">${T.ok?'✔':'⚠'}</td></tr></tfoot></table></div></div>`;
+  <td class="cp"><div class="bar"><div style="width:${s.pct}%"></div></div><span>${s.pct}%</span></td><td class="n">${(()=>{const n=ERR.filter(e=>e.code===c).length+COV.filter(e=>e.code===c).length;return n?`<span class="chk bad">${n}</span>`:'0'})()}</td><td class="n">${s.ok?'✔':'⚠'}</td></tr>`});
+ h+=`</tbody><tfoot><tr><td colspan="2">TOTAL</td><td class="n">${T.act}</td><td class="n">${T.ina}</td><td class="n">${T.days}</td><td class="n">${T.cap}</td><td class="n">${T.att}</td><td class="n">${T.abs}</td><td class="n">${T.attR}</td><td class="n">${T.pct}%</td><td class="n">${nErrT()}</td><td class="n">${T.ok?'✔':'⚠'}</td></tr></tfoot></table></div></div>`;
  $('#v1').innerHTML=h;
 }
 let fxT1=null,fxT2=null;
@@ -834,7 +841,7 @@ function renderDet(){
  const c=$('#udsSel').value,q=$('#q').value.toLowerCase().trim(),st=$('#stSel').value;
  const all=S.rows.filter(r=>r.code===c),s=stats(all);
  const rows=all.filter(r=>(!q||r.name.toLowerCase().includes(q)||r.doc.toLowerCase().includes(q))&&(!st||(st==='I')===(!r.active&&calc(r).att===0)));
- const nErr=ERR.filter(e=>e.code===c).length;const au=[...uAuto(c)],nAdj=all.reduce((a,r)=>a+Object.keys(S.ov[r.key]||{}).length,0);
+ const nErr=ERR.filter(e=>e.code===c).length+COV.filter(e=>e.code===c).length;const au=[...uAuto(c)],nAdj=all.reduce((a,r)=>a+Object.keys(S.ov[r.key]||{}).length+Object.keys((S.ox||{})[r.key]||{}).length,0);
  $('#detK').innerHTML=kp([['Activos',s.act],['Retirados',s.ina],['Días servicio',s.days],['Cupo (Σ participantes por día)',s.cap],['Asistencias (incl. retirados)',s.att],['Inasistencias',s.abs],['No aplica (ingresos)',s.na],['R de 1–2 días que cuentan (rosa)',s.aw],['Ajustes manuales',nAdj],['Errores de marcación',nErr]])+(au.length?`<div class="kpi"><b>${au.join(', ')}</b><span>Días hábiles sin diligenciar (naranja): cuentan como inasistencia y se descuentan en Análisis</span></div>`:'')+
   `<div class="kpi"><span class="chk ${s.ok?'ok':'bad'}">${s.ok?'Dentro del cupo ✔':'Supera el cupo ⚠'}</span></div>`;
  const N=nDays(),cs=all.map(calc),E={},Av={};
@@ -850,7 +857,7 @@ function renderDet(){
   WDAYS.forEach(d=>{let cl,t,at='';
    if(isSp(d)&&r.marks[d]){cl='ce';t='⚠';at=' title="Error de marcación: asistencia marcada en día especial / sin servicio"'}else if(spDay(d,c)){cl='cs';t='–'}
    else{const k=o.cell[d];const bd=k==='f'&&uAuto(c).has(d);cl={x:'cx',f:'cf',r:'cr',n:'cn'}[k];if(bd)cl='cb';t={x:'X',f:'-',r:'R',n:'N/A'}[k];if(k==='x'&&r.sim&&r.sim[d])cl='sm';if(o.aw[d])t=o.aw[d]==='n'?'N/A':'R';
-    if(k!=='x'){cl=(o.man[d]?'cm':(o.dv[d]||o.aw[d])?'cd':cl)+' ed';at=` data-i="${r.i}" data-d="${d}" title="${o.dv[d]?'Falla: la desvinculación real fue el día '+r.desv+' (reporte Cuéntame). Clic para cambiar':o.aw[d]?'Retiro de 1–2 días dentro de la semana: cuenta como cupo (falla interna). Clic para cambiar':o.iv[d]?'Falla: según Cuéntame ya estaba inscrito (ingreso '+r.ingF+') y activo; no es ingreso posterior.'+(bd?' Día hábil sin diligenciar de la UDS: se descuenta en Análisis.':'')+' Clic para cambiar':bd?'Día hábil sin diligenciar de la UDS: se llenó como inasistencia y se descuenta en Análisis. Clic para cambiar':'Clic para validar'}" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}else if(k==='x'&&r.sim&&r.sim[d]){cl+=' ed';at=` data-i="${r.i}" data-d="${d}" data-sim="1" title="Asistencia simulada. Clic para reajustar" tabindex="0" role="button" aria-label="Día ${d}: asistencia simulada"`}}
+    if(k!=='x'){cl=(o.man[d]?'cm':(o.dv[d]||o.aw[d])?'cd':cl)+' ed';at=` data-i="${r.i}" data-d="${d}"${o.xo[d]?' data-xo="1"':''} title="${o.xo[d]?'Asistencia ajustada por exceso de cobertura (máx. '+COBMAX+' por día). Clic para cambiar o restaurar la X':o.dv[d]?'Falla: la desvinculación real fue el día '+r.desv+' (reporte Cuéntame). Clic para cambiar':o.aw[d]?'Retiro de 1–2 días dentro de la semana: cuenta como cupo (falla interna). Clic para cambiar':o.iv[d]?'Falla: según Cuéntame ya estaba inscrito (ingreso '+r.ingF+') y activo; no es ingreso posterior.'+(bd?' Día hábil sin diligenciar de la UDS: se descuenta en Análisis.':'')+' Clic para cambiar':bd?'Día hábil sin diligenciar de la UDS: se llenó como inasistencia y se descuenta en Análisis. Clic para cambiar':'Clic para validar'}" tabindex="0" role="button" aria-label="Día ${d}: validar celda"`}else if(k==='x'&&r.sim&&r.sim[d]){cl+=' ed';at=` data-i="${r.i}" data-d="${d}" data-sim="1" title="Asistencia simulada. Clic para reajustar" tabindex="0" role="button" aria-label="Día ${d}: asistencia simulada"`}else if(k==='x'&&COVD.has(c+'|'+d)){cl+=' ed cov';at=` data-i="${r.i}" data-d="${d}" data-cov="1" title="Este día la UDS tiene más de ${COBMAX} asistentes (error de cobertura). Clic para ajustar solo esta asistencia" tabindex="0" role="button" aria-label="Día ${d}: exceso de cobertura, ajustar"`}}
    h+=`<td class="d ${cl}${wb(d)}" data-dy="${d}"${at}>${t}</td>`});
   h+=`<td class="n"><b>${o.att}</b></td><td class="n">${o.abs}</td><td class="n">${o.ret}</td><td class="n">${o.na}</td></tr>`});
  if(!rows.length)h+=`<tr><td colspan="${WDAYS.length+8}" class="empty">Sin resultados</td></tr>`;
@@ -953,26 +960,71 @@ const WDL=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
 let ERR=[];
 const fmtD=d=>`${WDL[dow(d)]} ${d} de ${MN[S.month-1]} ${year()}`;
 const errObs=e=>'Error de digitación: asistencia marcada en '+(e.why==='Fin de semana'?'fin de semana':'día libre (especial / sin servicio)');
+let COBMAX=13;try{COBMAX=Math.max(1,parseInt(localStorage.getItem('uds_cobmax'))||13)}catch(e){}
+let COV=[],COVD=new Set();
+const nErrT=()=>ERR.length+COV.length;
+function setCob(v){v=parseInt(v);COBMAX=v>=1?v:13;try{localStorage.setItem('uds_cobmax',String(COBMAX))}catch(e){}refresh()}
+/* Regla de cobertura máxima: por UDS y día de servicio, si hay MÁS de COBMAX participantes activos con asistencia (X) → error.
+   Se calcula con las celdas ya resueltas (calc), así un ajuste por exceso (falla / retiro / N/A) baja el conteo y el error desaparece. */
+function calcCov(){COV=[];COVD=new Set();const g={};S.rows.forEach(r=>(g[r.code]??=[]).push(r));
+ Object.entries(g).forEach(([c,rs])=>{const cs=rs.map(r=>({r,o:calc(r)}));
+  svc(c).forEach(d=>{const at=cs.filter(x=>x.o.cell[d]==='x');   // cuentan todos los que tienen X ese día (activos e inactivos/retirados): es el mismo conteo de «Asistieron» del Detalle
+   if(at.length>COBMAX){COV.push({code:c,uds:rs[0].uds,d,n:at.length,max:COBMAX,ex:at.length-COBMAX});COVD.add(c+'|'+d)}})});
+ COV.sort((a,b)=>a.code.localeCompare(b.code)||a.d-b.d)}
+function setOx(k){const r=S.rows[pc.i];S.ox??={};const m=S.ox[r.key]??={};k?m[pc.d]=k:delete m[pc.d];if(!Object.keys(m).length)delete S.ox[r.key];
+ saveOv();$('#pop').classList.add('hide');refresh()}
+/* Diálogo de ajuste: lista quiénes asistieron ese día en esa UDS y deja cambiar SOLO ese día */
+let CVM=null;
+function cvOpen(c,d){$('#pop').classList.add('hide');const rs=S.rows.filter(r=>r.code===c&&r.marks[d]);
+ const nm=x=>S.rows.filter(r=>r.code===c).length&&x;CVM={c,d,rows:rs.map(r=>r.i)};
+ const mon=r=>svc(c).filter(x=>r.marks[x]).length,cur=r=>((S.ox||{})[r.key]||{})[d]||'';
+ const opt=(v,l,sel)=>`<option value="${v}"${sel===v?' selected':''}>${l}</option>`;
+ const uds=(rs[0]||{}).uds||c;
+ let h=`<button class="x" onclick="wclose()" aria-label="Cerrar">${IC.x}</button><h4>${esc(uds)}</h4><div class="sub">${esc(fmtD(d))} · cobertura máxima ${COBMAX} · ajuste solo de este día</div>
+ <div id="cvCnt" class="chk bad" style="margin-bottom:10px"></div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px"><label style="font-size:12px">Acción para el exceso <select id="cvAct" style="border-radius:8px;padding:4px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit">${opt('n','No aplica (N/A)','n')}${opt('f','Falla (-)','n')}${opt('r','Retiro (R)','n')}</select></label><button class="btn alt" type="button" onclick="cvSug()">Sugerir (los de menos asistencias del mes)</button></div>
+ <div style="max-height:46vh;overflow:auto"><table style="width:100%"><thead><tr><th style="text-align:left">Participante</th><th>Documento</th><th>Asist. mes</th><th>Este día</th><th>Rápido</th></tr></thead><tbody>`;
+ rs.sort((a,b)=>mon(a)-mon(b)||a.i-b.i).forEach(r=>{h+=`<tr data-ci="${r.i}"><td>${esc(r.name)}</td><td class="n">${esc(r.doc)}</td><td class="n">${mon(r)}</td><td><select class="cvS" data-i="${r.i}" onchange="cvCount()" style="border-radius:8px;padding:4px 8px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit">${opt('','X Asistió',cur(r))}${opt('f','Falla (-)',cur(r))}${opt('r','Retiro (R)',cur(r))}${opt('n','N/A',cur(r))}</select></td><td class="n"><button class="btn alt" type="button" onclick="cvOne(${r.i},'${cur(r)==='n'?'':'n'}')">${cur(r)==='n'?'↺ Restaurar X':'Marcar N/A'}</button></td></tr>`});
+ h+=`</tbody></table></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="button" onclick="cvApply()">Aplicar ajuste</button><button class="btn alt" type="button" onclick="cvReset()">Restaurar todas las X de este día</button><button class="btn alt" type="button" onclick="wclose();goDet('${esc(c)}','',${d})">Ver en Detalle</button></div>`;
+ $('#wmb').innerHTML=h;$('#wm').classList.remove('hide');cvCount()}
+function cvOne(i,k){if(!CVM)return;S.ox??={};const r=S.rows[i],m=S.ox[r.key]??={};k?m[CVM.d]=k:delete m[CVM.d];if(!Object.keys(m).length)delete S.ox[r.key];saveOv();wclose();refresh()}   // un clic: solo esa asistencia, solo ese día
+function cvCount(){const ss=[...document.querySelectorAll('#wmb .cvS')],n=ss.filter(x=>!x.value).length,ok=n<=COBMAX,el=$('#cvCnt');if(!el)return;
+ el.className='chk '+(ok?'ok':'bad');el.textContent=ok?`✔ Asistentes tras el ajuste: ${n} de ${COBMAX} permitidos`:`⚠ Asistentes: ${n} de ${COBMAX} permitidos · faltan ${n-COBMAX} por ajustar`}
+function cvSug(){if(!CVM)return;const a=$('#cvAct').value,ss=[...document.querySelectorAll('#wmb .cvS')];ss.forEach(x=>x.value='');
+ const ex=Math.max(0,ss.length-COBMAX);ss.slice(0,ex).forEach(x=>x.value=a);cvCount()}   // la lista ya viene ordenada de menos a más asistencias del mes
+function cvApply(){if(!CVM)return;S.ox??={};document.querySelectorAll('#wmb .cvS').forEach(x=>{const r=S.rows[+x.dataset.i],m=S.ox[r.key]??={};x.value?m[CVM.d]=x.value:delete m[CVM.d];if(!Object.keys(m).length)delete S.ox[r.key]});
+ saveOv();wclose();refresh()}
+function cvReset(){if(!CVM)return;CVM.rows.forEach(i=>{const r=S.rows[i],m=(S.ox||{})[r.key];if(m){delete m[CVM.d];if(!Object.keys(m).length)delete S.ox[r.key]}});saveOv();wclose();refresh()}
 function calcErr(){ERR=[];
  S.rows.forEach(r=>{for(let d=1;d<=nDays();d++)if(r.marks[d]&&(isWk(d)||isSp(d)))
   ERR.push({code:r.code,uds:r.uds,doc:r.doc,name:r.name,i:r.i,d,why:isWk(d)?'Fin de semana':'Día especial / sin servicio'})});
- ERR.sort((a,b)=>a.code.localeCompare(b.code)||a.d-b.d||a.name.localeCompare(b.name))}
+ ERR.sort((a,b)=>a.code.localeCompare(b.code)||a.d-b.d||a.name.localeCompare(b.name));calcCov()}
 function renderErr(){
  if(!S.rows.length)return;
- const n=ERR.length,u=new Set(ERR.map(e=>e.code)).size,dd=[...new Set(ERR.map(e=>e.d))].sort((a,b)=>a-b);
+ const n=nErrT(),u=new Set(ERR.map(e=>e.code).concat(COV.map(e=>e.code))).size,dd=[...new Set(ERR.map(e=>e.d).concat(COV.map(e=>e.d)))].sort((a,b)=>a-b);
  $('#t4').innerHTML='Errores de marcación'+(n?`<span class="bdg">${n}</span>`:'');
  $('#t4').classList.toggle('hide',!n);if(!n&&!$('#v4').classList.contains('hide'))tab(1);
- let h=`<div class="kpis">${kp([['Errores de marcación',n],['UDS afectadas',u],['Días afectados',dd.length?dd.join(', '):'—'],['Participantes afectados',new Set(ERR.map(e=>e.code+'|'+e.doc)).size]])}</div>`;
- if(!n){$('#v4').innerHTML=h+'<div class="card"><h3>Errores de marcación</h3><div class="legend" style="margin:0">✔ Ninguna asistencia marcada en días especiales, sin servicio o fines de semana.</div></div>';return}
- h+=`<div class="card"><h3 class="dh"><span>Asistencias marcadas en día libre (error de digitación)</span><button class="fold" onclick="expErr()">${IC.dl} Descargar Excel</button></h3>
+ let h=`<div class="kpis">${kp([['Errores de marcación',n],['UDS afectadas',u],['Días afectados',dd.length?dd.join(', '):'—'],['Participantes afectados',new Set(ERR.map(e=>e.code+'|'+e.doc)).size],['UDS-día sobre cobertura máx. ('+COBMAX+')',COV.length]])}</div>`;
+ if(!n){$('#v4').innerHTML=h+`<div class="card"><h3>Errores de marcación</h3><div class="legend" style="margin:0">✔ Ninguna asistencia marcada en días especiales, sin servicio o fines de semana, y ninguna UDS supera la cobertura máxima de ${COBMAX} por día.</div></div>`;return}
+ if(COV.length){
+  h+=`<div class="card"><h3 class="dh"><span>Cobertura máxima superada (más de ${COBMAX} participantes con asistencia en el día, incluidos inactivos)</span><button class="fold" onclick="expErr()">${IC.dl} Descargar Excel</button></h3>
+  <div class="legend" style="margin:0 0 8px"><span style="--c:#fecaca">Toque una fila para ver quiénes asistieron ese día y cambiar SOLO la asistencia de ese día a Falla (-), Retiro (R) o N/A. El error desaparece cuando quedan ${COBMAX} asistentes o menos. La cobertura máxima se cambia en el Consolidado.</span></div>
+  <div class="wrap"><table><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th style="text-align:left">Fecha</th><th>Asistentes</th><th>Máximo</th><th>Exceso</th><th style="text-align:left">Observación</th><th>Acción</th></tr></thead><tbody>`;
+  COV.forEach(e=>h+=`<tr class="link" tabindex="0" onclick="cvOpen('${esc(e.code)}',${e.d})"><td>${esc(e.code)}</td><td>${esc(e.uds)}</td><td>${esc(fmtD(e.d))}</td><td class="n"><b>${e.n}</b></td><td class="n">${e.max}</td><td class="n"><span class="chk bad">+${e.ex}</span></td><td class="obs">${esc(covObs(e))}</td><td class="n"><button class="btn alt" type="button" onclick="event.stopPropagation();cvOpen('${esc(e.code)}',${e.d})">Ajustar</button></td></tr>`);
+  h+='</tbody></table></div></div>'}
+ if(ERR.length){
+ h+=`<div class="card"><h3 class="dh"><span>Asistencias marcadas en día libre (error de digitación)</span>${COV.length?'':`<button class="fold" onclick="expErr()">${IC.dl} Descargar Excel</button>`}</h3>
  <div class="legend" style="margin:0 0 8px"><span style="--c:#fecaca">Estas marcas NO se cuentan en asistencias ni en cupo. Corrija la marcación en el sistema de origen, o desmarque el día si en realidad sí hubo servicio (panel “Días especiales”). Toque una fila para ver la UDS.</span></div>
  <div class="wrap"><table><thead><tr><th>Código</th><th style="text-align:left">Unidad de servicio</th><th>Documento</th><th style="text-align:left">Participante</th><th style="text-align:left">Fecha</th><th>Motivo</th><th style="text-align:left">Observación</th></tr></thead><tbody>`;
  ERR.forEach(e=>h+=`<tr class="link" tabindex="0" onclick="goDet('${esc(e.code)}',${e.i},${e.d})"><td>${esc(e.code)}</td><td>${esc(e.uds)}</td><td>${esc(e.doc)}</td><td>${esc(e.name)}</td><td>${esc(fmtD(e.d))}</td><td class="n"><span class="chk bad">${esc(e.why)}</span></td><td class="obs">${esc(errObs(e))}</td></tr>`);
- $('#v4').innerHTML=h+'</tbody></table></div></div>'}
+ h+='</tbody></table></div></div>'}
+ $('#v4').innerHTML=h}
+const covObs=e=>`Cobertura superada: ${e.n} asistentes (máximo ${e.max}). Ajuste ${e.ex} asistencia${e.ex===1?'':'s'} de este día.`;
 function expErr(){if(!featureAllowed('excelExport')){showUpgrade('La exportación Excel está disponible desde el plan Profesional.');return;}
  const a=[['Código UDS','Unidad de servicio','Documento','Participante','Fecha','Motivo','Observación']];
  ERR.forEach(e=>a.push([e.code,e.uds,e.doc,e.name,fmtD(e.d),e.why,errObs(e)]));
- const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),'Errores de marcación');
+ const wb=XLSX.utils.book_new();if(ERR.length||!COV.length)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(a),'Errores de marcación');
+ if(COV.length){const c=[['Código UDS','Unidad de servicio','Fecha','Asistentes','Cobertura máxima','Exceso','Observación']];COV.forEach(e=>c.push([e.code,e.uds,fmtD(e.d),e.n,e.max,e.ex,covObs(e)]));XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(c),'Cobertura superada')}
  XLSX.writeFile(wb,`Errores_de_marcacion_${year()}_${String(S.month).padStart(2,'0')}.xlsx`)}
 
 /* Datos de ejemplo */
@@ -1092,7 +1144,7 @@ function sumHTML(){const D=SUM,{T,A,U,best,worst,dBl,dSt,dTot,gross,net,capF,pct
    ${rw('bld','','UDS',`<span class="sm-pill">${U.length} · Activos ${T.act} · Retirados ${T.ina}</span>`)}
    ${rw('person','','Asistencias',`<span class="sm-pill">${SI.star}${T.att.toLocaleString('es-CO')} de ${capF.toLocaleString('es-CO')} cupos — ${pctF}%</span>`)}
    ${rw('xc','r','Inasistencias',T.abs.toLocaleString('es-CO')+(dBl?` (incluye ${dBl} días sin diligenciar)`:''))}
-   ${rw('coins','y','Valor ración',money(AN.val))}${rw('ban','','Días especiales excluidos',sp.length?sp.length+' ('+sp.join(', ')+')':'ninguno')}${rw('al','o','Errores de marcación',ERR.length)}
+   ${rw('coins','y','Valor ración',money(AN.val))}${rw('ban','','Días especiales excluidos',sp.length?sp.length+' ('+sp.join(', ')+')':'ninguno')}${rw('al','o','Errores de marcación',nErrT())}
   </div>
   <div class="sm-o"><h5>${ic('bar')}Otros indicadores</h5>
    <button class="sm-ind" onclick="sgo('${E(best.c)}')">${ic('star','y')}<div class="t"><em>Mayor cumplimiento</em><span>${E(best.c)} ${E(best.u)} (${best.p}%)</span></div>${SI.ch}</button>
@@ -1238,7 +1290,7 @@ function tutOffer(){const d=document.createElement('div');d.id='tof';d.setAttrib
 function tofGo(v){try{localStorage.setItem('uds_tut_ok','1')}catch(e){}const d=$('#tof');if(d)d.remove();if(v)tut(0)}
 /* ----- Espacios de trabajo: cada contrato cargado es un sistema independiente ----- */
 const WS={};let WSK=null;
-const newS=()=>({cards:false,rows:[],month:9,special:new Set(),ov:{},cue:SH.cue,cueApply:SH.cueApply,cueForce:false,cueSel:null});
+const newS=()=>({cards:false,rows:[],month:9,special:new Set(),ov:{},ox:{},cue:SH.cue,cueApply:SH.cueApply,cueForce:false,cueSel:null});
 function shareCue(keep){[...Object.values(WS),S].forEach(w=>{w.cue=SH.cue;w.cueApply=SH.cueApply;if(!keep){w.cueForce=false;w.cueSel=null}})}
 function activate(k){if(!WS[k])return;S=WS[k];WSK=k;$('#year').value=S.year;S.cue=SH.cue;S.cueApply=SH.cueApply;applyCue();showUI()}
 function closeWs(k){const ks=Object.keys(WS),i=ks.indexOf(k);delete WS[k];const rest=Object.keys(WS);
@@ -1436,6 +1488,7 @@ function buildVal(){
  add(sum>DIAS_ANIO?'crit':'info','Días de servicio del año',`Este mes: ${o[S.month]} días. Acumulado de los meses cargados en este equipo (${Object.keys(o).map(m=>MN[m-1]).join(', ')}): ${sum} de ${DIAS_ANIO} días hábiles al año.`);
  // 6. marcación
  add(ERR.length?'warn':'ok','Asistencias en día libre',ERR.length?`${ERR.length} asistencia(s) marcadas en fin de semana o día especial; no se cuentan.`:'Ninguna.',ERR.slice(0,60).map(e=>({t:`${e.code} · ${e.name} · ${fmtD(e.d)}`,c:e.code,i:e.i,d:e.d})),ERR.length?4:0);
+ add(COV.length?'warn':'ok','Cobertura máxima por día',COV.length?`${COV.length} día(s) de UDS con más de ${COBMAX} participantes con asistencia. Ajústelos en Errores de marcación.`:`Ninguna UDS supera ${COBMAX} asistentes por día.`,COV.slice(0,60).map(e=>({t:`${e.code} · ${fmtD(e.d)} · ${e.n} asistentes (máx. ${e.max})`,c:e.code,d:e.d})),COV.length?4:0);
  const L=blankList(),pv=L.filter(x=>!pmT(x)),iso=L.filter(x=>x.run===1);
  add(L.length?(pv.length?'warn':'info'):'ok','Días sin marcar por UDS',L.length?`${L.length} día(s) en que una UDS no tiene ninguna asistencia (${iso.length} de 1 solo día); ${pv.length} sin clasificar como permiso o incapacidad. Se descuentan raciones.`:'Ninguna UDS tiene días sin marcar.',pv.map(x=>({t:`${x.c} · ${fmtD(x.d)} · ${x.run>1?'día '+x.pos+' de '+x.run+' seguidos':'día aislado'}`,c:x.c,d:x.d})),L.length?5:0);
  // 7. ingresos a mitad de semana: N/A de 1 a 4 días dentro de la misma semana de la primera asistencia
